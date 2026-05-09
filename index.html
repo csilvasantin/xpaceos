@@ -158,7 +158,7 @@
       <a href="#booth">Booth Shoptalk</a>
       <a href="#capas">3 capas</a>
       <a href="#hardware">Lenovo + Nvidia</a>
-      <a href="#advertima">vs Advertima</a>
+      <a href="#stack">Stack</a>
       <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" class="live">Demo live</a>
     </nav>
   </div>
@@ -300,7 +300,7 @@
     <h2><span class="num">03</span>Pixer.ai · Capa de creación</h2>
     <div class="deep">
       <h3>Brief estructurado → asset listo para signage en minutos</h3>
-      <div class="who">Si Advertima asume que el retailer ya tiene contenido, Pixer.ai lo genera.</div>
+      <div class="who">El retailer no necesita agencia externa: Pixer.ai genera el contenido en la propia plataforma.</div>
       <p>Cuatro tipos de contenido — Audio, Música, Imágenes, Video — con un brief operativo por cada uno. La plataforma orquesta los motores adecuados según el caso: TTS multilingüe para voz, Suno con letra custom para identidad sonora de marca, Imagen 4 / FLUX para visuales en serie, Veo 3 para video con audio nativo.</p>
       <div class="feats">
         <div><b>SUNO</b>chirp-v4 / v4.5 · letra propia · 2 clips por canción</div>
@@ -365,74 +365,9 @@
   </div>
 </section>
 
-<section id="advertima">
-  <div class="wrap">
-    <h2><span class="num">06</span>XpaceOS vs Advertima</h2>
-    <p class="lede">Advertima es una buena referencia y la han hecho bien — bridging digital y físico con audiencia AI sobre signage. La diferencia sustancial es el alcance: ellos resuelven la capa de audiencia y monetización; nosotros traemos también la creación y la distribución, todo con un Gemelo Digital donde validar antes de invertir un euro en hardware.</p>
-    <div class="vs">
-    <table class="vs-table">
-      <thead>
-        <tr>
-          <th>Capacidad</th>
-          <th>Advertima</th>
-          <th>AdmiraNext · XpaceOS</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><b>Generación de contenido con IA</b><br><span style="color:var(--mut);font-size:12px">música, voz, imagen, video</span></td>
-          <td class="no">— depende del retailer / agencia externa</td>
-          <td class="ok">✓ Pixer.ai con 7+ motores integrados</td>
-        </tr>
-        <tr>
-          <td><b>Distribución signage propia</b></td>
-          <td class="partial">△ requiere integración con cartelería existente</td>
-          <td class="ok">✓ Admira XP nativo, drag-and-drop al surface</td>
-        </tr>
-        <tr>
-          <td><b>Gemelo Digital del retail</b><br><span style="color:var(--mut);font-size:12px">probar sin instalar hardware</span></td>
-          <td class="no">— se valida sobre la tienda real</td>
-          <td class="ok">✓ Simulador isométrico con tráfico, audiencia y reglas</td>
-        </tr>
-        <tr>
-          <td><b>Control en producción del espacio físico</b></td>
-          <td class="partial">△ vía integraciones</td>
-          <td class="ok">✓ El gemelo es el panel de control en directo</td>
-        </tr>
-        <tr>
-          <td><b>Audience capture (cámara IA)</b></td>
-          <td class="ok">✓ Audience AI</td>
-          <td class="ok">✓ LiveCam + Mocap + perfil Club sobre Nvidia GPU</td>
-        </tr>
-        <tr>
-          <td><b>Marketplace RTB / programmatic</b></td>
-          <td class="ok">✓ booking automatizado</td>
-          <td class="ok">✓ OmniPublicity con subasta &lt;200ms</td>
-        </tr>
-        <tr>
-          <td><b>Mercado primario</b></td>
-          <td class="partial">grocery US/EU</td>
-          <td class="ok">retail, estancos, ferias, ciudad — agnóstico</td>
-        </tr>
-        <tr>
-          <td><b>Onboarding hasta primera demo</b></td>
-          <td class="partial">semanas — instalación de cámaras y signage</td>
-          <td class="ok">día 1 — el Gemelo Digital ya está corriendo</td>
-        </tr>
-        <tr>
-          <td><b>Stack abierto / inspeccionable</b></td>
-          <td class="no">SaaS cerrado</td>
-          <td class="ok">GitHub Pages + workers Cloudflare, todo trazable</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-</section>
-
 <section id="stack">
   <div class="wrap">
-    <h2><span class="num">07</span>Cómo está montado por dentro</h2>
+    <h2><span class="num">06</span>Cómo está montado por dentro</h2>
     <p class="lede">Stack pequeño, decisiones explícitas, todo open en GitHub Pages + Cloudflare, ejecutándose sobre Lenovo edge con inferencia Nvidia. Sin SaaS opaco.</p>
     <div class="stack-row">
       <div class="row"><b>Pixer.ai</b><span>SPA estática · Gemini · Suno proxy · Pollinations · ElevenLabs worker</span></div>
@@ -449,7 +384,7 @@
 
 <section id="metricas">
   <div class="wrap">
-    <h2><span class="num">08</span>Estado del piloto</h2>
+    <h2><span class="num">07</span>Estado del piloto</h2>
     <p class="lede">Métricas en vivo del simulador Xtanco corriendo en producción y del setup de Shoptalk EU. Si los workers están dormidos, los números muestran "—".</p>
     <div class="nums">
       <div class="n"><div class="v live" id="m-screens">—</div><div class="l">pantallas signage activas</div></div>
