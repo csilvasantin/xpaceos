@@ -10,7 +10,6 @@
 <meta property="og:url" content="https://www.xpaceos.com">
 <meta property="og:image" content="https://www.xpaceos.com/assets/xpaceos-logo-card.jpg">
 <link rel="canonical" href="https://www.xpaceos.com">
-<link rel="preload" as="image" href="/assets/xpaceos-logo-card.jpg">
 <link rel="preload" as="image" href="/assets/xpaceos-logo-transparent.png">
 <style>
   :root{
@@ -46,11 +45,10 @@
   .eventbar .lenovo{color:var(--lenovo);font-weight:bold}
   .eventbar .nvidia{color:var(--nvidia);font-weight:bold}
 
-  .hero{position:relative;overflow:hidden;padding:92px 0 76px;background:#02080d}
-  .hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,8,13,.98) 0%,rgba(2,8,13,.86) 36%,rgba(2,8,13,.42) 70%,rgba(2,8,13,.72) 100%),url('/assets/xpaceos-logo-card.jpg') right center / min(58vw,820px) auto no-repeat;opacity:.95}
-  .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 18% 0%,rgba(120,243,255,.12),transparent 52%),radial-gradient(ellipse at 70% 38%,rgba(255,199,30,.10),transparent 38%),radial-gradient(ellipse at 90% 78%,rgba(34,177,76,.08),transparent 46%);pointer-events:none}
+  .hero{position:relative;overflow:hidden;padding:104px 0 86px;background:#02080d}
+  .hero::before{content:"";position:absolute;inset:-18%;background-image:radial-gradient(circle at 18% 24%,rgba(255,255,255,.62) 0 1px,transparent 1.8px),radial-gradient(circle at 72% 18%,rgba(120,243,255,.42) 0 1px,transparent 1.9px),radial-gradient(circle at 38% 74%,rgba(255,216,102,.36) 0 1px,transparent 2px),radial-gradient(circle at 84% 66%,rgba(180,120,255,.34) 0 1px,transparent 2px);background-size:260px 190px,360px 260px,460px 320px,620px 420px;background-position:0 0,80px 40px,140px 90px,220px 120px;opacity:.46;filter:drop-shadow(0 0 7px rgba(120,243,255,.24));animation:starDrift 52s linear infinite,starGlow 7s ease-in-out infinite;pointer-events:none}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,8,13,.98) 0%,rgba(2,8,13,.88) 42%,rgba(2,8,13,.64) 100%),radial-gradient(ellipse at 18% 0%,rgba(120,243,255,.16),transparent 52%),radial-gradient(ellipse at 68% 36%,rgba(255,199,30,.08),transparent 40%),radial-gradient(ellipse at 92% 78%,rgba(34,177,76,.08),transparent 46%);pointer-events:none}
   .hero .wrap{position:relative;z-index:1}
-  .hero-brand{display:block;width:min(420px,78vw);height:auto;margin:0 0 22px;filter:drop-shadow(0 16px 34px rgba(0,0,0,.45))}
   .hero h1{font-size:60px;line-height:1.05;margin:0 0 22px;letter-spacing:-.02em;font-weight:800}
   .hero h1 .grad{background:linear-gradient(90deg,var(--brand),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
   .hero p.lede{font-size:19px;color:var(--mut);max-width:760px;margin:0 0 28px}
@@ -137,6 +135,8 @@
   .nums .n .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
   .nums .n .v.live::before{content:"●";color:var(--good);font-size:14px;margin-right:6px;vertical-align:middle;animation:pulse 1.5s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+  @keyframes starDrift{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-72px,42px,0)}}
+  @keyframes starGlow{0%,100%{opacity:.34}50%{opacity:.56}}
 
   .stack-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;font-family:monospace;font-size:13px}
   .stack-row .row{background:var(--card);border:1px solid var(--line);padding:12px 14px;border-radius:8px}
@@ -152,9 +152,8 @@
 
   @media (max-width:820px){
     .brand-logo{width:128px}
-    .hero{padding:74px 0 58px}
-    .hero::before{background:linear-gradient(180deg,rgba(2,8,13,.92),rgba(2,8,13,.58) 48%,rgba(2,8,13,.94)),url('/assets/xpaceos-logo-card.jpg') center top 22px / 92vw auto no-repeat;opacity:.88}
-    .hero-brand{width:min(330px,82vw);margin-top:84px}
+    .hero{padding:76px 0 58px}
+    .hero::before{background-size:190px 140px,260px 190px,340px 240px,450px 310px;opacity:.42}
     .hero h1{font-size:38px}
     .layers{grid-template-columns:1fr}
     .booth-grid{grid-template-columns:1fr}
@@ -191,7 +190,6 @@
 
 <div class="hero">
   <div class="wrap">
-    <img class="hero-brand" src="/assets/xpaceos-logo-transparent.png" alt="XpaceOS">
     <span class="badge" data-i18n="hero.badge">🟢 LIVE @ SHOPTALK EUROPE 2026 · BARCELONA</span>
     <h1 data-i18n-html="hero.title">The operating system<br>for <span class="grad">physical retail</span>.</h1>
     <p class="lede" data-i18n-html="hero.lede">XpaceOS turns every store, every shop window and every booth into an intelligent advertising medium. Three integrated layers — AI creation, distribution on a Digital Twin and a real-time bidding marketplace — running on <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. Live at Shoptalk Europe from June 9 to 11 at Fira Barcelona.</p>
