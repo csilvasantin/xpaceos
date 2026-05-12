@@ -143,6 +143,27 @@
   .stack-row .row b{color:var(--accent);letter-spacing:.04em;display:block;margin-bottom:2px}
   .stack-row .row span{color:var(--mut);font-size:12px}
 
+
+  .demo-gate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(2,8,13,.50);backdrop-filter:blur(6px);z-index:1000;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  .demo-gate.open{display:flex}
+  .demo-gate .crt{position:relative;width:min(520px,92vw);display:flex;flex-direction:column;align-items:center;gap:16px;padding:34px 38px;background:#0a0703;border:1px solid #5a3a00;box-shadow:0 0 0 2px #1a0e00,0 0 60px rgba(255,176,0,.16) inset,0 0 80px rgba(255,176,0,.10);border-radius:8px;overflow:hidden;color:#ffb000}
+  .demo-gate .crt::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0px,rgba(0,0,0,.18) 1px,transparent 1px,transparent 3px)}
+  .demo-gate .crt::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+  .demo-gate .crt > *{position:relative;z-index:1}
+  .demo-gate .gate-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1px solid rgba(255,176,0,.45);background:rgba(255,176,0,.06);color:#ffb000;border-radius:6px;cursor:pointer;font:700 18px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;z-index:2}
+  .demo-gate .gate-close:hover{background:rgba(255,176,0,.14)}
+  .demo-gate .gate-logo{margin:0;font-size:34px;line-height:1;letter-spacing:.08em;font-weight:900;text-shadow:0 0 4px #ffb000,0 0 18px rgba(255,176,0,.55);text-align:center}
+  .demo-gate .gate-logo span{display:block;font-size:15px;letter-spacing:.42em;margin-top:8px;text-transform:uppercase;color:#cc8a00}
+  .demo-gate .gate-tag{margin:4px 0 0;font-size:11px;letter-spacing:.36em;text-transform:uppercase;text-align:center;text-shadow:0 0 6px rgba(255,176,0,.6)}
+  .demo-gate .gate-prompt{margin:0;color:#cc8a00;font-size:13px;letter-spacing:.08em}
+  .demo-gate .gate-prompt .cursor{display:inline-block;background:#ffb000;width:.6em;height:.9em;vertical-align:-2px;animation:crtBlink 1s steps(2) infinite}
+  .demo-gate input{width:280px;max-width:100%;padding:11px 14px;border:1px solid #5a3a00;background:#1a0e00;color:#ffb000;text-align:center;outline:0;font:14px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.18em;text-shadow:0 0 4px #ffb000;caret-color:#ffb000}
+  .demo-gate input:focus{border-color:#ffb000;box-shadow:0 0 0 2px rgba(255,176,0,.25)}
+  .demo-gate .gate-submit{width:280px;max-width:100%;padding:11px;border:0;background:#ffb000;color:#1a0e00;cursor:pointer;font:800 13px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.28em;text-transform:uppercase;box-shadow:0 0 12px rgba(255,176,0,.4)}
+  .demo-gate .gate-submit:hover{background:#ffd166}
+  .demo-gate .gate-error{display:none;margin:0;color:#ff4f4f;font-size:11px;letter-spacing:.14em;text-align:center;text-shadow:0 0 6px rgba(255,79,79,.7)}
+  @keyframes crtBlink{0%{opacity:1}50%{opacity:0}}
+
   footer{padding:40px 0;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}
   footer .wrap{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
   footer a{color:var(--mut)}
@@ -179,7 +200,7 @@
       <a href="#capas" data-i18n="nav.layers">3 layers</a>
       <a href="#hardware">Lenovo + Nvidia</a>
       <a href="#stack">Stack</a>
-      <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" class="live" data-i18n="nav.demo">Live demo</a>
+      <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" class="live" data-demo-gate data-i18n="nav.demo">Live demo</a>
       <span class="lang-switch" aria-label="Language selector">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="es">ES</button>
@@ -360,7 +381,7 @@
       </div>
       <p data-i18n="xp.outro">The Xtanco twin (tobacco shops) is the first production vertical. The Shoptalk Europe booth is the next one — and demonstrates the full case in a closed trade-show space.</p>
       <div class="links">
-        <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener">↗ Admira XP live</a>
+        <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" data-demo-gate>↗ Admira XP live</a>
         <a href="#omni" data-i18n="xp.next">↓ next: OmniPublicity</a>
       </div>
     </div>
@@ -424,12 +445,25 @@
     <a class="footer-logo" href="#top" aria-label="XpaceOS"><img src="/assets/xpaceos-logo-transparent.png" alt="XpaceOS"></a>
     <span>© 2026 ADmiraNeXT · XpaceOS</span>
     <a href="https://csilvasantin.github.io/pixer-ai-content/latest/audio.html" target="_blank" rel="noopener">Pixer.ai</a>
-    <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener">Admira XP</a>
+    <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" data-demo-gate>Admira XP</a>
     <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">OmniPublicity</a>
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
     <span class="sig">XPACEOS · v.2026.05.09</span>
   </div>
 </footer>
+
+
+<div class="demo-gate" id="demoGate" aria-hidden="true">
+  <div class="crt" role="dialog" aria-modal="true" aria-labelledby="demoGateTitle">
+    <button class="gate-close" type="button" id="demoGateClose" aria-label="Close">×</button>
+    <p class="gate-logo" id="demoGateTitle">XpaceOS<span>live demo</span></p>
+    <p class="gate-tag" data-i18n="demoGate.tag">restricted access</p>
+    <p class="gate-prompt"><span data-i18n="demoGate.prompt">&gt; password</span><span class="cursor"></span></p>
+    <input type="password" id="demoGateInput" autocomplete="current-password">
+    <button class="gate-submit" type="button" id="demoGateSubmit" data-i18n="demoGate.button">unlock</button>
+    <p class="gate-error" id="demoGateError" data-i18n="demoGate.error">access denied</p>
+  </div>
+</div>
 
 <script>
 const I18N = {
@@ -441,6 +475,10 @@ const I18N = {
     'nav.booth': 'Shoptalk booth',
     'nav.layers': '3 layers',
     'nav.demo': 'Live demo',
+    'demoGate.tag': 'restricted access',
+    'demoGate.prompt': '> password',
+    'demoGate.button': 'unlock',
+    'demoGate.error': 'access denied',
     'hero.badge': '🟢 LIVE @ SHOPTALK EUROPE 2026 · BARCELONA',
     'hero.title': 'The operating system<br>for <span class="grad">physical retail</span>.',
     'hero.lede': 'XpaceOS turns every store, every shop window and every booth into an intelligent advertising medium. Three integrated layers — AI creation, distribution on a Digital Twin and a real-time bidding marketplace — running on <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. Live at Shoptalk Europe from June 9 to 11 at Fira Barcelona.',
@@ -537,6 +575,10 @@ const I18N = {
     'nav.booth': 'Booth Shoptalk',
     'nav.layers': '3 capas',
     'nav.demo': 'Demo live',
+    'demoGate.tag': 'acceso restringido',
+    'demoGate.prompt': '> password',
+    'demoGate.button': 'unlock',
+    'demoGate.error': 'acceso denegado',
     'hero.title': 'El sistema operativo<br>del <span class="grad">retail físico</span>.',
     'hero.lede': 'XpaceOS convierte cada tienda, cada escaparate y cada stand en un medio publicitario inteligente. Tres capas integradas — creación con IA, distribución sobre un Gemelo Digital y marketplace de subastas en tiempo real — corriendo sobre <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. En vivo en Shoptalk Europe del 9 al 11 de junio en Fira Barcelona.',
     'hero.boothCta': 'Ven al booth →',
@@ -650,6 +692,69 @@ function applyLanguage(lang) {
 document.querySelectorAll('[data-lang]').forEach(btn => {
   btn.addEventListener('click', () => applyLanguage(btn.getAttribute('data-lang')));
 });
+
+const DEMO_PASSWORD = 'Nomeacuerd0';
+let pendingDemoUrl = '';
+const demoGate = document.getElementById('demoGate');
+const demoGateInput = document.getElementById('demoGateInput');
+const demoGateError = document.getElementById('demoGateError');
+const demoGateSubmit = document.getElementById('demoGateSubmit');
+const demoGateClose = document.getElementById('demoGateClose');
+
+function openDemoGate(url) {
+  pendingDemoUrl = url;
+  demoGate.classList.add('open');
+  demoGate.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  demoGateInput.value = '';
+  demoGateError.style.display = 'none';
+  setTimeout(() => demoGateInput.focus(), 0);
+}
+
+function closeDemoGate() {
+  demoGate.classList.remove('open');
+  demoGate.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  pendingDemoUrl = '';
+  demoGateInput.value = '';
+  demoGateError.style.display = 'none';
+}
+
+function submitDemoGate() {
+  if (demoGateInput.value === DEMO_PASSWORD) {
+    const url = pendingDemoUrl;
+    closeDemoGate();
+    if (url) window.open(url, '_blank', 'noopener');
+    return;
+  }
+  demoGateError.style.display = 'block';
+  demoGateInput.value = '';
+  demoGateInput.focus();
+}
+
+document.querySelectorAll('[data-demo-gate]').forEach(link => {
+  link.addEventListener('click', event => {
+    event.preventDefault();
+    openDemoGate(link.href);
+  });
+});
+
+demoGateSubmit.addEventListener('click', submitDemoGate);
+demoGateClose.addEventListener('click', closeDemoGate);
+demoGate.addEventListener('click', event => {
+  if (event.target === demoGate) closeDemoGate();
+});
+demoGateInput.addEventListener('keydown', event => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    submitDemoGate();
+  }
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeDemoGate();
+  }
+});
+
 
 try {
   applyLanguage(localStorage.getItem('xpaceosLang') || 'en');
