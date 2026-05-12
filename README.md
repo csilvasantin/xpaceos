@@ -1,6 +1,6 @@
 # www.xpaceos.com
 
-Sitio público de **XpaceOS** — el sistema operativo del retail físico de AdmiraNext.
+Sitio público de **XpaceOS** — el sistema operativo del retail físico de ADmiraNeXT.
 
 Tres capas integradas:
 
