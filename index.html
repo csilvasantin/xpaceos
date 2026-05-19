@@ -12,6 +12,8 @@
 <link rel="canonical" href="https://www.xpaceos.com">
 <link rel="preload" as="image" href="/assets/xpaceos-logo-transparent.png">
 <link rel="preload" as="image" href="/assets/xpaceos-robots.jpg">
+<link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/tokens.css">
+<link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/nav.css">
 
 <!-- Google Tag Manager -->
 <script>
@@ -53,11 +55,8 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .lang-switch button.active{color:var(--ink);border-color:var(--line);background:rgba(120,243,255,.06)}
   .lang-switch button:hover{color:var(--ink)}
 
-  /* Event banner */
-  .eventbar{background:linear-gradient(90deg,rgba(226,35,26,.18),rgba(118,185,0,.18));border-bottom:1px solid var(--line);padding:10px 0;font-family:monospace;font-size:12px;letter-spacing:.06em;color:var(--ink);text-align:center}
-  .eventbar b{color:var(--accent)}
-  .eventbar .lenovo{color:var(--lenovo);font-weight:bold}
-  .eventbar .nvidia{color:var(--nvidia);font-weight:bold}
+  /* Admira · Xperience band — saltar entre soluciones del grupo */
+  .admira-nav.admira-nav-app-bar{position:static;background:linear-gradient(90deg,rgba(226,35,26,.16) 0%,rgba(118,185,0,.14) 100%);border-bottom:1px solid var(--line);padding:8px 22px;backdrop-filter:none;-webkit-backdrop-filter:none}
 
   .hero{position:relative;overflow:hidden;padding:28px 0 82px;background:#02080d}
   .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,8,13,.98) 0%,rgba(2,8,13,.88) 42%,rgba(2,8,13,.64) 100%),radial-gradient(ellipse at 18% 0%,rgba(120,243,255,.16),transparent 52%),radial-gradient(ellipse at 68% 36%,rgba(255,199,30,.08),transparent 40%),radial-gradient(ellipse at 92% 78%,rgba(34,177,76,.08),transparent 46%);pointer-events:none}
@@ -220,11 +219,18 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
 <!-- End Google Tag Manager (noscript) -->
 
 
-<div class="eventbar">
-  <span class="lenovo">LENOVO</span> × <span class="nvidia">NVIDIA</span> × ADmiraNeXT &nbsp;·&nbsp;
-  <b>SHOPTALK EUROPE 2026</b> &nbsp;·&nbsp; FIRA BARCELONA &nbsp;·&nbsp; <span data-i18n="event.date">JUNE 9-11</span> &nbsp;·&nbsp;
-  <a href="#booth" style="color:var(--brand)" data-i18n="event.cta">visit us at the booth →</a>
-</div>
+<nav class="admira-nav admira-nav-app-bar" aria-label="Admira · Xperience">
+  <a class="admira-nav-brand" href="https://www.admira.app">
+    <span class="admira-nav-brand-name">Admira</span>
+    <span class="admira-nav-brand-tag">Xperience</span>
+  </a>
+  <div class="admira-nav-items">
+    <a class="admira-nav-link admira-nav-link-external" href="https://www.admira.studio">Pixer.IA</a>
+    <a class="admira-nav-link admira-nav-link-active" href="https://www.xpaceos.com">XpaceOS</a>
+    <a class="admira-nav-link admira-nav-link-external" href="https://www.admira.app">Xbusiness</a>
+    <a class="admira-nav-link admira-nav-link-cta" href="mailto:csilva@admira.com">Contacto</a>
+  </div>
+</nav>
 
 <header>
   <div class="wrap">
