@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es" data-layer="os">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XpaceOS para Altadis — La red de estancos como medio inteligente</title>
+<meta name="description" content="XpaceOS by ADmiraNeXT convierte cada estanco de la red de Altadis en un medio publicitario inteligente: creación de contenido con IA (Pixer.ai), orquestación por gemelo digital (Admira XP) y monetización en tiempo real (OmniPublicity). Sobre Lenovo edge + Nvidia GPU.">
+<meta property="og:title" content="XpaceOS para Altadis — la red de estancos como medio inteligente">
+<meta property="og:description" content="Cada estanco, un medio. Tres capas de XpaceOS sobre Lenovo + Nvidia, con el gemelo digital en el centro.">
+<meta property="og:url" content="https://www.xpaceos.com/altadis/">
+<link rel="canonical" href="https://www.xpaceos.com/altadis/">
+
+<!-- Sistema de diseño compartido + metaestilo del ecosistema -->
+<link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/tokens.css">
+<link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/nav.css">
+<link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/meta.css">
+
+<style>
+  /* Acento de cliente: Altadis (rojo). La espina cian (XpaceOS twin) se mantiene. */
+  [data-layer="os"] {
+    --admira-accent:      var(--admira-cyan);   /* esta página es XpaceOS → núcleo cian */
+    --altadis:            #e4322b;              /* color de cliente Altadis (ajustable) */
+    --altadis-soft:       rgba(228, 50, 43, .14);
+    --altadis-line:       rgba(228, 50, 43, .42);
+  }
+  body { padding-top: 0; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 var(--admira-space-4); }
+  a { color: var(--admira-cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Banda de cliente (sustituye al eventbar de Lenovo) */
+  .clientbar {
+    text-align: center;
+    font-family: var(--admira-font-mono);
+    font-size: 12px;
+    letter-spacing: .08em;
+    color: var(--admira-text);
+    padding: 9px var(--admira-space-4);
+    background: linear-gradient(90deg, var(--admira-spine-soft), var(--altadis-soft));
+    border-bottom: 1px solid var(--admira-border);
+  }
+  .clientbar .altadis { color: var(--altadis); font-weight: 700; }
+  .clientbar .xp { color: var(--admira-cyan); font-weight: 700; }
+
+  /* CTAs */
+  .ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: var(--admira-space-4); }
+  .cta {
+    display: inline-flex; gap: 8px; align-items: center;
+    background: var(--admira-cyan); color: #021018;
+    padding: 12px 22px; border-radius: var(--admira-radius-md);
+    font-weight: 700; font-size: 14px; letter-spacing: .03em;
+  }
+  .cta:hover { filter: brightness(1.08); text-decoration: none; }
+  .cta.secondary { background: transparent; color: var(--admira-cyan); border: 1px solid var(--admira-spine-line); }
+  .cta.client { background: var(--altadis); color: #fff; }
+
+  section { padding: var(--admira-space-6) 0; border-top: 1px solid var(--admira-border); }
+  section h2 { font-size: clamp(24px,4vw,32px); margin: 0 0 14px; letter-spacing: -.01em; }
+  section h2 .num { color: var(--admira-cyan); font-family: var(--admira-font-mono); font-size: 18px; margin-right: 10px; }
+  section .lede { color: var(--admira-text-muted); font-size: 16px; max-width: 780px; margin: 0 0 var(--admira-space-5); }
+
+  /* Flujo: el estanco como medio (sustituye al booth) */
+  .estanco-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 26px; align-items: start; }
+  .estanco-card, .flow {
+    background: var(--admira-bg-elev); border: 1px solid var(--admira-border);
+    border-radius: var(--admira-radius-lg); padding: 26px;
+  }
+  .estanco-card h3 { margin: 0 0 10px; font-size: 20px; }
+  .estanco-card p { color: var(--admira-text-muted); font-size: 14px; }
+  .estanco-card ul { color: var(--admira-text-muted); font-size: 14px; padding-left: 18px; }
+  .estanco-card ul li { margin-bottom: 6px; }
+  .estanco-card ul b { color: var(--admira-text); }
+  .flow { font-family: var(--admira-font-mono); font-size: 12px; color: var(--admira-text-muted); }
+  .flow .step { padding: 10px 12px; background: rgba(0,0,0,.3); border-left: 2px solid var(--admira-cyan); margin-bottom: 6px; border-radius: 4px; }
+  .flow .step b { color: var(--admira-cyan); display: block; letter-spacing: .06em; font-size: 11px; }
+  .flow .step span { color: var(--admira-text); font-size: 13px; }
+  .flow .step.client { border-left-color: var(--altadis); }
+  .flow .step.client b { color: var(--altadis); }
+  .flow .arrow { text-align: center; color: var(--admira-cyan); margin: 6px 0; }
+  .flow .lat { text-align: center; color: var(--admira-green); font-size: 11px; letter-spacing: .18em; margin-top: 12px; }
+
+  /* 3 capas */
+  .layers { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+  .layer {
+    background: var(--admira-bg-elev); border: 1px solid var(--admira-border);
+    border-radius: var(--admira-radius-lg); padding: 24px; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 10px; transition: transform var(--admira-tx-fast), border-color var(--admira-tx-fast);
+  }
+  .layer:hover { transform: translateY(-3px); border-color: var(--c); }
+  .layer[data-node="studio"] { --c: var(--admira-violet); }
+  .layer[data-node="os"]     { --c: var(--admira-cyan); }
+  .layer[data-node="app"]    { --c: var(--admira-amber); }
+  .layer .lnum { position: absolute; top: 12px; right: 16px; font-family: var(--admira-font-mono); font-size: 44px; font-weight: 800; color: rgba(255,255,255,.05); }
+  .layer .lkind { font-family: var(--admira-font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--c); }
+  .layer h3 { margin: 0; font-size: 21px; color: var(--c); }
+  .layer p { margin: 0; color: var(--admira-text-muted); font-size: 14px; }
+  .layer.is-core { border-color: var(--admira-spine-line); box-shadow: inset 0 0 22px rgba(80,200,255,.08); }
+
+  /* Hardware + métricas */
+  .hw { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .hw .box { background: var(--admira-bg-elev); border: 1px solid var(--admira-border); border-radius: var(--admira-radius-lg); padding: 22px; }
+  .hw .box .who { font-family: var(--admira-font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 8px; }
+  .hw .box.lenovo .who { color: var(--admira-red); }
+  .hw .box.nvidia .who { color: var(--admira-green); }
+  .hw .box h3 { margin: 0 0 8px; font-size: 18px; }
+  .hw .box p { color: var(--admira-text-muted); font-size: 14px; margin: 0; }
+  .nums { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 14px; }
+  .nums .n { background: var(--admira-bg-elev); border: 1px solid var(--admira-border); border-radius: var(--admira-radius-md); padding: 18px; }
+  .nums .n .v { font-size: 30px; font-weight: 800; color: var(--admira-cyan); font-family: var(--admira-font-mono); }
+  .nums .n .l { font-size: 11px; color: var(--admira-text-muted); text-transform: uppercase; letter-spacing: .1em; margin-top: 4px; }
+  .nums .todo { color: var(--admira-amber); }
+
+  footer { padding: var(--admira-space-5) 0; border-top: 1px solid var(--admira-border); font-size: 13px; color: var(--admira-text-muted); text-align: center; }
+  footer .sig { font-family: var(--admira-font-mono); font-size: 11px; letter-spacing: .1em; color: var(--admira-cyan); }
+
+  @media (max-width: 820px) {
+    .estanco-grid, .hw { grid-template-columns: 1fr; }
+    .layers { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-layer="os">
+
+  <!-- Nav del ecosistema (metaestilo) -->
+  <nav class="admira-nav admira-nav-static" aria-label="Navegación principal">
+    <a class="admira-nav-brand" href="https://www.xpaceos.com">
+      <span class="admira-nav-brand-name">Admira</span>
+      <span class="admira-nav-brand-tag">Xperience</span>
+    </a>
+    <div class="admira-nav-items">
+      <a class="admira-nav-link admira-nav-link-external" href="https://www.admira.studio">Pixer.IA</a>
+      <a class="admira-nav-link admira-nav-link-active admira-nav-link-external" href="https://www.xpaceos.com">XpaceOS</a>
+      <a class="admira-nav-link admira-nav-link-external" href="https://www.admira.app">Xbusiness</a>
+      <a class="admira-nav-link admira-nav-link-cta" href="mailto:hola@admiranext.com?subject=XpaceOS%20para%20Altadis">Contacto</a>
+    </div>
+  </nav>
+
+  <hr class="admira-spine-rail">
+
+  <div class="clientbar">
+    <span class="xp">XpaceOS</span> · propuesta para <span class="altadis">ALTADIS</span> · la red de estancos como medio inteligente
+  </div>
+
+  <!-- META HERO -->
+  <header class="admira-meta-hero">
+    <p class="admira-meta-eyebrow">XpaceOS · una capa para Altadis · digital twin</p>
+    <h1 class="admira-meta-title">Cada estanco, un medio inteligente.</h1>
+    <p class="admira-meta-sub">XpaceOS convierte la red de estancos de Altadis en un medio publicitario medible y monetizable: contenido con IA, orquestación por gemelo digital y mercado de demanda en tiempo real. Todo sobre Lenovo edge + Nvidia GPU.</p>
+    <div class="ctas">
+      <a class="cta" href="#estanco">Cómo funciona en un estanco →</a>
+      <a class="cta secondary" href="#capas">Las 3 capas</a>
+    </div>
+  </header>
+
+  <!-- EL ESTANCO COMO MEDIO (sustituye al booth de Shoptalk) -->
+  <section id="estanco">
+    <div class="wrap">
+      <h2><span class="num">00</span>El estanco como medio</h2>
+      <p class="lede">No es una pantalla más en el mostrador. Cada estanco se convierte en un punto de medios gobernado por el gemelo digital de XpaceOS: pantallas, contenido y medición coordinados desde un único panel, replicables a toda la red.</p>
+      <div class="estanco-grid">
+        <div class="estanco-card">
+          <h3>El gemelo digital controla el punto de venta</h3>
+          <p>Desde el panel, el operador ve y gobierna cada estanco como un gemelo del espacio físico. Cambia una campaña en el twin → cambia la pantalla del estanco. Programa por franja, por zona y por audiencia.</p>
+          <ul>
+            <li>📺 <b>Signage</b> sincronizado con el twin en toda la red</li>
+            <li>🎯 <b>Segmentación</b> por estanco, franja horaria y campaña</li>
+            <li>📡 <b>Medición de audiencia</b> con cámara y perfil anónimo (sin enviar imágenes a la nube)</li>
+            <li>🧾 <b>Cumplimiento</b>: reglas de contenido según la normativa del sector</li>
+            <li>💶 <b>Monetización</b>: inventario abierto a anunciantes vía RTB</li>
+          </ul>
+          <div class="ctas" style="justify-content:flex-start">
+            <a class="cta client" href="mailto:hola@admiranext.com?subject=Piloto%20XpaceOS%20estancos%20Altadis">Solicitar piloto</a>
+          </div>
+        </div>
+        <div class="flow">
+          <div style="color:var(--admira-cyan);letter-spacing:.18em;margin-bottom:12px">FLUJO DE CONTROL</div>
+          <div class="step"><b>① PANEL OPERADOR</b><span>Gemelo digital · Lenovo ThinkEdge + Nvidia GPU</span></div>
+          <div class="arrow">↓</div>
+          <div class="step" style="border-left-color:var(--admira-amber)"><b>② XPACEOS RUNTIME</b><span>Pixer.ai → Admira XP → OmniPublicity</span></div>
+          <div class="arrow">↓</div>
+          <div class="step client"><b>③ ESTANCO FÍSICO</b><span>Pantalla · contenido · cámara de audiencia</span></div>
+          <div class="lat">● LATENCIA &lt; 200 ms · funciona sin depender de la nube</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAS 3 CAPAS -->
+  <section id="capas">
+    <div class="wrap">
+      <h2><span class="num">01</span>Las 3 capas de XpaceOS, aplicadas a Altadis</h2>
+      <p class="lede">El gemelo digital de XpaceOS (Admira XP) es el centro: orquesta las otras dos capas para que cada estanco cree, distribuya y monetice contenido de forma autónoma.</p>
+      <div class="layers">
+        <div class="layer" data-node="studio">
+          <span class="lnum">01</span>
+          <span class="lkind">Capa de contenido</span>
+          <h3>Pixer.ai</h3>
+          <p>Creación de contenido con IA: piezas para cada campaña y cada estanco, adaptadas al formato de pantalla y a la franja, sin productora.</p>
+        </div>
+        <div class="layer is-core" data-node="os">
+          <span class="lnum">02</span>
+          <span class="lkind">Núcleo · gemelo digital</span>
+          <h3>Admira XP</h3>
+          <p>El twin que gobierna la red: distribuye contenido, mide audiencia y mantiene un espejo en tiempo real de cada estanco desde un solo panel.</p>
+        </div>
+        <div class="layer" data-node="app">
+          <span class="lnum">03</span>
+          <span class="lkind">Capa de demanda</span>
+          <h3>OmniPublicity</h3>
+          <p>Marketplace RTB: abre el inventario de la red de estancos a anunciantes y lo monetiza en tiempo real, con reporting por punto de venta.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HARDWARE -->
+  <section id="hardware">
+    <div class="wrap">
+      <h2><span class="num">02</span>El stack que lo hace posible</h2>
+      <p class="lede">XpaceOS necesita inferencia local de baja latencia para activar el contenido relevante antes de que el cliente desvíe la mirada. Lenovo edge y Nvidia GPU son los dos pilares que hacen viable la red de estancos sin depender de la conectividad del local.</p>
+      <div class="hw">
+        <div class="box lenovo">
+          <div class="who">Lenovo · Compute edge</div>
+          <h3>ThinkEdge — el servidor del estanco</h3>
+          <p>Compacto y certificado para entornos retail. Aloja el runtime de XpaceOS y el gemelo digital, y sirve el signage local aunque caiga la conectividad del local (failover 4G/5G).</p>
+        </div>
+        <div class="box nvidia">
+          <div class="who">Nvidia · AI inference</div>
+          <h3>RTX / Jetson — la inferencia que mueve el medio</h3>
+          <p>GPU dedicada para la IA de audiencia (perfil anónimo, estimación de género/edad) y para la inferencia de Pixer.ai en local, con respuesta del twin por debajo de 200 ms.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÉTRICAS (placeholders — pendiente de datos reales del piloto) -->
+  <section id="metricas">
+    <div class="wrap">
+      <h2><span class="num">03</span>La red en números</h2>
+      <p class="lede">Cifras de referencia del piloto. <em>Pendiente de datos reales de Altadis.</em></p>
+      <div class="nums">
+        <div class="n"><div class="v todo">— estancos</div><div class="l">red conectada (TODO)</div></div>
+        <div class="n"><div class="v todo">— impactos/día</div><div class="l">audiencia medida (TODO)</div></div>
+        <div class="n"><div class="v">&lt; 200 ms</div><div class="l">latencia del twin</div></div>
+        <div class="n"><div class="v todo">— € eCPM</div><div class="l">monetización RTB (TODO)</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ECOSISTEMA (componente del metaestilo) -->
+  <section class="admira-ecosystem">
+    <p class="admira-eco-kicker">El ecosistema AdmiraNext</p>
+    <div class="admira-eco-orbit">
+      <div class="admira-twin" aria-hidden="true">
+        <span class="admira-twin-core">XP</span>
+        <span class="admira-twin-orbit"></span>
+        <span class="admira-twin-node" style="--i:0;--n:3" data-node="studio"></span>
+        <span class="admira-twin-node" style="--i:1;--n:3" data-node="os"></span>
+        <span class="admira-twin-node" style="--i:2;--n:3" data-node="app"></span>
+      </div>
+    </div>
+    <div class="admira-eco-layers">
+      <a class="admira-eco-layer" data-node="studio" href="https://www.admira.studio">
+        <span class="admira-eco-name">Pixer.IA</span>
+        <span class="admira-eco-role">admira.studio · creación de contenido IA</span>
+      </a>
+      <a class="admira-eco-layer is-core" data-node="os" href="https://www.xpaceos.com">
+        <span class="admira-eco-name">XpaceOS</span>
+        <span class="admira-eco-role">el OS de retail físico · digital twin</span>
+      </a>
+      <a class="admira-eco-layer" data-node="app" href="https://www.admira.app">
+        <span class="admira-eco-name">OmniPublicity</span>
+        <span class="admira-eco-role">admira.app · marketplace de demanda</span>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>XpaceOS para Altadis · propuesta de AdmiraNext · <a href="mailto:hola@admiranext.com">hola@admiranext.com</a></p>
+      <p class="sig">// AdmiraNeXT · Pixer.ia × Admira.xp · v.26.05.26.r1</p>
+    </div>
+  </footer>
+
+</body>
+</html>
