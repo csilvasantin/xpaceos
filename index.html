@@ -56,6 +56,8 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .lang-switch button{appearance:none;border:1px solid transparent;background:transparent;color:var(--mut);font:inherit;font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:2px 6px;border-radius:4px;cursor:pointer}
   .lang-switch button.active{color:var(--ink);border-color:var(--line);background:rgba(120,243,255,.06)}
   .lang-switch button:hover{color:var(--ink)}
+  .nav-contact{margin-left:14px;padding:5px 14px;border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;transition:border-color .15s,background .15s}
+  .nav-contact:hover{border-color:rgba(120,243,255,.55);background:rgba(120,243,255,.06);text-decoration:none}
 
   /* Admira · Xperience band — saltar entre soluciones del grupo */
   /* Estilo unificado proviene del design system (.admira-nav-static) */
@@ -234,18 +236,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
 <!-- End Google Tag Manager (noscript) -->
 
 
-<nav class="admira-nav admira-nav-static" aria-label="Admira · Xperience">
-  <a class="admira-nav-brand" href="https://www.admira.app">
-    <span class="admira-nav-brand-name">Admira</span>
-    <span class="admira-nav-brand-tag">Xperience</span>
-  </a>
-  <div class="admira-nav-items">
-    <a class="admira-nav-link admira-nav-link-external" href="https://www.admira.studio">Pixer.IA</a>
-    <a class="admira-nav-link admira-nav-link-active" href="https://www.xpaceos.com">XpaceOS</a>
-    <a class="admira-nav-link admira-nav-link-external" href="https://www.admira.app">Xbusiness</a>
-    <a class="admira-nav-link admira-nav-link-cta" href="#contact" data-admira-contact>Contacto</a>
-  </div>
-</nav>
+<!-- barra superior Admira · Xperience eliminada (a petición) -->
 
 <header>
   <div class="wrap">
@@ -263,6 +254,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="es">ES</button>
       </span>
+      <a class="nav-contact" href="#contact" data-admira-contact>Contacto</a>
     </nav>
   </div>
 </header>
