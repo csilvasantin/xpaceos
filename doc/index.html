@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>XpaceOS · Spec de elementos isométricos (Admira XP)</title>
+<meta name="description" content="Especificación técnica para crear elementos a medida que encajan en los Xpacios isométricos de Admira XP." />
+<style>
+  :root{
+    --bg:#02080d; --ink:#dff8ff; --mut:#75aab9; --brand:#78f3ff; --accent:#ffd866;
+    --card:#0a1620; --card2:#0d1c28; --line:rgba(120,243,255,.18);
+    --warn:#ff4f4f;
+    --top:#a88860; --side:#6a5030; --face:#8b6b45; --wall:#e8dcc0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:860px;margin:0 auto;padding:54px 22px 120px}
+  header.doc{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:40px}
+  .kicker{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  h1{font-size:34px;line-height:1.15;margin:0 0 12px;letter-spacing:-.01em}
+  .sub{color:var(--mut);font-size:16px;margin:0;max-width:640px}
+  .meta{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--mut);margin-top:18px;letter-spacing:.04em}
+  h2{font-size:22px;margin:48px 0 14px;letter-spacing:-.01em;scroll-margin-top:24px}
+  h2 .n{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);font-size:15px;margin-right:10px;letter-spacing:.1em}
+  h3{font-size:16px;margin:26px 0 8px;color:var(--brand);font-weight:600}
+  p{margin:10px 0}
+  ul{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  strong{color:#fff}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;background:rgba(120,243,255,.10);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--brand)}
+  pre{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.55;color:var(--ink)}
+  pre code{background:none;border:0;padding:0;color:inherit}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin:18px 0}
+  .callout{border-left:3px solid var(--accent);background:rgba(255,216,102,.06);border-radius:8px;padding:14px 18px;margin:18px 0;color:var(--ink)}
+  .callout b{color:var(--accent)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+  td code{font-size:.85em}
+  .swatch{display:inline-block;width:13px;height:13px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid rgba(255,255,255,.2)}
+  .toc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--mut);margin:0 0 8px}
+  .toc a{display:inline-block;margin:3px 14px 3px 0}
+  figure{margin:24px 0}
+  figcaption{color:var(--mut);font-size:13px;text-align:center;margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .diagram{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:20px;display:block;width:100%}
+  footer.doc{margin-top:70px;padding-top:24px;border-top:1px solid var(--line);color:var(--mut);font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .pill{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.1em;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mut);margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="doc">
+    <p class="kicker">XpaceOS · Documentación técnica</p>
+    <h1>Cómo crear elementos para los Xpacios isométricos</h1>
+    <p class="sub">Especificación para diseñar props, mobiliario y superficies a medida que encajen, pixel-perfect, en el motor isométrico de <strong>Admira XP</strong> (el Digital Twin de XpaceOS).</p>
+    <p class="meta">Documento de referencia · derivado del motor real (game.html) · proyección 80×28</p>
+  </header>
+
+  <p class="toc">
+    <a href="#proyeccion">01 Proyección</a>
+    <a href="#huella">02 Huella</a>
+    <a href="#anclaje">03 Anclaje</a>
+    <a href="#luz">04 Iluminación</a>
+    <a href="#render">05 Render</a>
+    <a href="#pantallas">06 Pantallas</a>
+    <a href="#entrega">07 Entregables</a>
+    <a href="#nativo">08 Vía nativa</a>
+  </p>
+
+  <div class="callout">
+    <b>En una frase:</b> cada elemento vive sobre una rejilla de rombos de <strong>80×28 px</strong>; las líneas de suelo van a <strong>±19,3°</strong> y las alturas suben <strong>verticales en píxeles puros</strong>. Si se dibuja con otro ángulo, no encaja.
+  </div>
+
+  <!-- 01 -->
+  <h2 id="proyeccion"><span class="n">01</span>Proyección — qué define "nuestro" isométrico</h2>
+  <p>No es el isométrico clásico 2:1. El tile base es <strong>80 × 28 px</strong>:</p>
+  <ul>
+    <li><strong>Ratio del rombo:</strong> <code>tileW:tileH = 80:28 ≈ 2,86:1</code></li>
+    <li><strong>Ángulo de las líneas de suelo:</strong> <code>atan(14/40) ≈ 19,3°</code> sobre la horizontal — un dimétrico "aplanado", más bajo que el 26,57° estándar.</li>
+    <li><strong>Eje vertical (altura):</strong> recto hacia arriba, en <strong>píxeles puros</strong>. Un objeto de altura <code>H</code> sube <code>H</code> px verticales, sin inclinarse.</li>
+  </ul>
+  <p>Un tile de suelo es un rombo de 80 ancho × 28 alto. Vértices respecto al de arriba: derecha <code>(+40,+14)</code>, abajo <code>(0,+28)</code>, izquierda <code>(−40,+14)</code>.</p>
+
+  <figure>
+    <svg class="diagram" viewBox="0 0 620 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagrama del tile isométrico 80x28 con un bloque de ejemplo, las tres caras y el punto de anclaje">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#78f3ff"/></marker>
+      </defs>
+      <!-- floor grid (faint) -->
+      <g stroke="rgba(120,243,255,.16)" fill="none" stroke-width="1">
+        <polygon points="150,250 230,290 150,330 70,290"/>
+        <polygon points="230,290 310,330 230,370 150,330"/>
+        <polygon points="230,210 310,250 230,290 150,250"/>
+      </g>
+      <!-- highlighted single tile -->
+      <polygon points="150,250 230,290 150,330 70,290" fill="rgba(120,243,255,.06)" stroke="#78f3ff" stroke-width="1.5"/>
+      <!-- tileW dimension -->
+      <line x1="70" y1="290" x2="230" y2="290" stroke="#ffd866" stroke-width="1" stroke-dasharray="4 3" marker-start="url(#arrow)" marker-end="url(#arrow)" opacity=".8"/>
+      <text x="150" y="284" fill="#ffd866" font-size="12" font-family="monospace" text-anchor="middle">tileW = 80</text>
+      <!-- tileH dimension -->
+      <line x1="248" y1="250" x2="248" y2="330" stroke="#ffd866" stroke-width="1" stroke-dasharray="4 3" marker-start="url(#arrow)" marker-end="url(#arrow)" opacity=".8"/>
+      <text x="256" y="294" fill="#ffd866" font-size="12" font-family="monospace" text-anchor="start">tileH=28</text>
+      <!-- angle label -->
+      <text x="96" y="278" fill="#75aab9" font-size="11" font-family="monospace">19,3°</text>
+
+      <!-- example block (3 faces) on the right -->
+      <!-- block base anchored at (430,250) top vertex; footprint ~1x1, height 70 -->
+      <!-- top face -->
+      <polygon points="430,180 510,220 430,260 350,220" fill="#a88860"/>
+      <!-- left face -->
+      <polygon points="350,220 430,260 430,330 350,290" fill="#6a5030"/>
+      <!-- right face -->
+      <polygon points="430,260 510,220 510,290 430,330" fill="#8b6b45"/>
+      <!-- top edge highlight -->
+      <line x1="430" y1="180" x2="350" y2="220" stroke="#fff" stroke-opacity=".25" stroke-width="1.5"/>
+      <!-- labels -->
+      <text x="430" y="216" fill="#02080d" font-size="11" font-family="monospace" text-anchor="middle" font-weight="700">TOP</text>
+      <text x="388" y="296" fill="#dff8ff" font-size="11" font-family="monospace" text-anchor="middle">IZQ</text>
+      <text x="472" y="296" fill="#02080d" font-size="11" font-family="monospace" text-anchor="middle">DER</text>
+      <!-- anchor point -->
+      <circle cx="430" cy="330" r="5" fill="#ff4f4f" stroke="#fff" stroke-width="1.5"/>
+      <text x="440" y="352" fill="#ff4f4f" font-size="12" font-family="monospace">anchor (apoyo en suelo)</text>
+      <!-- height arrow -->
+      <line x1="525" y1="290" x2="525" y2="220" stroke="#ffd866" stroke-width="1" stroke-dasharray="4 3" marker-start="url(#arrow)" marker-end="url(#arrow)" opacity=".8"/>
+      <text x="533" y="258" fill="#ffd866" font-size="11" font-family="monospace">altura (px)</text>
+    </svg>
+    <figcaption>Tile base 80×28 (izq.) · prisma con 3 caras y anclaje (der.)</figcaption>
+  </figure>
+
+  <div class="callout"><b>Regla de oro para diseño:</b> verticales = verticales en pantalla; horizontales siguen ±19,3°. Cualquier sprite con otro ángulo NO encaja.</div>
+
+  <!-- 02 -->
+  <h2 id="huella"><span class="n">02</span>Huella (footprint) — todo va sobre rejilla</h2>
+  <p>Cada elemento ocupa <strong>N×M tiles</strong> de suelo. La huella se mide en tiles; la altura, en píxeles.</p>
+  <ul>
+    <li><strong>Ancho</strong> = nº de tiles en X · <strong>Fondo</strong> = nº de tiles en Y · <strong>Altura</strong> = px</li>
+    <li>1 tile = 80×28 px. Ej.: un mostrador de <code>1×2 tiles</code> = 40 px de frente × 80 px de fondo en planta.</li>
+  </ul>
+  <table>
+    <tr><th>Elemento (motor real)</th><th>Huella</th><th>Altura</th></tr>
+    <tr><td>Mostrador</td><td><code>1×2</code></td><td><code>16 px</code></td></tr>
+    <tr><td>Caja registradora</td><td><code>1×2</code></td><td><code>16 px</code></td></tr>
+    <tr><td>Aromatizador</td><td><code>1×1</code></td><td><code>44 px</code></td></tr>
+    <tr><td>Kiosco / tótem</td><td><code>~0,64×0,64</code></td><td><code>variable</code></td></tr>
+  </table>
+
+  <!-- 03 -->
+  <h2 id="anclaje"><span class="n">03</span>Anclaje (pivot) — para que no "flote"</h2>
+  <ul>
+    <li>El anclaje es la <strong>esquina origen del tile de la huella</strong> (vértice superior del rombo base, el punto rojo del diagrama). El objeto se apoya ahí, crece hacia arriba (altura) y hacia derecha/abajo (huella).</li>
+    <li>Entregar cada PNG con su <strong>anchor marcado</strong>, o mejor en un JSON acompañante.</li>
+  </ul>
+  <pre><code>{
+  "id": "expositor-tabaco",
+  "footprint": [1, 2],     // ancho × fondo en tiles
+  "heightPx": 90,
+  "anchor": [40, 118],     // px del PNG que toca el suelo en la esquina origen
+  "screenRect": null,      // o [x,y,w,h] si lleva pantalla
+  "palette": { "top":"#a88860", "left":"#6a5030", "right":"#8b6b45" }
+}</code></pre>
+
+  <!-- 04 -->
+  <h2 id="luz"><span class="n">04</span>Iluminación — 3 caras fijas</h2>
+  <p>Todo se modela como prisma con tres tonos del mismo color. Luz implícita desde <strong>arriba-izquierda</strong>. Mantener este esquema en TODOS los elementos para coherencia visual.</p>
+  <table>
+    <tr><th>Cara</th><th>Tono</th><th>Ejemplo (madera)</th></tr>
+    <tr><td>Superior (top)</td><td>la más clara</td><td><code><span class="swatch" style="background:#a88860"></span>#a88860</code></td></tr>
+    <tr><td>Derecha</td><td>media / base</td><td><code><span class="swatch" style="background:#8b6b45"></span>#8b6b45</code></td></tr>
+    <tr><td>Izquierda</td><td>la más oscura</td><td><code><span class="swatch" style="background:#6a5030"></span>#6a5030</code></td></tr>
+  </table>
+  <p>Color de pared del local actual: <code><span class="swatch" style="background:#e8dcc0"></span>#e8dcc0</code>.</p>
+
+  <!-- 05 -->
+  <h2 id="render"><span class="n">05</span>Dos modos de render</h2>
+  <p>Entregar compatible con ambos. Si entregáis PNG, hacedlo en estilo <strong>16-bit</strong> (es el de feria).</p>
+  <ul>
+    <li><strong>flat:</strong> color plano por cara (look limpio/retro).</li>
+    <li><strong>16-bit:</strong> gradiente diagonal en la cara superior, gradiente vertical en laterales, <em>sheen</em> blanco al 12–20% en aristas superiores, líneas de arista negras de 0,6 px.</li>
+    <li><strong>Neón (opcional):</strong> glow de color en las dos aristas superiores, para acentos/marca.</li>
+    <li><strong>Sombra:</strong> elipse de contacto en el suelo bajo la huella (la pinta el motor) — dejad hueco transparente, no la queméis.</li>
+  </ul>
+
+  <!-- 06 -->
+  <h2 id="pantallas"><span class="n">06</span>Superficies de pantalla (signage)</h2>
+  <p>Si el elemento lleva pantalla, su contenido es una zona <strong>16:9</strong>, base <strong>160×90 px</strong>, que el motor rellena con vídeo/imagen en vivo.</p>
+  <div class="callout"><b>Importante:</b> dejad la pantalla como <strong>hueco/marco transparente</strong>. No queméis contenido dentro — el twin lo inyecta en tiempo real.</div>
+
+  <!-- 07 -->
+  <h2 id="entrega"><span class="n">07</span>Entregables técnicos</h2>
+  <ul>
+    <li><strong>PNG transparentes</strong>, preferible <strong>@2x</strong> (tile lógico 160×56) + versión @1x. Alpha real, sin sombra quemada.</li>
+    <li>Un archivo por elemento (+ hoja de sprites si hay estados: on/off, día/noche…).</li>
+    <li><strong>JSON</strong> por elemento: <code>footprint</code>, <code>heightPx</code>, <code>anchor</code>, <code>screenRect</code>, <code>palette</code>.</li>
+    <li>Paleta limitada y plana (encaja con el look canvas); evitar texturas fotográficas.</li>
+  </ul>
+
+  <!-- 08 -->
+  <h2 id="nativo"><span class="n">08</span>Alternativa nativa (opcional, integración más barata)</h2>
+  <p>El motor dibuja por código, no por imágenes. La primitiva es:</p>
+  <pre><code>drawIsoBlock(col, row, ancho, fondo, alturaPx, topCol, leftCol, rightCol, neonCol)
+//            ↑ posición en rejilla   ↑ huella en tiles  ↑ px   ↑ 3 caras + neón opc.</code></pre>
+  <p>Si pixeria entrega el elemento <strong>descompuesto en cajas</strong> (lista de prismas: huella + altura + 3 colores), lo integramos sin imágenes y pesa <strong>0 KB</strong>. Ideal para mobiliario sencillo (mostrador, expositor, peana).</p>
+
+  <footer class="doc">
+    XpaceOS · Admira XP Digital Twin — <a href="https://www.xpaceos.com">xpaceos.com</a><br>
+    Proyección 80×28 · Esta página es de referencia técnica (no indexada).
+  </footer>
+
+</div>
+</body>
+</html>
