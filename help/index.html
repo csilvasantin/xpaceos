@@ -4,11 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ayuda · XpaceOS — comandos del gemelo digital (Admira XP)</title>
-<meta name="description" content="Guía permanente de comandos del gemelo digital de XpaceOS (Admira XP). Todos los comandos /slash de la consola del simulador, sección a sección.">
+<meta name="description" content="Guía permanente y bilingüe (ES/EN) de comandos del gemelo digital de XpaceOS (Admira XP). Todos los comandos /slash de la consola del simulador. · Permanent bilingual command reference for the XpaceOS digital twin.">
 <link rel="canonical" href="https://www.xpaceos.com/help">
 <meta property="og:title" content="Ayuda · XpaceOS — comandos del gemelo digital">
-<meta property="og:description" content="Referencia completa de los comandos del simulador Admira XP, el gemelo digital de XpaceOS.">
+<meta property="og:description" content="Referencia completa y bilingüe de los comandos del simulador Admira XP, el gemelo digital de XpaceOS.">
 <meta property="og:url" content="https://www.xpaceos.com/help">
+<script>
+  // Idioma inicial (sin flash): localStorage → navegador → es
+  (function(){try{var k='xpace_lang',l=localStorage.getItem(k);
+    if(!l){l=(navigator.language||'es').toLowerCase().indexOf('en')===0?'en':'es';}
+    document.documentElement.lang=(l==='en')?'en':'es';}catch(e){}})();
+</script>
 <style>
   :root{--bg:#02080d;--ink:#dff8ff;--mut:#75aab9;--brand:#78f3ff;--accent:#ffd866;--card:#0a1620;--line:rgba(120,243,255,.18);--good:#88ffaa;--warn:#ffaa55}
   *{box-sizing:border-box}
@@ -17,14 +23,19 @@
   a{color:var(--brand);text-decoration:none}
   a:hover{text-decoration:underline}
   code{background:#0a1a26;color:var(--accent);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:0.92em;border:1px solid var(--line)}
+  /* i18n: muestra solo el idioma activo */
+  html[lang="es"] .i[lang="en"]{display:none}
+  html[lang="en"] .i[lang="es"]{display:none}
   .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
   header{padding:18px 0;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(2,8,13,.92);backdrop-filter:blur(8px);z-index:10}
   header .wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
   .logo{font-family:monospace;font-size:13px;letter-spacing:.16em;color:var(--accent);font-weight:bold}
   .logo .dot{color:var(--brand)}
-  nav{margin-left:auto;display:flex;gap:14px;font-size:12px;flex-wrap:wrap}
+  nav{margin-left:auto;display:flex;gap:14px;font-size:12px;flex-wrap:wrap;align-items:center}
   nav a{color:var(--mut)}
   nav a:hover{color:var(--ink)}
+  #langToggle{cursor:pointer;font-family:monospace;font-size:11px;letter-spacing:.12em;color:var(--accent);background:#0a1a26;border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+  #langToggle:hover{border-color:rgba(120,243,255,.55);text-decoration:none}
   .hero{padding:60px 0 30px;background:radial-gradient(ellipse at 20% 0%,rgba(120,243,255,.10),transparent 55%)}
   .hero h1{font-size:42px;line-height:1.1;margin:0 0 16px;letter-spacing:-.02em;font-weight:800}
   .hero h1 .grad{background:linear-gradient(90deg,var(--brand),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -51,214 +62,234 @@
 
 <header>
   <div class="wrap">
-    <span class="logo">XPACEOS<span class="dot">·</span>AYUDA</span>
+    <span class="logo">XPACEOS<span class="dot">·</span><span class="i" lang="es">AYUDA</span><span class="i" lang="en">HELP</span></span>
     <nav>
-      <a href="#consulta">Consulta</a>
-      <a href="#equipo">Equipo</a>
-      <a href="#tienda">Tienda</a>
-      <a href="#ambiente">Ambiente</a>
-      <a href="#pantallas">Pantallas</a>
-      <a href="#escena">Escena</a>
-      <a href="#socios">Socios</a>
-      <a href="#operativa">Operativa</a>
-      <a href="#atmosfera">Atmósfera</a>
-      <a href="#integracion">Integración</a>
-      <a href="#mapa" style="color:#ffd866">🗺️ Mapa</a>
+      <a href="#consulta"><span class="i" lang="es">Consulta</span><span class="i" lang="en">Status</span></a>
+      <a href="#equipo"><span class="i" lang="es">Equipo</span><span class="i" lang="en">Staff</span></a>
+      <a href="#tienda"><span class="i" lang="es">Tienda</span><span class="i" lang="en">Store</span></a>
+      <a href="#ambiente"><span class="i" lang="es">Ambiente</span><span class="i" lang="en">Ambience</span></a>
+      <a href="#pantallas"><span class="i" lang="es">Pantallas</span><span class="i" lang="en">Screens</span></a>
+      <a href="#escena"><span class="i" lang="es">Escena</span><span class="i" lang="en">Scene</span></a>
+      <a href="#socios"><span class="i" lang="es">Socios</span><span class="i" lang="en">Members</span></a>
+      <a href="#operativa"><span class="i" lang="es">Operativa</span><span class="i" lang="en">Ops</span></a>
+      <a href="#atmosfera"><span class="i" lang="es">Atmósfera</span><span class="i" lang="en">Atmosphere</span></a>
+      <a href="#integracion"><span class="i" lang="es">Integración</span><span class="i" lang="en">Integration</span></a>
+      <a href="#mapa" style="color:#ffd866">🗺️ <span class="i" lang="es">Mapa</span><span class="i" lang="en">Map</span></a>
       <a href="/">↗ XpaceOS</a>
       <a href="/doc/">↗ Spec</a>
-      <a href="https://www.carlossilva.info/01.-AdmiraXperience-Game/" target="_blank" rel="noopener">↗ Abrir gemelo</a>
+      <a href="https://www.carlossilva.info/01.-AdmiraXperience-Game/" target="_blank" rel="noopener">↗ <span class="i" lang="es">Abrir gemelo</span><span class="i" lang="en">Open twin</span></a>
+      <a href="#" id="langToggle" role="button" aria-label="Switch language">EN</a>
     </nav>
   </div>
 </header>
 
 <div class="hero">
   <div class="wrap">
-    <h1>Ayuda · <span class="grad">Gemelo digital de XpaceOS</span></h1>
-    <p class="lede">Referencia permanente de los comandos del simulador <strong>Admira XP</strong> (el Digital Twin de XpaceOS). Todos se escriben en la consola Telegram inferior del gemelo y respetan la convención: invocar sin argumentos hace <em>toggle</em>, y los aliases en mayúsculas/minúsculas funcionan igual.</p>
-    <div class="tip"><strong>Modo Demo</strong> — pulsa <code>DEMO</code> en la pantalla 0 para que el simulador ejecute todas las funciones sin tu intervención. También arranca solo si el tótem queda 60s sin tocarse, y vuelve a la pantalla 0 tras 5 minutos.</div>
+    <h1><span class="i" lang="es">Ayuda</span><span class="i" lang="en">Help</span> · <span class="grad"><span class="i" lang="es">Gemelo digital de XpaceOS</span><span class="i" lang="en">XpaceOS digital twin</span></span></h1>
+    <p class="lede">
+      <span class="i" lang="es">Referencia permanente de los comandos del simulador <strong>Admira XP</strong> (el Digital Twin de XpaceOS). Todos se escriben en la consola Telegram inferior del gemelo y respetan la convención: invocar sin argumentos hace <em>toggle</em>, y los aliases en mayúsculas/minúsculas funcionan igual.</span>
+      <span class="i" lang="en">Permanent reference for the commands of the <strong>Admira XP</strong> simulator (the XpaceOS Digital Twin). You type them in the twin's bottom Telegram console, following the convention: calling with no arguments toggles, and upper/lowercase aliases work the same.</span>
+    </p>
+    <div class="tip">
+      <span class="i" lang="es"><strong>Modo Demo</strong> — pulsa <code>DEMO</code> en la pantalla 0 para que el simulador ejecute todas las funciones sin tu intervención. También arranca solo si el tótem queda 60s sin tocarse, y vuelve a la pantalla 0 tras 5 minutos.</span>
+      <span class="i" lang="en"><strong>Demo Mode</strong> — press <code>DEMO</code> on screen 0 and the simulator runs every feature on its own. It also auto-starts if the totem is idle for 60s, and returns to screen 0 after 5 minutes.</span>
+    </div>
   </div>
 </div>
 
 <section id="consulta">
   <div class="wrap">
-    <h2><span class="num">01</span>Consulta</h2>
+    <h2><span class="num">01</span><span class="i" lang="es">Consulta</span><span class="i" lang="en">Status &amp; queries</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/status</h3><p>Resumen del estanco: caja, semana/año, ingresos, satisfacción, fama, staff, flags activos.</p></div>
-      <div class="cmd"><h3>/staff</h3><p>Lista de empleados contratados, energía, moral, rol y estado actual.</p></div>
-      <div class="cmd"><h3>/stock</h3><p>Stock por producto y bajo umbral.</p></div>
-      <div class="cmd"><h3>/turno N</h3><p>Avanza al turno N en el kiosco.</p></div>
+      <div class="cmd"><h3>/status</h3><p><span class="i" lang="es">Resumen del estanco: caja, semana/año, ingresos, satisfacción, fama, staff, flags activos.</span><span class="i" lang="en">Shop summary: cash, week/year, revenue, satisfaction, fame, staff, active flags.</span></p></div>
+      <div class="cmd"><h3>/staff</h3><p><span class="i" lang="es">Lista de empleados contratados, energía, moral, rol y estado actual.</span><span class="i" lang="en">List of hired employees: energy, morale, role and current state.</span></p></div>
+      <div class="cmd"><h3>/stock</h3><p><span class="i" lang="es">Stock por producto y bajo umbral.</span><span class="i" lang="en">Stock per product and low-threshold alerts.</span></p></div>
+      <div class="cmd"><h3>/turno N</h3><p><span class="i" lang="es">Avanza al turno N en el kiosco.</span><span class="i" lang="en">Jump to shift N in the kiosk.</span></p></div>
     </div>
   </div>
 </section>
 
 <section id="equipo">
   <div class="wrap">
-    <h2><span class="num">02</span>Equipo y stock</h2>
+    <h2><span class="num">02</span><span class="i" lang="es">Equipo y stock</span><span class="i" lang="en">Staff &amp; stock</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/hire 1 · /hire dj · /hire all</h3><p>Contrata staff por índice, por rol o todos.</p></div>
-      <div class="cmd"><h3>/train 1 · /train all</h3><p>Entrena staff (sube nivel y eficiencia).</p></div>
-      <div class="cmd"><h3>/restock 2 · /restock all · /restock prensa</h3><p>Repone stock por índice, todos o por nombre.</p></div>
-      <div class="cmd"><h3>/equipo inicio ana 3 4</h3><p>Mueve a Ana al tile (3,4). Se persiste como home.</p></div>
-      <div class="cmd"><h3>/equipo zona dj 12 2 2</h3><p>Define la zona de patrulla del DJ con radio 2.</p></div>
+      <div class="cmd"><h3>/hire 1 · /hire dj · /hire all</h3><p><span class="i" lang="es">Contrata staff por índice, por rol o todos.</span><span class="i" lang="en">Hire staff by index, by role, or everyone.</span></p></div>
+      <div class="cmd"><h3>/train 1 · /train all</h3><p><span class="i" lang="es">Entrena staff (sube nivel y eficiencia).</span><span class="i" lang="en">Train staff (raises level and efficiency).</span></p></div>
+      <div class="cmd"><h3>/restock 2 · /restock all · /restock prensa</h3><p><span class="i" lang="es">Repone stock por índice, todos o por nombre.</span><span class="i" lang="en">Restock by index, all, or by product name.</span></p></div>
+      <div class="cmd"><h3>/equipo inicio ana 3 4</h3><p><span class="i" lang="es">Mueve a Ana al tile (3,4). Se persiste como home.</span><span class="i" lang="en">Move Ana to tile (3,4). Saved as her home.</span></p></div>
+      <div class="cmd"><h3>/equipo zona dj 12 2 2</h3><p><span class="i" lang="es">Define la zona de patrulla del DJ con radio 2.</span><span class="i" lang="en">Set the DJ's patrol zone with radius 2.</span></p></div>
     </div>
   </div>
 </section>
 
 <section id="tienda">
   <div class="wrap">
-    <h2><span class="num">03</span>Tienda</h2>
+    <h2><span class="num">03</span><span class="i" lang="es">Tienda</span><span class="i" lang="en">Store</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/ad 0 · /ad 1 · /ad 2</h3><p>Activa publicidad básica / media / premium.</p></div>
-      <div class="cmd"><h3>/upgrade</h3><p>Sube de nivel la tienda (más capacidad, mejor look).</p></div>
-      <div class="cmd"><h3>/visit com · /visit tec · /visit del · /visit gc</h3><p>Recibe visita comercial / técnica / delegación / Guardia Civil.</p></div>
-      <div class="cmd"><h3>/save</h3><p>Guarda la partida en localStorage.</p></div>
+      <div class="cmd"><h3>/ad 0 · /ad 1 · /ad 2</h3><p><span class="i" lang="es">Activa publicidad básica / media / premium.</span><span class="i" lang="en">Enable basic / mid / premium advertising.</span></p></div>
+      <div class="cmd"><h3>/upgrade</h3><p><span class="i" lang="es">Sube de nivel la tienda (más capacidad, mejor look).</span><span class="i" lang="en">Upgrade the store (more capacity, better look).</span></p></div>
+      <div class="cmd"><h3>/visit com · /visit tec · /visit del · /visit gc</h3><p><span class="i" lang="es">Recibe visita comercial / técnica / delegación / Guardia Civil.</span><span class="i" lang="en">Trigger a commercial / tech / delegation / Civil Guard visit.</span></p></div>
+      <div class="cmd"><h3>/save</h3><p><span class="i" lang="es">Guarda la partida en localStorage.</span><span class="i" lang="en">Save the game to localStorage.</span></p></div>
     </div>
   </div>
 </section>
 
 <section id="ambiente">
   <div class="wrap">
-    <h2><span class="num">04</span>Tiempo y ambiente</h2>
+    <h2><span class="num">04</span><span class="i" lang="es">Tiempo y ambiente</span><span class="i" lang="en">Time &amp; ambience</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/reloj 14:30</h3><p>Cambia la hora del juego al instante.</p></div>
-      <div class="cmd"><h3>/time am · pm · night</h3><p>Salta al tramo del día.</p></div>
-      <div class="cmd"><h3>/weather normal · rain · sun</h3><p>Cambia el clima. La lluvia activa sonido ambiente y bocadillos especiales.</p></div>
-      <div class="cmd"><h3>/lamp · /lamp auto</h3><p>Enciende lámpara o pasa a auto según hora.</p></div>
-      <div class="cmd"><h3>/hue · /hue auto</h3><p>Sincroniza luces Hue reales con el juego.</p></div>
+      <div class="cmd"><h3>/reloj 14:30</h3><p><span class="i" lang="es">Cambia la hora del juego al instante.</span><span class="i" lang="en">Set the in-game time instantly.</span></p></div>
+      <div class="cmd"><h3>/time am · pm · night</h3><p><span class="i" lang="es">Salta al tramo del día.</span><span class="i" lang="en">Jump to a part of the day.</span></p></div>
+      <div class="cmd"><h3>/weather normal · rain · sun</h3><p><span class="i" lang="es">Cambia el clima. La lluvia activa sonido ambiente y bocadillos especiales.</span><span class="i" lang="en">Change the weather. Rain triggers ambient sound and special speech bubbles.</span></p></div>
+      <div class="cmd"><h3>/lamp · /lamp auto</h3><p><span class="i" lang="es">Enciende lámpara o pasa a auto según hora.</span><span class="i" lang="en">Turn on the lamp, or set auto-by-time.</span></p></div>
+      <div class="cmd"><h3>/hue · /hue auto</h3><p><span class="i" lang="es">Sincroniza luces Hue reales con el juego.</span><span class="i" lang="en">Sync real Hue lights with the game.</span></p></div>
     </div>
   </div>
 </section>
 
 <section id="pantallas">
   <div class="wrap">
-    <h2><span class="num">05</span>Pantallas y directo</h2>
+    <h2><span class="num">05</span><span class="i" lang="es">Pantallas y directo</span><span class="i" lang="en">Screens &amp; live</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/livecam</h3><p>Activa webcam en la pantalla principal.</p></div>
-      <div class="cmd"><h3>/mocap</h3><p>Motion capture del DJ Novah desde la webcam.</p></div>
-      <div class="cmd"><h3>/AdmiraLive texto</h3><p>Texto scrolling en LED unificado de paredes izquierda + trasera.</p></div>
-      <div class="cmd"><h3>/comunicar texto</h3><p>Megafonía: texto en LED + voz por TTS del navegador.<br><span class="alias">--grok = Grok reescribe en estilo locutor · --elevenlabs = voz premium</span></p></div>
-      <div class="cmd"><h3>/AdmiraTube URL [1|2] [audio|mute]</h3><p>YouTube en signage TFT (1 o 2 pantallas).</p></div>
-      <div class="cmd"><h3>/say texto</h3><p>Bocadillo del Store Manager.</p></div>
+      <div class="cmd"><h3>/livecam</h3><p><span class="i" lang="es">Activa webcam en la pantalla principal.</span><span class="i" lang="en">Enable webcam on the main screen.</span></p></div>
+      <div class="cmd"><h3>/mocap</h3><p><span class="i" lang="es">Motion capture del DJ Novah desde la webcam.</span><span class="i" lang="en">Motion capture for DJ Novah from the webcam.</span></p></div>
+      <div class="cmd"><h3>/AdmiraLive texto</h3><p><span class="i" lang="es">Texto scrolling en LED unificado de paredes izquierda + trasera.</span><span class="i" lang="en">Scrolling text on the unified LED of the left + back walls.</span></p></div>
+      <div class="cmd"><h3>/comunicar texto</h3><p><span class="i" lang="es">Megafonía: texto en LED + voz por TTS del navegador.<br><span class="alias">--grok = Grok reescribe en estilo locutor · --elevenlabs = voz premium</span></span><span class="i" lang="en">PA system: text on LED + browser TTS voice.<br><span class="alias">--grok = Grok rewrites in announcer style · --elevenlabs = premium voice</span></span></p></div>
+      <div class="cmd"><h3>/AdmiraTube URL [1|2] [audio|mute]</h3><p><span class="i" lang="es">YouTube en signage TFT (1 o 2 pantallas).</span><span class="i" lang="en">YouTube on TFT signage (1 or 2 screens).</span></p></div>
+      <div class="cmd"><h3>/say texto</h3><p><span class="i" lang="es">Bocadillo del Store Manager.</span><span class="i" lang="en">Store Manager speech bubble.</span></p></div>
     </div>
   </div>
 </section>
 
 <section id="escena">
   <div class="wrap">
-    <h2><span class="num">06</span>Escena en vivo</h2>
-    <p class="lede">Toggle: invocar sin argumentos alterna entre activar y desactivar.</p>
+    <h2><span class="num">06</span><span class="i" lang="es">Escena en vivo</span><span class="i" lang="en">Live scene</span></h2>
+    <p class="lede"><span class="i" lang="es">Toggle: invocar sin argumentos alterna entre activar y desactivar.</span><span class="i" lang="en">Toggle: calling with no arguments switches on/off.</span></p>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/dj</h3><p>Activa el DJ Novah, música electrónica, luces de cabina, vinilos girando.</p></div>
-      <div class="cmd"><h3>/ladron</h3><p>Entra un ladrón por la puerta. CCTV en pantalla principal. Si hay Guardia Civil lo intercepta.</p></div>
-      <div class="cmd"><h3>/guardiacivil</h3><p>Entra Guardia Civil patrullando.</p></div>
-      <div class="cmd"><h3>/opinador</h3><p>Cliente que va al tótem de satisfacción a votar y se va. Aliases: <code>happy</code>, <code>neutral</code>, <code>sad</code>.</p></div>
-      <div class="cmd"><h3>/robot</h3><p>Unitree Bot escanea estanterías y emite +DATA flotantes.</p></div>
-      <div class="cmd"><h3>/sponsor</h3><p>Tío Gilito, sponsor con sombrero de copa, levita roja, monóculo y bastón. Ticket alto (90-150€).</p></div>
-      <div class="cmd"><h3>/sponsor recurrente 120 10</h3><p>Visita programada cada 120s con 10% descuento configurable.</p></div>
-      <div class="cmd"><h3>/socio</h3><p>Socio del Xtanco Club. Lleva corazón rojo en la camiseta (rosa si cumple hoy).</p></div>
-      <div class="cmd"><h3>/door open · close · auto</h3><p>Control manual de la puerta corredera.</p></div>
+      <div class="cmd"><h3>/dj</h3><p><span class="i" lang="es">Activa el DJ Novah, música electrónica, luces de cabina, vinilos girando.</span><span class="i" lang="en">Brings up DJ Novah: electronic music, booth lights, spinning vinyl.</span></p></div>
+      <div class="cmd"><h3>/ladron</h3><p><span class="i" lang="es">Entra un ladrón por la puerta. CCTV en pantalla principal. Si hay Guardia Civil lo intercepta.</span><span class="i" lang="en">A thief enters through the door. CCTV on the main screen. If the Civil Guard is present, it intercepts him.</span></p></div>
+      <div class="cmd"><h3>/guardiacivil</h3><p><span class="i" lang="es">Entra Guardia Civil patrullando.</span><span class="i" lang="en">Civil Guard enters on patrol.</span></p></div>
+      <div class="cmd"><h3>/opinador</h3><p><span class="i" lang="es">Cliente que va al tótem de satisfacción a votar y se va. Aliases: <code>happy</code>, <code>neutral</code>, <code>sad</code>.</span><span class="i" lang="en">A customer walks to the satisfaction totem, votes, and leaves. Aliases: <code>happy</code>, <code>neutral</code>, <code>sad</code>.</span></p></div>
+      <div class="cmd"><h3>/robot</h3><p><span class="i" lang="es">Unitree Bot escanea estanterías y emite +DATA flotantes.</span><span class="i" lang="en">Unitree Bot scans shelves and emits floating +DATA.</span></p></div>
+      <div class="cmd"><h3>/sponsor</h3><p><span class="i" lang="es">Tío Gilito, sponsor con sombrero de copa, levita roja, monóculo y bastón. Ticket alto (90-150€).</span><span class="i" lang="en">Scrooge McDuck — sponsor with top hat, red frock coat, monocle and cane. High ticket (€90-150).</span></p></div>
+      <div class="cmd"><h3>/sponsor recurrente 120 10</h3><p><span class="i" lang="es">Visita programada cada 120s con 10% descuento configurable.</span><span class="i" lang="en">Scheduled visit every 120s with a configurable 10% discount.</span></p></div>
+      <div class="cmd"><h3>/socio</h3><p><span class="i" lang="es">Socio del Xtanco Club. Lleva corazón rojo en la camiseta (rosa si cumple hoy).</span><span class="i" lang="en">Xtanco Club member. Wears a red heart on the shirt (pink if it's their birthday).</span></p></div>
+      <div class="cmd"><h3>/door open · close · auto</h3><p><span class="i" lang="es">Control manual de la puerta corredera.</span><span class="i" lang="en">Manual control of the sliding door.</span></p></div>
     </div>
   </div>
 </section>
 
 <section id="socios">
   <div class="wrap">
-    <h2><span class="num">07</span>Socios del Xtanco Club</h2>
-    <p class="lede">Sistema completo de fidelización con app móvil PWA, registro histórico y propuestas de venta vía Admira IA.</p>
+    <h2><span class="num">07</span><span class="i" lang="es">Socios del Xtanco Club</span><span class="i" lang="en">Xtanco Club members</span></h2>
+    <p class="lede"><span class="i" lang="es">Sistema completo de fidelización con app móvil PWA, registro histórico y propuestas de venta vía Admira IA.</span><span class="i" lang="en">Full loyalty system with a mobile PWA app, historical registry and sales suggestions via Admira AI.</span></p>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/socio</h3><p>Invoca un socio sintético (toggle desde CLI; el botón de la rejilla acumula).</p></div>
-      <div class="cmd"><h3>/socios listado</h3><p>Histórico de TODOS los socios agrupados por origen: 🏪 Alta en tienda · 🌐 Alta en web (QR app móvil).</p></div>
-      <div class="cmd"><h3>/socios export</h3><p>JSON anonimizado con stats agregadas para subir a OmniPublicity como datos de audiencia adtech.</p></div>
-      <div class="cmd"><h3>/personal socio</h3><p>Lista los socios actualmente en tienda con sellos y cumple.</p></div>
-      <div class="cmd"><h3>/personal dashboard</h3><p>Panel de stats: por categoría (Nuevo/Activo/Premium), top Upselling y Crosselling sugeridos por Admira IA.</p></div>
-      <div class="cmd"><h3>/heatmap</h3><p>Mapa de calor en el suelo con las zonas más pisadas por socios. <code>reset</code> para limpiar.</p></div>
+      <div class="cmd"><h3>/socio</h3><p><span class="i" lang="es">Invoca un socio sintético (toggle desde CLI; el botón de la rejilla acumula).</span><span class="i" lang="en">Spawn a synthetic member (toggle from CLI; the grid button stacks them).</span></p></div>
+      <div class="cmd"><h3>/socios listado</h3><p><span class="i" lang="es">Histórico de TODOS los socios agrupados por origen: 🏪 Alta en tienda · 🌐 Alta en web (QR app móvil).</span><span class="i" lang="en">History of ALL members grouped by origin: 🏪 in-store sign-up · 🌐 web sign-up (mobile app QR).</span></p></div>
+      <div class="cmd"><h3>/socios export</h3><p><span class="i" lang="es">JSON anonimizado con stats agregadas para subir a OmniPublicity como datos de audiencia adtech.</span><span class="i" lang="en">Anonymized JSON with aggregated stats to upload to OmniPublicity as adtech audience data.</span></p></div>
+      <div class="cmd"><h3>/personal socio</h3><p><span class="i" lang="es">Lista los socios actualmente en tienda con sellos y cumple.</span><span class="i" lang="en">List members currently in the store, with stamps and birthdays.</span></p></div>
+      <div class="cmd"><h3>/personal dashboard</h3><p><span class="i" lang="es">Panel de stats: por categoría (Nuevo/Activo/Premium), top Upselling y Crosselling sugeridos por Admira IA.</span><span class="i" lang="en">Stats panel: by category (New/Active/Premium), top upselling and cross-selling suggested by Admira AI.</span></p></div>
+      <div class="cmd"><h3>/heatmap</h3><p><span class="i" lang="es">Mapa de calor en el suelo con las zonas más pisadas por socios. <code>reset</code> para limpiar.</span><span class="i" lang="en">Floor heatmap of the areas most walked by members. <code>reset</code> to clear.</span></p></div>
     </div>
-    <div class="tip"><strong>Auto-spawn cada hora</strong> — un cliente normal se acerca al mostrador con bocadillo "¡Quiero ser socio!" y se da de alta automáticamente.</div>
-    <div class="tip"><strong>Ficha desplegada</strong> — pulsa sobre el sprite de un socio para ver su ficha completa: ID, antigüedad, fecha nacimiento, sellos, categoría, ticket esperado, sugerencias Admira IA. Botón 📤 envía la ficha a Telegram.</div>
+    <div class="tip"><span class="i" lang="es"><strong>Auto-spawn cada hora</strong> — un cliente normal se acerca al mostrador con bocadillo "¡Quiero ser socio!" y se da de alta automáticamente.</span><span class="i" lang="en"><strong>Hourly auto-spawn</strong> — a regular customer walks to the counter with a "I want to join!" bubble and signs up automatically.</span></div>
+    <div class="tip"><span class="i" lang="es"><strong>Ficha desplegada</strong> — pulsa sobre el sprite de un socio para ver su ficha completa: ID, antigüedad, fecha nacimiento, sellos, categoría, ticket esperado, sugerencias Admira IA. Botón 📤 envía la ficha a Telegram.</span><span class="i" lang="en"><strong>Member card</strong> — tap a member's sprite to see the full card: ID, tenure, birth date, stamps, category, expected ticket, Admira AI suggestions. The 📤 button sends the card to Telegram.</span></div>
   </div>
 </section>
 
 <section id="operativa">
   <div class="wrap">
-    <h2><span class="num">08</span>Operativa real</h2>
+    <h2><span class="num">08</span><span class="i" lang="es">Operativa real</span><span class="i" lang="en">Real operations</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/devolucion</h3><p>Cliente con queja se acerca al mostrador. Store Manager procesa: -10/40€ y -3% satisfacción.</p></div>
-      <div class="cmd"><h3>/pedido</h3><p>Socio premium pide producto especial para mañana ("¿Tenéis X para mañana?").</p></div>
+      <div class="cmd"><h3>/devolucion</h3><p><span class="i" lang="es">Cliente con queja se acerca al mostrador. Store Manager procesa: -10/40€ y -3% satisfacción.</span><span class="i" lang="en">A customer with a complaint comes to the counter. Store Manager processes it: -€10/40 and -3% satisfaction.</span></p></div>
+      <div class="cmd"><h3>/pedido</h3><p><span class="i" lang="es">Socio premium pide producto especial para mañana ("¿Tenéis X para mañana?").</span><span class="i" lang="en">A premium member orders a special product for tomorrow ("Do you have X for tomorrow?").</span></p></div>
     </div>
-    <div class="tip"><strong>TPV ticket</strong> — cuando un cliente compra, el bocadillo del Store Manager muestra el desglose: <code>🧾 Vapes 12€ · VIP +50% · -25% sponsor · 🪪 socio = 14€</code>.</div>
+    <div class="tip"><span class="i" lang="es"><strong>TPV ticket</strong> — cuando un cliente compra, el bocadillo del Store Manager muestra el desglose: <code>🧾 Vapes 12€ · VIP +50% · -25% sponsor · 🪪 socio = 14€</code>.</span><span class="i" lang="en"><strong>POS receipt</strong> — when a customer buys, the Store Manager bubble shows the breakdown: <code>🧾 Vapes €12 · VIP +50% · -25% sponsor · 🪪 member = €14</code>.</span></div>
   </div>
 </section>
 
 <section id="atmosfera">
   <div class="wrap">
-    <h2><span class="num">09</span>Atmósfera y música</h2>
+    <h2><span class="num">09</span><span class="i" lang="es">Atmósfera y música</span><span class="i" lang="en">Atmosphere &amp; music</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>/ambiente</h3><p>Sonido ambiente continuo: rumor de gente, lluvia auto cuando llueve, cafetera ocasional. <code>vol N</code> ajusta volumen 0-100.</p></div>
-      <div class="cmd"><h3>/voces</h3><p>Voz TTS española en los bocadillos de cliente. Cooldown 2.3s.</p></div>
-      <div class="cmd"><h3>/componer &lt;tipo&gt; &lt;temática&gt;</h3><p>Genera una canción con <strong>Admira DJ</strong> y la reproduce en un overlay flotante. Ej: <code>/componer reggaeton verano en la playa</code>.</p></div>
-      <div class="cmd"><h3>/seoul2026 · /seul · /seultrap · /seultecno</h3><p>Atajos a tracks del catálogo Admira DJ. Equivalente a <code>/song &lt;nombre&gt;</code>.</p></div>
-      <div class="cmd"><h3>/music · /next · /prev</h3><p>Toggle de la música de fondo y navegación por la playlist. <code>/song &lt;nº|nombre&gt;</code> pone una canción concreta.</p></div>
+      <div class="cmd"><h3>/ambiente</h3><p><span class="i" lang="es">Sonido ambiente continuo: rumor de gente, lluvia auto cuando llueve, cafetera ocasional. <code>vol N</code> ajusta volumen 0-100.</span><span class="i" lang="en">Continuous ambient sound: crowd murmur, auto rain when it rains, occasional coffee machine. <code>vol N</code> sets volume 0-100.</span></p></div>
+      <div class="cmd"><h3>/voces</h3><p><span class="i" lang="es">Voz TTS española en los bocadillos de cliente. Cooldown 2.3s.</span><span class="i" lang="en">Spanish TTS voice on customer speech bubbles. 2.3s cooldown.</span></p></div>
+      <div class="cmd"><h3>/componer &lt;tipo&gt; &lt;temática&gt;</h3><p><span class="i" lang="es">Genera una canción con <strong>Admira DJ</strong> y la reproduce en un overlay flotante. Ej: <code>/componer reggaeton verano en la playa</code>.</span><span class="i" lang="en">Generate a song with <strong>Admira DJ</strong> and play it in a floating overlay. E.g. <code>/componer reggaeton summer on the beach</code>.</span></p></div>
+      <div class="cmd"><h3>/seoul2026 · /seul · /seultrap · /seultecno</h3><p><span class="i" lang="es">Atajos a tracks del catálogo Admira DJ. Equivalente a <code>/song &lt;nombre&gt;</code>.</span><span class="i" lang="en">Shortcuts to tracks in the Admira DJ catalog. Equivalent to <code>/song &lt;name&gt;</code>.</span></p></div>
+      <div class="cmd"><h3>/music · /next · /prev</h3><p><span class="i" lang="es">Toggle de la música de fondo y navegación por la playlist. <code>/song &lt;nº|nombre&gt;</code> pone una canción concreta.</span><span class="i" lang="en">Toggle background music and navigate the playlist. <code>/song &lt;n|name&gt;</code> plays a specific track.</span></p></div>
     </div>
-    <div class="tip"><strong>Sol y luna</strong> — el cielo cambia automáticamente según la hora (amanecer, mediodía, atardecer, noche con estrellas titilantes).</div>
+    <div class="tip"><span class="i" lang="es"><strong>Sol y luna</strong> — el cielo cambia automáticamente según la hora (amanecer, mediodía, atardecer, noche con estrellas titilantes).</span><span class="i" lang="en"><strong>Sun and moon</strong> — the sky changes automatically with the time of day (dawn, noon, dusk, night with twinkling stars).</span></div>
   </div>
 </section>
 
 <section id="integracion">
   <div class="wrap">
-    <h2><span class="num">10</span>Integración con XpaceOS</h2>
+    <h2><span class="num">10</span><span class="i" lang="es">Integración con XpaceOS</span><span class="i" lang="en">XpaceOS integration</span></h2>
     <div class="cmd-grid">
-      <div class="cmd"><h3>AdmiraGrok end-of-day</h3><p>Al cruzar la hora de cierre (22h), Grok genera un análisis automático y lo manda al chat AdmiraXP con las stats del día.</p></div>
-      <div class="cmd"><h3>OmniPublicity sync</h3><p>El comando <code>/socios export</code> genera el JSON que la landing <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">OmniPublicity</a> usa para mostrar audiencia real capturada.</p></div>
-      <div class="cmd"><h3>Spec de assets</h3><p>Para crear elementos a medida que encajen en el gemelo, consulta la <a href="/doc/">spec de elementos isométricos</a>.</p></div>
+      <div class="cmd"><h3>AdmiraGrok end-of-day</h3><p><span class="i" lang="es">Al cruzar la hora de cierre (22h), Grok genera un análisis automático y lo manda al chat AdmiraXP con las stats del día.</span><span class="i" lang="en">When closing time (10pm) passes, Grok generates an automatic analysis and sends it to the AdmiraXP chat with the day's stats.</span></p></div>
+      <div class="cmd"><h3>OmniPublicity sync</h3><p><span class="i" lang="es">El comando <code>/socios export</code> genera el JSON que la landing <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">OmniPublicity</a> usa para mostrar audiencia real capturada.</span><span class="i" lang="en">The <code>/socios export</code> command generates the JSON the <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">OmniPublicity</a> landing uses to show real captured audience.</span></p></div>
+      <div class="cmd"><h3><span class="i" lang="es">Spec de assets</span><span class="i" lang="en">Asset spec</span></h3><p><span class="i" lang="es">Para crear elementos a medida que encajen en el gemelo, consulta la <a href="/doc/">spec de elementos isométricos</a>.</span><span class="i" lang="en">To create custom elements that fit the twin, see the <a href="/doc/">isometric element spec</a>.</span></p></div>
     </div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <h2><span class="num">11</span>Atajos de teclado y feedback</h2>
+    <h2><span class="num">11</span><span class="i" lang="es">Atajos de teclado y feedback</span><span class="i" lang="en">Keyboard shortcuts &amp; feedback</span></h2>
     <ul style="color:var(--mut);font-size:14px;line-height:1.8">
-      <li><strong style="color:var(--ink)">Q / A / O / P</strong> mueven al personaje en isométrico (NW / SE / SW / NE). <strong style="color:var(--ink)">M</strong> menú · <strong style="color:var(--ink)">E</strong> editor de layout · <strong style="color:var(--ink)">L</strong> luces · <strong style="color:var(--ink)">1-4</strong> tabs · <strong style="color:var(--ink)">Esc</strong> pausa.</li>
-      <li><strong style="color:var(--ink)">Bocadillo del Store Manager</strong> con el resultado de cada acción importante.</li>
-      <li><strong style="color:var(--ink)">Banner showEv</strong> top-center en cian/azul/naranja según éxito/fallo.</li>
-      <li><strong style="color:var(--ink)">Tab Socios</strong> aparece solo cuando hay alguno en la tienda o registrado online (glow rosa pulsante).</li>
-      <li><strong style="color:var(--ink)">/help</strong> dentro del gemelo abre el panel de comandos rápidos. Vuelve a pulsar para cerrar.</li>
+      <li><span class="i" lang="es"><strong style="color:var(--ink)">Q / A / O / P</strong> mueven al personaje en isométrico (NW / SE / SW / NE). <strong style="color:var(--ink)">M</strong> menú · <strong style="color:var(--ink)">E</strong> editor de layout · <strong style="color:var(--ink)">L</strong> luces · <strong style="color:var(--ink)">1-4</strong> tabs · <strong style="color:var(--ink)">Esc</strong> pausa.</span><span class="i" lang="en"><strong style="color:var(--ink)">Q / A / O / P</strong> move the character in isometric (NW / SE / SW / NE). <strong style="color:var(--ink)">M</strong> menu · <strong style="color:var(--ink)">E</strong> layout editor · <strong style="color:var(--ink)">L</strong> lights · <strong style="color:var(--ink)">1-4</strong> tabs · <strong style="color:var(--ink)">Esc</strong> pause.</span></li>
+      <li><span class="i" lang="es"><strong style="color:var(--ink)">Bocadillo del Store Manager</strong> con el resultado de cada acción importante.</span><span class="i" lang="en"><strong style="color:var(--ink)">Store Manager bubble</strong> with the result of every important action.</span></li>
+      <li><span class="i" lang="es"><strong style="color:var(--ink)">Banner showEv</strong> top-center en cian/azul/naranja según éxito/fallo.</span><span class="i" lang="en"><strong style="color:var(--ink)">showEv banner</strong> top-center in cyan/blue/orange for success/failure.</span></li>
+      <li><span class="i" lang="es"><strong style="color:var(--ink)">Tab Socios</strong> aparece solo cuando hay alguno en la tienda o registrado online (glow rosa pulsante).</span><span class="i" lang="en"><strong style="color:var(--ink)">Members tab</strong> appears only when one is in the store or registered online (pulsing pink glow).</span></li>
+      <li><span class="i" lang="es"><strong style="color:var(--ink)">/help</strong> dentro del gemelo abre el panel de comandos rápidos. Vuelve a pulsar para cerrar.</span><span class="i" lang="en"><strong style="color:var(--ink)">/help</strong> inside the twin opens the quick-command panel. Press again to close.</span></li>
     </ul>
   </div>
 </section>
 
 <section id="mapa">
   <div class="wrap">
-    <h2><span class="num">12</span>Mapa de navegación</h2>
+    <h2><span class="num">12</span><span class="i" lang="es">Mapa de navegación</span><span class="i" lang="en">Navigation map</span></h2>
     <p style="color:var(--mut);font-size:14px;line-height:1.7;margin:0 0 14px">
-      Vista única con todas las páginas del gemelo: 14 estados, 5 verticales (XP-01..XP-05), 4 tabs UI, 6 docks HTML, modos especiales por URL, sub-aplicaciones y workers. Cada tarjeta es clicable para entrar.
-      El mapa <strong style="color:var(--ink)">se actualiza solo</strong> a medida que añadimos o quitamos elementos del juego.
+      <span class="i" lang="es">Vista única con todas las páginas del gemelo: 14 estados, 5 verticales (XP-01..XP-05), 4 tabs UI, 6 docks HTML, modos especiales por URL, sub-aplicaciones y workers. Cada tarjeta es clicable para entrar. El mapa <strong style="color:var(--ink)">se actualiza solo</strong> a medida que añadimos o quitamos elementos del juego.</span>
+      <span class="i" lang="en">A single view of every twin page: 14 states, 5 verticals (XP-01..XP-05), 4 UI tabs, 6 HTML docks, URL special modes, sub-apps and workers. Each card is clickable. The map <strong style="color:var(--ink)">updates itself</strong> as we add or remove game elements.</span>
     </p>
     <div class="cmd-grid" style="grid-template-columns:1fr">
       <a href="https://www.carlossilva.info/01.-AdmiraXperience-Game/docs/navigation-map.html" target="_blank" rel="noopener" class="cmd" style="display:block;text-decoration:none;color:inherit;border-color:#ffd866;background:linear-gradient(180deg,rgba(255,216,102,.08),rgba(255,216,102,.02))">
         <h3 style="display:flex;align-items:center;gap:10px;color:#ffd866;margin:0 0 6px">
           <span style="font-size:20px">🗺️</span>
-          Abrir mapa de navegación
+          <span class="i" lang="es">Abrir mapa de navegación</span><span class="i" lang="en">Open navigation map</span>
           <span style="margin-left:auto;font-size:12px;color:var(--mut);font-weight:normal">↗</span>
         </h3>
         <p style="margin:0;color:var(--mut)">
-          Fuente única para entender qué páginas existen, cómo se llega a cada una y qué relaciones tienen.
+          <span class="i" lang="es">Fuente única para entender qué páginas existen, cómo se llega a cada una y qué relaciones tienen.</span>
+          <span class="i" lang="en">Single source of truth for which pages exist, how to reach each, and how they relate.</span>
         </p>
       </a>
     </div>
-    <div class="tip"><strong>Consejo:</strong> abre el mapa en una pestaña aparte cuando estés desarrollando un vertical nuevo — lista todas las URLs activables por <code>?vertical=</code> o <code>?streamdeck=</code>.</div>
+    <div class="tip"><span class="i" lang="es"><strong>Consejo:</strong> abre el mapa en una pestaña aparte cuando estés desarrollando un vertical nuevo — lista todas las URLs activables por <code>?vertical=</code> o <code>?streamdeck=</code>.</span><span class="i" lang="en"><strong>Tip:</strong> open the map in a separate tab while developing a new vertical — it lists every URL activatable via <code>?vertical=</code> or <code>?streamdeck=</code>.</span></div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
     <span>© 2026 ADmiraNeXT · XpaceOS</span>
-    <a href="https://www.carlossilva.info/01.-AdmiraXperience-Game/" target="_blank" rel="noopener">↗ Abrir gemelo</a>
-    <a href="/doc/">↗ Spec de assets</a>
+    <a href="https://www.carlossilva.info/01.-AdmiraXperience-Game/" target="_blank" rel="noopener">↗ <span class="i" lang="es">Abrir gemelo</span><span class="i" lang="en">Open twin</span></a>
+    <a href="/doc/">↗ <span class="i" lang="es">Spec de assets</span><span class="i" lang="en">Asset spec</span></a>
     <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">↗ OmniPublicity</a>
     <span class="sig">_Admirito by Claude_</span>
   </div>
 </footer>
+
+<script>
+  (function(){
+    var KEY='xpace_lang';
+    function apply(l){l=(l==='en')?'en':'es';document.documentElement.lang=l;try{localStorage.setItem(KEY,l)}catch(e){}
+      var b=document.getElementById('langToggle');if(b)b.textContent=(l==='es')?'EN':'ES';}
+    var saved;try{saved=localStorage.getItem(KEY)}catch(e){}
+    apply(saved||document.documentElement.lang||'es');
+    var b=document.getElementById('langToggle');
+    if(b)b.addEventListener('click',function(e){e.preventDefault();apply(document.documentElement.lang==='es'?'en':'es');});
+  })();
+</script>
 
 </body>
 </html>
