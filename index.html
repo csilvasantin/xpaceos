@@ -145,6 +145,28 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .deep .links a{font-family:monospace;font-size:12px;border:1px solid var(--line);padding:6px 12px;border-radius:6px;color:var(--brand)}
   .deep .links a:hover{border-color:var(--brand);text-decoration:none}
 
+  /* Live twins catalog (fed from the shared OmniPublicity worker) */
+  .gm-live{margin-top:22px}
+  .gm-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .gm-badge{display:inline-flex;align-items:center;gap:7px;font-family:monospace;font-size:11px;color:var(--good);letter-spacing:.14em;border:1px solid rgba(136,255,170,.4);padding:4px 10px;border-radius:999px;text-transform:uppercase}
+  .gm-dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good);animation:gmpulse 1.8s infinite}
+  @keyframes gmpulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .gm-count{font-family:monospace;font-size:12px;color:var(--mut)}
+  .gm-sub{color:var(--mut);font-size:14px;margin:0 0 16px;max-width:760px}
+  .gm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:12px}
+  .gm-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:7px;transition:border-color .12s,transform .12s}
+  .gm-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+  .gm-card .nm{font-weight:700;font-size:15px;color:var(--ink)}
+  .gm-card .kd{font-family:monospace;font-size:10px;letter-spacing:.07em;color:var(--accent);text-transform:uppercase}
+  .gm-card .ad{font-size:12px;color:var(--mut);line-height:1.4}
+  .gm-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:8px}
+  .gm-chip{font-family:monospace;font-size:10px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:2px 7px;display:inline-flex;gap:4px;align-items:center;letter-spacing:.03em}
+  .gm-chip.live{color:var(--good);border-color:rgba(136,255,170,.35)}
+  .gm-foot{margin-top:16px;font-size:13px;color:var(--mut);max-width:760px}
+  .gm-foot b{color:var(--brand)}
+  .gm-state{font-family:monospace;font-size:12px;color:var(--mut);padding:18px 0;grid-column:1/-1}
+  .gm-state.err{color:var(--warn)}
+
   /* Hardware partners panel */
   .hw{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   .hw .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;position:relative;overflow:hidden}
@@ -486,6 +508,16 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         <a href="#omni" data-i18n="xp.next">↓ next: OmniPublicity</a>
       </div>
     </div>
+
+    <div class="gm-live" id="gemelos">
+      <div class="gm-head">
+        <span class="gm-badge"><span class="gm-dot"></span><span data-i18n="gemelos.badge">Digital twins in production</span></span>
+        <span class="gm-count" id="gm-count"></span>
+      </div>
+      <p class="gm-sub" data-i18n="gemelos.sub">These are the real twins already registered in the platform, pulled live from the shared catalog — the same dataset the OmniPublicity backoffice writes to.</p>
+      <div class="gm-grid" id="gm-grid"><div class="gm-state" data-i18n="gemelos.loading">Loading live catalog…</div></div>
+      <p class="gm-foot" data-i18n-html="gemelos.foot">One shared dataset: register a twin in the <b>OmniPublicity backoffice</b> → it appears here and on the <b>admira.app</b> live map. No separate integration.</p>
+    </div>
   </div>
 </section>
 
@@ -553,18 +585,6 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   </div>
 </footer>
 
-
-<div class="demo-gate" id="demoGate" aria-hidden="true">
-  <div class="crt" role="dialog" aria-modal="true" aria-labelledby="demoGateTitle">
-    <button class="gate-close" type="button" id="demoGateClose" aria-label="Close">×</button>
-    <p class="gate-logo" id="demoGateTitle">XpaceOS<span>live demo</span></p>
-    <p class="gate-tag" data-i18n="demoGate.tag">restricted access</p>
-    <p class="gate-prompt"><span data-i18n="demoGate.prompt">&gt; password</span><span class="cursor"></span></p>
-    <input type="password" id="demoGateInput" autocomplete="current-password">
-    <button class="gate-submit" type="button" id="demoGateSubmit" data-i18n="demoGate.button">unlock</button>
-    <p class="gate-error" id="demoGateError" data-i18n="demoGate.error">access denied</p>
-  </div>
-</div>
 
 <script>
 const I18N = {
@@ -660,6 +680,15 @@ const I18N = {
     'xp.feat5': '<b>SPACE CONTROL</b>scent, music, Hue lighting, ESL',
     'xp.outro': 'The Xtanco twin (tobacco shops) is the first production vertical. The Shoptalk Europe booth is the next one — and demonstrates the full case in a closed trade-show space.',
     'xp.next': '↓ next: OmniPublicity',
+    'gemelos.badge': 'Digital twins in production',
+    'gemelos.sub': 'These are the real twins already registered in the platform, pulled live from the shared catalog — the same dataset the OmniPublicity backoffice writes to.',
+    'gemelos.foot': 'One shared dataset: register a twin in the <b>OmniPublicity backoffice</b> → it appears here and on the <b>admira.app</b> live map. No separate integration.',
+    'gemelos.loading': 'Loading live catalog…',
+    'gemelos.error': 'Live catalog unavailable right now — retrying shortly.',
+    'gemelos.empty': 'No twins published yet.',
+    'gemelos.surfaces': 'surfaces',
+    'gemelos.live': 'LIVE',
+    'gemelos.count': '{n} twins · {s} surfaces · live from the shared catalog',
     'omni.title': '<span class="num">06</span>OmniPublicity · Marketplace layer',
     'omni.deepTitle': 'Real-Time Bidding on every visible physical slot',
     'omni.who': 'The same model as Google Ads and The Trade Desk, on your real screens.',
@@ -769,6 +798,15 @@ const I18N = {
     'xp.feat5': '<b>CONTROL DE ESPACIO</b>aroma, música, iluminación Hue, ESL',
     'xp.outro': 'El gemelo Xtanco (estancos) es la primera vertical en producción. El stand de Shoptalk Europe es la siguiente — y demuestra el caso completo en un espacio cerrado de feria.',
     'xp.next': '↓ siguiente: OmniPublicity',
+    'gemelos.badge': 'Gemelos en producción',
+    'gemelos.sub': 'Estos son los gemelos reales ya dados de alta en la plataforma, leídos en vivo del catálogo compartido — el mismo dataset en el que escribe el backoffice de OmniPublicity.',
+    'gemelos.foot': 'Un mismo dataset: das de alta un gemelo en el <b>backoffice de OmniPublicity</b> → aparece aquí y en el <b>mapa en vivo de admira.app</b>. Sin integración aparte.',
+    'gemelos.loading': 'Cargando catálogo en vivo…',
+    'gemelos.error': 'Catálogo en vivo no disponible ahora mismo — reintentando.',
+    'gemelos.empty': 'Aún no hay gemelos publicados.',
+    'gemelos.surfaces': 'surfaces',
+    'gemelos.live': 'LIVE',
+    'gemelos.count': '{n} gemelos · {s} surfaces · en vivo del catálogo compartido',
     'omni.title': '<span class="num">06</span>OmniPublicity · Capa de marketplace',
     'omni.deepTitle': 'Real-Time Bidding sobre cada hueco físico visible',
     'omni.who': 'El mismo modelo que Google Ads y The Trade Desk, sobre tus pantallas reales.',
@@ -810,73 +848,14 @@ function applyLanguage(lang) {
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
   try { localStorage.setItem('xpaceosLang', lang); } catch {}
+  if (typeof renderGemelos === 'function') renderGemelos();
 }
 
 document.querySelectorAll('[data-lang]').forEach(btn => {
   btn.addEventListener('click', () => applyLanguage(btn.getAttribute('data-lang')));
 });
 
-const DEMO_PASSWORD = 'Nomeacuerd0';
-let pendingDemoUrl = '';
-const demoGate = document.getElementById('demoGate');
-const demoGateInput = document.getElementById('demoGateInput');
-const demoGateError = document.getElementById('demoGateError');
-const demoGateSubmit = document.getElementById('demoGateSubmit');
-const demoGateClose = document.getElementById('demoGateClose');
-
-function openDemoGate(url) {
-  pendingDemoUrl = url;
-  demoGate.classList.add('open');
-  demoGate.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-  demoGateInput.value = '';
-  demoGateError.style.display = 'none';
-  setTimeout(() => demoGateInput.focus(), 0);
-}
-
-function closeDemoGate() {
-  demoGate.classList.remove('open');
-  demoGate.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-  pendingDemoUrl = '';
-  demoGateInput.value = '';
-  demoGateError.style.display = 'none';
-}
-
-function submitDemoGate() {
-  if (demoGateInput.value === DEMO_PASSWORD) {
-    const url = pendingDemoUrl;
-    closeDemoGate();
-    if (url) window.open(url, '_blank', 'noopener');
-    return;
-  }
-  demoGateError.style.display = 'block';
-  demoGateInput.value = '';
-  demoGateInput.focus();
-}
-
-document.querySelectorAll('[data-demo-gate]').forEach(link => {
-  link.addEventListener('click', event => {
-    event.preventDefault();
-    openDemoGate(link.href);
-  });
-});
-
-demoGateSubmit.addEventListener('click', submitDemoGate);
-demoGateClose.addEventListener('click', closeDemoGate);
-demoGate.addEventListener('click', event => {
-  if (event.target === demoGate) closeDemoGate();
-});
-demoGateInput.addEventListener('keydown', event => {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    submitDemoGate();
-  }
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    closeDemoGate();
-  }
-});
+// Live demo abierto: los enlaces [data-demo-gate] abren directamente, sin login.
 
 
 try {
@@ -884,6 +863,73 @@ try {
 } catch {
   applyLanguage('en');
 }
+
+
+// ─── Live twins catalog (shared OmniPublicity catalog) ─────────────
+// Same GET /locations that feeds the admira.app map and that the
+// OmniPublicity backoffice publishes to. Register a twin there → it
+// shows up here. Train-proof: single fetch, 7s timeout, no retry loop.
+const GEMELOS_API = 'https://omnipublicity-api.csilvasantin.workers.dev/locations';
+const SURF_ICON = { pantalla:'📺', escaparate:'🪟', mostrador:'🧾', vending:'🥤', pwa:'📱' };
+let gemelosData = null; // null = loading · 'error' · []/[…] = data
+
+function gmDict() { return I18N[document.documentElement.lang] || I18N.en; }
+function gmEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderGemelos() {
+  const grid = document.getElementById('gm-grid');
+  if (!grid) return;
+  const countEl = document.getElementById('gm-count');
+  const d = gmDict();
+  if (countEl) countEl.textContent = '';
+  if (gemelosData === null) {
+    grid.innerHTML = `<div class="gm-state">${d['gemelos.loading']}</div>`;
+    return;
+  }
+  if (gemelosData === 'error') {
+    grid.innerHTML = `<div class="gm-state err">${d['gemelos.error']}</div>`;
+    return;
+  }
+  if (!gemelosData.length) {
+    grid.innerHTML = `<div class="gm-state">${d['gemelos.empty']}</div>`;
+    return;
+  }
+  let totalSurf = 0;
+  grid.innerHTML = gemelosData.map(loc => {
+    const surfaces = Array.isArray(loc.surfaces) ? loc.surfaces : [];
+    totalSurf += surfaces.length;
+    const live = surfaces.filter(s => s.status === 'live').length;
+    const types = [...new Set(surfaces.map(s => s.surface))];
+    const chips = types.map(t => `<span class="gm-chip">${SURF_ICON[t] || '▫'} ${gmEsc(t)}</span>`).join('');
+    const liveChip = live ? `<span class="gm-chip live">● ${live} ${d['gemelos.live']}</span>` : '';
+    return `<div class="gm-card">
+      <div class="kd">${gmEsc(loc.kind || '')}</div>
+      <div class="nm">${gmEsc(loc.name || loc.id || '')}</div>
+      <div class="ad">${gmEsc(loc.addr || '')}</div>
+      <div class="gm-chips"><span class="gm-chip">${surfaces.length} ${d['gemelos.surfaces']}</span>${liveChip}${chips}</div>
+    </div>`;
+  }).join('');
+  if (countEl) countEl.textContent = (d['gemelos.count'] || '').replace('{n}', gemelosData.length).replace('{s}', totalSurf);
+}
+
+async function loadGemelos() {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 7000);
+    const r = await fetch(GEMELOS_API, { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('http ' + r.status);
+    const json = await r.json();
+    gemelosData = (json && Array.isArray(json.locations)) ? json.locations : [];
+  } catch (e) {
+    gemelosData = 'error';
+  }
+  renderGemelos();
+}
+renderGemelos();
+loadGemelos();
 
 
 const VISIT_NOTIFY_ENDPOINT = 'https://admira-telegram-bridge.csilvasantin.workers.dev/visits/xpaceos';
