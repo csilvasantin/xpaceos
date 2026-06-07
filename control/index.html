@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XpaceOS · Control del circuito</title>
+<meta name="description" content="Consola del dueño del circuito: playlist propia, política de aprobación, lista negra y aceptación o rechazo de ofertas de emisión. El dueño manda en sus pantallas.">
+<meta name="robots" content="noindex">
+<script src="https://www.admira.app/locations.js"></script>
+<style>
+  :root{--bg:#02080d;--ink:#dff8ff;--mut:#75aab9;--brand:#78f3ff;--accent:#ffd866;--good:#88ffaa;--warn:#ff8866;--danger:#ff4f5e;--own:#b78cff;--card:#0a1620;--card2:#0d1c28;--line:rgba(120,243,255,.18)}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100%}
+  a{color:var(--brand);text-decoration:none} a:hover{text-decoration:underline}
+  button,select,input,textarea{font-family:inherit}
+
+  header{padding:13px 22px;background:linear-gradient(to bottom,rgba(2,8,13,.95),rgba(2,8,13,.6));border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:20;backdrop-filter:blur(8px)}
+  .logo{font-family:monospace;font-size:13px;letter-spacing:.16em;color:var(--accent);font-weight:bold;white-space:nowrap}
+  .logo .dot{color:var(--brand)}
+  .logo .sub{color:var(--mut);margin-left:10px;font-weight:normal;letter-spacing:.1em;font-size:11px}
+  header .sel{display:flex;align-items:center;gap:7px}
+  header label{font-size:11px;color:var(--mut);font-family:monospace;letter-spacing:.06em;text-transform:uppercase}
+  select,input[type=date],input[type=text],input[type=number],input[type=url]{background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:13px;outline:0}
+  select:focus,input:focus,textarea:focus{border-color:var(--brand)}
+  .grow{flex:1}
+  .btn{background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 14px;font-size:13px;cursor:pointer;transition:border-color .12s,background .12s;white-space:nowrap}
+  .btn:hover{border-color:var(--brand)}
+  .btn.primary{background:var(--brand);color:#001620;border-color:var(--brand);font-weight:700}
+  .btn.accent{background:var(--accent);color:#1a1300;border-color:var(--accent);font-weight:700}
+  .btn.good{background:var(--good);color:#003318;border-color:var(--good);font-weight:700}
+  .btn.danger{border-color:var(--danger);color:var(--danger)}
+  .btn.danger:hover{background:rgba(255,79,94,.12)}
+  .btn.own{background:var(--own);color:#1a0033;border-color:var(--own);font-weight:700}
+  .btn.ghost{color:var(--mut)} .btn.sm{padding:5px 10px;font-size:12px}
+  .btn.live{border-color:var(--good);color:var(--good)} .btn.live.on{background:rgba(136,255,170,.14)}
+  .btn:disabled{opacity:.4;cursor:default}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 22px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:10px}
+  .card h2 .pill{font-family:monospace;font-size:10px;letter-spacing:.1em;color:#001620;padding:2px 8px;border-radius:999px;font-weight:700}
+  .card .desc{color:var(--mut);font-size:13px;margin:0 0 16px}
+  .card h2 .count{margin-left:auto;font-size:13px;color:var(--mut);font-weight:normal;font-family:monospace}
+
+  /* Política */
+  .policy{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .opt{flex:1;min-width:240px;border:1px solid var(--line);border-radius:11px;padding:13px 15px;cursor:pointer;transition:border-color .12s,background .12s}
+  .opt.sel{border-color:var(--brand);background:rgba(120,243,255,.07)}
+  .opt b{font-size:14px} .opt p{margin:4px 0 0;color:var(--mut);font-size:12px}
+  .opt .dot{display:inline-block;width:9px;height:9px;border-radius:50%;border:1px solid var(--mut);margin-right:7px;vertical-align:middle}
+  .opt.sel .dot{background:var(--brand);border-color:var(--brand)}
+  .ctrlfoot{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);cursor:pointer}
+  .toggle input{width:15px;height:15px;accent-color:var(--own)}
+
+  /* Lista negra */
+  .bl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .bl-col label{display:block;font-size:11px;color:var(--mut);font-family:monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+  .bl-col input{width:100%}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:24px}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,79,94,.12);border:1px solid rgba(255,79,94,.4);color:#ffb3ba;border-radius:999px;padding:3px 9px;font-size:12px}
+  .chip b{font-weight:600} .chip .x{cursor:pointer;opacity:.7} .chip .x:hover{opacity:1}
+
+  /* Ofertas */
+  .offer{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px;flex-wrap:wrap}
+  .offer .adv{font-weight:700;color:var(--brand)} .offer .meta{color:var(--mut);font-size:13px}
+  .offer .where{font-family:monospace;font-size:11px;color:var(--accent);background:rgba(255,216,102,.1);border:1px solid rgba(255,216,102,.3);padding:2px 8px;border-radius:999px}
+  .offer .price{font-weight:700;color:var(--accent)}
+  .offer .acts{margin-left:auto;display:flex;gap:8px}
+  .empty{color:var(--mut);text-align:center;padding:26px 20px;font-size:14px}
+
+  /* Bands / slots */
+  .scrhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .scrhead .kpi{font-size:13px;color:var(--mut)} .scrhead .kpi b{color:var(--ink)}
+  .scrhead .kpi .g{color:var(--good)}
+  .band{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:11px}
+  .band.cur{border-color:var(--good);box-shadow:0 0 0 1px rgba(136,255,170,.22)}
+  .band .bhead{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .band .btitle{font-size:15px;font-weight:700}
+  .band .bhours{font-family:monospace;font-size:12px;color:var(--mut)}
+  .band .nowtag{font-family:monospace;font-size:10px;letter-spacing:.1em;color:#001620;background:var(--good);padding:2px 8px;border-radius:999px;font-weight:700}
+  .band .avail{margin-left:auto;font-size:12px;color:var(--mut)} .band .avail b{color:var(--good)}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .slot{border:1px solid var(--line);border-radius:9px;padding:9px 11px;min-height:60px;display:flex;flex-direction:column;justify-content:center;position:relative;font-size:12px}
+  .slot.free{border-style:dashed;color:var(--mut);cursor:pointer;align-items:center;text-align:center}
+  .slot.free:hover{border-color:var(--own);color:var(--own)}
+  .slot.paid{background:rgba(136,255,170,.06);border-color:rgba(136,255,170,.3)}
+  .slot.own{background:rgba(183,140,255,.08);border-color:rgba(183,140,255,.4)}
+  .slot.pending{background:rgba(255,216,102,.07);border-color:rgba(255,216,102,.4)}
+  .slot.playing{box-shadow:0 0 0 1px var(--good)}
+  .slot .tag{font-family:monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+  .slot.paid .tag{color:var(--good)} .slot.own .tag{color:var(--own)} .slot.pending .tag{color:var(--accent)}
+  .slot .adv{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .slot .ttl{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .slot .x{position:absolute;top:4px;right:6px;color:var(--mut);cursor:pointer;font-size:13px;opacity:0;transition:opacity .12s}
+  .slot:hover .x{opacity:1} .slot .x:hover{color:var(--danger)}
+  .slot .inl{display:flex;gap:5px;margin-top:6px}
+  .slot .inl button{flex:1;padding:3px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+  .slot .inl .ok{border-color:var(--good);color:var(--good)} .slot .inl .no{border-color:var(--danger);color:var(--danger)}
+
+  .foot{color:var(--mut);font-size:12px;margin-top:14px;text-align:center;font-family:monospace}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(2,8,13,.78);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .mbox{width:100%;max-width:460px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .mbox h3{margin:0 0 4px;font-size:20px} .mbox .msub{color:var(--mut);font-size:13px;margin:0 0 18px}
+  .mbox .f{margin-bottom:13px}
+  .mbox .f label{display:block;font-size:11px;color:var(--mut);font-family:monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+  .mbox .f input,.mbox .f select{width:100%}
+  .frow{display:flex;gap:10px} .frow .f{flex:1}
+  .seg{display:flex;gap:6px;margin-bottom:13px}
+  .seg button{flex:1;padding:8px;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:8px;cursor:pointer;font-size:12px}
+  .seg button.on{border-color:var(--own);color:var(--own);background:rgba(183,140,255,.08)}
+  .mact{display:flex;gap:10px;margin-top:18px} .mact .btn{flex:1;text-align:center}
+  .up{font-size:12px;color:var(--mut);margin-top:6px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 20px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:200}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)} .toast.err{border-color:var(--danger);color:var(--warn)}
+  @media(max-width:760px){.bl-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">XPACE<span class="dot">·</span>OS <span class="sub">CONTROL DEL CIRCUITO</span></div>
+  <div class="sel"><label>Circuito</label><select id="circuitSel"></select></div>
+  <div class="sel"><label>Día</label><input type="date" id="dateInp"></div>
+  <div class="grow"></div>
+  <a class="btn ghost" href="/">← XpaceOS</a>
+</header>
+
+<div class="wrap">
+  <!-- Política -->
+  <div class="card">
+    <h2>Política de aprobación <span class="count" id="policyHint"></span></h2>
+    <p class="desc">Tú mandas en tu circuito. Decide cómo entran las ofertas de emisión de terceros (marketplace de admira.app).</p>
+    <div class="policy">
+      <div class="opt" data-policy="manual"><div><span class="dot"></span><b>Manual — apruebo cada oferta</b></div><p>Nada de pago emite sin tu visto bueno. Las ofertas llegan a la bandeja para aceptar o rechazar.</p></div>
+      <div class="opt" data-policy="auto"><div><span class="dot"></span><b>Auto — acepto salvo lista negra</b></div><p>Las ofertas entran solas salvo que choquen con tu lista negra. Menos fricción.</p></div>
+    </div>
+    <div class="ctrlfoot">
+      <label class="toggle"><input type="checkbox" id="ownPri"> Prioridad a mi contenido propio</label>
+      <div class="grow"></div>
+      <button class="btn primary" id="savePolicy">Guardar política</button>
+    </div>
+  </div>
+
+  <!-- Lista negra -->
+  <div class="card">
+    <h2>Lista negra</h2>
+    <p class="desc">Anunciantes, categorías o términos que rechazas automáticamente, emita quien emita. Escribe y pulsa Enter.</p>
+    <div class="bl-grid">
+      <div class="bl-col"><label>Anunciantes</label><input type="text" id="blAdv" placeholder="Ej. Casino X + Enter"><div class="chips" id="chAdv"></div></div>
+      <div class="bl-col"><label>Categorías</label><input type="text" id="blCat" placeholder="Ej. tabaco + Enter"><div class="chips" id="chCat"></div></div>
+      <div class="bl-col"><label>Términos (en título)</label><input type="text" id="blTerm" placeholder="Ej. apuestas + Enter"><div class="chips" id="chTerm"></div></div>
+    </div>
+    <div class="ctrlfoot" style="margin-top:14px"><div class="grow"></div><button class="btn danger" id="saveBl">Guardar lista negra</button></div>
+  </div>
+
+  <!-- Ofertas pendientes -->
+  <div class="card">
+    <h2>Bandeja de ofertas <span class="count" id="offCount"></span></h2>
+    <p class="desc">Ofertas de pago esperando tu decisión en todo el circuito (día seleccionado).</p>
+    <div id="offers"></div>
+  </div>
+
+  <!-- Playlist por pantalla -->
+  <div class="card">
+    <h2>Playlist por pantalla</h2>
+    <p class="desc">Tu parrilla del día por pantalla: contenido propio, ofertas aceptadas y huecos libres. Añade tu contenido y emite.</p>
+    <div class="scrhead">
+      <div class="sel"><label>Pantalla</label><select id="screenSel"></select></div>
+      <div class="kpi" id="scrKpi"></div>
+      <div class="grow"></div>
+      <button class="btn own" id="addOwn">+ Contenido propio</button>
+      <button class="btn live" id="autoBtn">▶ Emitir auto</button>
+      <button class="btn primary" id="emitBtn">Emitir ahora</button>
+    </div>
+    <div id="bands"></div>
+    <div class="foot" id="foot"></div>
+  </div>
+</div>
+
+<!-- Add own modal -->
+<div class="modal" id="modal">
+  <div class="mbox">
+    <h3>Añadir contenido propio</h3>
+    <p class="msub" id="mSub"></p>
+    <div class="f"><label>Título</label><input type="text" id="mTtl" placeholder="Ej. Promo de la casa"></div>
+    <div class="frow">
+      <div class="f"><label>Franja</label><select id="mBand"></select></div>
+      <div class="f"><label>Huecos</label><input type="number" id="mSlots" value="1" min="1"></div>
+    </div>
+    <label style="display:block;font-size:11px;color:var(--mut);font-family:monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Origen del creativo</label>
+    <div class="seg"><button data-src="url" class="on">Pegar URL</button><button data-src="file">Subir archivo</button></div>
+    <div class="f" id="urlField"><label>URL</label><input type="url" id="mUrl" placeholder="https://…/spot.mp4"></div>
+    <div class="f" id="fileField" style="display:none"><label>Archivo (vídeo/imagen, máx 80MB)</label><input type="file" id="mFile" accept="video/*,image/*"><div class="up" id="upStatus"></div></div>
+    <div class="f"><label>Tipo</label><select id="mType"><option value="video">Vídeo</option><option value="image">Imagen</option></select></div>
+    <div class="mact"><button class="btn ghost" id="mCancel">Cancelar</button><button class="btn own" id="mSave">Añadir a la playlist</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const WORKER='https://pixer-eleven.csilvasantin.workers.dev';
+const $=(s)=>document.querySelector(s);
+const fmtEur=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const state={stores:[],store:null,circuit:'',date:'',control:null,screens:[],screen:null,day:null,offers:[],auto:false,autoTimer:null,pollTimer:null,addSrc:'url'};
+
+function slug(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function todayMadrid(){const p={};new Intl.DateTimeFormat('es-ES',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return `${p.year}-${p.month}-${p.day}`;}
+function gridKey(){return localStorage.getItem('grid_key')||'';}
+function ensureKey(){let k=gridKey();if(!k){k=prompt('Clave de administración (GRID_KEY):')||'';if(k)localStorage.setItem('grid_key',k);}return k;}
+function toast(m,e){const t=$('#toast');t.textContent=m;t.className='toast show'+(e?' err':'');clearTimeout(toast._t);toast._t=setTimeout(()=>t.className='toast',2600);}
+async function api(path,opts){const r=await fetch(WORKER+path,opts);let d=null;try{d=await r.json();}catch{}if(!r.ok||(d&&d.error))throw new Error((d&&d.error)||('HTTP '+r.status));return d;}
+
+function isScreen(sf){return ['pantalla','escaparate','vending','mostrador'].includes(sf.surface);}
+function screensOf(store){return store.surfaces.filter(isScreen).map(sf=>({id:slug(store.id)+'-'+slug(sf.name),name:sf.name,surface:sf.surface,cpm:parseFloat(String(sf.cpm||'').replace(/[^0-9.]/g,''))||8,pixerScreens:Array.isArray(sf.pixerScreens)?sf.pixerScreens:[]}));}
+
+async function loadCatalog(){
+  let list=[];
+  try{if(window.loadOmnipLocationsAsync){const r=await window.loadOmnipLocationsAsync();list=Array.isArray(r)?r:(r&&r.locations)||[];}}catch{}
+  if(!list.length&&window.loadOmnipLocations){try{list=window.loadOmnipLocations();}catch{}}
+  if(!list.length)list=window.OMNIP_LOCATIONS_DEFAULT||[];
+  state.stores=list.filter(s=>Array.isArray(s.surfaces)&&s.surfaces.some(isScreen));
+  const sel=$('#circuitSel');sel.innerHTML='';
+  state.stores.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});
+}
+
+async function selectCircuit(id){
+  state.store=state.stores.find(s=>s.id===id)||state.stores[0];
+  state.circuit=state.store.id;
+  state.screens=screensOf(state.store);
+  // Asegura que cada pantalla del circuito lleva su circuit (para que la lista
+  // negra y la política se apliquen a sus ofertas). Idempotente.
+  const k=gridKey();
+  await Promise.all(state.screens.map(sc=>api('/grid/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,screen:sc.id,name:sc.name,circuit:state.circuit,pixerScreens:sc.pixerScreens})}).catch(()=>{})));
+  const sel=$('#screenSel');sel.innerHTML='';
+  state.screens.forEach(sc=>{const o=document.createElement('option');o.value=sc.id;o.textContent=sc.name;sel.appendChild(o);});
+  await loadControl();
+  await loadOffers();
+  await selectScreen(state.screens[0]?.id);
+}
+
+// ── Control ──
+async function loadControl(){
+  try{const d=await api('/grid/control?circuit='+encodeURIComponent(state.circuit));state.control=d.control;}
+  catch{state.control={policy:'manual',ownPriority:true,blacklist:{advertisers:[],categories:[],terms:[]}};}
+  renderControl();
+}
+function renderControl(){
+  const c=state.control;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.toggle('sel',o.dataset.policy===c.policy));
+  $('#ownPri').checked=c.ownPriority!==false;
+  $('#policyHint').textContent=c.policy==='auto'?'auto · acepta salvo lista negra':'manual · tú apruebas';
+  renderChips();
+}
+function renderChips(){
+  const c=state.control.blacklist||{advertisers:[],categories:[],terms:[]};
+  const draw=(el,arr,kind)=>{el.innerHTML=(arr||[]).map((v,i)=>`<span class="chip"><b>${esc(v)}</b><span class="x" data-kind="${kind}" data-i="${i}">✕</span></span>`).join('');};
+  draw($('#chAdv'),c.advertisers,'advertisers');draw($('#chCat'),c.categories,'categories');draw($('#chTerm'),c.terms,'terms');
+  document.querySelectorAll('.chip .x').forEach(x=>x.onclick=()=>{state.control.blacklist[x.dataset.kind].splice(+x.dataset.i,1);renderChips();});
+}
+function addChip(kind,inp){const v=inp.value.trim();if(!v)return;if(!state.control.blacklist[kind])state.control.blacklist[kind]=[];if(!state.control.blacklist[kind].includes(v))state.control.blacklist[kind].push(v);inp.value='';renderChips();}
+async function saveControl(extra){
+  const k=ensureKey();if(!k){toast('Necesitas la clave',true);return;}
+  const c=state.control;
+  try{const d=await api('/grid/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,circuit:state.circuit,policy:c.policy,ownPriority:$('#ownPri').checked,blacklist:c.blacklist})});state.control=d.control;renderControl();toast(extra||'Guardado ✓');loadOffers();}
+  catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── Ofertas (agregadas de todas las pantallas) ──
+async function loadOffers(){
+  const all=[];
+  await Promise.all(state.screens.map(async sc=>{
+    try{const d=await api(`/grid/day?screen=${encodeURIComponent(sc.id)}&date=${state.date}`);(d.pendingOffers||[]).forEach(o=>all.push({...o,_screen:sc.id,_screenName:sc.name}));}catch{}
+  }));
+  all.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  state.offers=all;renderOffers();
+}
+function bandLabelCfg(bandId){const b=(state.day?.bands||[]).find(x=>x.id===bandId);return b?b.label:bandId;}
+function renderOffers(){
+  $('#offCount').textContent=state.offers.length?`${state.offers.length} por decidir`:'';
+  const el=$('#offers');
+  if(!state.offers.length){el.innerHTML='<div class="empty">Sin ofertas pendientes. Todo bajo control.</div>';return;}
+  el.innerHTML=state.offers.map(o=>`<div class="offer">
+    <span class="where">${esc(o._screenName)} · ${esc(o.bandId)}</span>
+    <span class="adv">${esc(o.advertiser||'—')}</span>
+    <span class="meta">${esc(o.title||'')}${o.category?' · '+esc(o.category):''} · ${o.creative?o.creative.type:''}</span>
+    <span class="price">${fmtEur.format(o.price||0)}</span>
+    <span class="acts">
+      <button class="btn good sm" data-act="accept" data-s="${o._screen}" data-id="${o.id}">Aceptar</button>
+      <button class="btn danger sm" data-act="reject" data-s="${o._screen}" data-id="${o.id}">Rechazar</button>
+    </span></div>`).join('');
+  el.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>decide(b.dataset.s,b.dataset.id,b.dataset.act));
+}
+async function decide(screen,id,decision){
+  const k=ensureKey();if(!k){toast('Necesitas la clave',true);return;}
+  try{await api('/grid/decide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,screen,date:state.date,id,decision})});
+    toast(decision==='accept'?'Oferta aceptada ✓':'Oferta rechazada');await loadOffers();if(screen===state.screen?.id)await refresh();}
+  catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── Pantalla / parrilla ──
+async function selectScreen(id){state.screen=state.screens.find(s=>s.id===id)||state.screens[0];if(!state.screen){$('#bands').innerHTML='<div class="empty">Sin pantallas.</div>';return;}await refresh();}
+async function refresh(){const sc=state.screen;if(!sc)return;try{const d=await api(`/grid/day?screen=${encodeURIComponent(sc.id)}&date=${state.date}`);state.day=d;renderDay();}catch(e){$('#bands').innerHTML='<div class="empty">Error: '+e.message+'</div>';}}
+function renderDay(){
+  const d=state.day;if(!d)return;const t=d.totals;const np=d.nowPlaying;
+  $('#scrKpi').innerHTML=`<b>${t.ownSlots}</b> propios · <b>${t.paidSlots}</b> pagados · <b style="color:var(--accent)">${t.pendingSlots}</b> pendientes · <span class="g"><b>${t.freeSlots}</b> libres</span> · ${t.occupancy}% · ${fmtEur.format(t.revenue)}`;
+  $('#bands').innerHTML=d.bands.map(b=>{
+    const slots=b.slots.map(s=>{
+      if(s.kind==='free')return `<div class="slot free" data-band="${b.id}">+ Mi contenido</div>`;
+      const playing=(d.now.isToday&&np&&!np.free&&np.bookingId===s.bookingId&&np.bandId===b.id);
+      const tag=s.kind==='own'?'PROPIO':(s.kind==='pending'?'OFERTA':'PAGADO');
+      const inl=s.kind==='pending'?`<div class="inl"><button class="ok" data-act="accept" data-s="${d.screen}" data-id="${s.bookingId}">✓</button><button class="no" data-act="reject" data-s="${d.screen}" data-id="${s.bookingId}">✕</button></div>`:'';
+      const rm=(s.kind!=='pending')?`<span class="x" data-unbook="${s.bookingId}" title="Quitar">✕</span>`:'';
+      return `<div class="slot ${s.kind}${playing?' playing':''}">${rm}<span class="tag">${tag}${playing?' · ▶ on air':''}</span><span class="adv">${esc(s.advertiser||'—')}</span><span class="ttl">${esc(s.title||'')}</span>${inl}</div>`;
+    }).join('');
+    return `<div class="band${b.isNow?' cur':''}"><div class="bhead"><span class="btitle">${esc(b.label)}</span><span class="bhours">${b.from}–${b.to}</span>${b.isNow?'<span class="nowtag">AHORA</span>':''}<span class="avail"><b>${b.free}</b> libres · ${b.own} propio · ${b.paid} pagado${b.pending?` · ${b.pending} oferta`:''}</span></div><div class="slots">${slots}</div></div>`;
+  }).join('');
+  $('#foot').textContent=`${state.store.name} · ${state.screen.name} · ${d.date} · ${d.config.pixerScreens&&d.config.pixerScreens.length?('→ '+d.config.pixerScreens.join(', ')):'sin pixerScreen'} · política ${d.config.policy==='inherit'?('circuito ('+(state.control?.policy||'manual')+')'):d.config.policy}`;
+  $('#bands').querySelectorAll('.slot.free').forEach(el=>el.onclick=()=>openAdd(el.dataset.band));
+  $('#bands').querySelectorAll('[data-unbook]').forEach(el=>el.onclick=(e)=>{e.stopPropagation();unbook(el.dataset.unbook);});
+  $('#bands').querySelectorAll('[data-act]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();decide(b.dataset.s,b.dataset.id,b.dataset.act);});
+}
+async function unbook(id){if(!confirm('¿Quitar este contenido?'))return;const k=ensureKey();if(!k)return;try{await api('/grid/unbook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,screen:state.screen.id,date:state.date,id})});toast('Quitado');refresh();}catch(e){toast('Error: '+e.message,true);}}
+
+// ── Añadir contenido propio ──
+function openAdd(bandId){
+  const sel=$('#mBand');sel.innerHTML=(state.day.bands||[]).map(b=>`<option value="${b.id}" ${b.id===bandId?'selected':''}>${esc(b.label)} (${b.free} libres)</option>`).join('');
+  $('#mSub').textContent=`${state.screen.name} · ${state.date}`;
+  $('#mTtl').value='';$('#mUrl').value='';$('#mFile').value='';$('#upStatus').textContent='';$('#mSlots').value=1;
+  setAddSrc('url');$('#modal').classList.add('open');$('#mTtl').focus();
+}
+function setAddSrc(src){state.addSrc=src;document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.src===src));$('#urlField').style.display=src==='url'?'':'none';$('#fileField').style.display=src==='file'?'':'none';}
+function closeAdd(){$('#modal').classList.remove('open');}
+async function uploadFile(file){
+  const k=ensureKey();if(!k)throw new Error('sin clave');
+  const ext=(file.name.split('.').pop()||'bin').toLowerCase();
+  $('#upStatus').textContent='Subiendo…';
+  const r=await fetch(`${WORKER}/grid/upload?circuit=${encodeURIComponent(state.circuit)}&ext=${encodeURIComponent(ext)}&key=${encodeURIComponent(k)}`,{method:'POST',headers:{'Content-Type':file.type||'application/octet-stream'},body:file});
+  const d=await r.json();if(!r.ok||d.error)throw new Error(d.error||'upload');
+  $('#upStatus').textContent='Subido ✓';return d.url;
+}
+async function doAdd(){
+  const k=ensureKey();if(!k){toast('Necesitas la clave',true);return;}
+  const title=$('#mTtl').value.trim();if(!title){toast('Pon un título',true);return;}
+  let url=$('#mUrl').value.trim();
+  try{
+    if(state.addSrc==='file'){const f=$('#mFile').files[0];if(!f){toast('Elige un archivo',true);return;}url=await uploadFile(f);}
+    if(!url){toast('Falta el creativo',true);return;}
+    await api('/grid/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,screen:state.screen.id,date:state.date,bandId:$('#mBand').value,slots:Math.max(1,parseInt($('#mSlots').value,10)||1),status:'own',advertiser:state.store.name,title,creative:{type:$('#mType').value,url,name:title}})});
+    closeAdd();toast('Contenido propio añadido ✓');refresh();
+  }catch(e){toast(e.message==='no-space'?'No quedan huecos':('Error: '+e.message),true);}
+}
+
+// ── Emitir ──
+async function emitNow(){const k=ensureKey();if(!k){toast('Necesitas la clave',true);return;}try{const d=await api('/grid/emit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,screen:state.screen.id})});toast(d.pushed.length?('Emitido a: '+d.pushed.join(', ')):'Sin pixerScreen');}catch(e){toast('Error: '+e.message,true);}}
+function toggleAuto(){state.auto=!state.auto;const b=$('#autoBtn');b.classList.toggle('on',state.auto);b.textContent=state.auto?'■ Emitir auto':'▶ Emitir auto';if(state.auto){emitNow();state.autoTimer=setInterval(emitNow,30000);toast('Emisión automática activada');}else{clearInterval(state.autoTimer);toast('Emisión automática parada');}}
+
+async function init(){
+  state.date=todayMadrid();$('#dateInp').value=state.date;
+  await loadCatalog();
+  const xt=state.stores.find(s=>s.id==='xtanco')||state.stores[0];
+  $('#circuitSel').value=xt?.id||'';
+  await selectCircuit(xt?.id);
+  $('#circuitSel').onchange=e=>selectCircuit(e.target.value);
+  $('#screenSel').onchange=e=>selectScreen(e.target.value);
+  $('#dateInp').onchange=e=>{state.date=e.target.value||todayMadrid();loadOffers();refresh();};
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{state.control.policy=o.dataset.policy;renderControl();});
+  $('#savePolicy').onclick=()=>saveControl('Política guardada ✓');
+  $('#blAdv').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addChip('advertisers',e.target);}};
+  $('#blCat').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addChip('categories',e.target);}};
+  $('#blTerm').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addChip('terms',e.target);}};
+  $('#saveBl').onclick=()=>saveControl('Lista negra guardada ✓');
+  $('#addOwn').onclick=()=>{if(state.day)openAdd(state.day.bands[0]?.id);};
+  $('#emitBtn').onclick=emitNow;$('#autoBtn').onclick=toggleAuto;
+  document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>setAddSrc(b.dataset.src));
+  $('#mCancel').onclick=closeAdd;$('#mSave').onclick=doAdd;
+  $('#modal').onclick=e=>{if(e.target.id==='modal')closeAdd();};
+  state.pollTimer=setInterval(()=>{if(!$('#modal').classList.contains('open')){loadOffers();refresh();}},20000);
+}
+init();
+</script>
+</body>
+</html>
