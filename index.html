@@ -271,7 +271,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       <a href="#capas" data-i18n="nav.layers">3 layers</a>
       <a href="#hardware">Lenovo + Nvidia</a>
       <a href="#stack">Stack</a>
-      <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" class="live" data-demo-gate data-i18n="nav.demo">Live demo</a>
+      <a href="/admira-xp/" class="live" data-demo-gate data-i18n="nav.demo">Live demo</a>
       <span class="lang-switch" aria-label="Language selector">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="es">ES</button>
@@ -504,7 +504,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       </div>
       <p data-i18n="xp.outro">The Xtanco twin (tobacco shops) is the first production vertical. The Shoptalk Europe booth is the next one — and demonstrates the full case in a closed trade-show space.</p>
       <div class="links">
-        <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" data-demo-gate>↗ Admira XP live</a>
+        <a href="/admira-xp/" data-demo-gate>↗ Admira XP live</a>
         <a href="#omni" data-i18n="xp.next">↓ next: OmniPublicity</a>
       </div>
     </div>
@@ -578,7 +578,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     <a class="footer-logo" href="#top" aria-label="XpaceOS"><img src="/assets/xpaceos-logo-transparent.png" alt="XpaceOS"></a>
     <span>© 2026 ADmiraNeXT · XpaceOS</span>
     <a href="https://csilvasantin.github.io/pixer-ai-content/latest/audio.html" target="_blank" rel="noopener">Pixer.ai</a>
-    <a href="https://csilvasantin.github.io/01.-AdmiraXperience-Game/" target="_blank" rel="noopener" data-demo-gate>Admira XP</a>
+    <a href="/admira-xp/" data-demo-gate>Admira XP</a>
     <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">OmniPublicity</a>
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
     <span class="sig">XPACEOS · v.2026.05.09</span>
@@ -851,18 +851,7 @@ function applyLanguage(lang) {
   if (typeof renderGemelos === 'function') renderGemelos();
 }
 
-document.querySelectorAll('[data-lang]').forEach(btn => {
-  btn.addEventListener('click', () => applyLanguage(btn.getAttribute('data-lang')));
-});
-
 // Live demo abierto: los enlaces [data-demo-gate] abren directamente, sin login.
-
-
-try {
-  applyLanguage(localStorage.getItem('xpaceosLang') || 'en');
-} catch {
-  applyLanguage('en');
-}
 
 
 // ─── Live twins catalog (shared OmniPublicity catalog) ─────────────
@@ -930,6 +919,16 @@ async function loadGemelos() {
 }
 renderGemelos();
 loadGemelos();
+
+document.querySelectorAll('[data-lang]').forEach(btn => {
+  btn.addEventListener('click', () => applyLanguage(btn.getAttribute('data-lang')));
+});
+
+try {
+  applyLanguage(localStorage.getItem('xpaceosLang') || 'en');
+} catch {
+  applyLanguage('en');
+}
 
 
 const VISIT_NOTIFY_ENDPOINT = 'https://admira-telegram-bridge.csilvasantin.workers.dev/visits/xpaceos';
