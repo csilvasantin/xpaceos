@@ -480,7 +480,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       </div>
       <p data-i18n="pixer.outro">Each asset is delivered with a descriptive title and auto-generated cover, ready to push to the Digital Twin feed with one click.</p>
       <div class="links">
-        <a href="https://csilvasantin.github.io/pixer-ai-content/latest/audio.html" target="_blank" rel="noopener">↗ Pixer.ai live</a>
+        <a href="https://csilvasantin.github.io/pixer-ai-content/" target="_blank" rel="noopener">↗ Pixer.ai live</a>
         <a href="#xp" data-i18n="pixer.next">↓ next: Admira XP</a>
       </div>
     </div>
@@ -577,7 +577,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   <div class="wrap">
     <a class="footer-logo" href="#top" aria-label="XpaceOS"><img src="/assets/xpaceos-logo-transparent.png" alt="XpaceOS"></a>
     <span>© 2026 ADmiraNeXT · XpaceOS</span>
-    <a href="https://csilvasantin.github.io/pixer-ai-content/latest/audio.html" target="_blank" rel="noopener">Pixer.ai</a>
+    <a href="https://csilvasantin.github.io/pixer-ai-content/" target="_blank" rel="noopener">Pixer.ai</a>
     <a href="/admira-xp/" data-demo-gate>Admira XP</a>
     <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">OmniPublicity</a>
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
@@ -678,6 +678,7 @@ const I18N = {
     'xp.feat3': '<b>AUDIENCE CAPTURE</b>anonymous profile, gender, estimated age',
     'xp.feat4': '<b>METRICS</b>impressions, attention, Club conversion',
     'xp.feat5': '<b>SPACE CONTROL</b>scent, music, Hue lighting, ESL',
+    'xp.feat6': '<b>XTAPI API</b>status, telegram, external command',
     'xp.outro': 'The Xtanco twin (tobacco shops) is the first production vertical. The Shoptalk Europe booth is the next one — and demonstrates the full case in a closed trade-show space.',
     'xp.next': '↓ next: OmniPublicity',
     'gemelos.badge': 'Digital twins in production',
@@ -701,6 +702,10 @@ const I18N = {
     'omni.feat6': '<b>SHARED BACKEND</b>same XpaceOS — no separate integration',
     'stack.title': '<span class="num">07</span>How it is built inside',
     'stack.lede': 'Small stack, explicit decisions, everything open on GitHub Pages + Cloudflare, running on Lenovo edge with Nvidia inference. No opaque SaaS.',
+    'stack.pixer': 'Static SPA · Gemini · Suno proxy · Pollinations · ElevenLabs worker',
+    'stack.xp': 'Isometric canvas · Service Worker · KV signage feed · YouTube IFRAME',
+    'stack.suno': 'Native Node · Clerk auth cookie · Tailscale Funnel /suno',
+    'stack.tube': 'Native Node · yt-dlp + ffmpeg · Funnel /admira/tube',
     'metrics.title': '<span class="num">08</span>Pilot status',
     'metrics.lede': 'Live metrics from the Xtanco simulator running in production and the Shoptalk EU setup. If the workers are asleep, the numbers show "—".',
     'metrics.screens': 'active signage screens',
@@ -723,6 +728,7 @@ const I18N = {
     'demoGate.error': 'acceso denegado',
     'hero.title': 'El sistema operativo<br>del <span class="grad">retail físico</span>.',
     'hero.lede': 'XpaceOS convierte cada tienda, cada escaparate y cada stand en un medio publicitario inteligente. Tres capas integradas — creación con IA, distribución sobre un Gemelo Digital y marketplace de subastas en tiempo real — corriendo sobre <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. En vivo en Shoptalk Europe del 9 al 11 de junio en Fira Barcelona.',
+    'hero.badge': '🟢 LIVE @ SHOPTALK EUROPE 2026 · BARCELONA',
     'hero.boothCta': 'Ven al booth →',
     'hero.howCta': 'Cómo funciona',
     'booth.title': '<span class="num">00</span>El booth es la demo',
@@ -749,6 +755,7 @@ const I18N = {
     'platform.flow': '<b>Pixer.IA</b> crea → <b>XpaceOS</b> distribuye → <b>Admira.app</b> vende. Una plataforma, un login, un mismo conjunto de datos.',
     'flow.title': 'FLUJO DE CONTROL',
     'flow.oneTitle': '① MONITOR DEL OPERADOR',
+    'flow.oneText': 'Gemelo Digital · Lenovo ThinkEdge + Nvidia GPU',
     'flow.threeTitle': '③ STAND FÍSICO (2.4m × 4m)',
     'flow.threeText': 'Pantallas · audio · luz · aroma · cámara',
     'flow.latency': '● LATENCIA < 200 ms',
@@ -796,6 +803,7 @@ const I18N = {
     'xp.feat3': '<b>AUDIENCE CAPTURE</b>perfil anónimo, género, edad estimada',
     'xp.feat4': '<b>METRICAS</b>impresiones, atención, conversión a Club',
     'xp.feat5': '<b>CONTROL DE ESPACIO</b>aroma, música, iluminación Hue, ESL',
+    'xp.feat6': '<b>XTAPI API</b>estado, telegram, comando externo',
     'xp.outro': 'El gemelo Xtanco (estancos) es la primera vertical en producción. El stand de Shoptalk Europe es la siguiente — y demuestra el caso completo en un espacio cerrado de feria.',
     'xp.next': '↓ siguiente: OmniPublicity',
     'gemelos.badge': 'Gemelos en producción',
@@ -819,6 +827,10 @@ const I18N = {
     'omni.feat6': '<b>BACKEND COMPARTIDO</b>mismo XpaceOS — sin integración separada',
     'stack.title': '<span class="num">07</span>Cómo está montado por dentro',
     'stack.lede': 'Stack pequeño, decisiones explícitas, todo open en GitHub Pages + Cloudflare, ejecutándose sobre Lenovo edge con inferencia Nvidia. Sin SaaS opaco.',
+    'stack.pixer': 'SPA estática · Gemini · proxy Suno · Pollinations · worker ElevenLabs',
+    'stack.xp': 'Canvas isométrico · Service Worker · feed signage en KV · YouTube IFRAME',
+    'stack.suno': 'Node nativo · cookie de auth Clerk · Tailscale Funnel /suno',
+    'stack.tube': 'Node nativo · yt-dlp + ffmpeg · Funnel /admira/tube',
     'metrics.title': '<span class="num">08</span>Estado del piloto',
     'metrics.lede': 'Métricas en vivo del simulador Xtanco corriendo en producción y del setup de Shoptalk EU. Si los workers están dormidos, los números muestran "—".',
     'metrics.screens': 'pantallas signage activas',
