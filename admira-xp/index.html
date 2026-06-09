@@ -619,12 +619,10 @@
     /* El panel de Contacto del grupo (admira-design, z 1000/1010) debe quedar por encima del splash (z 99999) */
     .admira-contact-backdrop{z-index:100000 !important;}
     .admira-contact-panel{z-index:100001 !important;}
-    /* Selector de idioma + Contacto agrupados a la derecha del splash nav */
     /* Selector de idioma centrado sobre la división wireframe ↔ tradicional del splash */
-    .splash-lang{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;border:1px solid rgba(255,255,255,.18);border-radius:6px;overflow:hidden;background:rgba(255,255,255,.04);pointer-events:auto}
-    .splash-lang-btn{pointer-events:auto;background:transparent;border:0;color:rgba(255,255,255,.6);font:600 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:.04em;padding:7px 10px;cursor:pointer;transition:color .15s,background .15s}
-    .splash-lang-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
-    .splash-lang-btn.is-active{color:#0a0a0a;background:#ffd86a}
+    .splash-lang{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;pointer-events:auto}
+    .splash-lang-btn{pointer-events:auto;border:1px solid rgba(255,255,255,.18);border-radius:6px;background:rgba(255,255,255,.04);color:#ffd86a;font:700 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:.12em;padding:7px 11px;cursor:pointer;text-transform:uppercase;transition:color .15s,background .15s,border-color .15s}
+    .splash-lang-btn:hover{color:#fff;background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.30)}
   </style>
   <!-- Idioma por defecto inglés; respeta la elección guardada antes de cargar el panel de contacto -->
   <script>try{document.documentElement.lang=localStorage.getItem('xtanco_lang')==='es'?'es':'en';}catch(e){document.documentElement.lang='en';}</script>
@@ -709,11 +707,10 @@
      fondo translúcido oscuro, "↗" como prefijo en enlaces externos. -->
 <nav id="splashNav" class="splash-nav" aria-label="Navegación principal">
   <a class="splash-nav-link" id="navigatorBtn" href="docs/navigator/" target="_blank" rel="noopener" title="Navigator · diagrama de flujo del DigitalTwin">↗ Navigator</a>
-  <div class="splash-lang" id="splashLang" role="group" aria-label="Idioma / Language">
-    <button type="button" class="splash-lang-btn" data-lang="en">EN</button>
-    <button type="button" class="splash-lang-btn" data-lang="es">ES</button>
+  <div class="splash-lang" id="splashLang" aria-label="Language selection">
+    <button type="button" class="splash-lang-btn" id="splashLangToggle" data-lang-target="es" aria-label="Switch to Spanish">ESP</button>
   </div>
-  <a class="splash-nav-link" id="splashContactBtn" href="#contact" data-admira-contact title="Contacto · Contact">Contacto</a>
+  <a class="splash-nav-link" id="splashContactBtn" href="#contact" data-admira-contact title="Contact">Contact</a>
 </nav>
 <div id="topBar">
   <span id="bbClock" style="color:#ffdd66;font-size:12px;font-weight:bold">09:00</span>
@@ -5997,7 +5994,8 @@ function setLanguage(nextLang){
   document.documentElement.lang=lang;
   try{localStorage.setItem('xtanco_lang',lang);}catch(e){}
   try{if(typeof applyHtmlLang==='function')applyHtmlLang(lang);}catch(e){}
-  try{document.querySelectorAll('#splashLang .splash-lang-btn').forEach(function(b){b.classList.toggle('is-active',b.dataset.lang===lang);});}catch(e){}
+  try{window.dispatchEvent(new CustomEvent('admira:languagechange',{detail:{lang:lang}}));}catch(e){}
+  try{if(typeof syncAdmiraContactPanel==='function')syncAdmiraContactPanel(lang);}catch(e){}
 }
 
 // ── STATE ─────────────────────────────────────────────────────
@@ -28147,6 +28145,9 @@ window.xtAPI = (function(){
     {sel:'#splashDemoBtn', en:'▶ DEMO', es:'▶ DEMO'},
     {sel:'.splash-hint', en:'PLAY · enter your Xpace · DEMO · hands-free autoplay', es:'JUGAR · entra a tu Xpacio · DEMO · autoplay sin manos'},
     {sel:'#splashContactBtn', en:'Contact', es:'Contacto'},
+    {sel:'#splashContactBtn', attr:'title', en:'Contact', es:'Contacto'},
+    {sel:'#splashLangToggle', en:'ESP', es:'ENG'},
+    {sel:'#splashLangToggle', attr:'aria-label', en:'Switch to Spanish', es:'Cambiar a inglés'},
     {sel:'.stat-label', idx:0, en:'Sales', es:'Ventas'},
     {sel:'.stat-label', idx:1, en:'Profit', es:'Beneficio'},
     {sel:'.stat-label', idx:2, en:'Sat', es:'Sat'},
@@ -28180,21 +28181,77 @@ window.xtAPI = (function(){
         if(it.attr) el.setAttribute(it.attr, val); else el.textContent = val;
       }catch(e){}
     });
+    var langToggle = document.getElementById('splashLangToggle');
+    if(langToggle) langToggle.dataset.langTarget = l==='en'?'es':'en';
+    if(typeof syncAdmiraContactPanel==='function') syncAdmiraContactPanel(l);
+  };
+  window.syncAdmiraContactPanel = function(l){
+    l = (l==='es') ? 'es' : 'en';
+    var panel = document.getElementById('admiraContactPanel');
+    if(!panel) return;
+    var copy = l==='es' ? {
+      close:'Cerrar panel de contacto',
+      title:'Contáctanos',
+      details:'Datos de contacto',
+      call:'Te llamamos',
+      name:'Nombre',
+      phone:'Teléfono',
+      reason:'Motivo',
+      send:'Enviar solicitud',
+      video:'Agendar videoconferencia',
+      office:'Oficina',
+      city:'Barcelona, España'
+    } : {
+      close:'Close contact panel',
+      title:'Contact us',
+      details:'Contact details',
+      call:'We call you',
+      name:'Name',
+      phone:'Phone',
+      reason:'Reason',
+      send:'Send request',
+      video:'Book a video conference',
+      office:'Office',
+      city:'Barcelona, Spain'
+    };
+    var close = panel.querySelector('.admira-contact-close');
+    if(close) close.setAttribute('aria-label', copy.close);
+    var title = panel.querySelector('#admiraContactPanelTitle');
+    if(title) title.textContent = copy.title;
+    var gridItems = panel.querySelectorAll('.admira-contact-panel-grid > div');
+    if(gridItems[0]) gridItems[0].textContent = copy.details;
+    if(gridItems[2]) gridItems[2].textContent = copy.call;
+    if(gridItems[4]) gridItems[4].textContent = copy.office;
+    if(gridItems[5]) gridItems[5].textContent = copy.city;
+    var labels = panel.querySelectorAll('.admira-contact-form label span');
+    if(labels[0]) labels[0].textContent = copy.name;
+    if(labels[1]) labels[1].textContent = copy.phone;
+    if(labels[2]) labels[2].textContent = copy.reason;
+    var submit = panel.querySelector('.admira-contact-form button[type="submit"]');
+    if(submit) submit.textContent = copy.send;
+    var video = panel.querySelector('.admira-contact-actions a');
+    if(video) video.textContent = copy.video;
   };
   function curLang(){ try{ return localStorage.getItem('xtanco_lang')==='es'?'es':'en'; }catch(e){ return 'en'; } }
   function wire(){
     var box = document.getElementById('splashLang');
     if(box) box.querySelectorAll('.splash-lang-btn').forEach(function(b){
       b.addEventListener('click', function(){
-        if(typeof setLanguage==='function') setLanguage(b.dataset.lang);
-        else { try{localStorage.setItem('xtanco_lang',b.dataset.lang);}catch(e){} window.applyHtmlLang(b.dataset.lang); }
-        document.querySelectorAll('#splashLang .splash-lang-btn').forEach(function(x){ x.classList.toggle('is-active', x.dataset.lang===b.dataset.lang); });
+        var next = b.dataset.langTarget || (curLang()==='en'?'es':'en');
+        if(typeof setLanguage==='function') setLanguage(next);
+        else { try{localStorage.setItem('xtanco_lang',next);}catch(e){} window.applyHtmlLang(next); }
       });
     });
     var cur = curLang();
     window.applyHtmlLang(cur);
-    document.querySelectorAll('#splashLang .splash-lang-btn').forEach(function(b){ b.classList.toggle('is-active', b.dataset.lang===cur); });
+    var langToggle = document.getElementById('splashLangToggle');
+    if(langToggle) langToggle.dataset.langTarget = cur==='en'?'es':'en';
   }
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.closest && e.target.closest('[data-admira-contact]')) {
+      setTimeout(function(){ window.syncAdmiraContactPanel(curLang()); }, 0);
+    }
+  });
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire); else wire();
 })();
 </script>

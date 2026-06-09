@@ -56,10 +56,9 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   nav a:hover{color:var(--ink)}
   nav .live{color:var(--warn);font-family:monospace;font-size:11px;letter-spacing:.12em}
   nav .live::before{content:"●";color:var(--warn);margin-right:4px;animation:pulse 1.5s ease-in-out infinite}
-  .lang-switch{display:inline-flex;gap:6px;margin-left:4px;border-left:1px solid var(--line);padding-left:16px}
-  .lang-switch button{appearance:none;border:1px solid transparent;background:transparent;color:var(--mut);font:inherit;font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:2px 6px;border-radius:4px;cursor:pointer}
-  .lang-switch button.active{color:var(--ink);border-color:var(--line);background:rgba(120,243,255,.06)}
-  .lang-switch button:hover{color:var(--ink)}
+  .language-switcher{display:inline-flex;align-items:center;margin-left:4px;border-left:1px solid var(--line);padding-left:16px}
+  .lang-toggle{appearance:none;border:1px solid var(--line);background:rgba(120,243,255,.06);color:var(--brand);font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;padding:6px 10px;border-radius:6px;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s,color .15s}
+  .lang-toggle:hover{border-color:rgba(120,243,255,.55);background:rgba(120,243,255,.12);color:var(--ink);text-decoration:none}
   .nav-contact{margin-left:14px;padding:5px 14px;border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;transition:border-color .15s,background .15s}
   .nav-contact:hover{border-color:rgba(120,243,255,.55);background:rgba(120,243,255,.06);text-decoration:none}
 
@@ -276,11 +275,10 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       <a href="#hardware">Lenovo + Nvidia</a>
       <a href="#stack">Stack</a>
       <a href="/admira-xp/" class="live" data-demo-gate data-i18n="nav.demo">Live demo</a>
-      <span class="lang-switch" aria-label="Language selector">
-        <button type="button" data-lang="en" class="active">EN</button>
-        <button type="button" data-lang="es">ES</button>
+      <span class="language-switcher" aria-label="Language selection">
+        <button type="button" class="lang-toggle" id="lang-toggle" data-lang-target="es" aria-label="Switch to Spanish">ESP</button>
       </span>
-      <a class="nav-contact" href="#contact" data-admira-contact>Contacto</a>
+      <a class="nav-contact" href="#contact" data-admira-contact data-i18n="contact">Contact</a>
     </nav>
   </div>
 </header>
@@ -601,6 +599,9 @@ const I18N = {
     'nav.platform': 'Platform',
     'nav.layers': '3 layers',
     'nav.demo': 'Live demo',
+    contact: 'Contact',
+    lang_toggle: 'ESP',
+    lang_toggle_aria: 'Switch to Spanish',
     'demoGate.tag': 'restricted access',
     'demoGate.prompt': '> password',
     'demoGate.button': 'unlock',
@@ -718,44 +719,47 @@ const I18N = {
     'metrics.days': 'days to Shoptalk EU 2026'
   },
   es: {
-    title: 'XpaceOS — El sistema operativo del retail físico · Live at Shoptalk Europe 2026',
-    description: 'XpaceOS de ADmiraNeXT convierte cada tienda y cada stand en un medio publicitario inteligente. Tres capas integradas — Pixer.ai (creación IA), Admira XP (gemelo digital) y OmniPublicity (marketplace RTB) — corriendo sobre Lenovo edge + Nvidia GPU. En vivo en Shoptalk Europe, Fira Barcelona, 9-11 junio 2026.',
+    title: 'XpaceOS — El sistema operativo del comercio físico · En vivo en Shoptalk Europe 2026',
+    description: 'XpaceOS de ADmiraNeXT convierte cada tienda y cada stand en un medio publicitario inteligente. Tres capas integradas — Pixer.ai (creación IA), Admira XP (gemelo digital) y OmniPublicity (mercado RTB) — corriendo sobre Lenovo edge + Nvidia GPU. En vivo en Shoptalk Europe, Fira Barcelona, 9-11 junio 2026.',
     'event.date': '9–11 JUNIO',
-    'event.cta': 'visítanos en el booth →',
-    'nav.booth': 'Booth Shoptalk',
+    'event.cta': 'visítanos en el stand →',
+    'nav.booth': 'Stand Shoptalk',
     'nav.platform': 'Plataforma',
     'nav.layers': '3 capas',
-    'nav.demo': 'Demo live',
+    'nav.demo': 'Demo en vivo',
+    contact: 'Contacto',
+    lang_toggle: 'ENG',
+    lang_toggle_aria: 'Cambiar a inglés',
     'demoGate.tag': 'acceso restringido',
     'demoGate.prompt': '> password',
-    'demoGate.button': 'unlock',
+    'demoGate.button': 'desbloquear',
     'demoGate.error': 'acceso denegado',
-    'hero.title': 'El sistema operativo<br>del <span class="grad">retail físico</span>.',
-    'hero.lede': 'XpaceOS convierte cada tienda, cada escaparate y cada stand en un medio publicitario inteligente. Tres capas integradas — creación con IA, distribución sobre un Gemelo Digital y marketplace de subastas en tiempo real — corriendo sobre <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. En vivo en Shoptalk Europe del 9 al 11 de junio en Fira Barcelona.',
-    'hero.badge': '🟢 LIVE @ SHOPTALK EUROPE 2026 · BARCELONA',
-    'hero.boothCta': 'Ven al booth →',
+    'hero.title': 'El sistema operativo<br>del <span class="grad">comercio físico</span>.',
+    'hero.lede': 'XpaceOS convierte cada tienda, cada escaparate y cada stand en un medio publicitario inteligente. Tres capas integradas — creación con IA, distribución sobre un Gemelo Digital y mercado de subastas en tiempo real — corriendo sobre <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. En vivo en Shoptalk Europe del 9 al 11 de junio en Fira Barcelona.',
+    'hero.badge': '🟢 EN VIVO @ SHOPTALK EUROPE 2026 · BARCELONA',
+    'hero.boothCta': 'Ven al stand →',
     'hero.howCta': 'Cómo funciona',
-    'booth.title': '<span class="num">00</span>El booth es la demo',
-    'booth.lede': 'No traemos un slide deck. Traemos el sistema corriendo. El propio stand de XpaceOS en Shoptalk está controlado en directo por el Gemelo Digital — pantallas, música, iluminación, aroma — desde un único monitor que cualquier visitante puede tocar y ver cómo cambia el espacio físico en tiempo real.',
+    'booth.title': '<span class="num">00</span>El stand es la demo',
+    'booth.lede': 'No traemos una presentación. Traemos el sistema corriendo. El propio stand de XpaceOS en Shoptalk está controlado en directo por el Gemelo Digital — pantallas, música, iluminación, aroma — desde un único monitor que cualquier visitante puede tocar y ver cómo cambia el espacio físico en tiempo real.',
     'booth.when': 'SHOPTALK EUROPE · 9–11 JUN 2026 · FIRA BARCELONA',
     'booth.cardTitle': 'Stand XpaceOS — el gemelo controlando el espacio',
     'booth.cardCopy': 'Un monitor en el stand corre el Gemelo Digital del propio stand. Toca una pantalla en el gemelo → cambia la pantalla física. Sube el volumen en el gemelo → suena más en el stand. Activa el difusor de aroma desde el gemelo → huele a café recién hecho.',
-    'booth.li1': '📺 <b>Pantallas signage</b> sincronizadas con el gemelo',
-    'booth.li2': '🔊 <b>Audio espacial</b> programable por zona del booth',
+    'booth.li1': '📺 <b>Pantallas de cartelería digital</b> sincronizadas con el gemelo',
+    'booth.li2': '🔊 <b>Audio espacial</b> programable por zona del stand',
     'booth.li3': '💡 <b>Iluminación Hue</b> reactiva al contenido',
-    'booth.li4': '👃 <b>Aroma marketing</b> activable por evento',
-    'booth.li5': '📡 <b>Audience capture</b> con cámara y perfil anónimo',
-    'booth.li6': '🎯 <b>Lead scan</b> con QR del Club integrado',
+    'booth.li4': '👃 <b>Marketing olfativo</b> activable por evento',
+    'booth.li5': '📡 <b>Captación de audiencia</b> con cámara y perfil anónimo',
+    'booth.li6': '🎯 <b>Captura de contactos</b> con QR del Club integrado',
     'booth.bookDemo': 'Reservar demo',
-    'platform.title': '<span class="num">01</span>La plataforma AdmiraNext, en vivo en el booth',
-    'platform.lede': 'En el booth Lenovo × Nvidia no enseñamos una sola herramienta — corremos toda la plataforma AdmiraNext de punta a punta. Tres productos conectados que cualquier visitante puede usar, desde crear el contenido hasta vender la impresión.',
+    'platform.title': '<span class="num">01</span>La plataforma AdmiraNext, en vivo en el stand',
+    'platform.lede': 'En el stand Lenovo × Nvidia no enseñamos una sola herramienta — corremos toda la plataforma AdmiraNext de punta a punta. Tres productos conectados que cualquier visitante puede usar, desde crear el contenido hasta vender la impresión.',
     'platform.when': 'SHOPTALK EUROPE · 9-11 JUN 2026 · FIRA BARCELONA',
     'platform.studioKind': 'Creación',
-    'platform.studioCopy': 'La fábrica de contenido con IA. Entra un brief; salen audio, música, imagen y vídeo listos para signage en minutos — el combustible creativo de cada pantalla del espacio.',
+    'platform.studioCopy': 'La fábrica de contenido con IA. Entra un encargo; salen audio, música, imagen y vídeo listos para cartelería digital en minutos — el combustible creativo de cada pantalla del espacio.',
     'platform.xpaceKind': 'Distribución · estás aquí',
-    'platform.xpaceCopy': 'El sistema operativo del retail que estás leyendo ahora mismo. El Gemelo Digital distribuye ese contenido por el espacio físico y convierte cada superficie visible en inventario medible.',
+    'platform.xpaceCopy': 'El sistema operativo del comercio físico que estás leyendo ahora mismo. El Gemelo Digital distribuye ese contenido por el espacio físico y convierte cada superficie visible en inventario medible.',
     'platform.appKind': 'Venta',
-    'platform.appCopy': 'Xbusiness — el marketplace donde se compra y se vende toda la comunicación del punto de venta. Marcas y operadores negocian cada hueco, y el ingreso vuelve al dueño del espacio.',
+    'platform.appCopy': 'Xbusiness — el mercado donde se compra y se vende toda la comunicación del punto de venta. Marcas y operadores negocian cada hueco, y el ingreso vuelve al dueño del espacio.',
     'platform.flow': '<b>Pixer.IA</b> crea → <b>XpaceOS</b> distribuye → <b>Admira.app</b> vende. Una plataforma, un login, un mismo conjunto de datos.',
     'flow.title': 'FLUJO DE CONTROL',
     'flow.oneTitle': '① MONITOR DEL OPERADOR',
@@ -764,45 +768,45 @@ const I18N = {
     'flow.threeText': 'Pantallas · audio · luz · aroma · cámara',
     'flow.latency': '● LATENCIA < 200 ms',
     'hardware.title': '<span class="num">02</span>El hardware que hace posible la demo',
-    'hardware.lede': 'XpaceOS necesita inferencia local de baja latencia para que la audiencia capturada por la cámara dispare contenido relevante antes de que el visitante mire a otro lado. Lenovo edge y Nvidia GPU son los dos pilares que hacen viable la demo en sala de feria sin depender de cloud.',
-    'hardware.lenovoTitle': 'ThinkEdge — el servidor del booth',
-    'hardware.lenovoCopy': 'Compacto, fanless en variantes pasivas, certificado para entornos de retail. Hace de host del runtime de XpaceOS y del Gemelo Digital, además de servir el signage local cuando la conectividad de la feria es regular.',
+    'hardware.lede': 'XpaceOS necesita inferencia local de baja latencia para que la audiencia capturada por la cámara dispare contenido relevante antes de que el visitante mire a otro lado. Lenovo edge y Nvidia GPU son los dos pilares que hacen viable la demo en sala de feria sin depender de la nube.',
+    'hardware.lenovoTitle': 'ThinkEdge — el servidor del stand',
+    'hardware.lenovoCopy': 'Compacto, sin ventilador en variantes pasivas, certificado para entornos de comercio físico. Aloja el entorno de ejecución de XpaceOS y del Gemelo Digital, además de servir la cartelería digital local cuando la conectividad de la feria es irregular.',
     'hardware.lenovoLi1': 'ThinkEdge SE350 / SE450 según escenario',
-    'hardware.lenovoLi2': 'Provisioning vía ADmiraNeXT setup wizard',
-    'hardware.lenovoLi3': 'Failover a 4G/5G si Wi-Fi de feria cae',
-    'hardware.lenovoLi4': 'Telemetría agregada al dashboard XpaceOS',
+    'hardware.lenovoLi2': 'Provisionamiento mediante el asistente de configuración de ADmiraNeXT',
+    'hardware.lenovoLi3': 'Conmutación a 4G/5G si cae el Wi-Fi de la feria',
+    'hardware.lenovoLi4': 'Telemetría agregada al panel de XpaceOS',
     'hardware.nvidiaTitle': 'RTX / Jetson — la inferencia que mueve el stand',
-    'hardware.nvidiaCopy': 'GPU dedicada para Audience AI (perfil anónimo, género/edad estimados), reconocimiento de gestos en pantallas interactivas y inferencia de Pixer.ai cuando el visitante encarga contenido en directo desde el booth.',
-    'hardware.nvidiaLi1': 'Audience capture sin enviar imagen al cloud',
+    'hardware.nvidiaCopy': 'GPU dedicada para IA de audiencia (perfil anónimo, género/edad estimados), reconocimiento de gestos en pantallas interactivas e inferencia de Pixer.ai cuando el visitante encarga contenido en directo desde el stand.',
+    'hardware.nvidiaLi1': 'Captación de audiencia sin enviar imagen a la nube',
     'hardware.nvidiaLi2': 'Pixer.ai local para demos en directo',
     'hardware.nvidiaLi3': 'Reactividad del Gemelo < 200 ms',
-    'hardware.nvidiaLi4': 'Multi-stream: pantallas + tablets + cámara',
+    'hardware.nvidiaLi4': 'Flujos múltiples: pantallas + tablets + cámara',
     'layers.title': '<span class="num">03</span>Las tres capas de XpaceOS',
-    'layers.lede': 'Cada capa resuelve una pieza del puzzle. Juntas, forman la cadena completa que va del prompt creativo a la impresión publicitaria con métrica auditada. Otros venden trozos. XpaceOS es el sistema operativo entero.',
+    'layers.lede': 'Cada capa resuelve una pieza del puzzle. Juntas, forman la cadena completa que va del encargo creativo a la impresión publicitaria con métrica auditada. Otros venden trozos. XpaceOS es el sistema operativo entero.',
     'layers.pixerKind': 'Creación',
     'layers.pixerWho': 'Para creativos, marca y operadores de tienda',
-    'layers.pixerCopy': 'Briefs estructurados generan en minutos audio, música con letra, imágenes y video. Motores conectados: Suno, Lyria 3, ElevenLabs, FLUX, Imagen 4, Veo 3, Grok Imagine. Importación desde URL pública (YouTube, Vimeo, TikTok…) vía yt-dlp.',
+    'layers.pixerCopy': 'Encargos estructurados generan en minutos audio, música con letra, imágenes y video. Motores conectados: Suno, Lyria 3, ElevenLabs, FLUX, Imagen 4, Veo 3, Grok Imagine. Importación desde URL pública (YouTube, Vimeo, TikTok…) vía yt-dlp.',
     'layers.xpKind': 'Distribución',
-    'layers.xpWho': 'Para retailers que quieren probar antes de invertir',
-    'layers.xpCopy': 'Digital signage encima de un Gemelo Digital — una réplica isométrica de tu tienda o stand corriendo en el navegador. Programa playlists, mide impresiones, simula tráfico y audita audiencia antes de tocar un solo cable. El mismo motor controla el espacio físico cuando estás listo.',
+    'layers.xpWho': 'Para comercios que quieren probar antes de invertir',
+    'layers.xpCopy': 'Cartelería digital sobre un Gemelo Digital — una réplica isométrica de tu tienda o stand corriendo en el navegador. Programa listas de reproducción, mide impresiones, simula tráfico y audita audiencia antes de tocar un solo cable. El mismo motor controla el espacio físico cuando estás listo.',
     'layers.omniWho': 'Para anunciantes y agencias programáticas',
-    'layers.omniCopy': 'Real-Time Bidding sobre activos físicos: cada hueco visible se subasta en menos de 200 ms al anunciante con la mejor oferta para esa audiencia, ese momento y ese contexto. Inventario omnicanal: pantalla, escaparate, mostrador, vending, PWA.',
+    'layers.omniCopy': 'Puja en tiempo real sobre activos físicos: cada hueco visible se subasta en menos de 200 ms al anunciante con la mejor oferta para esa audiencia, ese momento y ese contexto. Inventario omnicanal: pantalla, escaparate, mostrador, máquina expendedora, PWA.',
     'layers.more': '→ ver detalle',
     'pixer.title': '<span class="num">04</span>Pixer.ai · Capa de creación',
-    'pixer.deepTitle': 'Brief estructurado → asset listo para signage en minutos',
-    'pixer.who': 'El retailer no necesita agencia externa: Pixer.ai genera el contenido en la propia plataforma.',
-    'pixer.copy': 'Cuatro tipos de contenido — Audio, Música, Imágenes, Video — con un brief operativo por cada uno. La plataforma orquesta los motores adecuados según el caso: TTS multilingüe para voz, Suno con letra custom para identidad sonora de marca, Imagen 4 / FLUX para visuales en serie, Veo 3 para video con audio nativo.',
+    'pixer.deepTitle': 'Encargo estructurado → activo listo para cartelería digital en minutos',
+    'pixer.who': 'El comercio no necesita agencia externa: Pixer.ai genera el contenido en la propia plataforma.',
+    'pixer.copy': 'Cuatro tipos de contenido — Audio, Música, Imágenes, Video — con un encargo operativo por cada uno. La plataforma orquesta los motores adecuados según el caso: TTS multilingüe para voz, Suno con letra personalizada para identidad sonora de marca, Imagen 4 / FLUX para visuales en serie, Veo 3 para video con audio nativo.',
     'pixer.feat1': '<b>SUNO</b>chirp-v4 / v4.5 · letra propia · 2 clips por canción',
     'pixer.feat2': '<b>LYRIA 3</b>Google · 30s o 2min con voz cantando',
     'pixer.feat3': '<b>ELEVENLABS</b>voces ultrarrealistas multilingüe',
     'pixer.feat4': '<b>IMAGEN 4 · FLUX · GROK</b>imagen estática 1024-2K',
     'pixer.feat5': '<b>VEO 3</b>video 720p con audio nativo',
-    'pixer.outro': 'Cada asset sale con título descriptivo y carátula auto-generada, listo para empujar al feed del Gemelo Digital con un click.',
+    'pixer.outro': 'Cada activo sale con título descriptivo y carátula generada automáticamente, listo para enviarse al flujo del Gemelo Digital con un clic.',
     'pixer.next': '↓ siguiente: Admira XP',
     'xp.title': '<span class="num">05</span>Admira XP · Capa de distribución',
-    'xp.deepTitle': 'Digital signage encima de un Gemelo Digital del espacio físico',
+    'xp.deepTitle': 'Cartelería digital sobre un Gemelo Digital del espacio físico',
     'xp.who': 'El simulador es la primera demo, pero también la herramienta de control en producción.',
-    'xp.copy': 'Admira XP renderiza tu tienda o tu stand en perspectiva isométrica con clientes reales, pantallas, escaparate, mostrador y aparato de olores. Cada pantalla del gemelo digital es un surface real configurable: asignas playlists, programas tomas de audio, defines reglas por hora/clima/perfil de cliente y ves el resultado antes de instalar nada en la tienda física. <b>Y cuando el espacio está montado, el mismo gemelo es el panel de control en directo.</b>',
+    'xp.copy': 'Admira XP renderiza tu tienda o tu stand en perspectiva isométrica con clientes reales, pantallas, escaparate, mostrador y aparato de olores. Cada pantalla del gemelo digital es una superficie real configurable: asignas listas de reproducción, programas tomas de audio, defines reglas por hora/clima/perfil de cliente y ves el resultado antes de instalar nada en la tienda física. <b>Y cuando el espacio está montado, el mismo gemelo es el panel de control en directo.</b>',
     'xp.feat1': '<b>GEMELO DIGITAL</b>réplica isométrica con tráfico simulado y real',
     'xp.feat3': '<b>AUDIENCE CAPTURE</b>perfil anónimo, género, edad estimada',
     'xp.feat4': '<b>METRICAS</b>impresiones, atención, conversión a Club',
@@ -811,34 +815,34 @@ const I18N = {
     'xp.outro': 'El gemelo Xtanco (estancos) es la primera vertical en producción. El stand de Shoptalk Europe es la siguiente — y demuestra el caso completo en un espacio cerrado de feria.',
     'xp.next': '↓ siguiente: OmniPublicity',
     'gemelos.badge': 'Gemelos en producción',
-    'gemelos.sub': 'Estos son los gemelos reales ya dados de alta en la plataforma, leídos en vivo del catálogo compartido — el mismo dataset en el que escribe el backoffice de OmniPublicity.',
-    'gemelos.foot': 'Un mismo dataset: das de alta un gemelo en el <b>backoffice de OmniPublicity</b> → aparece aquí y en el <b>mapa en vivo de admira.app</b>. Sin integración aparte.',
+    'gemelos.sub': 'Estos son los gemelos reales ya dados de alta en la plataforma, leídos en vivo del catálogo compartido — el mismo conjunto de datos en el que escribe el panel de OmniPublicity.',
+    'gemelos.foot': 'Un mismo conjunto de datos: das de alta un gemelo en el <b>panel de OmniPublicity</b> → aparece aquí y en el <b>mapa en vivo de admira.app</b>. Sin integración aparte.',
     'gemelos.loading': 'Cargando catálogo en vivo…',
     'gemelos.error': 'Catálogo en vivo no disponible ahora mismo — reintentando.',
     'gemelos.empty': 'Aún no hay gemelos publicados.',
-    'gemelos.surfaces': 'surfaces',
-    'gemelos.live': 'LIVE',
-    'gemelos.count': '{n} gemelos · {s} surfaces · en vivo del catálogo compartido',
-    'omni.title': '<span class="num">06</span>OmniPublicity · Capa de marketplace',
-    'omni.deepTitle': 'Real-Time Bidding sobre cada hueco físico visible',
+    'gemelos.surfaces': 'superficies',
+    'gemelos.live': 'EN VIVO',
+    'gemelos.count': '{n} gemelos · {s} superficies · en vivo del catálogo compartido',
+    'omni.title': '<span class="num">06</span>OmniPublicity · Capa de mercado',
+    'omni.deepTitle': 'Puja en tiempo real sobre cada hueco físico visible',
     'omni.who': 'El mismo modelo que Google Ads y The Trade Desk, sobre tus pantallas reales.',
     'omni.copy': 'Cada vez que un cliente real entra al campo de visión de una pantalla, OmniPublicity dispara una subasta en milisegundos. Los anunciantes pujan según contexto (hora, clima, stock disponible), audiencia (perfil Club, género, edad) y momento. Gana el mejor encaje, no el mayor presupuesto.',
     'omni.feat1': '<b>RTB &lt; 200ms</b>subasta por impresión, no por contrato anual',
     'omni.feat2': '<b>INVENTARIO OMNICANAL</b>pantallas, escaparates, vending, mostrador, PWA',
     'omni.feat3': '<b>BIDDING CONTEXT</b>hora, climatología, perfil cliente, stock, promo activa',
-    'omni.feat4': '<b>FALLBACK ELEGANTE</b>si nadie puja, contenido propio del retailer',
-    'omni.feat5': '<b>TRAZABILIDAD</b>cada impresión firmada con surface, ganador, CPM, atención',
+    'omni.feat4': '<b>RESPALDO ELEGANTE</b>si nadie puja, contenido propio del comercio',
+    'omni.feat5': '<b>TRAZABILIDAD</b>cada impresión firmada con superficie, ganador, CPM, atención',
     'omni.feat6': '<b>BACKEND COMPARTIDO</b>mismo XpaceOS — sin integración separada',
     'stack.title': '<span class="num">07</span>Cómo está montado por dentro',
-    'stack.lede': 'Stack pequeño, decisiones explícitas, todo open en GitHub Pages + Cloudflare, ejecutándose sobre Lenovo edge con inferencia Nvidia. Sin SaaS opaco.',
-    'stack.pixer': 'SPA estática · Gemini · proxy Suno · Pollinations · worker ElevenLabs',
-    'stack.xp': 'Canvas isométrico · Service Worker · feed signage en KV · YouTube IFRAME',
+    'stack.lede': 'Arquitectura pequeña, decisiones explícitas, todo abierto en GitHub Pages + Cloudflare, ejecutándose sobre Lenovo edge con inferencia Nvidia. Sin SaaS opaco.',
+    'stack.pixer': 'SPA estática · Gemini · proxy Suno · Pollinations · servicio ElevenLabs',
+    'stack.xp': 'Canvas isométrico · Service Worker · flujo de cartelería digital en KV · YouTube IFRAME',
     'stack.suno': 'Node nativo · cookie de auth Clerk · Tailscale Funnel /suno',
     'stack.tube': 'Node nativo · yt-dlp + ffmpeg · Funnel /admira/tube',
     'metrics.title': '<span class="num">08</span>Estado del piloto',
-    'metrics.lede': 'Métricas en vivo del simulador Xtanco corriendo en producción y del setup de Shoptalk EU. Si los workers están dormidos, los números muestran "—".',
-    'metrics.screens': 'pantallas signage activas',
-    'metrics.feed': 'items recientes en Pixer Feed',
+    'metrics.lede': 'Métricas en vivo del simulador Xtanco corriendo en producción y del montaje de Shoptalk EU. Si los servicios están dormidos, los números muestran "—".',
+    'metrics.screens': 'pantallas de cartelería digital activas',
+    'metrics.feed': 'elementos recientes en Pixer Feed',
     'metrics.credits': 'créditos Suno disponibles',
     'metrics.days': 'días para Shoptalk EU 2026'
   }
@@ -858,14 +862,71 @@ function applyLanguage(lang) {
     const key = el.getAttribute('data-i18n-html');
     if (dict[key]) el.innerHTML = dict[key];
   });
-  document.querySelectorAll('[data-lang]').forEach(btn => {
-    const active = btn.getAttribute('data-lang') === lang;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-  });
+  const langToggle = document.getElementById('lang-toggle');
+  if (langToggle) {
+    const next = lang === 'en' ? 'es' : 'en';
+    langToggle.dataset.langTarget = next;
+    langToggle.textContent = dict.lang_toggle || (lang === 'en' ? 'ESP' : 'ENG');
+    langToggle.setAttribute('aria-label', dict.lang_toggle_aria || (lang === 'en' ? 'Switch to Spanish' : 'Cambiar a inglés'));
+  }
   try { localStorage.setItem('xpaceosLang', lang); } catch {}
+  try { window.dispatchEvent(new CustomEvent('admira:languagechange', { detail: { lang } })); } catch {}
+  syncAdmiraContactPanel(lang);
   if (typeof renderGemelos === 'function') renderGemelos();
 }
+
+function syncAdmiraContactPanel(lang = document.documentElement.lang) {
+  const panel = document.getElementById('admiraContactPanel');
+  if (!panel) return;
+  const es = lang === 'es';
+  const copy = es ? {
+    close: 'Cerrar panel de contacto',
+    title: 'Contáctanos',
+    details: 'Datos de contacto',
+    call: 'Te llamamos',
+    name: 'Nombre',
+    phone: 'Teléfono',
+    reason: 'Motivo',
+    send: 'Enviar solicitud',
+    video: 'Agendar videoconferencia',
+    office: 'Oficina',
+    city: 'Barcelona, España',
+  } : {
+    close: 'Close contact panel',
+    title: 'Contact us',
+    details: 'Contact details',
+    call: 'We call you',
+    name: 'Name',
+    phone: 'Phone',
+    reason: 'Reason',
+    send: 'Send request',
+    video: 'Book a video conference',
+    office: 'Office',
+    city: 'Barcelona, Spain',
+  };
+  panel.querySelector('.admira-contact-close')?.setAttribute('aria-label', copy.close);
+  const title = panel.querySelector('#admiraContactPanelTitle');
+  if (title) title.textContent = copy.title;
+  const gridItems = panel.querySelectorAll('.admira-contact-panel-grid > div');
+  if (gridItems[0]) gridItems[0].textContent = copy.details;
+  if (gridItems[2]) gridItems[2].textContent = copy.call;
+  if (gridItems[4]) gridItems[4].textContent = copy.office;
+  if (gridItems[5]) gridItems[5].textContent = copy.city;
+  const labels = panel.querySelectorAll('.admira-contact-form label span');
+  if (labels[0]) labels[0].textContent = copy.name;
+  if (labels[1]) labels[1].textContent = copy.phone;
+  if (labels[2]) labels[2].textContent = copy.reason;
+  const submit = panel.querySelector('.admira-contact-form button[type="submit"]');
+  if (submit) submit.textContent = copy.send;
+  const video = panel.querySelector('.admira-contact-actions a');
+  if (video) video.textContent = copy.video;
+}
+
+document.addEventListener('click', event => {
+  if (event.target.closest('[data-admira-contact]')) {
+    setTimeout(() => syncAdmiraContactPanel(document.documentElement.lang), 0);
+  }
+});
 
 // Live demo abierto: los enlaces [data-demo-gate] abren directamente, sin login.
 
@@ -936,8 +997,8 @@ async function loadGemelos() {
 renderGemelos();
 loadGemelos();
 
-document.querySelectorAll('[data-lang]').forEach(btn => {
-  btn.addEventListener('click', () => applyLanguage(btn.getAttribute('data-lang')));
+document.getElementById('lang-toggle')?.addEventListener('click', event => {
+  applyLanguage(event.currentTarget.dataset.langTarget || (document.documentElement.lang === 'en' ? 'es' : 'en'));
 });
 
 try {
