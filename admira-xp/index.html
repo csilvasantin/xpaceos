@@ -9071,14 +9071,38 @@ function hitTestShopLayoutItem(mx,my){
     }
   }catch(_){}
   const tile=screenToIso(mx,my);
-  if(tile.col<0||tile.col>=ISO.cols||tile.row<0||tile.row>=ISO.rows) return -1;
-  for(let i=0;i<shopLayout.length;i++){
+  if(tile.col>=0 && tile.col<ISO.cols && tile.row>=0 && tile.row<ISO.rows){
+    for(let i=0;i<shopLayout.length;i++){
+      const it=shopLayout[i];
+      if(!it) continue;
+      if(isWallMountedType(it.type)) continue;
+      if(it.col===tile.col && it.row===tile.row) return i;
+    }
+  }
+  // Muebles importados (billboards altos): si el clic no cae en el tile base de
+  // ningún item, permite agarrarlos clicando el propio sprite — si no, los
+  // muebles altos de pixeria son casi imposibles de seleccionar/mover/borrar.
+  for(let i=shopLayout.length-1;i>=0;i--){
     const it=shopLayout[i];
-    if(!it) continue;
-    if(isWallMountedType(it.type)) continue;
-    if(it.col===tile.col && it.row===tile.row) return i;
+    if(!it || it.type!=='custom') continue;
+    const sr=customFurniScreenRect(it);
+    if(sr && mx>=sr.x && mx<=sr.x+sr.w && my>=sr.y && my<=sr.y+sr.h) return i;
   }
   return -1;
+}
+// Rect en pantalla del sprite de un mueble custom (igual que drawCustomFurni),
+// para poder hit-testear el billboard completo, no solo su tile base.
+function customFurniScreenRect(e){
+  try{
+    const fp=customFurniFootprint(e);
+    const p=toIso(e.col+fp[0]/2, e.row+fp[1]/2);
+    const ph=Math.max(12,(e.ph||46));
+    const rec=(typeof getCustomFurniImage==='function')?getCustomFurniImage(e.img):null;
+    let ar=0.7;
+    if(rec&&rec.loaded&&rec.img.naturalWidth>0) ar=rec.img.naturalWidth/rec.img.naturalHeight;
+    const h=ph, w=Math.max(6,ph*ar);
+    return {x:p.x-w/2, y:p.y-h, w:w, h:h};
+  }catch(_){ return null; }
 }
 
 cv.addEventListener('mousedown',e=>{
