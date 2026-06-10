@@ -56,7 +56,9 @@
     #robotGrokAnswer.is-error{border-color:#ff6b6b;color:#ffd0d0}
     #metahumanPanel{display:none;position:fixed;z-index:31;width:340px;min-height:170px;max-height:calc(100vh - 16px);overflow-y:auto;overscroll-behavior:contain;border:1px solid rgba(120,243,255,.55);border-radius:10px;background:linear-gradient(180deg,rgba(8,16,28,.97),rgba(3,8,18,.98));box-shadow:0 16px 34px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.10);font-family:monospace;color:#dff8ff;padding:10px;gap:7px;scrollbar-width:thin;scrollbar-color:#2a7585 #07131b}
     #metahumanPanel.show{display:flex;flex-direction:column}
-    .mh-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#78f3ff;font-size:10px;font-weight:bold;text-transform:uppercase}
+    .mh-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#78f3ff;font-size:10px;font-weight:bold;text-transform:uppercase;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+    .mh-head.is-grabbing{cursor:grabbing}
+    #metahumanPanel.is-dragging{transition:none}
     .mh-head #mhStatus{color:#9ec7d0;font-size:8px;font-weight:normal;text-transform:none;white-space:nowrap}
     .mh-close{margin-left:auto;border:none;background:transparent;color:#9ec7d0;font-size:18px;line-height:1;cursor:pointer;padding:0 4px}
     .mh-close:hover{color:#fff}
@@ -16795,6 +16797,8 @@ function _mhEls(){
     closeBtn:document.getElementById('mhClose'),
   };
 }
+// Posición personalizada si el usuario arrastró el panel (persistida).
+let _mhSavedPos=(function(){ try{ const r=localStorage.getItem('metahuman-overlay-pos'); if(r){ const p=JSON.parse(r); if(typeof p.left==='number'&&typeof p.top==='number') return p; } }catch(e){} return null; })();
 function _mhPositionPanel(){
   const els=_mhEls(); if(!els.panel) return;
   const cv=document.getElementById('c'); if(!cv) return;
@@ -16814,6 +16818,15 @@ function _mhPositionPanel(){
   els.panel.style.maxHeight=Math.max(180, safeBottom-16)+'px';
   const panelW=els.panel.offsetWidth||340;
   const panelH=els.panel.offsetHeight||190;
+  // Si el usuario movió el panel, respeta su posición (clamp al área visible).
+  if(_mhSavedPos){
+    const ux=Math.max(8, Math.min(window.innerWidth-panelW-8, _mhSavedPos.left));
+    const uy=Math.max(8, Math.min(Math.max(8, safeBottom-panelH), _mhSavedPos.top));
+    els.panel.style.left=ux+'px';
+    els.panel.style.top=uy+'px';
+    els.panel.style.right=''; els.panel.style.bottom='';
+    return;
+  }
   // Anchored to the bottom-left grass corner of the canvas so the shop and
   // the Metahuman totem stay visible while the user reads the answer.
   const x=Math.max(8, Math.min(window.innerWidth-panelW-8, r.left+10));
@@ -16972,6 +16985,50 @@ async function askMetahuman(text){
       els.prompt.addEventListener('keypress',swallow);
     }
     window.addEventListener('resize',()=>{ if(els.panel.classList.contains('show')) _mhPositionPanel(); });
+
+    // --- Arrastre de la ventana desde la cabecera (igual que el Pixer Feed) ---
+    const head=els.panel.querySelector('.mh-head');
+    if(head && !head._mhDragWired){
+      head._mhDragWired=true;
+      let drag=null;
+      const startDrag=(e)=>{
+        if(e.target.closest('#mhClose')) return; // la X cierra, no arrastra
+        const pt=e.touches?e.touches[0]:e;
+        const r=els.panel.getBoundingClientRect();
+        drag={dx:pt.clientX-r.left, dy:pt.clientY-r.top, moved:false};
+        els.panel.classList.add('is-dragging'); head.classList.add('is-grabbing');
+        if(e.cancelable) e.preventDefault();
+      };
+      const moveDrag=(e)=>{
+        if(!drag) return;
+        const pt=e.touches?e.touches[0]:e;
+        drag.moved=true;
+        const w=els.panel.offsetWidth||340, h=els.panel.offsetHeight||190;
+        let left=pt.clientX-drag.dx, top=pt.clientY-drag.dy;
+        left=Math.min(Math.max(left,8), Math.max(8,window.innerWidth-w-8));
+        top=Math.min(Math.max(top,8), Math.max(8,window.innerHeight-h-8));
+        els.panel.style.left=left+'px'; els.panel.style.top=top+'px';
+        els.panel.style.right=''; els.panel.style.bottom='';
+        if(e.cancelable) e.preventDefault();
+      };
+      const endDrag=()=>{
+        if(!drag) return;
+        els.panel.classList.remove('is-dragging'); head.classList.remove('is-grabbing');
+        if(drag.moved){
+          const r=els.panel.getBoundingClientRect();
+          _mhSavedPos={left:r.left, top:r.top};
+          try{ localStorage.setItem('metahuman-overlay-pos', JSON.stringify(_mhSavedPos)); }catch(e){}
+        }
+        drag=null;
+      };
+      head.addEventListener('mousedown',startDrag);
+      window.addEventListener('mousemove',moveDrag);
+      window.addEventListener('mouseup',endDrag);
+      head.addEventListener('touchstart',startDrag,{passive:false});
+      window.addEventListener('touchmove',moveDrag,{passive:false});
+      window.addEventListener('touchend',endDrag);
+      window.addEventListener('touchcancel',endDrag);
+    }
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire,{once:true});
   else wire();

@@ -18,8 +18,8 @@
 <link rel="preload" as="image" href="/assets/xpaceos-robots.jpg">
 <link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/tokens.css">
 <link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/nav.css">
-<link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/contact-panel.css">
-<script defer src="https://csilvasantin.github.io/admira-design/contact-panel.js"></script>
+<link rel="stylesheet" href="/lead-form.css">
+<script defer src="/lead-form.js"></script>
 
 <!-- Google Tag Manager -->
 <script>
@@ -871,62 +871,12 @@ function applyLanguage(lang) {
   }
   try { localStorage.setItem('xpaceosLang', lang); } catch {}
   try { window.dispatchEvent(new CustomEvent('admira:languagechange', { detail: { lang } })); } catch {}
-  syncAdmiraContactPanel(lang);
   if (typeof renderGemelos === 'function') renderGemelos();
 }
 
-function syncAdmiraContactPanel(lang = document.documentElement.lang) {
-  const panel = document.getElementById('admiraContactPanel');
-  if (!panel) return;
-  const es = lang === 'es';
-  const copy = es ? {
-    close: 'Cerrar panel de contacto',
-    title: 'Contáctanos',
-    details: 'Datos de contacto',
-    call: 'Te llamamos',
-    name: 'Nombre',
-    phone: 'Teléfono',
-    reason: 'Motivo',
-    send: 'Enviar solicitud',
-    video: 'Agendar videoconferencia',
-    office: 'Oficina',
-    city: 'Barcelona, España',
-  } : {
-    close: 'Close contact panel',
-    title: 'Contact us',
-    details: 'Contact details',
-    call: 'We call you',
-    name: 'Name',
-    phone: 'Phone',
-    reason: 'Reason',
-    send: 'Send request',
-    video: 'Book a video conference',
-    office: 'Office',
-    city: 'Barcelona, Spain',
-  };
-  panel.querySelector('.admira-contact-close')?.setAttribute('aria-label', copy.close);
-  const title = panel.querySelector('#admiraContactPanelTitle');
-  if (title) title.textContent = copy.title;
-  const gridItems = panel.querySelectorAll('.admira-contact-panel-grid > div');
-  if (gridItems[0]) gridItems[0].textContent = copy.details;
-  if (gridItems[2]) gridItems[2].textContent = copy.call;
-  if (gridItems[4]) gridItems[4].textContent = copy.office;
-  if (gridItems[5]) gridItems[5].textContent = copy.city;
-  const labels = panel.querySelectorAll('.admira-contact-form label span');
-  if (labels[0]) labels[0].textContent = copy.name;
-  if (labels[1]) labels[1].textContent = copy.phone;
-  if (labels[2]) labels[2].textContent = copy.reason;
-  const submit = panel.querySelector('.admira-contact-form button[type="submit"]');
-  if (submit) submit.textContent = copy.send;
-  const video = panel.querySelector('.admira-contact-actions a');
-  if (video) video.textContent = copy.video;
-}
-
-document.addEventListener('click', event => {
-  if (event.target.closest('[data-admira-contact]')) {
-    setTimeout(() => syncAdmiraContactPanel(document.documentElement.lang), 0);
-  }
-});
+// El formulario de contacto de la home es ahora el MISMO modal de lead del
+// gemelo (lead-form.js). Se abre desde [data-admira-contact] y va a /lead +
+// Telegram. Ver lead-form.js / [[reference_admira_xp_lead_capture]].
 
 // Live demo abierto: los enlaces [data-demo-gate] abren directamente, sin login.
 
