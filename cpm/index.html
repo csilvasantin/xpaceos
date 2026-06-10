@@ -122,38 +122,54 @@
   </section>
 
   <section>
-    <h2><span class="num">→</span>Del impacto al CPM</h2>
-    <p class="sec-lede">Un CPM de referencia convierte los impactos acumulados del día en ingreso estimado por pantalla. Cuando un slot se vende en Admira.app a un CPM dado, el gemelo muestra cuánta audiencia genera y, por tanto, su valor.</p>
-    <div class="formula" style="max-width:520px">ingreso_estimado (€) = impactos ÷ 1000 × CPM</div>
+    <h2><span class="num">👁</span>Quién <b>pasa</b> vs quién <b>mira</b></h2>
+    <p class="sec-lede">No todo el que tiene la pantalla en su campo de visión la mira. Sobre los impactos (oportunidad de ver) XpaceOS calcula la <b>atención</b>: cuánta de esa audiencia <b>dirige la mirada</b> a cada pantalla. Quien pasa por delante del escaparate sin levantar la vista cuenta como impacto pero no como mirada; quien se planta frente al tótem, sí.</p>
+    <div class="formula" style="max-width:620px">impactos (OTS) = audiencia × visibilidad   <span style="opacity:.6">// pudieron verla</span><br>miradas (atención) = audiencia × atención   <span style="opacity:.6">// la miraron · atención ≤ visibilidad</span><br>tasa_atención = miradas ÷ impactos</div>
+    <ul class="pros" style="font-size:13.5px">
+      <li><b>+</b> separa el tráfico que solo <b>pasa</b> del que de verdad <b>impacta</b></li>
+      <li><b>+</b> el escaparate genera muchos impactos pero baja atención; el tótem, pocos impactos pero casi todos miran</li>
+      <li><b>+</b> donde hay <b>cámara</b>, la atención se <span class="pill cam">📷 mide</span> (una cara frontal detectada está mirando) en vez de estimarse</li>
+      <li><b>+</b> es la base del modelo 3: el CPM se ajusta a <i>quién mira</i>, no solo a <i>quién pasa</i></li>
+    </ul>
   </section>
 
   <section>
-    <h2><span class="num">⚙</span>Factor de visibilidad por pantalla</h2>
-    <p class="sec-lede">Cada superficie del gemelo aporta distinta oportunidad de ver. El tótem usa cámara, así que su impacto es <span class="pill cam">📷 medido</span>; el resto, <span class="pill est">~ estimado</span>.</p>
+    <h2><span class="num">→</span>Del impacto al CPM</h2>
+    <p class="sec-lede">Un CPM de referencia convierte los impactos acumulados del día en ingreso estimado por pantalla. Cuando un slot se vende en Admira.app a un CPM dado, el gemelo muestra cuánta audiencia genera y, por tanto, su valor. El <b>valor por atención</b> aplica el mismo CPM solo a las miradas reales — el anticipo del pricing del modelo 3.</p>
+    <div class="formula" style="max-width:620px">ingreso_estimado (€) = impactos ÷ 1000 × CPM<br>valor_atención (€) = miradas ÷ 1000 × CPM</div>
+  </section>
+
+  <section>
+    <h2><span class="num">⚙</span>Visibilidad y atención por pantalla</h2>
+    <p class="sec-lede"><b>Visibilidad</b> = oportunidad de ver (OTS); <b>atención</b> = qué fracción de la audiencia la mira de verdad (siempre ≤ visibilidad). La <b>tasa</b> es cuántos de los que pudieron verla la miraron. El tótem usa cámara, así que su atención es <span class="pill cam">📷 medida</span>; el resto, <span class="pill est">~ estimada</span>.</p>
     <table>
-      <tr><th>Pantalla</th><th>Audiencia</th><th class="r">Visibilidad</th><th>Medición</th></tr>
-      <tr><td>Escaparate · sobre la puerta</td><td>transeúntes (calle)</td><td class="r">0.85</td><td><span class="pill est">~ estimado</span></td></tr>
-      <tr><td>TFT · pared larga</td><td>clientes en tienda</td><td class="r">0.55</td><td><span class="pill est">~ estimado</span></td></tr>
-      <tr><td>Monitor superior · pared izq.</td><td>clientes en tienda</td><td class="r">0.45</td><td><span class="pill est">~ estimado</span></td></tr>
-      <tr><td>Monitor inferior · pared izq.</td><td>clientes en tienda</td><td class="r">0.40</td><td><span class="pill est">~ estimado</span></td></tr>
-      <tr><td>Tótem AI · MetaHuman</td><td>caras frente al tótem</td><td class="r">0.35</td><td><span class="pill cam">📷 medido</span></td></tr>
+      <tr><th>Pantalla</th><th>Audiencia</th><th class="r">Visib.</th><th class="r">Atención</th><th class="r">Tasa 👁</th><th>Medición</th></tr>
+      <tr><td>Escaparate · sobre la puerta</td><td>transeúntes (calle)</td><td class="r">0.85</td><td class="r">0.20</td><td class="r">24%</td><td><span class="pill est">~ estimado</span></td></tr>
+      <tr><td>TFT · pared larga</td><td>clientes en tienda</td><td class="r">0.55</td><td class="r">0.30</td><td class="r">55%</td><td><span class="pill est">~ estimado</span></td></tr>
+      <tr><td>Monitor superior · pared izq.</td><td>clientes en tienda</td><td class="r">0.45</td><td class="r">0.22</td><td class="r">49%</td><td><span class="pill est">~ estimado</span></td></tr>
+      <tr><td>Monitor inferior · pared izq.</td><td>clientes en tienda</td><td class="r">0.40</td><td class="r">0.18</td><td class="r">45%</td><td><span class="pill est">~ estimado</span></td></tr>
+      <tr><td>Tótem AI · MetaHuman</td><td>caras frente al tótem</td><td class="r">0.35</td><td class="r">0.32</td><td class="r">📷 ~100%</td><td><span class="pill cam">📷 medido</span></td></tr>
     </table>
+    <p class="sec-lede" style="font-size:12.5px;margin-top:10px;opacity:.75">El escaparate concentra <b>impactos</b> (mucha calle) pero poca atención; el tótem concentra <b>atención</b> (quien se para mira) pero pocos impactos. Esa asimetría es justo lo que un anunciante necesita para elegir pantalla.</p>
   </section>
 
   <section>
     <h2><span class="num">▶</span>En el gemelo: <code>/impactos</code></h2>
     <p class="sec-lede">Dentro de cualquier tienda del gemelo, el comando <code>/impactos</code> abre un panel en vivo con los impactos acumulados del día por pantalla, el total, el CPM de referencia y el ingreso estimado. Acumula un registro por minuto de jornada (open→close).</p>
     <div class="hud">
-      <div class="row"><span>📷 Tótem AI</span><b>1.240</b></div>
-      <div class="row"><span>~ Escaparate</span><b>8.900</b></div>
-      <div class="row"><span>~ TFT pared</span><b>3.300</b></div>
-      <div class="row"><span>~ Monitor sup.</span><b>2.700</b></div>
-      <div class="row"><span>~ Monitor inf.</span><b>2.400</b></div>
+      <div class="row" style="font-size:11px;opacity:.55"><span>PANTALLA</span><span>impactos · 👁 miran</span></div>
+      <div class="row"><span>📷 Tótem AI</span><span><b>1.240</b> <span style="color:#9ad8ff;font-size:11px">👁 1.240 (100%)</span></span></div>
+      <div class="row"><span>~ Escaparate</span><span><b>8.900</b> <span style="color:#9ad8ff;font-size:11px">👁 2.094 (24%)</span></span></div>
+      <div class="row"><span>~ TFT pared</span><span><b>3.300</b> <span style="color:#9ad8ff;font-size:11px">👁 1.800 (55%)</span></span></div>
+      <div class="row"><span>~ Monitor sup.</span><span><b>2.700</b> <span style="color:#9ad8ff;font-size:11px">👁 1.320 (49%)</span></span></div>
+      <div class="row"><span>~ Monitor inf.</span><span><b>2.400</b> <span style="color:#9ad8ff;font-size:11px">👁 1.080 (45%)</span></span></div>
       <div class="row tot"><span>TOTAL impactos</span><b>18.540</b></div>
+      <div class="row" style="color:#9ad8ff"><span>👁 Atención (miran)</span><b>7.534 · 41%</b></div>
       <div class="row"><span>CPM ref</span><b>8.00 €</b></div>
       <div class="row rev"><span>Ingreso estim.</span><b>148.32 €</b></div>
+      <div class="row" style="opacity:.7"><span>↳ valor atención</span><b>60.27 €</b></div>
     </div>
-    <p class="sec-lede" style="margin-top:16px;font-size:13px">Controles: <code>/impactos cpm &lt;n&gt;</code> ajusta el CPM · <code>/impactos reset</code> reinicia el día · <code>/impactos off</code> cierra el panel. <span style="opacity:.7">📷 = medido por cámara · ~ = estimado (aforo × visibilidad).</span></p>
+    <p class="sec-lede" style="margin-top:16px;font-size:13px">Controles: <code>/impactos cpm &lt;n&gt;</code> ajusta el CPM · <code>/impactos reset</code> reinicia el día · <code>/impactos off</code> cierra el panel. <span style="opacity:.7">📷 = medido por cámara · ~ = estimado (aforo × visibilidad) · 👁 = quien mira ≠ quien pasa.</span></p>
   </section>
 </main>
 
