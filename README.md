@@ -4,7 +4,7 @@ Sitio público de **XpaceOS** — el sistema operativo del retail físico de ADm
 
 Tres capas integradas:
 
-1. **Pixer.ai** — creación de contenido con IA (audio, música, imagen, video).
+1. **PixerIA** — creación de contenido con IA (audio, música, imagen, video).
 2. **Admira XP** — distribución signage sobre Gemelo Digital del espacio físico.
 3. **OmniPublicity** — marketplace RTB sobre cada hueco visible.
 
