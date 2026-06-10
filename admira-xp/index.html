@@ -25960,6 +25960,11 @@ window.xtAPI = (function(){
         if(typeof openLeadForm==='function'){ openLeadForm(arg); return '🧲 Formulario de contacto abierto.'; }
         return 'Formulario de contacto no disponible (recarga el gemelo).';
       }
+      // /prospects — abre el panel de leads captados (protegido por token).
+      if(['prospects','prospectos','leads','contactos'].includes(cmd)){
+        try{ window.open('/leads.html','_blank','noopener'); }catch(e){ try{ location.href='/leads.html'; }catch(_){} }
+        return '📇 Abriendo Prospects (leads captados)…';
+      }
       // /present [next|prev|close|auto|stop|<n>] — popup-presentación del gemelo
       // (controlable por Telegram, StreamDeck y remote.html). Solo explica.
       if(['present','presentacion','presentación','explainer','presenta'].includes(cmd)){
