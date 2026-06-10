@@ -25897,6 +25897,12 @@ window.xtAPI = (function(){
 
     try{
       if(cmd==='start'||cmd==='help') return commandHelp();
+      // /contacto — abre el formulario de captación de lead del booth (Shoptalk).
+      // Aliases ES/EN. El dato va al worker pixer-eleven y avisa por Telegram.
+      if(['contacto','contact','lead','hablemos','letstalk','demo-contacto'].includes(cmd)){
+        if(typeof openLeadForm==='function'){ openLeadForm(arg); return '🧲 Formulario de contacto abierto.'; }
+        return 'Formulario de contacto no disponible (recarga el gemelo).';
+      }
       // /present [next|prev|close|auto|stop|<n>] — popup-presentación del gemelo
       // (controlable por Telegram, StreamDeck y remote.html). Solo explica.
       if(['present','presentacion','presentación','explainer','presenta'].includes(cmd)){
@@ -28431,6 +28437,208 @@ window.xtAPI = (function(){
   window.TwinPresent={ open:open, close:close, next:next, prev:prev, goto:goto,
     toggleAuto:toggleAuto, isOpen:function(){ return isOpen; },
     showButton:function(v){ openBtn.classList.toggle("show",v!==false); } };
+})();
+</script>
+<script>
+/* ===== Captación de lead · booth Shoptalk (Admira XP) =====================
+   Botón flotante + modal + comando /contacto. El dato va a pixer-eleven
+   (POST /lead) que lo guarda en KV y avisa por Telegram. Booth-safe: si la
+   red falla, el lead se encola en localStorage y se reintenta — nunca se
+   pierde un contacto en el stand. ========================================= */
+(function(){
+  var ENDPOINT='https://pixer-eleven.csilvasantin.workers.dev/lead';
+  var QKEY='xpace_lead_queue';
+  function lng(){ try{ if(window.lang) return window.lang==='en'?'en':'es';
+    return localStorage.getItem('xtanco_lang')==='en'?'en':'es'; }catch(e){ return 'es'; } }
+  var T={
+    es:{ cta:'✦ Hablemos', title:'Hablemos', sub:'Déjanos tus datos y te enseñamos XpaceOS en tu espacio.',
+      name:'Nombre', company:'Empresa', email:'Email', phone:'Teléfono', role:'Cargo',
+      interest:'Interés', pick:'Elige…', notes:'¿Qué te gustaría ver?',
+      consent:'Acepto que Admira me contacte sobre XpaceOS.',
+      send:'Enviar', cancel:'Cancelar', sending:'Enviando…',
+      okTitle:'¡Gracias! 🎉', okMsg:'Te contactaremos muy pronto.',
+      offMsg:'Guardado ✓ — se enviará en cuanto haya conexión.',
+      errName:'Pon tu nombre.', errContact:'Pon un email o un teléfono.', errEmail:'Email no válido.',
+      iOpts:['Pixer.ai · creación con IA','Admira XP · gemelo digital','OmniPublicity · marketplace RTB','Hardware Lenovo × Nvidia','Partnership','Otro'] },
+    en:{ cta:"✦ Let's talk", title:"Let's talk", sub:'Leave your details and we’ll show XpaceOS in your space.',
+      name:'Name', company:'Company', email:'Email', phone:'Phone', role:'Role',
+      interest:'Interest', pick:'Choose…', notes:'What would you like to see?',
+      consent:'I agree Admira may contact me about XpaceOS.',
+      send:'Send', cancel:'Cancel', sending:'Sending…',
+      okTitle:'Thank you! 🎉', okMsg:'We’ll be in touch very soon.',
+      offMsg:'Saved ✓ — it will be sent once you’re back online.',
+      errName:'Enter your name.', errContact:'Enter an email or a phone.', errEmail:'Invalid email.',
+      iOpts:['Pixer.ai · AI creation','Admira XP · digital twin','OmniPublicity · RTB marketplace','Hardware Lenovo × Nvidia','Partnership','Other'] }
+  };
+  function tr(){ return T[lng()]||T.es; }
+
+  /* ── transporte + cola offline ─────────────────────────────────────── */
+  function postLead(payload, timeoutMs){
+    var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
+    var to=ctrl?setTimeout(function(){ try{ctrl.abort();}catch(e){} }, timeoutMs||9000):null;
+    return fetch(ENDPOINT,{ method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload), signal:ctrl?ctrl.signal:undefined })
+      .then(function(r){ if(to)clearTimeout(to); if(!r.ok) throw new Error('http '+r.status); return r.json().catch(function(){return{};}); });
+  }
+  function loadQ(){ try{ return JSON.parse(localStorage.getItem(QKEY)||'[]'); }catch(e){ return []; } }
+  function saveQ(a){ try{ localStorage.setItem(QKEY, JSON.stringify(a.slice(-200))); }catch(e){} }
+  function enqueue(p){ var a=loadQ(); a.push(p); saveQ(a); }
+  var flushing=false;
+  function flushQ(){
+    if(flushing) return; var a=loadQ(); if(!a.length) return; flushing=true;
+    (function next(){
+      if(!a.length){ saveQ(a); flushing=false; return; }
+      var p=a[0];
+      postLead(p,9000).then(function(){ a.shift(); saveQ(a); next(); })
+        .catch(function(){ flushing=false; }); // se reintenta en la próxima ocasión
+    })();
+  }
+
+  /* ── modal ─────────────────────────────────────────────────────────── */
+  var built=false, autoTimer=null;
+  function injectCSS(){
+    if(document.getElementById('xleadCSS')) return;
+    var s=document.createElement('style'); s.id='xleadCSS';
+    s.textContent=[
+      '#xleadCTA{position:fixed;right:14px;bottom:max(14px,env(safe-area-inset-bottom));z-index:100100;display:none;',
+      'align-items:center;gap:8px;padding:11px 18px;border:1px solid rgba(120,243,255,.55);border-radius:999px;',
+      'background:linear-gradient(180deg,rgba(8,24,32,.96),rgba(3,10,15,.98));color:#dff8ff;cursor:pointer;',
+      'font:600 13px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;box-shadow:0 8px 26px rgba(0,0,0,.5),0 0 18px rgba(120,243,255,.18)}',
+      '#xleadCTA.show{display:inline-flex}#xleadCTA:hover{border-color:#78f3ff;color:#fff}',
+      '#xleadCTA .xl-pulse{width:7px;height:7px;border-radius:50%;background:#37e07a;box-shadow:0 0 8px #37e07a}',
+      '#xleadBack{position:fixed;inset:0;z-index:100200;display:none;align-items:center;justify-content:center;padding:18px;',
+      'background:rgba(2,8,14,.62);backdrop-filter:blur(3px)}#xleadBack.show{display:flex}',
+      '#xleadCard{width:420px;max-width:96vw;max-height:94vh;overflow:auto;background:linear-gradient(180deg,#06141d,#030b12);',
+      'border:1px solid rgba(120,243,255,.34);border-radius:14px;box-shadow:0 22px 60px rgba(0,0,0,.62);color:#dff8ff;',
+      'padding:20px 20px 18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}',
+      '#xleadCard h3{margin:0;font:700 19px -apple-system,"Segoe UI",sans-serif;color:#eafeff}',
+      '#xleadCard .xl-sub{margin:5px 0 14px;font-size:12.5px;color:#8fb6c4;line-height:1.4}',
+      '#xleadCard label{display:block;font:600 10.5px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#79f3ff;margin:0 0 4px}',
+      '#xleadCard .xl-f{margin-bottom:11px}',
+      '#xleadCard input,#xleadCard select,#xleadCard textarea{width:100%;box-sizing:border-box;background:#02141c;border:1px solid #2a5664;',
+      'border-radius:8px;color:#eafeff;font-size:14px;padding:9px 11px;font-family:inherit}',
+      '#xleadCard textarea{resize:vertical;min-height:56px}',
+      '#xleadCard input:focus,#xleadCard select:focus,#xleadCard textarea:focus{outline:none;border-color:#78f3ff;box-shadow:0 0 0 2px rgba(120,243,255,.18)}',
+      '#xleadCard .xl-row{display:flex;gap:10px}#xleadCard .xl-row>div{flex:1}',
+      '#xleadCard .xl-consent{display:flex;align-items:flex-start;gap:8px;margin:2px 0 14px}',
+      '#xleadCard .xl-consent input{width:16px;height:16px;margin-top:1px;flex:0 0 auto}',
+      '#xleadCard .xl-consent span{font-size:11.5px;color:#9fc4d2;line-height:1.35;text-transform:none;letter-spacing:0;font-weight:400}',
+      '#xleadErr{display:none;color:#ff8866;font-size:12px;margin-bottom:8px}',
+      '#xleadBtns{display:flex;gap:10px}',
+      '#xleadBtns button{flex:1;padding:11px;border-radius:9px;font:600 14px inherit;cursor:pointer;border:1px solid}',
+      '#xleadSend{background:linear-gradient(180deg,#0e3a44,#072028);border-color:#78f3ff;color:#eafeff}',
+      '#xleadSend:hover{background:linear-gradient(180deg,#125866,#0a2c36)}#xleadSend[disabled]{opacity:.55;cursor:default}',
+      '#xleadCancel{background:transparent;border-color:#33555f;color:#8fb6c4}#xleadCancel:hover{border-color:#5a8694;color:#cfe9f2}',
+      '#xleadOK{display:none;text-align:center;padding:14px 4px}#xleadOK h3{margin-bottom:6px}#xleadOK p{color:#9fc4d2;font-size:13.5px;margin:0}',
+      '#xleadClose{position:absolute;top:10px;right:14px;background:transparent;border:0;color:#6f9aa8;font-size:22px;line-height:1;cursor:pointer}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+  function build(){
+    if(built) return; injectCSS();
+    var back=document.createElement('div'); back.id='xleadBack';
+    back.innerHTML=
+      '<div id="xleadCard" role="dialog" aria-modal="true" style="position:relative">'+
+        '<button id="xleadClose" type="button" aria-label="close">×</button>'+
+        '<div id="xleadForm">'+
+          '<h3 id="xlT"></h3><div class="xl-sub" id="xlSub"></div>'+
+          '<div id="xleadErr"></div>'+
+          '<div class="xl-f"><label id="lbName"></label><input id="xleadName" autocomplete="name" maxlength="120"></div>'+
+          '<div class="xl-row"><div class="xl-f"><label id="lbCompany"></label><input id="xleadCompany" autocomplete="organization" maxlength="120"></div>'+
+            '<div class="xl-f"><label id="lbRole"></label><input id="xleadRole" autocomplete="organization-title" maxlength="80"></div></div>'+
+          '<div class="xl-row"><div class="xl-f"><label id="lbEmail"></label><input id="xleadEmail" type="email" inputmode="email" autocomplete="email" maxlength="160"></div>'+
+            '<div class="xl-f"><label id="lbPhone"></label><input id="xleadPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="40"></div></div>'+
+          '<div class="xl-f"><label id="lbInterest"></label><select id="xleadInterest"></select></div>'+
+          '<div class="xl-f"><label id="lbNotes"></label><textarea id="xleadNotes" maxlength="500"></textarea></div>'+
+          '<label class="xl-consent"><input type="checkbox" id="xleadConsent"><span id="lbConsent"></span></label>'+
+          '<div id="xleadBtns"><button id="xleadCancel" type="button"></button><button id="xleadSend" type="button"></button></div>'+
+        '</div>'+
+        '<div id="xleadOK"><h3 id="xlOkT"></h3><p id="xlOkM"></p></div>'+
+      '</div>';
+    document.body.appendChild(back);
+    back.addEventListener('click',function(e){ if(e.target===back) close(); });
+    back.querySelector('#xleadClose').addEventListener('click',close);
+    back.querySelector('#xleadCancel').addEventListener('click',close);
+    back.querySelector('#xleadSend').addEventListener('click',submit);
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&back.classList.contains('show')) close(); });
+    built=true;
+  }
+  function q(id){ return document.getElementById(id); }
+  function val(id){ var e=q(id); return e?String(e.value||'').trim():''; }
+  function fill(){
+    var t=tr();
+    q('xlT').textContent=t.title; q('xlSub').textContent=t.sub;
+    q('lbName').textContent=t.name; q('lbCompany').textContent=t.company; q('lbRole').textContent=t.role;
+    q('lbEmail').textContent=t.email; q('lbPhone').textContent=t.phone; q('lbInterest').textContent=t.interest;
+    q('lbNotes').textContent=t.notes; q('lbConsent').textContent=t.consent;
+    q('xleadCancel').textContent=t.cancel; q('xleadSend').textContent=t.send;
+    var sel=q('xleadInterest'); sel.innerHTML='';
+    var o0=document.createElement('option'); o0.value=''; o0.textContent=t.pick; sel.appendChild(o0);
+    t.iOpts.forEach(function(label){ var o=document.createElement('option'); o.value=label; o.textContent=label; sel.appendChild(o); });
+    q('xlOkT').textContent=t.okTitle; q('xlOkM').textContent=t.okMsg;
+  }
+  function setErr(m){ var e=q('xleadErr'); if(!e) return; if(m){ e.textContent=m; e.style.display='block'; } else { e.style.display='none'; } }
+  function close(){ var b=q('xleadBack'); if(b) b.classList.remove('show'); if(autoTimer){ clearTimeout(autoTimer); autoTimer=null; } }
+  function open(prefillNotes){
+    build(); fill(); setErr('');
+    q('xleadForm').style.display='block'; q('xleadOK').style.display='none';
+    var send=q('xleadSend'); send.disabled=false;
+    ['xleadName','xleadCompany','xleadRole','xleadEmail','xleadPhone','xleadNotes'].forEach(function(id){ var e=q(id); if(e) e.value=''; });
+    q('xleadInterest').selectedIndex=0; q('xleadConsent').checked=false;
+    if(prefillNotes) q('xleadNotes').value=String(prefillNotes).slice(0,500);
+    q('xleadBack').classList.add('show');
+    setTimeout(function(){ try{ q('xleadName').focus(); }catch(e){} },40);
+  }
+  function showThanks(title,msg){
+    q('xleadForm').style.display='none';
+    var ok=q('xleadOK'); ok.style.display='block';
+    q('xlOkT').textContent=title; q('xlOkM').textContent=msg;
+    autoTimer=setTimeout(close,2600);
+  }
+  function submit(){
+    var t=tr();
+    var name=val('xleadName'), email=val('xleadEmail'), phone=val('xleadPhone');
+    if(!name){ setErr(t.errName); return; }
+    if(!email && !phone){ setErr(t.errContact); return; }
+    if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ setErr(t.errEmail); return; }
+    setErr('');
+    var payload={ name:name, email:email, phone:phone, company:val('xleadCompany'),
+      role:val('xleadRole'), interest:val('xleadInterest'), notes:val('xleadNotes'),
+      consent:q('xleadConsent').checked, source:'admira-xp-booth' };
+    var send=q('xleadSend'); send.disabled=true; send.textContent=t.sending;
+    postLead(payload,9000)
+      .then(function(){ showThanks(t.okTitle,t.okMsg); flushQ(); })
+      .catch(function(){ enqueue(payload); showThanks(t.okTitle,t.offMsg); });
+  }
+
+  /* ── botón flotante (booth / ?lead=1 / ?present=1) ─────────────────── */
+  function injectCTA(){
+    injectCSS();
+    if(q('xleadCTA')) return;
+    var b=document.createElement('button'); b.id='xleadCTA'; b.type='button';
+    b.innerHTML='<span class="xl-pulse"></span><span id="xleadCTALbl"></span>';
+    b.addEventListener('click',function(){ open(); });
+    document.body.appendChild(b);
+  }
+  function maybeShow(){
+    injectCTA();
+    var sp; try{ sp=new URLSearchParams(location.search); }catch(e){ sp=null; }
+    var force=sp&&(sp.get('lead')==='1'||sp.get('present')==='1'||sp.get('booth')==='1');
+    var shop=(window.XPACE_BOOTH==='shoptalk');
+    var btn=q('xleadCTA'); if(!btn) return;
+    btn.querySelector('#xleadCTALbl').textContent=tr().cta;
+    btn.classList.toggle('show', !!(force||shop));
+  }
+
+  function init(){
+    maybeShow(); setTimeout(maybeShow,1600); setTimeout(maybeShow,4200);
+    setTimeout(flushQ,3000); // reintenta leads encolados al cargar
+    try{ window.addEventListener('online',flushQ); }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+
+  window.openLeadForm=open;
+  window.XpaceLead={ open:open, flush:flushQ, queued:function(){ return loadQ().length; } };
 })();
 </script>
 </body>
