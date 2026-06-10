@@ -71,7 +71,7 @@
     <span class="badge">Admira XP · gemelo digital</span>
     <h1>Medir <span class="grad">impactos</span> y calcular el <span class="grad">CPM</span> en el mundo real</h1>
     <p class="lede">Cada pantalla del gemelo digital es inventario publicitario. XpaceOS cuantifica cuánta gente ve cada anuncio y traduce esos impactos en un CPM accionable — la base de la capa de venta programática de Admira.app.</p>
-    <p class="lede" style="font-size:15px">Tres modelos, de lo determinista a lo medido a lo dinámico. Hoy corren <b style="color:var(--good)">1 + 2</b>; el <b style="color:var(--accent)">3</b> es el siguiente paso.</p>
+    <p class="lede" style="font-size:15px">Tres modelos, de lo determinista a lo medido a lo dinámico. Los <b style="color:var(--good)">tres ya corren</b> en el gemelo: aforo×visibilidad, atención medida y CPM dinámico por demanda×calidad.</p>
   </div>
 
   <section>
@@ -108,13 +108,13 @@
       <div class="card">
         <div class="n">03</div>
         <h3>Dwell + CPM dinámico</h3>
-        <span class="tag soon">○ roadmap</span>
-        <p>La capa de <b>pricing inteligente</b>: pondera cada impacto por tiempo de permanencia y calidad de audiencia, y el CPM se ajusta en vivo según la demanda de la subasta RTB.</p>
-        <div class="formula">impacto_ponderado = f(dwell, segmento)<br>CPM = base × demanda × calidad_audiencia<br>→ alimenta la subasta en tiempo real</div>
+        <span class="tag live">● en producción</span>
+        <p>La capa de <b>pricing inteligente</b>: cada mirada se pondera por <b>dwell</b> (segundos de atención) y el CPM <b>deja de ser fijo</b> — se ajusta en vivo según la demanda (ocupación + prime) y la calidad de la audiencia.</p>
+        <div class="formula">CPM_dinámico = base × demanda × calidad<br>· demanda = ocupación de tienda + prime time<br>· calidad = tasa de atención global<br>ingreso = Σ impactos × CPM_din × (atención × dwell)</div>
         <ul class="pros">
-          <li><b>+</b> "el precio se ajusta a quién mira"</li>
-          <li><b>+</b> cierra el loop con OmniPublicity</li>
-          <li class="con"><b>–</b> se monta encima de 1 y 2</li>
+          <li><b>+</b> "el precio se ajusta a quién mira <i>y cuánto</i>"</li>
+          <li><b>+</b> el tótem (dwell alto) vale premium; el escaparate, descuento</li>
+          <li><b>+</b> cierra el loop con OmniPublicity (demanda RTB)</li>
         </ul>
       </div>
 
