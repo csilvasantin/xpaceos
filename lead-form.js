@@ -26,8 +26,7 @@
       send: 'Enviar', cancel: 'Cancelar', sending: 'Enviando…',
       okTitle: '¡Gracias! 🎉', okMsg: 'Te contactaremos muy pronto.',
       offMsg: 'Guardado ✓ — se enviará en cuanto haya conexión.',
-      errName: 'Pon tu nombre.', errContact: 'Pon un email o un teléfono.', errEmail: 'Email no válido.',
-      iOpts: ['Pixer.ai · creación con IA', 'Admira XP · gemelo digital', 'OmniPublicity · marketplace RTB', 'Hardware Lenovo × Nvidia', 'Partnership', 'Otro'] },
+      errName: 'Pon tu nombre.', errContact: 'Pon un email o un teléfono.', errEmail: 'Email no válido.' },
     en: { title: "Let's talk", sub: 'Leave your details and we’ll show XpaceOS in your space.',
       name: 'Name', company: 'Company', email: 'Email', phone: 'Phone', role: 'Role',
       interest: 'Interest', pick: 'Choose…', notes: 'What would you like to see?',
@@ -35,10 +34,24 @@
       send: 'Send', cancel: 'Cancel', sending: 'Sending…',
       okTitle: 'Thank you! 🎉', okMsg: 'We’ll be in touch very soon.',
       offMsg: 'Saved ✓ — it will be sent once you’re back online.',
-      errName: 'Enter your name.', errContact: 'Enter an email or a phone.', errEmail: 'Invalid email.',
-      iOpts: ['Pixer.ai · AI creation', 'Admira XP · digital twin', 'OmniPublicity · RTB marketplace', 'Hardware Lenovo × Nvidia', 'Partnership', 'Other'] }
+      errName: 'Enter your name.', errContact: 'Enter an email or a phone.', errEmail: 'Invalid email.' }
   };
   function tr() { return T[lng()] || T.es; }
+
+  // Desplegable de interés: las 3 capas de AdmiraNext. value = rótulo canónico
+  // EN (dato estable, igual que el contact-panel compartido); texto localizado.
+  var INTEREST = [
+    { value: 'Content Creation · LLM Productions · pixeria.com',
+      en: 'Content Creation · LLM Productions · pixeria.com',
+      es: 'Creación de Contenido · LLM Productions · pixeria.com' },
+    { value: 'Content Distribution · Digital Twin · xpaceos.com',
+      en: 'Content Distribution · Digital Twin · xpaceos.com',
+      es: 'Distribución de Contenido · Gemelo Digital · xpaceos.com' },
+    { value: 'Content Monetization · Programmatic Marketplace · admira.app',
+      en: 'Content Monetization · Programmatic Marketplace · admira.app',
+      es: 'Comercialización de Contenidos · Programmatic Marketplace · admira.app' },
+    { value: 'Other', en: 'Other', es: 'Otro' }
+  ];
 
   /* ── transporte + cola offline ─────────────────────────────────────── */
   function postLead(payload, timeoutMs) {
@@ -104,10 +117,10 @@
     q('lbEmail').textContent = t.email; q('lbPhone').textContent = t.phone; q('lbInterest').textContent = t.interest;
     q('lbNotes').textContent = t.notes; q('lbConsent').textContent = t.consent;
     q('xleadCancel').textContent = t.cancel; q('xleadSend').textContent = t.send;
-    var sel = q('xleadInterest'); var prev = sel.value;
+    var sel = q('xleadInterest'); var prev = sel.value; var L = lng();
     sel.innerHTML = '';
     var o0 = document.createElement('option'); o0.value = ''; o0.textContent = t.pick; sel.appendChild(o0);
-    t.iOpts.forEach(function (label) { var o = document.createElement('option'); o.value = label; o.textContent = label; sel.appendChild(o); });
+    INTEREST.forEach(function (it) { var o = document.createElement('option'); o.value = it.value; o.textContent = it[L] || it.en; sel.appendChild(o); });
     if (prev) { try { sel.value = prev; } catch (e) {} }
     q('xlOkT').textContent = t.okTitle; q('xlOkM').textContent = t.okMsg;
   }
