@@ -56,9 +56,7 @@
     #robotGrokAnswer.is-error{border-color:#ff6b6b;color:#ffd0d0}
     #metahumanPanel{display:none;position:fixed;z-index:31;width:340px;min-height:170px;max-height:calc(100vh - 16px);overflow-y:auto;overscroll-behavior:contain;border:1px solid rgba(120,243,255,.55);border-radius:10px;background:linear-gradient(180deg,rgba(8,16,28,.97),rgba(3,8,18,.98));box-shadow:0 16px 34px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.10);font-family:monospace;color:#dff8ff;padding:10px;gap:7px;scrollbar-width:thin;scrollbar-color:#2a7585 #07131b}
     #metahumanPanel.show{display:flex;flex-direction:column}
-    .mh-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#78f3ff;font-size:10px;font-weight:bold;text-transform:uppercase;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
-    .mh-head.is-grabbing{cursor:grabbing}
-    #metahumanPanel.is-dragging{transition:none}
+    .mh-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#78f3ff;font-size:10px;font-weight:bold;text-transform:uppercase}
     .mh-head #mhStatus{color:#9ec7d0;font-size:8px;font-weight:normal;text-transform:none;white-space:nowrap}
     .mh-close{margin-left:auto;border:none;background:transparent;color:#9ec7d0;font-size:18px;line-height:1;cursor:pointer;padding:0 4px}
     .mh-close:hover{color:#fff}
@@ -621,14 +619,16 @@
     /* El panel de Contacto del grupo (admira-design, z 1000/1010) debe quedar por encima del splash (z 99999) */
     .admira-contact-backdrop{z-index:100000 !important;}
     .admira-contact-panel{z-index:100001 !important;}
+    /* Selector de idioma + Contacto agrupados a la derecha del splash nav */
     /* Selector de idioma centrado sobre la división wireframe ↔ tradicional del splash */
-    .splash-lang{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;pointer-events:auto}
-    .splash-lang-btn{pointer-events:auto;border:1px solid rgba(255,255,255,.18);border-radius:6px;background:rgba(255,255,255,.04);color:#ffd86a;font:700 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:.12em;padding:7px 11px;cursor:pointer;text-transform:uppercase;transition:color .15s,background .15s,border-color .15s}
-    .splash-lang-btn:hover{color:#fff;background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.30)}
+    .splash-lang{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;border:1px solid rgba(255,255,255,.18);border-radius:6px;overflow:hidden;background:rgba(255,255,255,.04);pointer-events:auto}
+    .splash-lang-btn{pointer-events:auto;background:transparent;border:0;color:rgba(255,255,255,.6);font:600 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:.04em;padding:7px 10px;cursor:pointer;transition:color .15s,background .15s}
+    .splash-lang-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+    .splash-lang-btn.is-active{color:#0a0a0a;background:#ffd86a}
   </style>
   <!-- Idioma por defecto inglés; respeta la elección guardada antes de cargar el panel de contacto -->
   <script>try{document.documentElement.lang=localStorage.getItem('xtanco_lang')==='es'?'es':'en';}catch(e){document.documentElement.lang='en';}</script>
-  <!-- Contacto del grupo Admira: mismo componente y datos que admira.app / admiranext.com / pixeria.com -->
+  <!-- Contacto del grupo Admira: mismo componente y datos que admira.app / admiranext.com / admira.studio -->
   <link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/tokens.css">
   <link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/contact-panel.css">
   <script defer src="https://csilvasantin.github.io/admira-design/contact-panel.js"></script>
@@ -688,9 +688,9 @@
     <div class="splash-group">
       <div class="splash-group-kicker">Admira · Xperience</div>
       <div class="splash-group-row">
-        <a href="https://www.pixeria.com" target="_blank" rel="noopener" class="splash-link">PixerIA</a>
+        <a href="https://www.admira.studio" target="_blank" rel="noopener" class="splash-link">PixerIA</a>
         <span class="splash-group-sep">·</span>
-        <a href="https://www.xpaceos.com/admira-xp/" class="splash-link">XpaceOS</a>
+        <a href="https://www.xpaceos.com" target="_blank" rel="noopener" class="splash-link">XpaceOS</a>
         <span class="splash-group-sep">·</span>
         <a href="https://www.admira.app" target="_blank" rel="noopener" class="splash-link">Xbusiness</a>
       </div>
@@ -709,10 +709,11 @@
      fondo translúcido oscuro, "↗" como prefijo en enlaces externos. -->
 <nav id="splashNav" class="splash-nav" aria-label="Navegación principal">
   <a class="splash-nav-link" id="navigatorBtn" href="docs/navigator/" target="_blank" rel="noopener" title="Navigator · diagrama de flujo del DigitalTwin">↗ Navigator</a>
-  <div class="splash-lang" id="splashLang" aria-label="Language selection">
-    <button type="button" class="splash-lang-btn" id="splashLangToggle" data-lang-target="es" aria-label="Switch to Spanish">ESP</button>
+  <div class="splash-lang" id="splashLang" role="group" aria-label="Idioma / Language">
+    <button type="button" class="splash-lang-btn" data-lang="en">EN</button>
+    <button type="button" class="splash-lang-btn" data-lang="es">ES</button>
   </div>
-  <a class="splash-nav-link" id="splashContactBtn" href="#contact" data-admira-contact title="Contact">Contact</a>
+  <a class="splash-nav-link" id="splashContactBtn" href="#contact" data-admira-contact title="Contacto · Contact">Contacto</a>
 </nav>
 <div id="topBar">
   <span id="bbClock" style="color:#ffdd66;font-size:12px;font-weight:bold">09:00</span>
@@ -5996,8 +5997,7 @@ function setLanguage(nextLang){
   document.documentElement.lang=lang;
   try{localStorage.setItem('xtanco_lang',lang);}catch(e){}
   try{if(typeof applyHtmlLang==='function')applyHtmlLang(lang);}catch(e){}
-  try{window.dispatchEvent(new CustomEvent('admira:languagechange',{detail:{lang:lang}}));}catch(e){}
-  try{if(typeof syncAdmiraContactPanel==='function')syncAdmiraContactPanel(lang);}catch(e){}
+  try{document.querySelectorAll('#splashLang .splash-lang-btn').forEach(function(b){b.classList.toggle('is-active',b.dataset.lang===lang);});}catch(e){}
 }
 
 // ── STATE ─────────────────────────────────────────────────────
@@ -9071,38 +9071,14 @@ function hitTestShopLayoutItem(mx,my){
     }
   }catch(_){}
   const tile=screenToIso(mx,my);
-  if(tile.col>=0 && tile.col<ISO.cols && tile.row>=0 && tile.row<ISO.rows){
-    for(let i=0;i<shopLayout.length;i++){
-      const it=shopLayout[i];
-      if(!it) continue;
-      if(isWallMountedType(it.type)) continue;
-      if(it.col===tile.col && it.row===tile.row) return i;
-    }
-  }
-  // Muebles importados (billboards altos): si el clic no cae en el tile base de
-  // ningún item, permite agarrarlos clicando el propio sprite — si no, los
-  // muebles altos de pixeria son casi imposibles de seleccionar/mover/borrar.
-  for(let i=shopLayout.length-1;i>=0;i--){
+  if(tile.col<0||tile.col>=ISO.cols||tile.row<0||tile.row>=ISO.rows) return -1;
+  for(let i=0;i<shopLayout.length;i++){
     const it=shopLayout[i];
-    if(!it || it.type!=='custom') continue;
-    const sr=customFurniScreenRect(it);
-    if(sr && mx>=sr.x && mx<=sr.x+sr.w && my>=sr.y && my<=sr.y+sr.h) return i;
+    if(!it) continue;
+    if(isWallMountedType(it.type)) continue;
+    if(it.col===tile.col && it.row===tile.row) return i;
   }
   return -1;
-}
-// Rect en pantalla del sprite de un mueble custom (igual que drawCustomFurni),
-// para poder hit-testear el billboard completo, no solo su tile base.
-function customFurniScreenRect(e){
-  try{
-    const fp=customFurniFootprint(e);
-    const p=toIso(e.col+fp[0]/2, e.row+fp[1]/2);
-    const ph=Math.max(12,(e.ph||46));
-    const rec=(typeof getCustomFurniImage==='function')?getCustomFurniImage(e.img):null;
-    let ar=0.7;
-    if(rec&&rec.loaded&&rec.img.naturalWidth>0) ar=rec.img.naturalWidth/rec.img.naturalHeight;
-    const h=ph, w=Math.max(6,ph*ar);
-    return {x:p.x-w/2, y:p.y-h, w:w, h:h};
-  }catch(_){ return null; }
 }
 
 cv.addEventListener('mousedown',e=>{
@@ -9529,6 +9505,14 @@ function doAction(id){
       'Cajas: '+(G.saca.boxes||0),
       'Entrega activa en tienda'
     ]);
+    return;
+  }
+  if(id==='camCPMClick'){
+    // Cámara de seguridad → dashboard CPM/audiencia en la TFT de la pared
+    // larga (toggle). El canal cede prioridad al CCTV si hay ladrón.
+    G.tftCPM=!G.tftCPM;
+    if(typeof showEv==='function') showEv(G.tftCPM?'📊 CPM en pantalla principal — clic en la cámara para quitar':'📊 CPM fuera de la pantalla principal','#ffd866');
+    SFX.click&&SFX.click();
     return;
   }
   if(id==='specialClick_thief'&&G.thief&&G.thief.phase!=='idle'){
@@ -10299,12 +10283,73 @@ function recCloneEntity(o){
   }
   return out;
 }
+// ── IMPACTOS / CPM por pantalla (modelos 1+2 combinados) ────────────
+// Opción 1 (base, TODAS las pantallas): impactos = audiencia presente ×
+// factor de visibilidad de la pantalla, acumulado 1×/min de juego (desde
+// recSnapshot). El escaparate cuenta transeúntes de la calle (delta de
+// G.passersbyToday); el resto, clientes dentro (G.custs).
+// Opción 2 (donde HAY cámara): con LiveCam on y caras recientes, la pantalla
+// del tótem usa el CONTEO REAL de caras (LIVE_FACE.faces) en vez de la
+// estimación y se marca como medida (📷). CPM de referencia → ingreso
+// estimado = impactos/1000 × CPM.
+const IMPACTS = window.XPACE_IMPACTS = {
+  on:false, cpm:8, day:Object.create(null), _pPrev:undefined, hud:null, timer:null,
+  SCREENS:[
+    {id:'escaparate', label:'Escaparate', vis:0.85, src:'ext'},
+    {id:'tft',        label:'TFT pared',  vis:0.55, src:'in'},
+    {id:'ds1',        label:'Monitor sup.',vis:0.45, src:'in'},
+    {id:'ds2',        label:'Monitor inf.',vis:0.40, src:'in'},
+    {id:'metahuman',  label:'Tótem AI',   vis:0.35, src:'in', cam:true},
+  ],
+};
+function impactsEnsureDay(){ for(const s of IMPACTS.SCREENS){ if(!IMPACTS.day[s.id]) IMPACTS.day[s.id]={est:0,measured:false,camFaces:0}; } }
+function impactsReset(){ IMPACTS.day=Object.create(null); IMPACTS._pPrev=undefined; IMPACTS.aud={hours:Object.create(null),_gtPrev:undefined,_inPrev:undefined}; impactsEnsureDay(); }
+function impactsTick(){
+  if(typeof G==='undefined'||!G) return;
+  impactsEnsureDay();
+  const inside=(Array.isArray(G.custs)?G.custs.length:0);
+  const pNow=G.passersbyToday|0;
+  const passersDelta=Math.max(0,pNow-(Number.isFinite(IMPACTS._pPrev)?IMPACTS._pPrev:pNow));
+  IMPACTS._pPrev=pNow;
+  const lf=(typeof LIVE_FACE!=='undefined')?LIVE_FACE:null;
+  const camOn=!!(typeof LIVE_CAM!=='undefined'&&LIVE_CAM&&LIVE_CAM.active);
+  const camFaces=(camOn&&lf&&lf.faces>0&&(performance.now()-lf.ts)<5000)?lf.faces:0;
+  for(const s of IMPACTS.SCREENS){
+    const d=IMPACTS.day[s.id];
+    if(s.cam && camFaces>0){ d.est+=camFaces; d.measured=true; d.camFaces=camFaces; }   // Opción 2: medido por cámara
+    else { d.est+=((s.src==='ext')?passersDelta:inside)*s.vis; }                         // Opción 1: aforo × visibilidad
+  }
+  // ── AUDIENCIA POR FRANJA (gestión de visitantes para vender publi) ──
+  // Acumula por hora del reloj de pared: cuánta gente ENTRA (interior) y
+  // cuánta PASA por la puerta (exterior/escaparate) en cada franja. Es el
+  // dato que pide un anunciante para elegir y pagar franjas (prime time).
+  const aud=(IMPACTS.aud=IMPACTS.aud||{hours:Object.create(null),_gtPrev:undefined,_inPrev:undefined});
+  const gt=G.gameTime||0;
+  if(Number.isFinite(aud._gtPrev)&&gt<aud._gtPrev-0.5){ aud.hours=Object.create(null); aud._inPrev=undefined; } // nueva jornada (el reloj salta atrás a openHour)
+  aud._gtPrev=gt;
+  const inNow=G.custIn|0;
+  const inDelta=Math.max(0,inNow-(Number.isFinite(aud._inPrev)?aud._inPrev:inNow));
+  aud._inPrev=inNow;
+  const h=Math.floor(gt)%24;
+  const b=(aud.hours[h]=aud.hours[h]||{int:0,ext:0});
+  b.int+=inDelta; b.ext+=passersDelta;
+}
+// Franja con más audiencia total del día (prime time) → {hour,int,ext,total} | null
+function impactsPrime(){
+  const aud=IMPACTS.aud; if(!aud) return null;
+  let best=null;
+  for(const k in aud.hours){ const b=aud.hours[k], t=b.int+b.ext; if(t>0&&(!best||t>best.total)) best={hour:+k,int:b.int,ext:b.ext,total:t}; }
+  return best;
+}
+function impactsTotals(){ let imp=0; for(const s of IMPACTS.SCREENS){ const d=IMPACTS.day[s.id]; if(d) imp+=d.est; } return {imp, revenue:imp/1000*IMPACTS.cpm}; }
+
 function recSnapshot(){
   if(!G||state!==S.GAME||REC.replay.on) return;
   const t=G.gameTime||0;
   const minute=Math.floor(t*60);
   if(minute===REC._lastMin) return;   // 1 snapshot por minuto de juego
   REC._lastMin=minute;
+  try{ impactsTick(); }catch(_){}     // acumula impactos/CPM por pantalla (1×/min)
   try{
     REC.recording.push({
       t, weekTimer:G.weekTimer,
@@ -16821,8 +16866,6 @@ function _mhEls(){
     closeBtn:document.getElementById('mhClose'),
   };
 }
-// Posición personalizada si el usuario arrastró el panel (persistida).
-let _mhSavedPos=(function(){ try{ const r=localStorage.getItem('metahuman-overlay-pos'); if(r){ const p=JSON.parse(r); if(typeof p.left==='number'&&typeof p.top==='number') return p; } }catch(e){} return null; })();
 function _mhPositionPanel(){
   const els=_mhEls(); if(!els.panel) return;
   const cv=document.getElementById('c'); if(!cv) return;
@@ -16842,15 +16885,6 @@ function _mhPositionPanel(){
   els.panel.style.maxHeight=Math.max(180, safeBottom-16)+'px';
   const panelW=els.panel.offsetWidth||340;
   const panelH=els.panel.offsetHeight||190;
-  // Si el usuario movió el panel, respeta su posición (clamp al área visible).
-  if(_mhSavedPos){
-    const ux=Math.max(8, Math.min(window.innerWidth-panelW-8, _mhSavedPos.left));
-    const uy=Math.max(8, Math.min(Math.max(8, safeBottom-panelH), _mhSavedPos.top));
-    els.panel.style.left=ux+'px';
-    els.panel.style.top=uy+'px';
-    els.panel.style.right=''; els.panel.style.bottom='';
-    return;
-  }
   // Anchored to the bottom-left grass corner of the canvas so the shop and
   // the Metahuman totem stay visible while the user reads the answer.
   const x=Math.max(8, Math.min(window.innerWidth-panelW-8, r.left+10));
@@ -17009,50 +17043,6 @@ async function askMetahuman(text){
       els.prompt.addEventListener('keypress',swallow);
     }
     window.addEventListener('resize',()=>{ if(els.panel.classList.contains('show')) _mhPositionPanel(); });
-
-    // --- Arrastre de la ventana desde la cabecera (igual que el Pixer Feed) ---
-    const head=els.panel.querySelector('.mh-head');
-    if(head && !head._mhDragWired){
-      head._mhDragWired=true;
-      let drag=null;
-      const startDrag=(e)=>{
-        if(e.target.closest('#mhClose')) return; // la X cierra, no arrastra
-        const pt=e.touches?e.touches[0]:e;
-        const r=els.panel.getBoundingClientRect();
-        drag={dx:pt.clientX-r.left, dy:pt.clientY-r.top, moved:false};
-        els.panel.classList.add('is-dragging'); head.classList.add('is-grabbing');
-        if(e.cancelable) e.preventDefault();
-      };
-      const moveDrag=(e)=>{
-        if(!drag) return;
-        const pt=e.touches?e.touches[0]:e;
-        drag.moved=true;
-        const w=els.panel.offsetWidth||340, h=els.panel.offsetHeight||190;
-        let left=pt.clientX-drag.dx, top=pt.clientY-drag.dy;
-        left=Math.min(Math.max(left,8), Math.max(8,window.innerWidth-w-8));
-        top=Math.min(Math.max(top,8), Math.max(8,window.innerHeight-h-8));
-        els.panel.style.left=left+'px'; els.panel.style.top=top+'px';
-        els.panel.style.right=''; els.panel.style.bottom='';
-        if(e.cancelable) e.preventDefault();
-      };
-      const endDrag=()=>{
-        if(!drag) return;
-        els.panel.classList.remove('is-dragging'); head.classList.remove('is-grabbing');
-        if(drag.moved){
-          const r=els.panel.getBoundingClientRect();
-          _mhSavedPos={left:r.left, top:r.top};
-          try{ localStorage.setItem('metahuman-overlay-pos', JSON.stringify(_mhSavedPos)); }catch(e){}
-        }
-        drag=null;
-      };
-      head.addEventListener('mousedown',startDrag);
-      window.addEventListener('mousemove',moveDrag);
-      window.addEventListener('mouseup',endDrag);
-      head.addEventListener('touchstart',startDrag,{passive:false});
-      window.addEventListener('touchmove',moveDrag,{passive:false});
-      window.addEventListener('touchend',endDrag);
-      window.addEventListener('touchcancel',endDrag);
-    }
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire,{once:true});
   else wire();
@@ -17192,6 +17182,9 @@ function drawCornerSecurityCamera(){
   if(!G) return;
   const cp=toIso(0,0);
   const x=cp.x+8,y=cp.y-ISO.wallH+34;
+  // Clic en la cámara → muestra el dashboard de CPM/audiencia en la TFT de
+  // la pared larga (canal tftCPM). Otro clic lo quita. (Carlos 2026-06-10)
+  BTNS['camCPMClick']={x:x-14,y:y-14,w:32,h:18};
   cx.save();
   cx.strokeStyle='#3a3028';cx.lineWidth=2;
   cx.beginPath();cx.moveTo(x-12,y-8);cx.lineTo(x,y);cx.stroke();
@@ -17328,6 +17321,49 @@ function drawSecurityCCTV(vW,vH){
   cx.textAlign='left';
 }
 
+// ── CPM DASHBOARD en la TFT (clic en la cámara de seguridad) ──────
+// Pinta en el espacio 160×90 de la pantalla de la pared larga el resumen de
+// audiencia para vender publi: ENTRAN (interior) · PASAN (exterior), barras
+// por franja con ⭐ prime, y total impactos + CPM + ingreso estimado.
+function drawTftCPM(vW,vH){
+  cx.fillStyle='#0c0f08';cx.fillRect(0,0,vW,vH);
+  for(let y=0;y<vH;y+=3){cx.fillStyle='rgba(0,0,0,0.18)';cx.fillRect(0,y,vW,1);}
+  cx.strokeStyle='#ffcc66';cx.lineWidth=1;cx.strokeRect(2,2,vW-4,vH-4);
+  cx.fillStyle='#ffcc66';cx.font='bold 7px monospace';cx.textAlign='center';
+  cx.fillText('AUDIENCIA · CPM',vW/2,11);
+  const entran=(G&&G.custIn)|0, pasan=(G&&G.passersbyToday)|0;
+  // dos contadores grandes
+  cx.textAlign='center';
+  cx.fillStyle='#9effa0';cx.font='bold 16px monospace';cx.fillText(String(entran),vW*0.27,32);
+  cx.font='6px monospace';cx.fillText('ENTRAN (interior)',vW*0.27,40);
+  cx.fillStyle='#8ed2ff';cx.font='bold 16px monospace';cx.fillText(String(pasan),vW*0.73,32);
+  cx.font='6px monospace';cx.fillText('PASAN (exterior)',vW*0.73,40);
+  // barras por franja (mismas cifras que el HUD /cpm)
+  const aud=(typeof IMPACTS!=='undefined'&&IMPACTS.aud&&IMPACTS.aud.hours)||{};
+  const hrs=Object.keys(aud).map(Number).sort((a,b)=>a-b).filter(h=>(aud[h].int+aud[h].ext)>0);
+  if(hrs.length){
+    const prime=(typeof impactsPrime==='function')?impactsPrime():null;
+    const maxT=Math.max.apply(null,hrs.map(h=>aud[h].int+aud[h].ext));
+    const bw=Math.min(10,Math.floor((vW-20)/hrs.length)-1), bh=22, by=70;
+    let x0=(vW-(hrs.length*(bw+1)))/2;
+    for(const h of hrs){
+      const b=aud[h], hi=Math.max(1,Math.round(bh*(b.int/maxT))), he=Math.round(bh*(b.ext/maxT));
+      cx.fillStyle='#8ed2ff';cx.fillRect(x0,by-hi-he,bw,he);
+      cx.fillStyle='#9effa0';cx.fillRect(x0,by-hi,bw,hi);
+      if(prime&&prime.hour===h){cx.fillStyle='#ffd866';cx.font='7px monospace';cx.fillText('★',x0+bw/2,by-hi-he-2);}
+      cx.fillStyle='#ffffff66';cx.font='5px monospace';cx.fillText(String(h).padStart(2,'0'),x0+bw/2,by+6);
+      x0+=bw+1;
+    }
+  } else {
+    cx.fillStyle='#ffffff55';cx.font='6px monospace';cx.fillText('// acumulando audiencia por franja…',vW/2,62);
+  }
+  // pie: total + cpm + ingreso
+  const t=(typeof impactsTotals==='function')?impactsTotals():{imp:0,revenue:0};
+  cx.fillStyle='#ffe6a8';cx.font='bold 6px monospace';
+  cx.fillText('IMPACTOS '+Math.round(t.imp).toLocaleString('es')+'  ·  CPM '+((typeof IMPACTS!=='undefined'?IMPACTS.cpm:8).toFixed(2))+'€  ·  ING '+t.revenue.toFixed(2)+'€',vW/2,vH-7);
+  cx.textAlign='left';
+}
+
 // ── ALTADIS TFT (big screen below LED, centered on back wall) ─
 // centerCol opcional — si se pasa, el TFT se centra sobre esa columna
 // (item.col +0.5 en el iso). Default = 7 (Xtanco legacy: cols 5..9).
@@ -17414,6 +17450,8 @@ function drawAltadisTFT(centerCol, yPx, colsWide){
     drawLiveCamScreen(vW,vH);
   } else if(G&&G.thief&&G.thief.phase!=='idle'){
     drawSecurityCCTV(vW,vH);
+  } else if(G&&G.tftCPM){
+    drawTftCPM(vW,vH);
   } else if(G&&G.tftGrokArt){
     drawTftGrokArt(G.tftGrokArt,vW,vH);
   } else if(G&&G.tftParty>0){
@@ -23564,6 +23602,105 @@ window.xtAPI = (function(){
         }
       }
 
+      // ── /impactos — impactos y CPM por pantalla (aforo×visibilidad + cámara) ──
+      // Toggle. Muestra un HUD con los impactos acumulados del día por pantalla
+      // (📷 = medido por cámara, ~ = estimado por aforo×visibilidad), el CPM de
+      // referencia y el ingreso estimado. /impactos cpm <n> · /impactos reset.
+      if(['impactos','impacts','impresiones','cpm'].includes(cmd)){
+        const a=String(arg||'').trim().toLowerCase();
+        const stopIMP=(silent)=>{
+          if(IMPACTS.timer){ clearInterval(IMPACTS.timer); IMPACTS.timer=null; }
+          IMPACTS.on=false;
+          const h=document.getElementById('impactsHud'); if(h) h.style.display='none';
+          if(!silent && typeof showEv==='function') showEv('📊 Impactos OFF','#ffcc66');
+        };
+        if(['off','stop','cerrar','close','0','no','desactivar'].includes(a) || (!a && IMPACTS.on)){
+          stopIMP(false); return {ok:true,message:'Impactos desactivado',data:{on:false}};
+        }
+        if(a==='reset'){ impactsReset(); if(typeof showEv==='function') showEv('📊 Impactos reiniciados','#ffcc66'); }
+        if(a==='tft'||a==='pantalla'){ G.tftCPM=!G.tftCPM; if(typeof showEv==='function') showEv(G.tftCPM?'📊 CPM en la pantalla principal':'📊 CPM fuera de la pantalla','#ffd866'); return {ok:true,message:'CPM en TFT: '+(G.tftCPM?'ON':'OFF'),data:{tft:!!G.tftCPM}}; }
+        const mCpm=a.match(/^cpm\s+([\d.]+)/); if(mCpm){ const v=parseFloat(mCpm[1]); if(v>0) IMPACTS.cpm=v; }
+        impactsEnsureDay();
+        let h=document.getElementById('impactsHud');
+        if(!h){
+          h=document.createElement('div'); h.id='impactsHud';
+          h.style.cssText='position:fixed;top:72px;right:16px;z-index:2147482000;min-width:248px;background:rgba(6,16,10,.94);border:1px solid #ffcc66;border-radius:10px;color:#ffe6a8;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;box-shadow:0 0 22px rgba(255,204,102,.25);overflow:hidden';
+          h.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-bottom:1px dashed #8a6a2f;letter-spacing:.06em"><b>📊 IMPACTOS · CPM</b><span id="impClose" style="cursor:pointer;color:#999;padding:0 4px">×</span></div><div id="impBody" style="padding:8px 10px;line-height:1.6"></div>';
+          document.body.appendChild(h);
+          const c=h.querySelector('#impClose'); if(c) c.onclick=()=>stopIMP(false);
+        }
+        h.style.display='block';
+        // MARCADOR en tiempo real (Carlos 2026-06-10): lo primero del panel son
+        // los dos contadores de audiencia publicitaria del día, en vivo (1s):
+        //   🏪 INTERIOR = gente que ENTRA en la tienda (G.custIn, ++ por entrada)
+        //   🚶 EXTERIOR = gente que PASA por la puerta (G.passersbyToday)
+        // (Siguiente pulido: separar quién MIRA la pantalla de quién no.)
+        let prevIn=-1, prevOut=-1;
+        const render=()=>{
+          const body=document.getElementById('impBody'); if(!body) return;
+          const entran=(typeof G!=='undefined'&&G)?(G.custIn|0):0;
+          const pasan=(typeof G!=='undefined'&&G)?(G.passersbyToday|0):0;
+          const dentro=(typeof G!=='undefined'&&G&&Array.isArray(G.custs))?G.custs.length:0;
+          const flashIn=(entran!==prevIn&&prevIn>=0), flashOut=(pasan!==prevOut&&prevOut>=0);
+          prevIn=entran; prevOut=pasan;
+          const big=(n,flash)=>'<div style="font-size:26px;font-weight:800;line-height:1.1;color:'+(flash?'#fff':'#ffe6a8')+';text-shadow:'+(flash?'0 0 14px rgba(255,230,150,.95)':'none')+'">'+n.toLocaleString('es')+'</div>';
+          const marcador=
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px">'+
+              '<div style="background:rgba(0,0,0,.35);border:1px solid rgba(158,255,160,.35);border-radius:8px;padding:8px 10px;text-align:center">'+
+                '<div style="font-size:9.5px;letter-spacing:.1em;color:#9effa0">🏪 INTERIOR</div>'+big(entran,flashIn)+
+                '<div style="font-size:9px;opacity:.65">entran hoy · dentro ahora: '+dentro+'</div>'+
+              '</div>'+
+              '<div style="background:rgba(0,0,0,.35);border:1px solid rgba(120,200,255,.35);border-radius:8px;padding:8px 10px;text-align:center">'+
+                '<div style="font-size:9.5px;letter-spacing:.1em;color:#8ed2ff">🚶 EXTERIOR</div>'+big(pasan,flashOut)+
+                '<div style="font-size:9px;opacity:.65">pasan por la puerta hoy</div>'+
+              '</div>'+
+            '</div>';
+          // Franjas horarias: barras apiladas (verde=interior, azul=exterior)
+          // por hora del día → el anunciante ve CUÁNDO hay audiencia. ⭐ = prime.
+          let franjas='';
+          const aud=IMPACTS.aud&&IMPACTS.aud.hours||{};
+          const hrs=Object.keys(aud).map(Number).sort((a,b)=>a-b).filter(h=>(aud[h].int+aud[h].ext)>0);
+          if(hrs.length){
+            const prime=impactsPrime();
+            const maxT=Math.max.apply(null,hrs.map(h=>aud[h].int+aud[h].ext));
+            const H=34;
+            const bars=hrs.map(h=>{
+              const b=aud[h], t=b.int+b.ext;
+              const hInt=Math.max(t?2:0,Math.round(H*(b.int/maxT)));
+              const hExt=Math.max(b.ext?1:0,Math.round(H*(b.ext/maxT)));
+              const isP=prime&&prime.hour===h;
+              return '<div title="'+String(h).padStart(2,'0')+'h · entran '+b.int+' · pasan '+b.ext+'" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:0;flex:1;min-width:7px">'+
+                '<div style="width:100%;height:'+hExt+'px;background:#8ed2ff;opacity:.85"></div>'+
+                '<div style="width:100%;height:'+hInt+'px;background:#9effa0"></div>'+
+                '<div style="font-size:7.5px;opacity:'+(isP?'1':'.5')+';margin-top:2px;color:'+(isP?'#ffd866':'inherit')+'">'+(isP?'⭐':String(h).padStart(2,'0'))+'</div>'+
+              '</div>';
+            }).join('');
+            franjas='<div style="background:rgba(0,0,0,.3);border:1px solid #3a4a2a;border-radius:8px;padding:7px 9px 5px;margin-bottom:9px">'+
+              '<div style="display:flex;justify-content:space-between;font-size:9px;letter-spacing:.08em;margin-bottom:5px"><span>AUDIENCIA POR FRANJA</span>'+
+              (prime?'<span style="color:#ffd866">⭐ prime '+String(prime.hour).padStart(2,'0')+'–'+String((prime.hour+1)%24).padStart(2,'0')+'h · '+prime.total+'</span>':'')+'</div>'+
+              '<div style="display:flex;align-items:flex-end;gap:2px;height:'+(H+12)+'px">'+bars+'</div>'+
+              '<div style="font-size:8px;opacity:.55;margin-top:2px"><span style="color:#9effa0">■</span> entran · <span style="color:#8ed2ff">■</span> pasan</div>'+
+            '</div>';
+          }
+          let rows='';
+          for(const s of IMPACTS.SCREENS){
+            const d=IMPACTS.day[s.id]||{est:0,measured:false};
+            const badge=d.measured?'<span title="medido por cámara">📷</span>':'<span title="estimado" style="opacity:.55">~</span>';
+            rows+='<div style="display:flex;justify-content:space-between"><span>'+badge+' '+s.label+'</span><b>'+Math.round(d.est).toLocaleString('es')+'</b></div>';
+          }
+          const t=impactsTotals();
+          body.innerHTML=marcador+franjas+rows+
+            '<div style="border-top:1px dashed #8a6a2f;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between"><span>TOTAL impactos</span><b>'+Math.round(t.imp).toLocaleString('es')+'</b></div>'+
+            '<div style="display:flex;justify-content:space-between"><span>CPM ref</span><b>'+IMPACTS.cpm.toFixed(2)+' €</b></div>'+
+            '<div style="display:flex;justify-content:space-between;color:#9effa0"><span>Ingreso estim.</span><b>'+t.revenue.toFixed(2)+' €</b></div>'+
+            '<div style="margin-top:5px;font-size:9.5px;opacity:.6">📷 medido por cámara · ~ estimado (aforo×visibilidad)<br>/cpm cpm &lt;n&gt; · /cpm reset · /cpm off</div>';
+        };
+        render();
+        if(!IMPACTS.timer) IMPACTS.timer=setInterval(render,1000);
+        IMPACTS.on=true;
+        return {ok:true,message:'Impactos ON · marcador en vivo · CPM '+IMPACTS.cpm+'€',data:{on:true}};
+      }
+
       // ── /targetPublicity — publicidad segmentada ──────────────────────
       // Toggle como /subasta. Lee una señal de audiencia y empuja el creativo
       // adecuado a ESTA pantalla (reutiliza el targeting por screen del feed).
@@ -24231,7 +24368,7 @@ window.xtAPI = (function(){
     ];
   }
 
-  // PixerIA → hub del grupo en www.pixeria.com (motores generativos).
+  // PixerIA → hub del grupo en www.admira.studio (motores generativos).
   // Apertura síncrona en el click (sin await) para no disparar el popup blocker.
   // Botón "🎨 Pixeria": importa de un toque el ÚLTIMO mobiliario creado en
   // pixeria.com (type 'furni' del Stock) y lo coloca en el Xpacio del gemelo.
@@ -25440,7 +25577,7 @@ window.xtAPI = (function(){
       {title:'Tienda',items:['/ad 0','/ad 1','/ad 2','/upgrade','/aforo real','/aforo exacto','/aforo fake','/aforo','/visit com','/visit tec','/visit del','/visit gc','/save']},
       {title:'Look & feel',items:['/camiseta on','/camiseta off','/camiseta']},
       {title:'Tiempo y ambiente',items:['/reloj 14:30','/reloj 14 30','/time am','/time pm','/time night','/weather normal','/weather rain','/weather sun','/lamp','/lamp auto','/hue','/hue auto']},
-      {title:'Pantalla y directo',items:['/livecam','/mocap','/pixeria','/AdmiraLive texto','/comunicar texto','/comunicar texto --grok','/comunicar texto --elevenlabs','/AdmiraTube URL 2 audio','/say texto','/targetPublicity aforo','/targetPublicity genero','/targetPublicity off','/generovideo','/generovideo off']},
+      {title:'Pantalla y directo',items:['/livecam','/mocap','/pixeria','/AdmiraLive texto','/comunicar texto','/comunicar texto --grok','/comunicar texto --elevenlabs','/AdmiraTube URL 2 audio','/say texto','/targetPublicity aforo','/targetPublicity genero','/targetPublicity off','/generovideo','/generovideo off','/impactos','/impactos cpm 12','/impactos reset','/impactos off']},
       {title:'Escena en vivo',items:['/dj','/ladron','/guardiacivil','/opinador','/robot','/sponsor','/socio','/door open','/door close','/door auto','/subasta','/subasta off']},
       {title:'Notificaciones al personal',items:['/personal socio','/personal dashboard','/socios listado','/heatmap','/heatmap reset','/sponsor recurrente 120 10']},
       {title:'Atmósfera',items:['/ambiente','/ambiente vol 50','/voces']},
@@ -25978,17 +26115,6 @@ window.xtAPI = (function(){
 
     try{
       if(cmd==='start'||cmd==='help') return commandHelp();
-      // /contacto — abre el formulario de captación de lead del booth (Shoptalk).
-      // Aliases ES/EN. El dato va al worker pixer-eleven y avisa por Telegram.
-      if(['contacto','contact','lead','hablemos','letstalk','demo-contacto'].includes(cmd)){
-        if(typeof openLeadForm==='function'){ openLeadForm(arg); return '🧲 Formulario de contacto abierto.'; }
-        return 'Formulario de contacto no disponible (recarga el gemelo).';
-      }
-      // /prospects — abre el panel de leads captados (protegido por token).
-      if(['prospects','prospectos','leads','contactos'].includes(cmd)){
-        try{ window.open('/leads.html','_blank','noopener'); }catch(e){ try{ location.href='/leads.html'; }catch(_){} }
-        return '📇 Abriendo Prospects (leads captados)…';
-      }
       // /present [next|prev|close|auto|stop|<n>] — popup-presentación del gemelo
       // (controlable por Telegram, StreamDeck y remote.html). Solo explica.
       if(['present','presentacion','presentación','explainer','presenta'].includes(cmd)){
@@ -28237,9 +28363,6 @@ window.xtAPI = (function(){
     {sel:'#splashDemoBtn', en:'▶ DEMO', es:'▶ DEMO'},
     {sel:'.splash-hint', en:'PLAY · enter your Xpace · DEMO · hands-free autoplay', es:'JUGAR · entra a tu Xpacio · DEMO · autoplay sin manos'},
     {sel:'#splashContactBtn', en:'Contact', es:'Contacto'},
-    {sel:'#splashContactBtn', attr:'title', en:'Contact', es:'Contacto'},
-    {sel:'#splashLangToggle', en:'ESP', es:'ENG'},
-    {sel:'#splashLangToggle', attr:'aria-label', en:'Switch to Spanish', es:'Cambiar a inglés'},
     {sel:'.stat-label', idx:0, en:'Sales', es:'Ventas'},
     {sel:'.stat-label', idx:1, en:'Profit', es:'Beneficio'},
     {sel:'.stat-label', idx:2, en:'Sat', es:'Sat'},
@@ -28273,77 +28396,21 @@ window.xtAPI = (function(){
         if(it.attr) el.setAttribute(it.attr, val); else el.textContent = val;
       }catch(e){}
     });
-    var langToggle = document.getElementById('splashLangToggle');
-    if(langToggle) langToggle.dataset.langTarget = l==='en'?'es':'en';
-    if(typeof syncAdmiraContactPanel==='function') syncAdmiraContactPanel(l);
-  };
-  window.syncAdmiraContactPanel = function(l){
-    l = (l==='es') ? 'es' : 'en';
-    var panel = document.getElementById('admiraContactPanel');
-    if(!panel) return;
-    var copy = l==='es' ? {
-      close:'Cerrar panel de contacto',
-      title:'Contáctanos',
-      details:'Datos de contacto',
-      call:'Te llamamos',
-      name:'Nombre',
-      phone:'Teléfono',
-      reason:'Motivo',
-      send:'Enviar solicitud',
-      video:'Agendar videoconferencia',
-      office:'Oficina',
-      city:'Barcelona, España'
-    } : {
-      close:'Close contact panel',
-      title:'Contact us',
-      details:'Contact details',
-      call:'We call you',
-      name:'Name',
-      phone:'Phone',
-      reason:'Reason',
-      send:'Send request',
-      video:'Book a video conference',
-      office:'Office',
-      city:'Barcelona, Spain'
-    };
-    var close = panel.querySelector('.admira-contact-close');
-    if(close) close.setAttribute('aria-label', copy.close);
-    var title = panel.querySelector('#admiraContactPanelTitle');
-    if(title) title.textContent = copy.title;
-    var gridItems = panel.querySelectorAll('.admira-contact-panel-grid > div');
-    if(gridItems[0]) gridItems[0].textContent = copy.details;
-    if(gridItems[2]) gridItems[2].textContent = copy.call;
-    if(gridItems[4]) gridItems[4].textContent = copy.office;
-    if(gridItems[5]) gridItems[5].textContent = copy.city;
-    var labels = panel.querySelectorAll('.admira-contact-form label span');
-    if(labels[0]) labels[0].textContent = copy.name;
-    if(labels[1]) labels[1].textContent = copy.phone;
-    if(labels[2]) labels[2].textContent = copy.reason;
-    var submit = panel.querySelector('.admira-contact-form button[type="submit"]');
-    if(submit) submit.textContent = copy.send;
-    var video = panel.querySelector('.admira-contact-actions a');
-    if(video) video.textContent = copy.video;
   };
   function curLang(){ try{ return localStorage.getItem('xtanco_lang')==='es'?'es':'en'; }catch(e){ return 'en'; } }
   function wire(){
     var box = document.getElementById('splashLang');
     if(box) box.querySelectorAll('.splash-lang-btn').forEach(function(b){
       b.addEventListener('click', function(){
-        var next = b.dataset.langTarget || (curLang()==='en'?'es':'en');
-        if(typeof setLanguage==='function') setLanguage(next);
-        else { try{localStorage.setItem('xtanco_lang',next);}catch(e){} window.applyHtmlLang(next); }
+        if(typeof setLanguage==='function') setLanguage(b.dataset.lang);
+        else { try{localStorage.setItem('xtanco_lang',b.dataset.lang);}catch(e){} window.applyHtmlLang(b.dataset.lang); }
+        document.querySelectorAll('#splashLang .splash-lang-btn').forEach(function(x){ x.classList.toggle('is-active', x.dataset.lang===b.dataset.lang); });
       });
     });
     var cur = curLang();
     window.applyHtmlLang(cur);
-    var langToggle = document.getElementById('splashLangToggle');
-    if(langToggle) langToggle.dataset.langTarget = cur==='en'?'es':'en';
+    document.querySelectorAll('#splashLang .splash-lang-btn').forEach(function(b){ b.classList.toggle('is-active', b.dataset.lang===cur); });
   }
-  document.addEventListener('click', function(e){
-    if(e.target && e.target.closest && e.target.closest('[data-admira-contact]')) {
-      setTimeout(function(){ window.syncAdmiraContactPanel(curLang()); }, 0);
-    }
-  });
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire); else wire();
 })();
 </script>
@@ -28523,214 +28590,6 @@ window.xtAPI = (function(){
   window.TwinPresent={ open:open, close:close, next:next, prev:prev, goto:goto,
     toggleAuto:toggleAuto, isOpen:function(){ return isOpen; },
     showButton:function(v){ openBtn.classList.toggle("show",v!==false); } };
-})();
-</script>
-<script>
-/* ===== Captación de lead · booth Shoptalk (Admira XP) =====================
-   Botón flotante + modal + comando /contacto. El dato va a pixer-eleven
-   (POST /lead) que lo guarda en KV y avisa por Telegram. Booth-safe: si la
-   red falla, el lead se encola en localStorage y se reintenta — nunca se
-   pierde un contacto en el stand. ========================================= */
-(function(){
-  var ENDPOINT='https://pixer-eleven.csilvasantin.workers.dev/lead';
-  var QKEY='xpace_lead_queue';
-  function lng(){ try{ if(window.lang) return window.lang==='en'?'en':'es';
-    return localStorage.getItem('xtanco_lang')==='en'?'en':'es'; }catch(e){ return 'es'; } }
-  var T={
-    es:{ cta:'✦ Hablemos', title:'Hablemos', sub:'Déjanos tus datos y te enseñamos XpaceOS en tu espacio.',
-      name:'Nombre', company:'Empresa', email:'Email', phone:'Teléfono', role:'Cargo',
-      interest:'Interés', pick:'Elige…', notes:'¿Qué te gustaría ver?',
-      consent:'Acepto que Admira me contacte sobre XpaceOS.',
-      send:'Enviar', cancel:'Cancelar', sending:'Enviando…',
-      okTitle:'¡Gracias! 🎉', okMsg:'Te contactaremos muy pronto.',
-      offMsg:'Guardado ✓ — se enviará en cuanto haya conexión.',
-      errName:'Pon tu nombre.', errContact:'Pon un email o un teléfono.', errEmail:'Email no válido.' },
-    en:{ cta:"✦ Let's talk", title:"Let's talk", sub:'Leave your details and we’ll show XpaceOS in your space.',
-      name:'Name', company:'Company', email:'Email', phone:'Phone', role:'Role',
-      interest:'Interest', pick:'Choose…', notes:'What would you like to see?',
-      consent:'I agree Admira may contact me about XpaceOS.',
-      send:'Send', cancel:'Cancel', sending:'Sending…',
-      okTitle:'Thank you! 🎉', okMsg:'We’ll be in touch very soon.',
-      offMsg:'Saved ✓ — it will be sent once you’re back online.',
-      errName:'Enter your name.', errContact:'Enter an email or a phone.', errEmail:'Invalid email.' }
-  };
-  function tr(){ return T[lng()]||T.es; }
-  // Desplegable de interés: las 3 capas de AdmiraNext (value = rótulo canónico
-  // EN, igual que el contact-panel compartido; texto localizado).
-  var INTEREST=[
-    {value:'Content Creation · LLM Productions · pixeria.com', en:'Content Creation · LLM Productions · pixeria.com', es:'Creación de Contenido · LLM Productions · pixeria.com'},
-    {value:'Content Distribution · Digital Twin · xpaceos.com', en:'Content Distribution · Digital Twin · xpaceos.com', es:'Distribución de Contenido · Gemelo Digital · xpaceos.com'},
-    {value:'Content Monetization · Programmatic Marketplace · admira.app', en:'Content Monetization · Programmatic Marketplace · admira.app', es:'Comercialización de Contenidos · Programmatic Marketplace · admira.app'},
-    {value:'Other', en:'Other', es:'Otro'}
-  ];
-
-  /* ── transporte + cola offline ─────────────────────────────────────── */
-  function postLead(payload, timeoutMs){
-    var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
-    var to=ctrl?setTimeout(function(){ try{ctrl.abort();}catch(e){} }, timeoutMs||9000):null;
-    return fetch(ENDPOINT,{ method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload), signal:ctrl?ctrl.signal:undefined })
-      .then(function(r){ if(to)clearTimeout(to); if(!r.ok) throw new Error('http '+r.status); return r.json().catch(function(){return{};}); });
-  }
-  function loadQ(){ try{ return JSON.parse(localStorage.getItem(QKEY)||'[]'); }catch(e){ return []; } }
-  function saveQ(a){ try{ localStorage.setItem(QKEY, JSON.stringify(a.slice(-200))); }catch(e){} }
-  function enqueue(p){ var a=loadQ(); a.push(p); saveQ(a); }
-  var flushing=false;
-  function flushQ(){
-    if(flushing) return; var a=loadQ(); if(!a.length) return; flushing=true;
-    (function next(){
-      if(!a.length){ saveQ(a); flushing=false; return; }
-      var p=a[0];
-      postLead(p,9000).then(function(){ a.shift(); saveQ(a); next(); })
-        .catch(function(){ flushing=false; }); // se reintenta en la próxima ocasión
-    })();
-  }
-
-  /* ── modal ─────────────────────────────────────────────────────────── */
-  var built=false, autoTimer=null;
-  function injectCSS(){
-    if(document.getElementById('xleadCSS')) return;
-    var s=document.createElement('style'); s.id='xleadCSS';
-    s.textContent=[
-      '#xleadCTA{position:fixed;right:14px;bottom:max(14px,env(safe-area-inset-bottom));z-index:100100;display:none;',
-      'align-items:center;gap:8px;padding:11px 18px;border:1px solid rgba(120,243,255,.55);border-radius:999px;',
-      'background:linear-gradient(180deg,rgba(8,24,32,.96),rgba(3,10,15,.98));color:#dff8ff;cursor:pointer;',
-      'font:600 13px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;box-shadow:0 8px 26px rgba(0,0,0,.5),0 0 18px rgba(120,243,255,.18)}',
-      '#xleadCTA.show{display:inline-flex}#xleadCTA:hover{border-color:#78f3ff;color:#fff}',
-      '#xleadCTA .xl-pulse{width:7px;height:7px;border-radius:50%;background:#37e07a;box-shadow:0 0 8px #37e07a}',
-      '#xleadBack{position:fixed;inset:0;z-index:100200;display:none;align-items:center;justify-content:center;padding:18px;',
-      'background:rgba(2,8,14,.62);backdrop-filter:blur(3px)}#xleadBack.show{display:flex}',
-      '#xleadCard{width:420px;max-width:96vw;max-height:94vh;overflow:auto;background:linear-gradient(180deg,#06141d,#030b12);',
-      'border:1px solid rgba(120,243,255,.34);border-radius:14px;box-shadow:0 22px 60px rgba(0,0,0,.62);color:#dff8ff;',
-      'padding:20px 20px 18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}',
-      '#xleadCard h3{margin:0;font:700 19px -apple-system,"Segoe UI",sans-serif;color:#eafeff}',
-      '#xleadCard .xl-sub{margin:5px 0 14px;font-size:12.5px;color:#8fb6c4;line-height:1.4}',
-      '#xleadCard label{display:block;font:600 10.5px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#79f3ff;margin:0 0 4px}',
-      '#xleadCard .xl-f{margin-bottom:11px}',
-      '#xleadCard input,#xleadCard select,#xleadCard textarea{width:100%;box-sizing:border-box;background:#02141c;border:1px solid #2a5664;',
-      'border-radius:8px;color:#eafeff;font-size:14px;padding:9px 11px;font-family:inherit}',
-      '#xleadCard textarea{resize:vertical;min-height:56px}',
-      '#xleadCard input:focus,#xleadCard select:focus,#xleadCard textarea:focus{outline:none;border-color:#78f3ff;box-shadow:0 0 0 2px rgba(120,243,255,.18)}',
-      '#xleadCard .xl-row{display:flex;gap:10px}#xleadCard .xl-row>div{flex:1}',
-      '#xleadCard .xl-consent{display:flex;align-items:flex-start;gap:8px;margin:2px 0 14px}',
-      '#xleadCard .xl-consent input{width:16px;height:16px;margin-top:1px;flex:0 0 auto}',
-      '#xleadCard .xl-consent span{font-size:11.5px;color:#9fc4d2;line-height:1.35;text-transform:none;letter-spacing:0;font-weight:400}',
-      '#xleadErr{display:none;color:#ff8866;font-size:12px;margin-bottom:8px}',
-      '#xleadBtns{display:flex;gap:10px}',
-      '#xleadBtns button{flex:1;padding:11px;border-radius:9px;font:600 14px inherit;cursor:pointer;border:1px solid}',
-      '#xleadSend{background:linear-gradient(180deg,#0e3a44,#072028);border-color:#78f3ff;color:#eafeff}',
-      '#xleadSend:hover{background:linear-gradient(180deg,#125866,#0a2c36)}#xleadSend[disabled]{opacity:.55;cursor:default}',
-      '#xleadCancel{background:transparent;border-color:#33555f;color:#8fb6c4}#xleadCancel:hover{border-color:#5a8694;color:#cfe9f2}',
-      '#xleadOK{display:none;text-align:center;padding:14px 4px}#xleadOK h3{margin-bottom:6px}#xleadOK p{color:#9fc4d2;font-size:13.5px;margin:0}',
-      '#xleadClose{position:absolute;top:10px;right:14px;background:transparent;border:0;color:#6f9aa8;font-size:22px;line-height:1;cursor:pointer}'
-    ].join('');
-    document.head.appendChild(s);
-  }
-  function build(){
-    if(built) return; injectCSS();
-    var back=document.createElement('div'); back.id='xleadBack';
-    back.innerHTML=
-      '<div id="xleadCard" role="dialog" aria-modal="true" style="position:relative">'+
-        '<button id="xleadClose" type="button" aria-label="close">×</button>'+
-        '<div id="xleadForm">'+
-          '<h3 id="xlT"></h3><div class="xl-sub" id="xlSub"></div>'+
-          '<div id="xleadErr"></div>'+
-          '<div class="xl-f"><label id="lbName"></label><input id="xleadName" autocomplete="name" maxlength="120"></div>'+
-          '<div class="xl-row"><div class="xl-f"><label id="lbCompany"></label><input id="xleadCompany" autocomplete="organization" maxlength="120"></div>'+
-            '<div class="xl-f"><label id="lbRole"></label><input id="xleadRole" autocomplete="organization-title" maxlength="80"></div></div>'+
-          '<div class="xl-row"><div class="xl-f"><label id="lbEmail"></label><input id="xleadEmail" type="email" inputmode="email" autocomplete="email" maxlength="160"></div>'+
-            '<div class="xl-f"><label id="lbPhone"></label><input id="xleadPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="40"></div></div>'+
-          '<div class="xl-f"><label id="lbInterest"></label><select id="xleadInterest"></select></div>'+
-          '<div class="xl-f"><label id="lbNotes"></label><textarea id="xleadNotes" maxlength="500"></textarea></div>'+
-          '<label class="xl-consent"><input type="checkbox" id="xleadConsent"><span id="lbConsent"></span></label>'+
-          '<div id="xleadBtns"><button id="xleadCancel" type="button"></button><button id="xleadSend" type="button"></button></div>'+
-        '</div>'+
-        '<div id="xleadOK"><h3 id="xlOkT"></h3><p id="xlOkM"></p></div>'+
-      '</div>';
-    document.body.appendChild(back);
-    back.addEventListener('click',function(e){ if(e.target===back) close(); });
-    back.querySelector('#xleadClose').addEventListener('click',close);
-    back.querySelector('#xleadCancel').addEventListener('click',close);
-    back.querySelector('#xleadSend').addEventListener('click',submit);
-    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&back.classList.contains('show')) close(); });
-    built=true;
-  }
-  function q(id){ return document.getElementById(id); }
-  function val(id){ var e=q(id); return e?String(e.value||'').trim():''; }
-  function fill(){
-    var t=tr();
-    q('xlT').textContent=t.title; q('xlSub').textContent=t.sub;
-    q('lbName').textContent=t.name; q('lbCompany').textContent=t.company; q('lbRole').textContent=t.role;
-    q('lbEmail').textContent=t.email; q('lbPhone').textContent=t.phone; q('lbInterest').textContent=t.interest;
-    q('lbNotes').textContent=t.notes; q('lbConsent').textContent=t.consent;
-    q('xleadCancel').textContent=t.cancel; q('xleadSend').textContent=t.send;
-    var sel=q('xleadInterest'); var L=lng(); sel.innerHTML='';
-    var o0=document.createElement('option'); o0.value=''; o0.textContent=t.pick; sel.appendChild(o0);
-    INTEREST.forEach(function(it){ var o=document.createElement('option'); o.value=it.value; o.textContent=it[L]||it.en; sel.appendChild(o); });
-    q('xlOkT').textContent=t.okTitle; q('xlOkM').textContent=t.okMsg;
-  }
-  function setErr(m){ var e=q('xleadErr'); if(!e) return; if(m){ e.textContent=m; e.style.display='block'; } else { e.style.display='none'; } }
-  function close(){ var b=q('xleadBack'); if(b) b.classList.remove('show'); if(autoTimer){ clearTimeout(autoTimer); autoTimer=null; } }
-  function open(prefillNotes){
-    build(); fill(); setErr('');
-    q('xleadForm').style.display='block'; q('xleadOK').style.display='none';
-    var send=q('xleadSend'); send.disabled=false;
-    ['xleadName','xleadCompany','xleadRole','xleadEmail','xleadPhone','xleadNotes'].forEach(function(id){ var e=q(id); if(e) e.value=''; });
-    q('xleadInterest').selectedIndex=0; q('xleadConsent').checked=false;
-    if(prefillNotes) q('xleadNotes').value=String(prefillNotes).slice(0,500);
-    q('xleadBack').classList.add('show');
-    setTimeout(function(){ try{ q('xleadName').focus(); }catch(e){} },40);
-  }
-  function showThanks(title,msg){
-    q('xleadForm').style.display='none';
-    var ok=q('xleadOK'); ok.style.display='block';
-    q('xlOkT').textContent=title; q('xlOkM').textContent=msg;
-    autoTimer=setTimeout(close,2600);
-  }
-  function submit(){
-    var t=tr();
-    var name=val('xleadName'), email=val('xleadEmail'), phone=val('xleadPhone');
-    if(!name){ setErr(t.errName); return; }
-    if(!email && !phone){ setErr(t.errContact); return; }
-    if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ setErr(t.errEmail); return; }
-    setErr('');
-    var payload={ name:name, email:email, phone:phone, company:val('xleadCompany'),
-      role:val('xleadRole'), interest:val('xleadInterest'), notes:val('xleadNotes'),
-      consent:q('xleadConsent').checked, source:'admira-xp-booth' };
-    var send=q('xleadSend'); send.disabled=true; send.textContent=t.sending;
-    postLead(payload,9000)
-      .then(function(){ showThanks(t.okTitle,t.okMsg); flushQ(); })
-      .catch(function(){ enqueue(payload); showThanks(t.okTitle,t.offMsg); });
-  }
-
-  /* ── botón flotante (booth / ?lead=1 / ?present=1) ─────────────────── */
-  function injectCTA(){
-    injectCSS();
-    if(q('xleadCTA')) return;
-    var b=document.createElement('button'); b.id='xleadCTA'; b.type='button';
-    b.innerHTML='<span class="xl-pulse"></span><span id="xleadCTALbl"></span>';
-    b.addEventListener('click',function(){ open(); });
-    document.body.appendChild(b);
-  }
-  function maybeShow(){
-    injectCTA();
-    var sp; try{ sp=new URLSearchParams(location.search); }catch(e){ sp=null; }
-    var force=sp&&(sp.get('lead')==='1'||sp.get('present')==='1'||sp.get('booth')==='1');
-    var shop=(window.XPACE_BOOTH==='shoptalk');
-    var btn=q('xleadCTA'); if(!btn) return;
-    btn.querySelector('#xleadCTALbl').textContent=tr().cta;
-    btn.classList.toggle('show', !!(force||shop));
-  }
-
-  function init(){
-    maybeShow(); setTimeout(maybeShow,1600); setTimeout(maybeShow,4200);
-    setTimeout(flushQ,3000); // reintenta leads encolados al cargar
-    try{ window.addEventListener('online',flushQ); }catch(e){}
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
-
-  window.openLeadForm=open;
-  window.XpaceLead={ open:open, flush:flushQ, queued:function(){ return loadQ().length; } };
 })();
 </script>
 </body>
