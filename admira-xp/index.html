@@ -1715,24 +1715,41 @@ function setupClientColumnResizers(){
 setupClientColumnResizers();
 
 // ── SONG LIST & AUDIO FILES ──────────────────────────────────
-const SONG_LIST=[
+// ── HILO MUSICAL ─────────────────────────────────────────────
+// La fuente real es music/manifest.json (lo autogenera la GitHub Action al
+// soltar mp3s en music/). Para añadir una canción: copia el .mp3 a music/ y haz
+// push — no hay que tocar este archivo. (Opcional: nombre bonito en music/titles.json.)
+// Lo de abajo es solo FALLBACK por si el manifest no carga.
+let SONG_LIST=[
   'Titi Me Preguntó - Bad Bunny',
   'Careless Whisper - George Michael',
+  'Hard Techno - DJ Novah',
   'La Perla - Rosalía',
-  'Despechá - Rosalía',
-  'La Bicicleta - Shakira',
-  'Bailando - Enrique Iglesias',
-  'Dákiti - Bad Bunny',
-  'Vivir Mi Vida - Marc Anthony',
   'Seoul 2026 - AdmiraNext',
+  'Seoul Trap - AdmiraNext',
+  'Seoul Tecno - AdmiraNext',
 ];
-const SONG_FILES={
+let SONG_FILES={
   'Titi Me Preguntó - Bad Bunny':'music/titi.mp3',
   'Careless Whisper - George Michael':'music/careless.mp3',
   'Hard Techno - DJ Novah':'music/dj-novah.mp3',
   'La Perla - Rosalía':'music/rosalia-perla.mp3',
   'Seoul 2026 - AdmiraNext':'music/seoul2026.mp3',
+  'Seoul Trap - AdmiraNext':'music/seultrap.mp3',
+  'Seoul Tecno - AdmiraNext':'music/seultecno.mp3',
 };
+// Carga el hilo musical real (autoscan de music/*.mp3) y sustituye el fallback.
+(async()=>{
+  try{
+    const r=await fetch('music/manifest.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const list=await r.json();
+    if(Array.isArray(list)&&list.length){
+      SONG_LIST=list.map(t=>t.name);
+      SONG_FILES=Object.fromEntries(list.map(t=>[t.name,t.file]));
+    }
+  }catch(e){/* sin manifest: se usa el fallback incrustado */}
+})();
 
 // ── BACKGROUND MUSIC ─────────────────────────────────────────
 const bgMusic=document.getElementById('bgMusic');
