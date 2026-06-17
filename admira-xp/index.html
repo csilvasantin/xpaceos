@@ -1917,6 +1917,24 @@ const VIDEO_CONDITIONS={
   'Lotería Navidad': ()=> G && G.month===12,  // December only
   'Promo Vapes': ()=> G && G.hour>=20,        // Evening promo
 };
+// Vídeos signage "soltar y listo": fusiona assets/videos/manifest.json (autoscan
+// de signage_*.mp4 vía GitHub Action) con la lista curada de arriba. Los nuevos
+// se añaden a la rotación; los curados conservan sus LED/condiciones. Para añadir
+// un vídeo: copia assets/videos/signage_<algo>.mp4 y haz push (nombre opcional en
+// assets/videos/titles.json).
+(async()=>{
+  try{
+    const r=await fetch('assets/videos/manifest.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const list=await r.json();
+    if(!Array.isArray(list)) return;
+    for(const t of list){
+      if(!t || !t.name || !t.file) continue;
+      if(!VIDEO_FILES[t.name]) VIDEO_FILES[t.name]=t.file;
+      if(!VIDEO_LIST.includes(t.name)) VIDEO_LIST.push(t.name);
+    }
+  }catch(e){/* sin manifest: se usa la lista curada incrustada */}
+})();
 
 // ── DS IMPORTS (user-uploaded images/videos for digital signage) ──
 // Imported items are added to VIDEO_LIST at runtime. For 'image' kind we render
