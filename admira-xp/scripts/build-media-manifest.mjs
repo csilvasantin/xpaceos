@@ -16,6 +16,7 @@ const BASE = join(dirname(fileURLToPath(import.meta.url)), '..'); // admira-xp/
 const SETS = [
   { dir: 'music', match: (f) => /\.mp3$/i.test(f) },
   { dir: 'assets/videos', match: (f) => /^signage_.*\.mp4$/i.test(f) }, // excluye precarga_*
+  { dir: 'assets/images-signage', match: (f) => /\.(png|jpe?g|webp|gif|avif)$/i.test(f) },
 ];
 
 function prettify(file) {

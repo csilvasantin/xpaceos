@@ -2442,6 +2442,25 @@ async function dsImportsRestore(){
 // Fire-and-forget; DS UI handles late additions gracefully.
 dsImportsRestore();
 
+// Imágenes signage "soltar y listo": fusiona assets/images-signage/manifest.json
+// (autoscan vía GitHub Action) en la rotación como slides de imagen (kind 'image').
+// Añadir una imagen = copiar el .jpg/.png a assets/images-signage/ y push.
+(async()=>{
+  try{
+    const r=await fetch('assets/images-signage/manifest.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const list=await r.json();
+    if(!Array.isArray(list)) return;
+    for(const t of list){
+      if(!t || !t.name || !t.file) continue;
+      if(VIDEO_FILES[t.name]) continue;
+      VIDEO_FILES[t.name]=t.file;
+      VIDEO_LIST.push(t.name);
+      DS_IMPORT.KIND[t.name]='image';   // se renderiza como imagen, no como vídeo
+    }
+  }catch(e){/* sin manifest: sin imágenes de carpeta */}
+})();
+
 // Helper: draw a media object (image or video element) cover-fit into a target rect (0,0,w,h).
 function dsDrawMediaCover(ctx,media,w,h){
   const src=media.kind==='video'?media.video:media.img;
@@ -5834,15 +5853,17 @@ function chibiSkirt(x,y,col,skinCol){
 }
 function isFemaleLook(look){ return !!(look&&(look.gender==='f'||look.skirt)); }
 // Edad de los NPCs: niño (más bajito), joven, adulto, senior (encogido + cano + bastón).
-function ageBucketRandom(){ const r=Math.random(); return r<0.12?'nino':r<0.45?'joven':r<0.80?'adulto':'senior'; }
+function ageBucketRandom(){ const r=Math.random(); return r<0.04?'nino':r<0.41?'joven':r<0.78?'adulto':'senior'; }
 // Mix de edades según la HORA del juego (idea #7): mañana → más seniors (prensa,
 // lotería, café); tarde-punta y cierre → más jóvenes (vapeo, novedades). Mediodía
 // usa la distribución base. G.gameTime es la hora float del día.
+// Natalidad baja (España): los niños son minoría y SOLO entran acompañando a un
+// adulto (la regla "ningún niño entra solo" del spawn los reconvierte si no hay).
 function ageBucketForHour(hour){
   const h=Number.isFinite(hour)?hour:12; const r=Math.random();
-  if(h<13.5)  return r<0.16?'nino':r<0.36?'joven':r<0.66?'adulto':'senior';  // senior ~34%
-  if(h>=19.5) return r<0.08?'nino':r<0.55?'joven':r<0.85?'adulto':'senior';  // joven ~47%
-  if(h>=16.5) return r<0.12?'nino':r<0.45?'joven':r<0.80?'adulto':'senior';  // tarde
+  if(h<13.5)  return r<0.05?'nino':r<0.30?'joven':r<0.64?'adulto':'senior';  // senior ~36%
+  if(h>=19.5) return r<0.03?'nino':r<0.52?'joven':r<0.84?'adulto':'senior';  // joven ~49%
+  if(h>=16.5) return r<0.05?'nino':r<0.42?'joven':r<0.79?'adulto':'senior';  // tarde
   return ageBucketRandom();                                                  // mediodía: base
 }
 function ageScale(look){ const a=look&&look.age; return a==='nino'?0.72:a==='senior'?0.9:1; }
