@@ -275,7 +275,36 @@
     };
   }
 
-  function boot() { patch(); console.log('[XPL] compositor listo · /ifthendothat on|off|toggle'); }
+  /* --------- intercepción del chat in-game ---------------------------------
+   * El chat del gemelo (#telegramComposer) llama a la función LOCAL
+   * executeTelegramText, que no pasa por nuestras envolturas de window.__xtExec.
+   * Capturamos el envío y enrutamos NUESTROS comandos a window.__xtExec
+   * (que sí tiene los wrappers de /ifthendothat y /condicional). El resto pasa
+   * tal cual al gemelo. */
+  var MINE = /^\/(ifthendothat|componer|condicional|condicionados|xpl)\b/i;
+  function routeMine(v) {
+    var t = String(v || '').trim();
+    if (typeof window.__xtExec === 'function') window.__xtExec(t);
+    var verb = t.split(/\s+/)[0];
+    try { if (typeof window.showEv === 'function') window.showEv('XPL · ' + verb.replace(/^\//, '') + ' ✓', '#5bd6c0'); } catch (e) {}
+  }
+  function initInputHook() {
+    var box = document.getElementById('telegramComposer');
+    var btn = document.getElementById('telegramSendBtn');
+    if (!box) { return setTimeout(initInputHook, 600); }
+    if (box.__xplHooked) return; box.__xplHooked = true;
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && MINE.test(box.value)) {
+        var v = box.value; e.preventDefault(); e.stopImmediatePropagation(); routeMine(v); box.value = '';
+      }
+    }, true);
+    if (btn) btn.addEventListener('click', function (e) {
+      if (MINE.test(box.value)) { var v = box.value; e.preventDefault(); e.stopImmediatePropagation(); routeMine(v); box.value = ''; }
+    }, true);
+    console.log('[XPL] chat in-game enganchado (/ifthendothat, /condicional)');
+  }
+
+  function boot() { patch(); initInputHook(); console.log('[XPL] compositor listo · /ifthendothat on|off|toggle'); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
   window.XPLComposer = { open: function () { setOpen(true); }, close: function () { setOpen(false); }, toggle: function () { setOpen(!open); } };
