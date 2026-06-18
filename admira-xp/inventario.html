@@ -66,12 +66,36 @@
   .toolbar2{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:0 0 22px}
   .spacer{flex:1}
 
-  .group{margin:0 0 30px}
+  .group{margin:0 0 18px}
   .group-head{display:flex; align-items:baseline; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:14px}
   .group-head h2{font-size:16px; margin:0; color:#fff}
   .group-head .gicon{font-size:18px}
   .group-head .gcount{color:var(--ink-dim); font-size:12px}
   .group-head .gdesc{color:var(--muted); font-size:12px; margin-left:auto; max-width:50%; text-align:right}
+
+  /* combos retráctiles (acordeones) */
+  details.acc{margin:0 0 12px; border:1px solid var(--line); border-radius:12px; background:rgba(10,19,32,.55); overflow:hidden}
+  details.acc[open]{background:rgba(10,19,32,.8)}
+  details.acc>summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; padding:12px 14px; user-select:none}
+  details.acc>summary::-webkit-details-marker{display:none}
+  details.acc>summary .caret{transition:transform .2s; color:var(--cyan-dim); font-size:11px; width:12px}
+  details.acc[open]>summary .caret{transform:rotate(90deg)}
+  details.acc>summary .gicon{font-size:17px}
+  details.acc>summary .s-title{color:#fff; font-weight:600; font-size:14px}
+  details.acc>summary .s-count{color:var(--ink-dim); font-size:12px}
+  details.acc>summary .s-desc{color:var(--muted); font-size:11.5px; margin-left:auto; text-align:right; max-width:46%}
+  details.acc>summary:hover .s-title{color:var(--cyan)}
+  details.acc.grp{border-left:3px solid var(--g-accent,var(--line)); background:rgba(10,19,32,.35)}
+  details.acc.grp.iot{--g-accent:var(--iot)} details.acc.grp.analogico{--g-accent:var(--ana)}
+  details.acc.grp>summary{padding:14px 16px}
+  details.acc.grp>summary .s-title{font-size:15px}
+  .acc-body{padding:4px 14px 14px}
+  .acc.grp>.acc-body{padding:4px 14px 10px}
+  details.acc.cat{margin:10px 0; border-color:rgba(120,243,255,.12)}
+  details.acc[open]>.acc-body{animation:accReveal .22s ease}
+  @keyframes accReveal{from{opacity:0; transform:translateY(-4px)}to{opacity:1; transform:none}}
+  .mini-dots{display:inline-flex; gap:3px; align-items:center}
+  .mini-dots i{width:7px;height:7px;border-radius:50%;display:inline-block}
 
   .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px}
   .card{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--g-accent,var(--line)); border-radius:12px; padding:13px; cursor:pointer; transition:border-color .15s,transform .1s; position:relative}
@@ -119,6 +143,11 @@
   .qrbox img,.qrbox canvas{display:block}
   .qrcap{font-size:10px; color:var(--muted); margin-top:6px; text-align:center}
   .sect-h{margin:16px 0 6px; font-size:10px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted)}
+  .acc.dwr{margin:12px 0; border-color:rgba(120,243,255,.14); background:rgba(120,243,255,.03)}
+  .acc.dwr>summary{padding:9px 12px}
+  .acc.dwr>summary .s-title{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-dim); font-weight:600}
+  .acc.dwr>summary .s-count{margin-left:auto; font-size:11px; color:var(--muted)}
+  .acc.dwr .acc-body{padding:2px 12px 10px}
 
   /* mapa dependencias */
   .map-wrap{position:fixed; inset:0; z-index:42; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(2,5,10,.6); backdrop-filter:blur(2px)}
@@ -169,6 +198,7 @@
       <button data-v="table">▤ Tabla</button>
     </div>
     <div class="spacer"></div>
+    <button class="btn" id="btnToggleAll">⊞ Expandir todo</button>
     <button class="btn" id="btnMap">🔗 Mapa</button>
     <button class="btn" id="btnRefresh">↻ Estado IoT</button>
     <button class="btn" id="btnEdit">✏ Editar</button>
@@ -201,10 +231,12 @@ const INVENTORY_API = ''; // preproducción/sandbox: sin worker/token, edita en 
 const LS_OVERLAY = 'admira_cmdb_overlay_v1';
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 
 let DB=null, liveState={}, editMode=false;
 let activeFilter='all', groupFilter='all', query='', viewMode='cards';
 let sortKey='id', sortDir=1;
+let groupOpen={}, catOpen={}; // estado de los combos retráctiles (cerrados por defecto las categorías)
 
 // ── Live status ────────────────────────────────────────────────────────────
 const PROXIES={
@@ -314,7 +346,7 @@ function matches(it){
   if(groupFilter!=='all' && it.group!==groupFilter) return false;
   if(activeFilter!=='all' && it.status!==activeFilter) return false;
   if(!query) return true;
-  return (it.id+' '+it.name+' '+it.ci_class+' '+it.location+' '+it.twinType+' '+(it.vendor||'')+' '+(it.model||'')).toLowerCase().includes(query);
+  return norm(it.id+' '+it.name+' '+it.ci_class+' '+it.location+' '+it.twinType+' '+(it.vendor||'')+' '+(it.model||'')+' '+(it.category||'')).includes(query);
 }
 
 function liveBadge(it){ if(it.group!=='iot') return '';
@@ -322,6 +354,16 @@ function liveBadge(it){ if(it.group!=='iot') return '';
   return `<span class="badge b-live" title="${esc(s.detail||'')}"><span class="d" style="background:${STATE_COLORS[s.state]||'var(--na)'}"></span>${esc(s.label)}</span>`; }
 function maintBadge(it){ const m=maint(it); if(m.state==='none') return '';
   return `<span class="badge b-maint" title="${m.due?('próxima: '+m.due):''}"><span class="d" style="background:${m.color}"></span>🛠 ${esc(m.label)}</span>`; }
+
+// Resumen visual de una lista de CIs: puntos de color por estado + alertas
+function miniDots(items){
+  const c={}; items.forEach(it=>{ const s=statusDef(it.status); c[s.color]=(c[s.color]||0)+1; });
+  const dots=Object.entries(c).map(([col,n])=>`<i style="background:${col}" title="${n}"></i>`).join('');
+  const pend=items.filter(maintPending).length;
+  const live=items.filter(i=>i.group==='iot'&&liveOf(i.id).state==='up').length;
+  const tags=[]; if(live) tags.push('🟢'+live); if(pend) tags.push('🛠'+pend);
+  return `<span class="mini-dots">${dots}</span>${tags.length?' '+tags.join(' '):''}`;
+}
 
 function card(it){ const sd=statusDef(it.status);
   return `<div class="card ${it.group}" data-id="${it.id}">
@@ -371,16 +413,37 @@ function render(){
     host.querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>openDrawer(tr.dataset.id));
     return;
   }
+  const searching = !!query || activeFilter!=='all';
   for(const g of DB.groups){
     if(groupFilter!=='all' && g.id!==groupFilter) continue;
     const gi=items.filter(i=>i.group===g.id);
     const total=DB.items.filter(i=>i.group===g.id).length;
-    const sec=document.createElement('section'); sec.className='group';
-    sec.innerHTML=`<div class="group-head"><span class="gicon">${g.icon}</span><h2>${esc(g.name_es)}</h2>
-      <span class="gcount">${gi.length}/${total}</span><span class="gdesc">${esc(g.desc_es)}</span></div>
-      <div class="grid">${gi.length?gi.map(card).join(''):'<div class="empty">Sin resultados con el filtro actual.</div>'}</div>`;
-    host.appendChild(sec);
+    if(searching && !gi.length) continue;
+    // categorías dentro del grupo (orden de aparición en el CMDB)
+    const catOrder=[]; DB.items.filter(i=>i.group===g.id).forEach(i=>{ const c=i.category||'Otros'; if(!catOrder.includes(c)) catOrder.push(c); });
+    let cats='';
+    for(const cn of catOrder){
+      const ci=gi.filter(i=>(i.category||'Otros')===cn);
+      const tot=DB.items.filter(i=>i.group===g.id && (i.category||'Otros')===cn).length;
+      if(searching && !ci.length) continue;
+      const key=g.id+'::'+cn;
+      const open = searching ? true : (catOpen[key]===true);
+      cats+=`<details class="acc cat" data-cat="${esc(key)}" ${open?'open':''}>
+        <summary><span class="caret">▶</span><span class="s-title">${esc(cn)}</span>
+          <span class="s-count">${ci.length}${ci.length!==tot?'/'+tot:''}</span>
+          <span class="s-desc">${miniDots(ci)}</span></summary>
+        <div class="acc-body"><div class="grid">${ci.length?ci.map(card).join(''):'<div class="empty">Sin resultados.</div>'}</div></div>
+      </details>`;
+    }
+    const gKey=g.id;
+    const gOpen = searching ? true : (groupOpen[gKey]!==false);
+    host.insertAdjacentHTML('beforeend',`<details class="acc grp ${g.id}" data-grp="${gKey}" ${gOpen?'open':''}>
+      <summary><span class="caret">▶</span><span class="gicon">${g.icon}</span><span class="s-title">${esc(g.name_es)}</span>
+        <span class="s-count">${gi.length}/${total}</span><span class="s-desc">${esc(g.desc_es)}</span></summary>
+      <div class="acc-body">${cats||'<div class="empty">Sin resultados con el filtro actual.</div>'}</div></details>`);
   }
+  host.querySelectorAll('details.grp').forEach(d=>d.addEventListener('toggle',()=>{ if(!query&&activeFilter==='all') groupOpen[d.dataset.grp]=d.open; }));
+  host.querySelectorAll('details.cat').forEach(d=>d.addEventListener('toggle',()=>{ if(!query&&activeFilter==='all') catOpen[d.dataset.cat]=d.open; }));
   host.querySelectorAll('.card').forEach(el=>el.onclick=()=>openDrawer(el.dataset.id));
 }
 
@@ -418,18 +481,21 @@ function openDrawer(id){
     ${field('Modelo','model',it)}
     ${field('Nº serie','serial',it)}
     <div class="field"><label>Conectividad</label><div class="val">${esc(conn.protocol||'—')}${conn.endpoint?('<br><small>'+esc(conn.endpoint)+'</small>'):''}${conn.surface_ref?('<br><small>surface: '+esc(conn.surface_ref)+'</small>'):''}</div></div>
-    <div class="sect-h">Relaciones</div>
-    <div class="field"><label>Depende de</label><div class="val deps">${linkArr(up)}</div></div>
-    <div class="field"><label>Le afecta a</label><div class="val deps">${linkArr(down)}</div></div>
-    <div class="sect-h">Mantenimiento</div>
-    <div class="field"><label>Plan</label><div class="val">cada ${esc((it.maintenance||{}).interval_days||'—')} días${m.state!=='none'?` · <span style="color:${m.color}">🛠 ${esc(m.label)}</span>`:''}</div></div>
-    ${field('Último','maintenance.last',it)}
-    ${field('Adquirido','acquired',it)}
-    ${field('Garantía','warranty_until',it)}
+    <details class="acc dwr" open><summary><span class="caret">▶</span><span class="s-title">Relaciones</span><span class="s-count">${up.length}↑ ${down.length}↓</span></summary><div class="acc-body">
+      <div class="field"><label>Depende de</label><div class="val deps">${linkArr(up)}</div></div>
+      <div class="field"><label>Le afecta a</label><div class="val deps">${linkArr(down)}</div></div>
+    </div></details>
+    <details class="acc dwr" open><summary><span class="caret">▶</span><span class="s-title">Mantenimiento & ciclo de vida</span>${m.state!=='none'?`<span class="s-count" style="color:${m.color}">🛠 ${esc(m.label)}</span>`:''}</summary><div class="acc-body">
+      <div class="field"><label>Plan</label><div class="val">cada ${esc((it.maintenance||{}).interval_days||'—')} días${m.due?(' · próxima '+m.due):''}</div></div>
+      ${field('Último','maintenance.last',it)}
+      ${field('Adquirido','acquired',it)}
+      ${field('Garantía','warranty_until',it)}
+    </div></details>
     ${field('Notas','notes',it,{area:true})}
-    <div class="sect-h">Etiqueta física (QR)</div>
-    <div class="qrbox" id="qrbox"></div>
-    <div class="qrcap" id="qrcap"></div>
+    <details class="acc dwr"><summary><span class="caret">▶</span><span class="s-title">Etiqueta física (QR)</span></summary><div class="acc-body">
+      <div class="qrbox" id="qrbox"></div>
+      <div class="qrcap" id="qrcap"></div>
+    </div></details>
     <div class="drawer-actions">
       ${editMode?`<button class="btn" id="dsave">💾 Guardar</button>`:''}
       <button class="btn" id="dcopy">📋 Copiar enlace</button>
@@ -510,10 +576,18 @@ function openMap(){ buildMap(); $('#mapWrap').classList.add('show'); }
 function closeMap(){ $('#mapWrap').classList.remove('show'); }
 
 // ── Init ────────────────────────────────────────────────────────────────────
-$('#q').addEventListener('input',e=>{ query=e.target.value.trim().toLowerCase(); render(); });
+$('#q').addEventListener('input',e=>{ query=norm(e.target.value.trim()); render(); });
 $('#btnRefresh').onclick=refreshLive;
 $('#btnExport').onclick=exportJSON;
 $('#btnCsv').onclick=exportCSV;
+let allExpanded=false;
+$('#btnToggleAll').onclick=()=>{
+  allExpanded=!allExpanded;
+  for(const g of DB.groups){ groupOpen[g.id]=allExpanded;
+    DB.items.filter(i=>i.group===g.id).forEach(i=>{ catOpen[g.id+'::'+(i.category||'Otros')]=allExpanded; }); }
+  $('#btnToggleAll').textContent=allExpanded?'⊟ Contraer todo':'⊞ Expandir todo';
+  render();
+};
 $('#btnMap').onclick=openMap;
 $('#mapClose').onclick=closeMap;
 $('#mapWrap').onclick=e=>{ if(e.target===$('#mapWrap')) closeMap(); };
