@@ -146,7 +146,7 @@
       'color:#cdd8e8', 'font:600 12px -apple-system,Segoe UI,sans-serif',
       'cursor:pointer', 'backdrop-filter:blur(6px)'
     ].join(';');
-    chip.title = 'XPL — señalización contextual · clic: encender/apagar';
+    chip.title = 'XPL — contenidos condicionados · clic: on/off · CLI: /condicional on|off|toggle';
     chip.innerHTML = '<span id="xpl-dot" style="width:8px;height:8px;border-radius:50%;background:#5bd6c0"></span>' +
       '<b>XPL</b><span id="xpl-chip-ad" style="color:#8a97ab">—</span>' +
       '<a href="xpl.html" title="editar reglas" style="color:#7aa2ff;text-decoration:none;margin-left:2px">✎</a>';
@@ -173,8 +173,19 @@
     window.addEventListener('mouseup', function () { drag = false; node.style.cursor = 'grab'; });
   }
 
+  // Puerta: la señalización SOLO existe cuando estamos dentro del Xtanco con el
+  // gemelo desplegado (el splash de bienvenida añade body.splash-visible; al
+  // pulsar PLAY/DEMO se quita). En el intro no debe verse nada de XPL.
+  function gateInside() {
+    return !!document.body && !document.body.classList.contains('splash-visible');
+  }
+
   function renderOverlay() {
     if (!el) return;
+    var inside = gateInside();
+    // chip y ventana ocultos por completo mientras estemos en el intro
+    if (chip) chip.style.display = inside ? 'flex' : 'none';
+    if (!inside) { el.style.display = 'none'; return; }
     var ad = screen.ad ? window.XPL.byId(window.XPL.ADS, screen.ad) : null;
     var dot = document.getElementById('xpl-dot');
     var chipAd = document.getElementById('xpl-chip-ad');
@@ -244,7 +255,7 @@
     if (typeof prev !== 'function') return;
     window.__xtExec = function (text) {
       var t = String(text || '').trim();
-      if (/^\/xpl\b/i.test(t)) { handleCmd(t); return Promise.resolve('xpl'); }
+      if (/^\/(condicional|condicionados|xpl)\b/i.test(t)) { handleCmd(t); return Promise.resolve('xpl'); }
       return prev.apply(this, arguments);
     };
   }
@@ -269,7 +280,7 @@
     patchDispatcher();
     setInterval(tick, 1000);
     tick();
-    console.log('[XPL] adapter del gemelo activo · /xpl on|off|toggle|reload|status');
+    console.log('[XPL] adapter del gemelo activo · /condicional on|off|toggle|reload|status (alias /xpl)');
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
