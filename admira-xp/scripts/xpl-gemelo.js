@@ -256,10 +256,43 @@
     }).catch(function () { /* offline → seguimos con la caché */ });
   }
   // Presencia: el gemelo se anuncia al store (para que el backoffice liste pantallas).
+  // Instancia única de este gemelo abierto (por pestaña/carga) → el backoffice
+  // cuenta gemelos distintos. Equipo: etiqueta manual (?device= / localStorage) o
+  // deducida del navegador.
+  var INSTANCE = 'xpl-' + Math.random().toString(36).slice(2, 10) + '-' + (Date.now() % 100000);
+  function deviceName() {
+    try {
+      var q = new URLSearchParams(location.search).get('device');
+      if (q) { try { localStorage.setItem('xpl_device', q); } catch (e) {} return q; }
+      var saved = localStorage.getItem('xpl_device'); if (saved) return saved;
+    } catch (e) {}
+    var ua = navigator.userAgent || '';
+    var os = /Macintosh|Mac OS/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /iPhone|iPad/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : 'PC';
+    var br = /Chrome/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : /Firefox/.test(ua) ? 'Firefox' : 'navegador';
+    return os + ' · ' + br;
+  }
   function pingStore() {
     try {
       fetch(XPL_STORE + '/xpl/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ screen: screenId(), circuit: circuitId() }) }).catch(function () {});
+        body: JSON.stringify({ screen: screenId(), circuit: circuitId(), instance: INSTANCE,
+          device: deviceName(), ua: (navigator.userAgent || '').slice(0, 180), url: location.href.slice(0, 180) }) }).catch(function () {});
+    } catch (e) {}
+  }
+
+  // Canal de comandos remotos: el backoffice encola para mi screenId; los ejecuto
+  // con el mismo dispatcher (__xtExec) que el chat del gemelo.
+  var __cmdSeen = Date.now();
+  function pollRemoteCmd() {
+    try {
+      fetch(XPL_STORE + '/xpl/cmd?screen=' + encodeURIComponent(screenId()) + '&since=' + __cmdSeen + '&ts=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+          if (!d || !Array.isArray(d.commands)) return;
+          for (var i = 0; i < d.commands.length; i++) {
+            var c = d.commands[i]; if (!c || c.id <= __cmdSeen) continue;
+            __cmdSeen = Math.max(__cmdSeen, c.id);
+            try { if (typeof window.__xtExec === 'function') window.__xtExec(String(c.text)); } catch (e) {}
+          }
+        }).catch(function () {});
     } catch (e) {}
   }
 
@@ -320,11 +353,12 @@
     patchDispatcher();
     setInterval(tick, 1000);
     tick();
-    // store remoto: baja las reglas de esta pantalla + se anuncia (presencia)
-    fetchRemoteRules(); pingStore();
-    setInterval(fetchRemoteRules, 20000);   // refresca cambios del backoffice cada 20s
-    setInterval(pingStore, 5 * 60 * 1000);  // presencia cada 5 min
-    console.log('[XPL] adapter del gemelo activo · screen=' + screenId() + ' · /condicional on|off|toggle|reload|status');
+    // store remoto: baja reglas + se anuncia (presencia) + polea comandos remotos
+    fetchRemoteRules(); pingStore(); pollRemoteCmd();
+    setInterval(fetchRemoteRules, 20000);   // cambios del backoffice cada 20s
+    setInterval(pingStore, 40000);          // presencia cada 40s (TTL 120s en el worker)
+    setInterval(pollRemoteCmd, 3000);       // control remoto cada 3s
+    console.log('[XPL] adapter del gemelo activo · screen=' + screenId() + ' · instance=' + INSTANCE);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

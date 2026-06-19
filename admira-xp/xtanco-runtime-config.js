@@ -73,7 +73,7 @@
   if (typeof document === 'undefined') return;
   const root = typeof self !== 'undefined' ? self : window;
   if (root.__XPL_LOADER) return; root.__XPL_LOADER = true;
-  const V = '?v=7';
+  const V = '?v=8';
   ['scripts/xpl-runtime.js', 'scripts/xpl-gemelo.js', 'scripts/xpl-composer.js'].forEach((src) => {
     const s = document.createElement('script');
     s.src = src + V; s.async = false; // async=false → ejecuta en orden de inserción
