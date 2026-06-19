@@ -17,6 +17,10 @@
 (function () {
   'use strict';
   if (!window.XPL) { console.warn('[XPL] runtime no cargado'); return; }
+  // Idempotencia: si el adapter ya arrancó en esta página (doble carga por el
+  // auto-reload de versión, etc.), no montar una segunda instancia.
+  if (window.__XPL_GEMELO_ACTIVE) { return; }
+  window.__XPL_GEMELO_ACTIVE = true;
 
   var LS_RULES = 'xpl_rules';      // reglas compartidas con el editor
   var LS_ON    = 'xpl_gemelo_on';  // overlay encendido/apagado
@@ -307,7 +311,9 @@
   // Publica el estado en vivo para el Panel de Control (otra pestaña lo lee).
   var _lastPub = '';
   function publishState() {
-    var s = JSON.stringify({ on: on, ad: screen.ad, tone: screen.tone, inside: gateInside(),
+    // lee la fuente de verdad de on/off (lo que persiste setOn), no la closure
+    var onNow = localStorage.getItem(LS_ON) !== '0';
+    var s = JSON.stringify({ on: onNow, ad: screen.ad, tone: screen.tone, inside: gateInside(),
       rules: engine.rules.length, ts: Date.now() });
     if (s !== _lastPub) { _lastPub = s; try { localStorage.setItem('xpl_state', s); } catch (e) {} }
   }
