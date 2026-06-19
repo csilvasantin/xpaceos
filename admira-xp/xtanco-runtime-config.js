@@ -73,7 +73,10 @@
   if (typeof document === 'undefined') return;
   const root = typeof self !== 'undefined' ? self : window;
   if (root.__XPL_LOADER) return; root.__XPL_LOADER = true;
-  const V = '?v=9';
+  // Captura la etiqueta de equipo (?device=) ANTES de que el gemelo limpie la URL,
+  // para que el registro de gemelos del backoffice muestre el nombre del equipo.
+  try { var dp = new URLSearchParams(location.search).get('device'); if (dp) localStorage.setItem('xpl_device', dp); } catch (e) {}
+  const V = '?v=10';
   ['scripts/xpl-runtime.js', 'scripts/xpl-gemelo.js', 'scripts/xpl-composer.js'].forEach((src) => {
     const s = document.createElement('script');
     s.src = src + V; s.async = false; // async=false → ejecuta en orden de inserción
