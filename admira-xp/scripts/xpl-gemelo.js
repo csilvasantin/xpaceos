@@ -300,11 +300,61 @@
     } catch (e) {}
   }
 
+  // ── Ganchos sobre el JUEGO (window.G), sin tocar el index.html ──────────────
+  // (1) los NPCs de pixeria (sprite custom) se quedan MÁS tiempo en el Xpacio.
+  // (2) cuando falta poco para cerrar (~30 min), echa a TODOS (salen paseando).
+  function gemeloDayHooks() {
+    var g = window.G; if (!g || !Array.isArray(g.custs)) return;
+    var closeH = (window.shopTimeSettings && window.shopTimeSettings.closeHour) || 22;
+    var t = typeof g.gameTime === 'number' ? g.gameTime : 12;
+    var closingSoon = t >= (closeH - 0.5) && t < closeH && !g.dayEnded;
+    for (var i = 0; i < g.custs.length; i++) {
+      var c = g.custs[i]; if (!c) continue;
+      if (c.customSpriteUrl && !c.__xplStay) { c.__xplStay = true; c.stayTargetTicks = Math.max(c.stayTargetTicks || 0, 16000); }
+      if (closingSoon && c.st !== 'leave') { c.st = 'leave'; c.timer = 0; }
+    }
+  }
+
+  // ── Pantalla condicional EN LA PARED, sobre el gestor de colas ───────────────
+  // Ancla el overlay de señalización a BTNS.turnKioskCall (hitbox del gestor de
+  // colas, en coords de canvas → pantalla). /pantallacondicional la conmuta.
+  var pantallaWall = (function () { try { return localStorage.getItem('xpl_pantalla_wall') === '1'; } catch (e) { return false; } })();
+  function setPantallaWall(v) {
+    pantallaWall = !!v; try { localStorage.setItem('xpl_pantalla_wall', v ? '1' : '0'); } catch (e) {}
+    if (v) setOn(true);
+    positionSignage();
+  }
+  function positionSignage() {
+    if (!el) return;
+    if (!pantallaWall) { // modo flotante (esquina), por defecto
+      el.style.left = 'auto'; el.style.top = 'auto'; el.style.right = '18px'; el.style.bottom = '64px';
+      el.style.width = '200px'; el.style.height = '118px'; el.style.borderRadius = '14px';
+      return;
+    }
+    var cv = document.getElementById('c'); var btn = window.BTNS && window.BTNS.turnKioskCall;
+    if (!cv || !btn) return;
+    var r = cv.getBoundingClientRect(); var sx = r.width / cv.width, sy = r.height / cv.height;
+    var w = Math.max(150, btn.w * sx * 3.6), h = Math.round(w * 0.62);
+    var cx = r.left + (btn.x + btn.w / 2) * sx;           // centrado sobre el gestor de colas
+    var topY = r.top + btn.y * sy - h - 14 * sy;          // ENCIMA, en la pared larga
+    el.style.left = Math.round(cx - w / 2) + 'px'; el.style.top = Math.round(topY) + 'px';
+    el.style.right = 'auto'; el.style.bottom = 'auto';
+    el.style.width = Math.round(w) + 'px'; el.style.height = h + 'px'; el.style.borderRadius = '8px';
+  }
+  function handlePantalla(t) {
+    var arg = (t.split(/\s+/)[1] || 'toggle').toLowerCase();
+    if (arg === 'on' || arg === 'pared') setPantallaWall(true);
+    else if (arg === 'off' || arg === 'flotante') setPantallaWall(false);
+    else setPantallaWall(!pantallaWall);
+  }
+
   function tick() {
     if (!window.G) return;
+    gemeloDayHooks();
     screen.ad = null; // se "apaga" si ninguna regla 'while' lo pone
     engine.tick();
     renderOverlay();
+    positionSignage();
     publishState();
   }
 
@@ -334,6 +384,7 @@
     if (typeof prev !== 'function') return;
     window.__xtExec = function (text) {
       var t = String(text || '').trim();
+      if (/^\/pantallacondicional\b/i.test(t)) { handlePantalla(t); return Promise.resolve('xpl'); }
       if (/^\/(condicional|condicionados|xpl)\b/i.test(t)) { handleCmd(t); return Promise.resolve('xpl'); }
       return prev.apply(this, arguments);
     };

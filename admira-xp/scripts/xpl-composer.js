@@ -314,7 +314,7 @@
    * Capturamos el envío y enrutamos NUESTROS comandos a window.__xtExec
    * (que sí tiene los wrappers de /ifthendothat y /condicional). El resto pasa
    * tal cual al gemelo. */
-  var MINE = /^\/(xplon|xploff|ifthendothat|componer|condicional|condicionados|xpl)\b/i;
+  var MINE = /^\/(xplon|xploff|ifthendothat|componer|pantallacondicional|condicional|condicionados|xpl)\b/i;
   function routeMine(v) {
     var t = String(v || '').trim();
     if (typeof window.__xtExec === 'function') window.__xtExec(t);
