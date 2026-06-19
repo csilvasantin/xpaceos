@@ -219,23 +219,49 @@
    * ------------------------------------------------------------------------- */
   var engine = window.XPL.createEngine(world);
 
+  // ── Store REMOTO de reglas (backoffice XPL) ────────────────────────────────
+  // El gemelo baja LO SUYO por screenId (cascada global→circuito→pantalla). Si el
+  // store responde, manda; si no, cae a la caché local y al composer/semilla.
+  var XPL_STORE = 'https://xpl-store.csilvasantin.workers.dev';
+  var REMOTE = null;              // reglas remotas en memoria (null = aún no/offline)
+  function screenId() {
+    try { return localStorage.getItem('pixer-xtore-screen-id') || 'xtore-inicial'; } catch (e) { return 'xtore-inicial'; }
+  }
+  function circuitId() { try { return localStorage.getItem('xpl_circuit') || ''; } catch (e) { return ''; } }
+
   function loadRules() {
-    var raw = localStorage.getItem(LS_RULES);
-    if (raw) { try { return JSON.parse(raw); } catch (e) {} }
-    // semilla por defecto (señalización contextual básica)
-    return [
+    if (REMOTE && REMOTE.length) return REMOTE;                       // 1) remoto en vivo
+    try { var rc = JSON.parse(localStorage.getItem('xpl_remote_cache') || 'null'); if (Array.isArray(rc) && rc.length) return rc; } catch (e) {} // 2) caché remota
+    var raw = localStorage.getItem(LS_RULES);                          // 3) composer local
+    if (raw) { try { var a = JSON.parse(raw); if (Array.isArray(a) && a.length) return a; } catch (e) {} }
+    return [                                                           // 4) semilla
       { id: 'seed-rain', name: 'Llueve → botas de agua', priority: 3, enabled: true,
-        when: { join: 'and', conds: [{ fact: 'rain', value: true }] }, who: { group: 'all', filter: {} },
-        do: [{ id: 'showAd', value: 'rainboots' }] },
+        when: { join: 'and', conds: [{ fact: 'rain', value: true }] }, who: { group: 'all', filter: {} }, do: [{ id: 'showAd', value: 'rainboots' }] },
       { id: 'seed-hot', name: 'Calor → helado', priority: 1, enabled: true,
-        when: { join: 'and', conds: [{ fact: 'temperature', op: '>=', value: 28 }] }, who: { group: 'all', filter: {} },
-        do: [{ id: 'showAd', value: 'icecream' }] },
+        when: { join: 'and', conds: [{ fact: 'temperature', op: '>=', value: 28 }] }, who: { group: 'all', filter: {} }, do: [{ id: 'showAd', value: 'icecream' }] },
       { id: 'seed-night', name: 'Noche → happy hour', priority: 1, enabled: true,
-        when: { join: 'and', conds: [{ fact: 'night', value: true }] }, who: { group: 'all', filter: {} },
-        do: [{ id: 'showAd', value: 'happyhour' }] }
+        when: { join: 'and', conds: [{ fact: 'night', value: true }] }, who: { group: 'all', filter: {} }, do: [{ id: 'showAd', value: 'happyhour' }] }
     ];
   }
   function syncRules() { engine.setRules(loadRules()); }
+
+  // Trae las reglas remotas resueltas para ESTA pantalla y las aplica.
+  function fetchRemoteRules() {
+    var url = XPL_STORE + '/xpl/resolve?screen=' + encodeURIComponent(screenId()) + (circuitId() ? '&circuit=' + encodeURIComponent(circuitId()) : '') + '&ts=' + Date.now();
+    fetch(url, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !Array.isArray(d.rules)) return;
+      REMOTE = d.rules;
+      try { localStorage.setItem('xpl_remote_cache', JSON.stringify(d.rules)); } catch (e) {}
+      syncRules();
+    }).catch(function () { /* offline → seguimos con la caché */ });
+  }
+  // Presencia: el gemelo se anuncia al store (para que el backoffice liste pantallas).
+  function pingStore() {
+    try {
+      fetch(XPL_STORE + '/xpl/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ screen: screenId(), circuit: circuitId() }) }).catch(function () {});
+    } catch (e) {}
+  }
 
   function tick() {
     if (!window.G) return;
@@ -278,7 +304,7 @@
     if (arg === 'on') setOn(true);
     else if (arg === 'off') setOn(false);
     else if (arg === 'toggle') setOn(!on);
-    else if (arg === 'reload') { syncRules(); }
+    else if (arg === 'reload') { fetchRemoteRules(); syncRules(); }
     else if (arg === 'status') {
       console.log('[XPL]', { on: on, ad: screen.ad, rules: engine.rules.length });
     }
@@ -290,11 +316,15 @@
   function boot() {
     if (!window.G) { return setTimeout(boot, 400); }
     buildUI();
-    syncRules();
+    syncRules();                 // arranca con caché/semilla al instante
     patchDispatcher();
     setInterval(tick, 1000);
     tick();
-    console.log('[XPL] adapter del gemelo activo · /condicional on|off|toggle|reload|status (alias /xpl)');
+    // store remoto: baja las reglas de esta pantalla + se anuncia (presencia)
+    fetchRemoteRules(); pingStore();
+    setInterval(fetchRemoteRules, 20000);   // refresca cambios del backoffice cada 20s
+    setInterval(pingStore, 5 * 60 * 1000);  // presencia cada 5 min
+    console.log('[XPL] adapter del gemelo activo · screen=' + screenId() + ' · /condicional on|off|toggle|reload|status');
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
