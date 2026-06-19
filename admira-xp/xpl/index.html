@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XPL · Panel de Control · XpaceOS</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#131822; --panel2:#1a212e; --line:#26303f;
+    --ink:#e8eef7; --mut:#8a97ab; --acc:#5bd6c0; --acc2:#7aa2ff; --warn:#ffb454; --bad:#ff6b6b; --ok:#5bd6c0;
+    --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#10151e,#0b0e14)}
+  header h1{font-size:16px;margin:0;font-weight:800;letter-spacing:.3px}
+  header h1 .tag{color:var(--acc);font-family:var(--mono);font-weight:700}
+  header .sub{color:var(--mut);font-size:12px}
+  header .spacer{flex:1}
+  .pill{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:4px 10px;text-decoration:none}
+  a.pill{color:var(--acc2);border-color:var(--acc2)}
+  nav{display:flex;gap:4px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  nav button{font-family:inherit;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--mut);
+    border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600}
+  nav button:hover{color:var(--ink)}
+  nav button.on{background:var(--panel2);color:#fff;border-color:var(--line)}
+  main{flex:1;min-height:0;position:relative}
+  .view{position:absolute;inset:0;display:none;overflow:auto}
+  .view.on{display:block}
+  iframe{width:100%;height:100%;border:none;background:var(--bg)}
+  /* ---- Gemelo ---- */
+  .wrap{max-width:920px;margin:0 auto;padding:22px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);font-weight:700}
+  .big{font-size:26px;font-weight:800;display:flex;align-items:center;gap:10px}
+  .muted{color:var(--mut);font-size:13px;line-height:1.6}
+  .dot{width:10px;height:10px;border-radius:50%;background:#5a6678;display:inline-block;flex:none}
+  .dot.live{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  button.btn{font-family:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+    border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600}
+  button.btn:hover{border-color:var(--acc)}
+  button.btn.primary{background:var(--acc);color:#06231e;border-color:var(--acc)}
+  button.btn.warn:hover{border-color:var(--warn);color:var(--warn)}
+  .scr{margin-top:8px;border-radius:12px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:4px;color:#fff;border:1px solid var(--line);background:#0a0d13;transition:background .4s}
+  .scr .ic{font-size:42px;line-height:1}
+  .scr .lb{font:700 11px var(--mono);letter-spacing:1px}
+  .cli{font-family:var(--mono);font-size:12.5px;line-height:2}
+  .cli b{color:var(--acc)}
+  .cli span{color:var(--mut)}
+  /* ---- Catálogo ---- */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  td .sw{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:middle;margin-right:7px;border:1px solid #0006}
+  .tag2{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--acc2);border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+  h2.sec{font-size:14px;margin:22px 0 8px;color:var(--ink)}
+  .lead{color:var(--mut);font-size:13px;line-height:1.7;margin:0 0 6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>XPL <span class="tag">·panel</span></h1>
+  <span class="sub">panel de control · lenguaje del gemelo · XpaceOS</span>
+  <span class="spacer"></span>
+  <a class="pill" href="../index.html" target="_blank" title="abrir el gemelo en una pestaña nueva">▶ abrir gemelo</a>
+</header>
+
+<nav>
+  <button data-view="estudio" class="on">🎛️ Estudio</button>
+  <button data-view="gemelo">📺 Gemelo</button>
+  <button data-view="catalogo">📚 Catálogo</button>
+</nav>
+
+<main>
+  <!-- ESTUDIO: editor + simulador (reutiliza xpl.html) -->
+  <section class="view on" id="v-estudio">
+    <iframe src="../xpl.html" title="Editor y simulador XPL"></iframe>
+  </section>
+
+  <!-- GEMELO: estado en vivo + control + CLI -->
+  <section class="view" id="v-gemelo">
+    <div class="wrap">
+      <div class="grid">
+        <div class="card">
+          <h3>Conexión con el gemelo</h3>
+          <div class="big"><span class="dot" id="g-dot"></span><span id="g-conn">comprobando…</span></div>
+          <div class="muted" id="g-seen" style="margin-top:6px"></div>
+        </div>
+        <div class="card">
+          <h3>Pantalla condicional ahora</h3>
+          <div class="scr" id="g-scr"><div class="ic" id="g-ic">—</div><div class="lb" id="g-lb">apagada</div></div>
+        </div>
+        <div class="card">
+          <h3>Estado</h3>
+          <div class="muted">
+            Encendida: <b id="g-on">—</b><br>
+            Dentro del Xtanco: <b id="g-inside">—</b><br>
+            Reglas activas: <b id="g-rules">—</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Control remoto</h3>
+        <p class="muted" style="margin-top:0">Afecta a la pestaña del gemelo que tengas abierta (misma máquina).</p>
+        <div class="row">
+          <button class="btn primary" data-cmd="/condicional on">Encender pantalla</button>
+          <button class="btn warn" data-cmd="/condicional off">Apagar pantalla</button>
+          <button class="btn" data-cmd="/condicional reload">Recargar reglas</button>
+          <button class="btn" data-cmd="/ifthendothat on">Abrir compositor en el gemelo</button>
+        </div>
+        <div class="muted" id="g-cmdmsg" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Comandos CLI (chat del gemelo · Telegram · StreamDeck)</h3>
+        <div class="cli">
+          <b>/condicional</b> <span>on | off | toggle | reload | status</span> &nbsp;<span>— la pantalla condicional</span><br>
+          <b>/ifthendothat</b> <span>on | off | toggle</span> &nbsp;<span>— el compositor IF·THEN·DO THAT</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATALOGO: referencia del lenguaje -->
+  <section class="view" id="v-catalogo">
+    <div class="wrap" id="cat"></div>
+  </section>
+</main>
+
+<script src="../scripts/xpl-runtime.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const XPL=window.XPL;
+
+/* ---------- navegación por pestañas ---------- */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+    document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+b.dataset.view));
+    if(b.dataset.view==='catalogo') renderCatalog();
+    if(b.dataset.view==='gemelo') refreshGemelo();
+  };
+});
+
+/* ---------- GEMELO: estado en vivo ---------- */
+function readState(){ try{ return JSON.parse(localStorage.getItem('xpl_state')||'null'); }catch(e){ return null; } }
+function refreshGemelo(){
+  const s=readState();
+  const fresh = s && (Date.now()-s.ts)<4000;
+  $('#g-dot').classList.toggle('live', !!fresh);
+  $('#g-conn').textContent = fresh ? 'gemelo conectado' : 'gemelo no abierto';
+  if(s){
+    const ago=Math.max(0,Math.round((Date.now()-s.ts)/1000));
+    $('#g-seen').textContent = fresh ? 'recibiendo estado en vivo' : ('última señal hace '+ago+'s · abre el gemelo para conectar');
+    const ad = s.ad ? XPL.byId(XPL.ADS, s.ad) : null;
+    const scr=$('#g-scr');
+    if(ad && s.on && s.inside){ scr.style.background=ad.bg; $('#g-ic').textContent=ad.icon; $('#g-lb').textContent=ad.es.toUpperCase(); }
+    else { scr.style.background='#0a0d13'; $('#g-ic').textContent='—'; $('#g-lb').textContent = s.on? 'sin anuncio' : 'apagada'; }
+    $('#g-on').textContent = s.on?'sí':'no';
+    $('#g-inside').textContent = s.inside?'sí':'no';
+    $('#g-rules').textContent = s.rules!=null?s.rules:'—';
+  } else {
+    $('#g-seen').textContent='nunca conectado · abre el gemelo (▶) en otra pestaña';
+  }
+}
+// botones de control → escriben un comando que el gemelo (otra pestaña) ejecuta
+document.querySelectorAll('[data-cmd]').forEach(b=>{
+  b.onclick=()=>{
+    try{ localStorage.setItem('xpl_cmd', JSON.stringify({cmd:b.dataset.cmd, ts:Date.now()})); }catch(e){}
+    $('#g-cmdmsg').textContent='Enviado: '+b.dataset.cmd+(readState()&&(Date.now()-readState().ts)<4000?'':' · (no veo el gemelo abierto; lo recibirá al abrirlo)');
+    setTimeout(refreshGemelo, 400);
+  };
+});
+window.addEventListener('storage', e=>{ if(e.key==='xpl_state') refreshGemelo(); });
+setInterval(()=>{ if($('#v-gemelo').classList.contains('on')) refreshGemelo(); }, 1500);
+
+/* ---------- CATÁLOGO ---------- */
+let catDone=false;
+function renderCatalog(){
+  if(catDone) return; catDone=true;
+  const L=o=>XPL.label(o,'es');
+  const facts = XPL.FACTS.map(f=>{
+    let rango = f.type==='bool' ? 'sí / no'
+      : f.type==='enum' ? f.values.map(v=>(v.icon?v.icon+' ':'')+L(v)).join(' · ')
+      : (f.min!=null? f.min+'…'+f.max+(f.unit||'') : 'número');
+    return `<tr><td>${f.icon||''} <b>${L(f)}</b></td><td><span class="tag2">${f.type}</span></td><td class="muted">${rango}</td></tr>`;
+  }).join('');
+  const acts = XPL.ACTIONS.map(a=>{
+    let p = a.param ? (a.param.kind==='enum'? a.param.values.map(v=>(v.icon?v.icon+' ':'')+L(v)).join(' · ') : '“'+(a.param.placeholder||'texto')+'”') : '—';
+    const scopeES={npc:'NPCs',world:'mundo',screen:'pantalla'}[a.scope]||a.scope;
+    return `<tr><td><b>${L(a)}</b></td><td><span class="tag2">${scopeES}</span></td><td class="muted">${p}</td></tr>`;
+  }).join('');
+  const ads = XPL.ADS.map(a=>`<tr><td><span class="sw" style="background:${a.bg}"></span>${a.icon} <b>${L(a)}</b></td><td class="muted">${a.en}</td></tr>`).join('');
+  const ops = XPL.OPS.map(o=>`<span class="tag2">${L(o)}</span>`).join(' ');
+  $('#cat').innerHTML = `
+    <p class="lead">El lenguaje <b>XPL</b> compone reglas <b>CUANDO &lt;condición&gt; (PARA &lt;quién&gt;) ENTONCES &lt;acción&gt;</b>.
+    Varias condiciones se unen con <b>Y / O</b>. Cuando varias reglas compiten por la pantalla, gana la de mayor <b>prioridad</b>.</p>
+    <h2 class="sec">🌦️ Condiciones (${XPL.FACTS.length})</h2>
+    <table><thead><tr><th>condición</th><th>tipo</th><th>valores / rango</th></tr></thead><tbody>${facts}</tbody></table>
+    <p class="lead" style="margin-top:10px">Operadores para condiciones numéricas: ${ops}</p>
+    <h2 class="sec">⚡ Acciones (${XPL.ACTIONS.length})</h2>
+    <table><thead><tr><th>acción</th><th>ámbito</th><th>parámetro</th></tr></thead><tbody>${acts}</tbody></table>
+    <h2 class="sec">🖼️ Creatividades de pantalla (${XPL.ADS.length})</h2>
+    <table><thead><tr><th>creatividad</th><th>en inglés</th></tr></thead><tbody>${ads}</tbody></table>
+    <p class="lead" style="margin-top:18px">Diseña reglas en <b>🎛️ Estudio</b> · míralas en vivo en el gemelo (<b>▶ abrir gemelo</b>).</p>`;
+}
+
+refreshGemelo();
+</script>
+</body>
+</html>

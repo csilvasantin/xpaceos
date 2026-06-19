@@ -149,7 +149,7 @@
     chip.title = 'XPL — contenidos condicionados · clic: on/off · CLI: /condicional on|off|toggle';
     chip.innerHTML = '<span id="xpl-dot" style="width:8px;height:8px;border-radius:50%;background:#5bd6c0"></span>' +
       '<b>XPL</b><span id="xpl-chip-ad" style="color:#8a97ab">—</span>' +
-      '<a href="xpl.html" title="editar reglas" style="color:#7aa2ff;text-decoration:none;margin-left:2px">✎</a>';
+      '<a href="xpl/" title="panel de control XPL" style="color:#7aa2ff;text-decoration:none;margin-left:2px">✎</a>';
     chip.addEventListener('click', function (e) {
       if (e.target.tagName === 'A') return; // dejar pasar el lápiz
       setOn(!on);
@@ -242,10 +242,24 @@
     screen.ad = null; // se "apaga" si ninguna regla 'while' lo pone
     engine.tick();
     renderOverlay();
+    publishState();
   }
 
-  // recargar reglas cuando el editor (otra pestaña) las guarda
-  window.addEventListener('storage', function (e) { if (e.key === LS_RULES) syncRules(); });
+  // Publica el estado en vivo para el Panel de Control (otra pestaña lo lee).
+  var _lastPub = '';
+  function publishState() {
+    var s = JSON.stringify({ on: on, ad: screen.ad, tone: screen.tone, inside: gateInside(),
+      rules: engine.rules.length, ts: Date.now() });
+    if (s !== _lastPub) { _lastPub = s; try { localStorage.setItem('xpl_state', s); } catch (e) {} }
+  }
+
+  // Eventos entre pestañas: reglas guardadas (editor) y comandos (panel de control).
+  window.addEventListener('storage', function (e) {
+    if (e.key === LS_RULES) syncRules();
+    else if (e.key === 'xpl_cmd' && e.newValue) {
+      try { var c = JSON.parse(e.newValue); if (c && c.cmd && typeof window.__xtExec === 'function') window.__xtExec(c.cmd); } catch (_) {}
+    }
+  });
 
   /* ---------------------------------------------------------------------------
    * 5) COMANDOS CLI:  /xpl on|off|toggle|reload|status   (vía el dispatcher)
