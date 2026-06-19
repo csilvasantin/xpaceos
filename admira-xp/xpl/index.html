@@ -72,6 +72,7 @@
 
 <nav>
   <button data-view="estudio" class="on">🎛️ Estudio</button>
+  <button data-view="backoffice">🗂️ Backoffice</button>
   <button data-view="gemelo">📺 Gemelo</button>
   <button data-view="catalogo">📚 Catálogo</button>
 </nav>
@@ -79,7 +80,51 @@
 <main>
   <!-- ESTUDIO: editor + simulador (reutiliza xpl.html) -->
   <section class="view on" id="v-estudio">
-    <iframe src="../xpl.html" title="Editor y simulador XPL"></iframe>
+    <iframe id="estudio-frame" src="../xpl.html" title="Editor y simulador XPL"></iframe>
+  </section>
+
+  <!-- BACKOFFICE: segmentar contenidos por scope y publicar al store remoto -->
+  <section class="view" id="v-backoffice">
+    <div class="wrap">
+      <div class="card">
+        <h3>🗂️ Segmentar contenidos · store remoto</h3>
+        <p class="muted" style="margin-top:0">Edita las reglas por <b>ámbito</b> y publícalas. Cada gemelo baja LO SUYO por su pantalla, en cascada: <b>global → circuito → pantalla</b> (lo más específico manda).</p>
+        <div class="crow" style="margin-top:6px">
+          <select id="bo-scope-kind">
+            <option value="global">🌍 Global (todas las pantallas)</option>
+            <option value="circuit">🔗 Circuito / cliente</option>
+            <option value="screen">📺 Pantalla concreta</option>
+          </select>
+          <input type="text" id="bo-scope-id" placeholder="id (p.ej. estancos / xtore-inicial)" style="flex:1;min-width:160px;display:none">
+          <button class="btn" id="bo-load">📥 Editar este ámbito</button>
+          <button class="btn primary" id="bo-publish">📤 Publicar</button>
+          <span class="pill" id="bo-token-pill" title="token de escritura">🔑 token</span>
+        </div>
+        <div class="muted" id="bo-msg" style="margin-top:8px"></div>
+        <div class="muted" id="bo-current" style="margin-top:4px"></div>
+      </div>
+
+      <div class="grid" style="margin-top:14px">
+        <div class="card">
+          <h3>📺 Pantallas vistas</h3>
+          <div class="muted" id="bo-screens">cargando…</div>
+        </div>
+        <div class="card">
+          <h3>🗂️ Ámbitos con reglas</h3>
+          <div class="muted" id="bo-scopes">—</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Cómo funciona</h3>
+        <div class="muted" style="line-height:1.7">
+          1) Elige el ámbito (global / circuito:&lt;id&gt; / pantalla:&lt;screenId&gt;).<br>
+          2) <b>📥 Editar</b> → carga sus reglas en el <b>🎛️ Estudio</b> (te lleva allí). Edítalas como siempre.<br>
+          3) Vuelve aquí y <b>📤 Publicar</b> → se guardan en el store; los gemelos de ese ámbito las recogen en ≤20s.<br>
+          <span style="color:var(--mut)">Resolución en el gemelo: global, luego circuito, luego pantalla; mismo id en un ámbito más específico sustituye al heredado.</span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- GEMELO: estado en vivo + control + CLI -->
@@ -145,8 +190,60 @@ document.querySelectorAll('nav button').forEach(b=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='v-'+b.dataset.view));
     if(b.dataset.view==='catalogo') renderCatalog();
     if(b.dataset.view==='gemelo') refreshGemelo();
+    if(b.dataset.view==='backoffice') initBackoffice();
   };
 });
+
+/* ---------- BACKOFFICE: store remoto (segmentar por ámbito) ---------- */
+const STORE='https://xpl-store.csilvasantin.workers.dev';
+let BO_TOKEN=localStorage.getItem('xpl_store_token')||'';
+function boScope(){
+  const kind=$('#bo-scope-kind').value;
+  if(kind==='global') return 'global';
+  const id=($('#bo-scope-id').value||'').trim();
+  return id ? kind+':'+id : null;
+}
+function boMsg(t,err){ const e=$('#bo-msg'); e.textContent=t; e.style.color=err?'var(--bad)':'var(--mut)'; }
+$('#bo-scope-kind').onchange=()=>{ $('#bo-scope-id').style.display=$('#bo-scope-kind').value==='global'?'none':'block'; };
+$('#bo-token-pill').onclick=()=>{ const t=prompt('Token de escritura XPL (publicar):',BO_TOKEN); if(t!==null){ BO_TOKEN=t.trim(); localStorage.setItem('xpl_store_token',BO_TOKEN); boMsg(BO_TOKEN?'token guardado':'token borrado'); } };
+let boInited=false;
+function initBackoffice(){ loadScreens(); }
+async function loadScreens(){
+  try{
+    const d=await fetch(STORE+'/xpl/screens').then(r=>r.json());
+    const now=Date.now();
+    $('#bo-screens').innerHTML=(d.screens||[]).length ? d.screens.map(s=>{
+      const ago=Math.round((now-s.lastSeen)/1000);
+      const when=ago<90?'🟢 '+ago+'s':'hace '+Math.round(ago/60)+'min';
+      return '<div class="row" style="justify-content:space-between;gap:8px"><a href="#" data-screen="'+s.screen+'" style="color:var(--acc2);text-decoration:none">📺 '+s.screen+'</a><span style="color:var(--mut);font-size:11px">'+(s.circuit?'🔗'+s.circuit+' · ':'')+when+'</span></div>';
+    }).join('') : '<i>ninguna pantalla se ha anunciado aún. Abre un gemelo.</i>';
+    $('#bo-scopes').innerHTML=(d.scopes||[]).length ? d.scopes.map(s=>'<span class="tag2">'+s+'</span>').join(' ') : '<i>sin reglas publicadas</i>';
+    $('#bo-screens').querySelectorAll('[data-screen]').forEach(a=>a.onclick=e=>{ e.preventDefault(); $('#bo-scope-kind').value='screen'; $('#bo-scope-id').style.display='block'; $('#bo-scope-id').value=a.dataset.screen; boMsg('ámbito → pantalla '+a.dataset.screen); });
+  }catch(e){ $('#bo-screens').textContent='error de conexión con el store'; }
+}
+$('#bo-load').onclick=async()=>{
+  const scope=boScope(); if(!scope){ boMsg('indica el id del circuito/pantalla',true); return; }
+  try{
+    const d=await fetch(STORE+'/xpl/scope?scope='+encodeURIComponent(scope)).then(r=>r.json());
+    if(d.error){ boMsg(d.error,true); return; }
+    localStorage.setItem('xpl_rules', JSON.stringify(d.rules||[]));
+    $('#bo-current').textContent='Editando «'+scope+'» ('+(d.rules||[]).length+' reglas). Edítalas en Estudio y vuelve a Publicar.';
+    const fr=$('#estudio-frame'); fr.src=fr.src;   // recarga el editor con estas reglas
+    document.querySelector('nav button[data-view="estudio"]').click();
+  }catch(e){ boMsg('no se pudo cargar el ámbito',true); }
+};
+$('#bo-publish').onclick=async()=>{
+  const scope=boScope(); if(!scope){ boMsg('indica el id del circuito/pantalla',true); return; }
+  if(!BO_TOKEN){ boMsg('falta el token (🔑) para publicar',true); return; }
+  let rules=[]; try{ rules=JSON.parse(localStorage.getItem('xpl_rules')||'[]'); }catch(e){}
+  try{
+    const r=await fetch(STORE+'/xpl/scope?scope='+encodeURIComponent(scope),{method:'POST',headers:{'Content-Type':'application/json','X-XPL-Token':BO_TOKEN},body:JSON.stringify({rules})});
+    const d=await r.json();
+    if(!r.ok||d.error){ boMsg(d.error||('HTTP '+r.status),true); return; }
+    boMsg('✓ Publicado en «'+scope+'» ('+d.count+' reglas). Los gemelos de ese ámbito lo recogen en ≤20s.');
+    loadScreens();
+  }catch(e){ boMsg('no se pudo publicar',true); }
+};
 
 /* ---------- GEMELO: estado en vivo ---------- */
 function readState(){ try{ return JSON.parse(localStorage.getItem('xpl_state')||'null'); }catch(e){ return null; } }
