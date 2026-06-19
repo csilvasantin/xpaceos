@@ -297,6 +297,8 @@
     if (typeof prev !== 'function') return setTimeout(patch, 500);
     window.__xtExec = function (text) {
       var t = String(text || '').trim();
+      if (/^\/xplon\b/i.test(t))  { setOpen(true);  return Promise.resolve('xplon'); }
+      if (/^\/xploff\b/i.test(t)) { setOpen(false); return Promise.resolve('xploff'); }
       if (/^\/(ifthendothat|componer)\b/i.test(t)) {
         var a = (t.split(/\s+/)[1] || 'toggle').toLowerCase();
         setOpen(a === 'on' ? true : a === 'off' ? false : !open);
@@ -312,7 +314,7 @@
    * Capturamos el envío y enrutamos NUESTROS comandos a window.__xtExec
    * (que sí tiene los wrappers de /ifthendothat y /condicional). El resto pasa
    * tal cual al gemelo. */
-  var MINE = /^\/(ifthendothat|componer|condicional|condicionados|xpl)\b/i;
+  var MINE = /^\/(xplon|xploff|ifthendothat|componer|condicional|condicionados|xpl)\b/i;
   function routeMine(v) {
     var t = String(v || '').trim();
     if (typeof window.__xtExec === 'function') window.__xtExec(t);
@@ -335,7 +337,7 @@
     console.log('[XPL] chat in-game enganchado (/ifthendothat, /condicional)');
   }
 
-  function boot() { patch(); initInputHook(); console.log('[XPL] compositor listo · /ifthendothat on|off|toggle'); }
+  function boot() { patch(); initInputHook(); console.log('[XPL] compositor listo · /xplON · /xplOFF · /ifthendothat on|off|toggle'); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
   window.XPLComposer = { open: function () { setOpen(true); }, close: function () { setOpen(false); }, toggle: function () { setOpen(!open); } };
