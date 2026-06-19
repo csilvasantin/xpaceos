@@ -104,6 +104,12 @@
         <div class="muted" id="bo-current" style="margin-top:4px"></div>
       </div>
 
+      <div class="card" style="margin-top:14px">
+        <h3>🖥️ Gemelos abiertos <span class="pill" id="bo-count">0</span> <button class="btn" id="bo-refresh" style="float:right;padding:4px 10px">↻</button></h3>
+        <div class="muted" id="bo-gemelos">cargando…</div>
+        <div class="muted" style="margin-top:6px;font-size:11px">Control remoto: cada botón encola un comando para esa pantalla (el gemelo lo ejecuta en ≤3s).</div>
+      </div>
+
       <div class="grid" style="margin-top:14px">
         <div class="card">
           <h3>📺 Pantallas vistas</h3>
@@ -206,20 +212,42 @@ function boScope(){
 function boMsg(t,err){ const e=$('#bo-msg'); e.textContent=t; e.style.color=err?'var(--bad)':'var(--mut)'; }
 $('#bo-scope-kind').onchange=()=>{ $('#bo-scope-id').style.display=$('#bo-scope-kind').value==='global'?'none':'block'; };
 $('#bo-token-pill').onclick=()=>{ const t=prompt('Token de escritura XPL (publicar):',BO_TOKEN); if(t!==null){ BO_TOKEN=t.trim(); localStorage.setItem('xpl_store_token',BO_TOKEN); boMsg(BO_TOKEN?'token guardado':'token borrado'); } };
-let boInited=false;
-function initBackoffice(){ loadScreens(); }
-async function loadScreens(){
+let boLiveTimer=null;
+function initBackoffice(){ loadLive(); if(!boLiveTimer) boLiveTimer=setInterval(()=>{ if($('#v-backoffice').classList.contains('on')) loadLive(); }, 6000); }
+$('#bo-refresh').onclick=loadLive;
+async function boCmd(screen, text){
+  if(!BO_TOKEN){ boMsg('falta el token (🔑) para controlar gemelos',true); return; }
   try{
-    const d=await fetch(STORE+'/xpl/screens').then(r=>r.json());
-    const now=Date.now();
+    const r=await fetch(STORE+'/xpl/cmd?screen='+encodeURIComponent(screen),{method:'POST',headers:{'Content-Type':'application/json','X-XPL-Token':BO_TOKEN},body:JSON.stringify({text})});
+    const d=await r.json(); boMsg(r.ok&&!d.error ? ('→ «'+text+'» enviado a '+screen) : (d.error||'error'), !(r.ok&&!d.error));
+  }catch(e){ boMsg('no se pudo enviar el comando',true); }
+}
+async function loadLive(){
+  try{
+    const d=await fetch(STORE+'/xpl/live').then(r=>r.json());
+    const now=Date.now(); const gs=d.gemelos||[];
+    $('#bo-count').textContent=d.count||0;
+    $('#bo-gemelos').innerHTML=gs.length ? gs.map(g=>{
+      const ago=Math.round((now-g.lastSeen)/1000);
+      const loc=[g.city,g.country].filter(Boolean).join(', ');
+      return '<div style="border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:8px">'+
+        '<div class="row" style="justify-content:space-between;gap:8px"><b style="color:var(--ink)">📺 '+g.screen+'</b>'+
+        '<span style="color:'+(ago<70?'var(--ok)':'var(--mut)')+';font-size:11px">'+(ago<70?'🟢 ':'')+ago+'s</span></div>'+
+        '<div style="color:var(--mut);font-size:11.5px;margin:3px 0 7px;font-family:var(--mono)">🖥️ '+(g.device||'?')+' · 🌐 '+(g.ip||'?')+(loc?' ('+loc+')':'')+'</div>'+
+        '<div class="row" style="gap:5px"><button class="btn" data-cmd-screen="'+g.screen+'" data-cmd-text="/condicional on">💡 encender</button>'+
+        '<button class="btn" data-cmd-screen="'+g.screen+'" data-cmd-text="/condicional off">🌙 apagar</button>'+
+        '<button class="btn" data-cmd-screen="'+g.screen+'" data-cmd-text="/condicional reload">🔄 recargar reglas</button>'+
+        '<button class="btn" data-cmd-screen="'+g.screen+'" data-cmd-text="/ifthendothat on">🗂️ compositor</button></div></div>';
+    }).join('') : '<i>ningún gemelo abierto ahora mismo.</i>';
+    $('#bo-gemelos').querySelectorAll('[data-cmd-screen]').forEach(b=>b.onclick=()=>boCmd(b.dataset.cmdScreen,b.dataset.cmdText));
+    // pantallas vistas (para el selector) + scopes
     $('#bo-screens').innerHTML=(d.screens||[]).length ? d.screens.map(s=>{
-      const ago=Math.round((now-s.lastSeen)/1000);
-      const when=ago<90?'🟢 '+ago+'s':'hace '+Math.round(ago/60)+'min';
+      const ago=Math.round((now-s.lastSeen)/1000); const when=ago<90?'🟢 '+ago+'s':'hace '+Math.round(ago/60)+'min';
       return '<div class="row" style="justify-content:space-between;gap:8px"><a href="#" data-screen="'+s.screen+'" style="color:var(--acc2);text-decoration:none">📺 '+s.screen+'</a><span style="color:var(--mut);font-size:11px">'+(s.circuit?'🔗'+s.circuit+' · ':'')+when+'</span></div>';
-    }).join('') : '<i>ninguna pantalla se ha anunciado aún. Abre un gemelo.</i>';
+    }).join('') : '<i>ninguna pantalla aún</i>';
     $('#bo-scopes').innerHTML=(d.scopes||[]).length ? d.scopes.map(s=>'<span class="tag2">'+s+'</span>').join(' ') : '<i>sin reglas publicadas</i>';
     $('#bo-screens').querySelectorAll('[data-screen]').forEach(a=>a.onclick=e=>{ e.preventDefault(); $('#bo-scope-kind').value='screen'; $('#bo-scope-id').style.display='block'; $('#bo-scope-id').value=a.dataset.screen; boMsg('ámbito → pantalla '+a.dataset.screen); });
-  }catch(e){ $('#bo-screens').textContent='error de conexión con el store'; }
+  }catch(e){ $('#bo-gemelos').textContent='error de conexión con el store'; }
 }
 $('#bo-load').onclick=async()=>{
   const scope=boScope(); if(!scope){ boMsg('indica el id del circuito/pantalla',true); return; }
@@ -241,7 +269,7 @@ $('#bo-publish').onclick=async()=>{
     const d=await r.json();
     if(!r.ok||d.error){ boMsg(d.error||('HTTP '+r.status),true); return; }
     boMsg('✓ Publicado en «'+scope+'» ('+d.count+' reglas). Los gemelos de ese ámbito lo recogen en ≤20s.');
-    loadScreens();
+    loadLive();
   }catch(e){ boMsg('no se pudo publicar',true); }
 };
 
