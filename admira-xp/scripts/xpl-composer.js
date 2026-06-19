@@ -15,6 +15,8 @@
 
   /* --------- estado --------- */
   var RULES = [], editingId = null, uid = 1, panel = null, open = false;
+  var side = (function () { try { return localStorage.getItem('xpl_side') || 'auto'; } catch (e) { return 'auto'; } })();
+  var _posTimer = null;
 
   function loadRules() {
     try { var s = JSON.parse(localStorage.getItem(LS) || 'null'); if (Array.isArray(s)) return s; } catch (e) {}
@@ -127,63 +129,101 @@
   function build() {
     var st = document.createElement('style');
     st.textContent = [
-      '#xpl-composer{position:fixed;top:80px;left:24px;width:360px;height:440px;min-width:300px;min-height:240px;',
-      'background:#0f141dF2;border:1px solid #26303f;border-radius:14px;z-index:100060;color:#e8eef7;',
-      'font:13px -apple-system,Segoe UI,Roboto,sans-serif;display:none;flex-direction:column;overflow:hidden;',
-      'box-shadow:0 18px 50px rgba(0,0,0,.5);resize:both;backdrop-filter:blur(8px)}',
+      // Panel acoplado a la franja lateral (posición/altura las fija positionDock()).
+      '#xpl-composer{position:fixed;z-index:100060;color:#e8eef7;background:#0f141dF7;border:1px solid #26303f;',
+      'border-radius:12px;font:12px -apple-system,Segoe UI,Roboto,sans-serif;display:none;flex-direction:column;',
+      'overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.55);backdrop-filter:blur(8px)}',
       '#xpl-composer *{box-sizing:border-box}',
-      '#xpl-composer .top{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #26303f;cursor:grab;background:#131822}',
-      '#xpl-composer .top b{font-size:13px;letter-spacing:.3px}',
-      '#xpl-composer .top .tag{color:#5bd6c0;font-family:ui-monospace,monospace;font-size:11px}',
-      '#xpl-composer .pill{font-size:11px;color:#8a97ab;border:1px solid #26303f;border-radius:999px;padding:2px 8px}',
+      '#xpl-composer .top{display:flex;align-items:center;gap:5px;padding:7px 8px;border-bottom:1px solid #26303f;background:#131822;flex-wrap:wrap}',
+      '#xpl-composer .top b{font-size:12px;letter-spacing:.2px}',
+      '#xpl-composer .top .tag{color:#5bd6c0;font-family:ui-monospace,monospace;font-size:10px}',
+      '#xpl-composer .pill{font-size:10px;color:#8a97ab;border:1px solid #26303f;border-radius:999px;padding:1px 7px}',
       '#xpl-composer .sp{flex:1}',
-      '#xpl-composer button{font:inherit;cursor:pointer;border:1px solid #26303f;background:#1a212e;color:#e8eef7;border-radius:9px;padding:5px 9px;font-size:12px}',
+      '#xpl-composer button{font:inherit;cursor:pointer;border:1px solid #26303f;background:#1a212e;color:#e8eef7;border-radius:8px;padding:4px 8px;font-size:11.5px}',
       '#xpl-composer button:hover{border-color:#5bd6c0}',
       '#xpl-composer .ok{background:#5bd6c0;color:#06231e;border-color:#5bd6c0;font-weight:700}',
-      '#xpl-composer .lk{background:transparent;padding:3px 9px;color:#7aa2ff;font-size:11px}',
-      '#xpl-composer .list{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:9px}',
-      '#xpl-composer .card{background:#1a212e;border:1px solid #26303f;border-radius:11px;overflow:hidden;flex:none}',
+      '#xpl-composer .lk{background:transparent;padding:3px 7px;color:#7aa2ff;font-size:10.5px}',
+      '#xpl-composer .ico{background:transparent;border-color:transparent;color:#8a97ab;padding:2px 6px;font-size:13px}',
+      '#xpl-composer .ico:hover{color:#fff}',
+      '#xpl-composer .list{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}',
+      '#xpl-composer .card{background:#1a212e;border:1px solid #26303f;border-radius:10px;overflow:hidden;flex:none}',
       '#xpl-composer .card.off{opacity:.5}',
-      '#xpl-composer .hd{display:flex;align-items:center;gap:7px;padding:7px 9px;border-bottom:1px solid #26303f;background:#161d28}',
-      '#xpl-composer .nm{flex:1;background:transparent;border:none;color:#e8eef7;font-weight:600;font-size:12.5px;outline:none}',
-      '#xpl-composer .sent{padding:8px 10px;font-size:12px;line-height:1.5;color:#cdd8e8}',
-      '#xpl-composer .kw{color:#5bd6c0;font-family:ui-monospace,monospace;font-size:10.5px;font-weight:700}',
-      '#xpl-composer .sw{position:relative;width:30px;height:17px;border-radius:999px;background:#2a3444;border:1px solid #26303f;flex:none}',
+      '#xpl-composer .hd{display:flex;align-items:center;gap:6px;padding:5px 7px;border-bottom:1px solid #26303f;background:#161d28}',
+      '#xpl-composer .nm{flex:1;min-width:0;background:transparent;border:none;color:#e8eef7;font-weight:600;font-size:11.5px;outline:none}',
+      '#xpl-composer .sent{padding:6px 8px;font-size:11px;line-height:1.45;color:#cdd8e8}',
+      '#xpl-composer .kw{color:#5bd6c0;font-family:ui-monospace,monospace;font-size:9.5px;font-weight:700}',
+      '#xpl-composer .sw{position:relative;width:28px;height:16px;border-radius:999px;background:#2a3444;border:1px solid #26303f;flex:none;cursor:pointer}',
       '#xpl-composer .sw.on{background:#5bd6c0}',
-      '#xpl-composer .sw i{position:absolute;top:1px;left:1px;width:13px;height:13px;border-radius:50%;background:#fff;transition:.15s}',
-      '#xpl-composer .sw.on i{left:14px}',
-      '#xpl-composer .x{color:#8a97ab;border:none;background:transparent;font-size:14px;padding:1px 5px}',
+      '#xpl-composer .sw i{position:absolute;top:1px;left:1px;width:12px;height:12px;border-radius:50%;background:#fff;transition:.15s}',
+      '#xpl-composer .sw.on i{left:13px}',
+      '#xpl-composer .x{color:#8a97ab;border:none;background:transparent;font-size:13px;padding:1px 4px}',
       '#xpl-composer .x:hover{color:#ff6b6b}',
-      '#xpl-composer .bld{padding:9px 10px;border-top:1px solid #26303f;background:#0c1119;display:flex;flex-direction:column;gap:7px}',
-      '#xpl-composer label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#8a97ab}',
-      '#xpl-composer .rw{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '#xpl-composer .bld{padding:7px 8px;border-top:1px solid #26303f;background:#0c1119;display:flex;flex-direction:column;gap:6px}',
+      '#xpl-composer label{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8a97ab}',
+      '#xpl-composer .rw{display:flex;align-items:center;gap:5px;flex-wrap:wrap}',
       '#xpl-composer .rw.end{margin-top:2px}',
       '#xpl-composer .jn{margin:-2px 0}',
-      '#xpl-composer select,#xpl-composer input{font:inherit;background:#1a212e;color:#e8eef7;border:1px solid #26303f;border-radius:8px;padding:5px 7px;font-size:12px;outline:none}',
+      '#xpl-composer select,#xpl-composer input{font:inherit;background:#1a212e;color:#e8eef7;border:1px solid #26303f;border-radius:7px;padding:4px 6px;font-size:11.5px;outline:none;max-width:100%}',
       '#xpl-composer select:focus,#xpl-composer input:focus{border-color:#7aa2ff}',
-      '#xpl-composer .u{color:#8a97ab;font-size:11px;font-style:normal}',
-      '#xpl-composer .empty{color:#8a97ab;font-size:12px;text-align:center;padding:24px 14px;line-height:1.7}',
-      '#xpl-composer .ft{padding:7px 11px;border-top:1px solid #26303f;color:#8a97ab;font-size:11px;display:flex;align-items:center;gap:6px}'
+      '#xpl-composer .u{color:#8a97ab;font-size:10.5px;font-style:normal}',
+      '#xpl-composer .empty{color:#8a97ab;font-size:11.5px;text-align:center;padding:20px 12px;line-height:1.7}',
+      '#xpl-composer .ft{padding:6px 9px;border-top:1px solid #26303f;color:#8a97ab;font-size:10px;display:flex;align-items:center;gap:5px}'
     ].join('');
     document.head.appendChild(st);
 
     panel = document.createElement('div');
     panel.id = 'xpl-composer';
     panel.innerHTML =
-      '<div class="top" id="xc-drag"><b>IF·THEN·<span class="tag">DO THAT</span></b>' +
+      '<div class="top"><b>IF·THEN·<span class="tag">DO THAT</span></b>' +
       '<span class="pill" id="xc-count">0</span><span class="sp"></span>' +
+      '<button class="ico" id="xc-flip" title="cambiar de lado">⇄</button>' +
+      '<button class="x" id="xc-close" title="cerrar (/ifthendothat off)">✕</button>' +
+      '<div style="flex-basis:100%;height:0"></div>' +
       '<button class="ok" id="xc-add">+ regla</button>' +
-      '<button class="lk" id="xc-ex">ejemplos</button>' +
-      '<button class="x" id="xc-close">✕</button></div>' +
+      '<button class="lk" id="xc-ex">ejemplos</button></div>' +
       '<div class="list" id="xc-list"></div>' +
-      '<div class="ft">● los cambios se ven al instante en la pantalla condicional</div>';
+      '<div class="ft">● efecto inmediato en la pantalla condicional</div>';
     document.body.appendChild(panel);
 
     panel.querySelector('#xc-add').onclick = addRule;
     panel.querySelector('#xc-close').onclick = function () { setOpen(false); };
     panel.querySelector('#xc-ex').onclick = seed;
-    dragify(panel, panel.querySelector('#xc-drag'));
+    panel.querySelector('#xc-flip').onclick = flip;
+    window.addEventListener('resize', function () { if (open) positionDock(); });
     wire();
+  }
+
+  /* --------- acople a la franja lateral del Xpacio ------------------------- */
+  function effectiveSide() {
+    if (side !== 'auto') return side;
+    var cv = document.getElementById('c'), vw = window.innerWidth;
+    if (cv) { var r = cv.getBoundingClientRect(); return (r.left >= vw - r.right) ? 'left' : 'right'; }
+    return 'right';
+  }
+  function positionDock() {
+    if (!panel) return;
+    var cv = document.getElementById('c');
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var top = 8, height = vh - 16, leftStrip = vw * 0.22, rightStrip = vw * 0.22;
+    if (cv) {
+      var r = cv.getBoundingClientRect();
+      if (r.width > 40 && r.height > 40) {
+        top = Math.max(6, r.top);
+        height = Math.max(220, Math.min(vh - top - 6, r.height));
+        leftStrip = r.left; rightStrip = vw - r.right;
+      }
+    }
+    var s = effectiveSide();
+    var strip = (s === 'left') ? leftStrip : rightStrip;
+    var width = Math.max(248, Math.min(336, strip - 6));
+    panel.style.top = top + 'px'; panel.style.height = height + 'px'; panel.style.width = width + 'px';
+    if (s === 'left') { panel.style.left = '4px'; panel.style.right = 'auto'; }
+    else { panel.style.left = 'auto'; panel.style.right = '4px'; }
+  }
+  function flip() {
+    side = (effectiveSide() === 'left') ? 'right' : 'left';
+    try { localStorage.setItem('xpl_side', side); } catch (e) {}
+    positionDock();
   }
 
   function seed() {
@@ -239,25 +279,16 @@
   }
 
   /* --------- drag --------- */
-  function dragify(node, handle) {
-    var sx, sy, ox, oy, drag = false;
-    handle.addEventListener('mousedown', function (e) {
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
-      drag = true; sx = e.clientX; sy = e.clientY; var r = node.getBoundingClientRect(); ox = r.left; oy = r.top;
-      handle.style.cursor = 'grabbing'; e.preventDefault();
-    });
-    window.addEventListener('mousemove', function (e) {
-      if (!drag) return; node.style.left = (ox + e.clientX - sx) + 'px'; node.style.top = (oy + e.clientY - sy) + 'px'; node.style.right = 'auto';
-    });
-    window.addEventListener('mouseup', function () { drag = false; if (handle) handle.style.cursor = 'grab'; });
-  }
-
   /* --------- abrir/cerrar --------- */
   function setOpen(v) {
     open = v;
     if (!panel) build();
     if (v) { RULES = loadRules(); render(); }
     panel.style.display = v ? 'flex' : 'none';
+    if (v) {
+      positionDock();
+      if (!_posTimer) _posTimer = setInterval(function () { if (open) positionDock(); else { clearInterval(_posTimer); _posTimer = null; } }, 1200);
+    }
   }
 
   /* --------- CLI: /ifthendothat on|off|toggle (alias /componer) --------- */

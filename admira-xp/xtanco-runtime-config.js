@@ -60,3 +60,23 @@
     },
   };
 })();
+
+/* ===========================================================================
+ * Cargador XPL (lenguaje de reglas + señalización condicional)
+ * ---------------------------------------------------------------------------
+ * Se inyecta desde aquí (fichero estable) y NO desde index.html, porque el
+ * index.html lo regenera el sync del gemelo y borraría los <script>. Este
+ * config sí lo carga siempre el gemelo, así que XPL sobrevive a los syncs.
+ * Carga en orden: runtime → adapter del gemelo → compositor.
+ * ========================================================================= */
+(() => {
+  if (typeof document === 'undefined') return;
+  const root = typeof self !== 'undefined' ? self : window;
+  if (root.__XPL_LOADER) return; root.__XPL_LOADER = true;
+  const V = '?v=5';
+  ['scripts/xpl-runtime.js', 'scripts/xpl-gemelo.js', 'scripts/xpl-composer.js'].forEach((src) => {
+    const s = document.createElement('script');
+    s.src = src + V; s.async = false; // async=false → ejecuta en orden de inserción
+    document.head.appendChild(s);
+  });
+})();
