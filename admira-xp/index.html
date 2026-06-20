@@ -19066,6 +19066,28 @@ function setAvatar3dTotem(on){
   try{ if(typeof positionTotemAvatar==='function') positionTotemAvatar(); }catch(_){}
   return true;
 }
+// ── /admiratv: reproduce admira.tv (canal de signage vertical) en el TÓTEM ──
+// Reutiliza el mismo pin web del tótem que el avatar (DS_PIN['metahuman']).
+// El canal en modo ?clean=1 deja solo el reproductor vertical (sin chrome).
+const ADMIRATV_URL='https://admira.tv/canal.html?clean=1';
+function admiraTvOn(){ const p=(typeof DS_PIN==='object'&&DS_PIN)?DS_PIN['metahuman']:null; return !!(p&&p.kind==='web'&&p.src&&/admira\.tv/i.test(p.src)); }
+function setAdmiraTvCommand(arg){
+  const a=String(arg||'').trim().toLowerCase();
+  let want; if(a==='on'||a==='1'||a==='encender') want=true; else if(a==='off'||a==='0'||a==='apagar') want=false; else want=!admiraTvOn();
+  try{
+    if(want){
+      if(!admiraTvOn()) window.__admiratvPrevPin=(typeof DS_PIN==='object'&&DS_PIN)?(DS_PIN['metahuman']||null):null;
+      DS_PIN['metahuman']={kind:'web',name:'Admira.tv',src:ADMIRATV_URL};
+    } else {
+      const prev=window.__admiratvPrevPin;
+      if(prev) DS_PIN['metahuman']=prev; else { try{ delete DS_PIN['metahuman']; }catch(_){ DS_PIN['metahuman']=null; } }
+      window.__admiratvPrevPin=null;
+    }
+    if(typeof emitTotemNow==='function') emitTotemNow(true);
+    if(typeof positionTotemAvatar==='function') positionTotemAvatar();
+  }catch(e){ return '⚠️ admiratv: '+((e&&e.message)||e); }
+  return want ? '📺 Admira.tv ENCENDIDO en el tótem del Xpacio.' : '📺 Admira.tv APAGADO (el tótem vuelve a su estado anterior).';
+}
 // Monta el iframe del avatar 3D sobre la pantalla del tótem en la VISTA 2D del
 // gemelo (no solo en la pantalla física), usando el quad cacheado del tótem.
 function positionTotemAvatar(){
@@ -29161,6 +29183,7 @@ window.xtAPI = (function(){
       }
       if(cmd==='dj'||cmd==='djnovah'||cmd==='novah') return setDJCommand(arg);
       if(cmd==='pixeria'||cmd==='pixerfeed'||cmd==='pixer') return setPixerFeedCommand(arg);
+      if(cmd==='admiratv'||cmd==='admira-tv'||cmd==='canaltv') return setAdmiraTvCommand(arg);
       if(cmd==='tarjetafidelidad'||cmd==='fidelidad'||cmd==='loyaltycard') return setLoyaltyCardCommand();
       if(cmd==='opinador'||cmd==='opinion'||cmd==='opinión') return setOpinadorCommand(arg);
       if(cmd==='robot'||cmd==='unitree'||cmd==='unitreebot'||cmd==='bot') return setUnitreeBotCommand(arg);
