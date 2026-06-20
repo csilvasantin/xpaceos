@@ -120,7 +120,7 @@
 </div>
 
 <script>
-const WORKER='https://pixer-eleven.csilvasantin.workers.dev';
+const WORKER='https://api.admira.store';   // dominio propio CF (esquiva bloqueo ISP de workers.dev en ES)
 const $=(s)=>document.querySelector(s);
 const fmtEur=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 const state={stores:[],store:null,circuit:'',date:'',control:null,screens:[],screen:null,cal:null,offers:[],auto:false,autoTimer:null,offTimer:null};
