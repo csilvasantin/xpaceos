@@ -221,6 +221,7 @@
             <button class="cli-chip" type="button" data-cli="/playnext">/playnext</button>
             <button class="cli-chip" type="button" data-cli="/playtagmusic">/playtagmusic</button>
             <button class="cli-chip" type="button" data-cli="/playtagtecnologia">/playtagtecnologia</button>
+            <button class="cli-chip" type="button" data-cli="/admiraTVsincro">/admiraTVsincro</button>
             <button class="cli-chip" type="button" data-cli="/audioon">/audioon</button>
             <button class="cli-chip" type="button" data-cli="/audiooff">/audiooff</button>
             <button class="cli-chip" type="button" data-cli="/pantalla off">/pantalla off</button>
@@ -230,7 +231,7 @@
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /pantalla off, /pantalla on, /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p>commands: /pantalla off, /pantalla on, /admiraTVsincro, /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
           </div>
         </div>
 
@@ -497,7 +498,7 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/pantalla off|on /audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', '/pantalla off|on /admiraTVsincro [off] /audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
       return;
     }
     if ((cmd === 'pantalla' || cmd === 'screen') && ['off','on'].includes(rest.toLowerCase())) {
@@ -585,6 +586,10 @@
     if (cmd === 'mute' || cmd === 'muted') {
       const muted = rest === '0' ? '0' : '1';
       setFeedAudio(muted === '0');
+      return;
+    }
+    if (['admiratvsincro','admiratvsync','sincro','sync','admiratvsincrooff','sincrooff','syncoff'].includes(cmd)) {
+      sendPlayerCommand('/' + input);
       return;
     }
     if (cmd === 'screen') {
