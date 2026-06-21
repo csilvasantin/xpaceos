@@ -1,0 +1,52 @@
+# XpaceOS · MCP — conecta con la red de retail media
+
+> Servidor MCP de XpaceOS: el puente para que agentes (silicio) y personas (carbono)
+> se conecten a la red de retail media — ver la flota, qué emite cada pantalla en vivo,
+> su audiencia por cámara, el proof-of-play de cada circuito y dar de alta nuevas
+> pantallas o robots. Para silicio (bots) y carbono (humanos).
+
+Sitio / docs: https://www.xpaceos.com/mcp/
+Manifest máquina: https://www.xpaceos.com/mcp/manifest.json
+Repo: https://github.com/csilvasantin/xpaceos
+
+## Servidor MCP (cómo conectar)
+
+- Endpoint: https://mcp.admira.store/mcp
+- Transporte: MCP Streamable HTTP (JSON-RPC sobre POST /mcp); salud en GET /
+- Auth: none (el alta es aditiva y acotada, no pisa inventario curado)
+- Config de cliente:
+  {"mcpServers":{"xpaceos":{"url":"https://mcp.admira.store/mcp"}}}
+- Prueba rápida:
+  curl -s https://mcp.admira.store/mcp -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+## Herramientas
+
+- fleet_status — visión general: pantallas/robots dados de alta y cuáles emiten ahora (asset + audiencia).
+- list_screens — inventario de Xpaces activos: ubicación, id de pantalla, tipo y orientación.
+- screen_now — qué emite AHORA una pantalla y su audiencia por cámara (personas · edad · género), y si está conectada.
+- emission_report — proof-of-play de un circuito: pases, segundos, por tipo y por segmento.
+- register_device — da de alta una pantalla o robot (auto-alta) y devuelve la URL del canal para emitir.
+
+## Privacidad
+
+La audiencia se mide on-device (cámara del gemelo, @vladmandic/human): no se almacenan
+imágenes ni datos personales, solo conteos agregados (presencia, género, edad). Las métricas
+de género y edad son estimaciones estadísticas, no identificación de personas.
+
+## Ecosistema
+
+Tres capas de la red AdmiraNeXT, una por verbo:
+- Crear: https://www.pixeria.com
+- Operar: https://www.xpaceos.com
+- Emitir: https://admira.tv
+
+## Federación
+
+Misma convención /mcp/ en cada pata del ecosistema:
+- Producción (Clear Channel): https://www.clearchannel.tv/mcp/
+- Preproducción: https://www.admira.app/mcp/
+- Consejo de Silicio: https://www.admira.live/mcp/
+
+## Convenciones
+
+- Avisos de cambios: Telegram grupo AdmiraXP, firmados "Admira IA".
