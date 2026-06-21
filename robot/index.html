@@ -179,7 +179,7 @@
             <div class="part torso">
               <div class="part chest" id="chest">
                 <div class="screen-fallback"><div><small>Admira.tv vertical feed</small><b>9:16</b></div></div>
-                <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playnext" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playtag" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
                 <video id="robot-camera" class="camera-view" autoplay playsinline muted></video>
                 <div class="screen-glass" aria-hidden="true"></div>
               </div>
@@ -217,7 +217,7 @@
             <button class="mode" type="button" data-mode="standby">Standby</button>
           </div>
           <div class="feed-row">
-            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playnext" target="_blank" rel="noopener">Open vertical feed</a>
+            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playtag" target="_blank" rel="noopener">Open vertical feed</a>
             <button type="button" id="reload-feed">Reload feed</button>
           </div>
         </div>
@@ -235,12 +235,14 @@
             <button class="cli-chip" type="button" data-cli="/tag robots">/tag robots</button>
             <button class="cli-chip" type="button" data-cli="/slot auto">/slot auto</button>
             <button class="cli-chip" type="button" data-cli="/playnext">/playnext</button>
+            <button class="cli-chip" type="button" data-cli="/playtagmusic">/playtagmusic</button>
+            <button class="cli-chip" type="button" data-cli="/playtagtecnologia">/playtagtecnologia</button>
             <button class="cli-chip" type="button" data-cli="/playcamera">/playcamera</button>
             <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p>commands: /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
           </div>
         </div>
 
@@ -292,7 +294,7 @@
     refresh: '20',
     max: '24',
     muted: '1',
-    bridge: '20260621-playnext'
+    bridge: '20260621-playtag'
   };
   const feedParams = Object.assign({}, defaultFeedParams);
   const pendingBridge = new Map();
@@ -304,6 +306,26 @@
     params.format = '9:16';
     const qs = new URLSearchParams(params);
     return feedBase + '?' + qs.toString();
+  }
+
+  function normTag(value){
+    return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
+
+  function canonicalPlayTag(value){
+    const tag = normTag(value).replace(/^#/, '').replace(/\s+/g, '-');
+    if (['music','musica','muscia'].includes(tag)) return 'musica';
+    if (['tecnologia','technology','tech'].includes(tag)) return 'tecnologia';
+    return tag;
+  }
+
+  function parsePlayTag(raw, cmd){
+    const parts = String(raw || '').trim().replace(/^\//, '').split(/\s+/);
+    const first = (parts.shift() || '').toLowerCase();
+    const command = (cmd || first).toLowerCase();
+    if (command === 'playtag') return canonicalPlayTag(parts.join(' '));
+    if (command.indexOf('playtag') === 0) return canonicalPlayTag(command.slice(7) + (parts.length ? ' ' + parts.join(' ') : ''));
+    return '';
   }
 
   function cliWrite(kind, text){
@@ -335,6 +357,18 @@
     iframe.src = nextFeed;
     openFeed.href = nextFeed;
     cliWrite('feed', reason + ' · format=9:16');
+  }
+
+  function applyPlayTag(tag, raw){
+    const clean = canonicalPlayTag(tag);
+    if (!clean) {
+      cliWrite('err', 'usage: /playtagmusic or /playtag <tag>');
+      return;
+    }
+    feedParams.tag = clean;
+    feedParams.format = '9:16';
+    cliWrite('play', '/' + raw + ' · tag=' + clean);
+    applyFeed('playtag=' + clean);
   }
 
   function sendPlayerCommand(raw){
@@ -434,7 +468,12 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', '/playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      return;
+    }
+    const playTag = parsePlayTag(value, cmd);
+    if (playTag) {
+      applyPlayTag(playTag, input);
       return;
     }
     if (cmd === 'playcamera' || cmd === 'camera') {
