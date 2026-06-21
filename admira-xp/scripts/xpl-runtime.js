@@ -47,7 +47,16 @@
     { id: 'doorOpen',     type: 'bool', es: 'la tienda está abierta', en: 'the shop is open',    icon: '🚪' },
     { id: 'thief',        type: 'bool', es: 'hay un ladrón',          en: 'there is a thief',    icon: '🦹' },
     { id: 'satisfaction', type: 'num',  es: 'la satisfacción',        en: 'satisfaction',        icon: '😊', min: 0, max: 100, unit: '%' },
-    { id: 'money',        type: 'num',  es: 'la caja del día',        en: "today's takings",     icon: '💶', min: 0, max: 99999, unit: '€' }
+    { id: 'money',        type: 'num',  es: 'la caja del día',        en: "today's takings",     icon: '💶', min: 0, max: 99999, unit: '€' },
+    // — audiencia por cámara (anónima, de admira.tv) —
+    { id: 'viewers',      type: 'num',  es: 'la gente mirando la pantalla', en: 'people watching the screen', icon: '👁️', min: 0, max: 12 },
+    { id: 'audGender',    type: 'enum', es: 'el género de la audiencia', en: 'the audience gender', icon: '🧑',
+      values: [ { id: 'none', es: 'nadie', en: 'nobody', icon: '🚷' }, { id: 'female', es: 'mujer', en: 'women', icon: '♀️' },
+                { id: 'male', es: 'hombre', en: 'men', icon: '♂️' }, { id: 'mixed', es: 'mixto', en: 'mixed', icon: '⚥' } ] },
+    { id: 'audAge',       type: 'enum', es: 'la edad de la audiencia', en: 'the audience age', icon: '🎂',
+      values: [ { id: 'none', es: 'nadie', en: 'nobody', icon: '🚷' }, { id: 'nino', es: 'niño', en: 'child', icon: '🧒' },
+                { id: 'joven', es: 'joven', en: 'young', icon: '🧑' }, { id: 'adulto', es: 'adulto', en: 'adult', icon: '🧔' },
+                { id: 'senior', es: 'senior', en: 'senior', icon: '👴' }, { id: 'vejez', es: 'vejez', en: 'elder', icon: '👵' } ] }
   ];
 
   // Operadores para hechos numéricos

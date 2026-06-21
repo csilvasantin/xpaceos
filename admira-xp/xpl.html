@@ -125,6 +125,18 @@
           <option value="autumn" selected>🍂 otoño</option><option value="winter">❄️ invierno</option>
         </select>
       </label>
+      <label style="font-size:12px;color:var(--mut);display:flex;align-items:center;gap:6px;margin-left:6px" title="audiencia mirando la pantalla (cámara de admira.tv)">👁️
+        <span id="viewLbl" style="font-family:var(--mono);color:var(--ink);width:18px">3</span>
+        <input type="range" id="viewR" min="0" max="12" value="3" style="width:84px">
+      </label>
+      <label style="font-size:12px;color:var(--mut);display:flex;align-items:center;gap:5px;margin-left:6px">📷
+        <select id="audGenderR" style="padding:4px 6px" title="género de la audiencia (cámara)">
+          <option value="female">♀️ mujer</option><option value="male">♂️ hombre</option><option value="mixed">⚥ mixto</option>
+        </select>
+        <select id="audAgeR" style="padding:4px 6px" title="edad de la audiencia (cámara)">
+          <option value="nino">🧒 niño</option><option value="joven">🧑 joven</option><option value="adulto" selected>🧔 adulto</option><option value="senior">👴 senior</option><option value="vejez">👵 vejez</option>
+        </select>
+      </label>
     </div>
     <div class="canvas-wrap">
       <canvas id="cv"></canvas>
@@ -166,6 +178,9 @@ const World = {
   thief: false,
   hour: 13,
   people: 8,               // footfall (sensor de calle)
+  viewers: 3,              // audiencia mirando la pantalla (cámara de admira.tv)
+  audGender: 'female',     // none|female|male|mixed
+  audAge: 'adulto',        // none|nino|joven|adulto|senior|vejez
   satisfaction: 72,
   money: 1840,
   lightOn: true,
@@ -192,6 +207,9 @@ const World = {
       case 'satisfaction': return this.satisfaction;
       case 'money': return this.money;
       case 'people': return this.people;
+      case 'viewers': return this.viewers;
+      case 'audGender': return this.viewers > 0 ? this.audGender : 'none';
+      case 'audAge': return this.viewers > 0 ? this.audAge : 'none';
     }
     return 0;
   },
@@ -267,6 +285,10 @@ const SAMPLES = [
   { name:'Calor → helado en pantalla', priority:1, when:{conds:[{fact:'temperature',op:'>=',value:28}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'icecream'}] },
   { name:'Frío O lluvia → chubasqueros', priority:1, when:{join:'or',conds:[{fact:'temperature',op:'<=',value:8},{fact:'rain',value:true}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'raincoat'}] },
   { name:'Verano Y mediodía → gafas de sol', priority:2, when:{join:'and',conds:[{fact:'season',value:'summer'},{fact:'dayPart',value:'noon'}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'sunglasses'}] },
+  // 📷 audiencia por cámara (admira.tv) → señalización segmentada por quién mira
+  { name:'Mujer adulta mirando → nueva colección premium', priority:4, when:{join:'and',conds:[{fact:'audGender',value:'female'},{fact:'audAge',value:'adulto'}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'newColl'},{id:'screenTone',value:'lux'}] },
+  { name:'Joven mirando → happy hour', priority:3, when:{conds:[{fact:'audAge',value:'joven'}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'happyhour'},{id:'screenTone',value:'hype'}] },
+  { name:'Nadie mirando → apagar pantallas', priority:0, when:{conds:[{fact:'viewers',op:'<=',value:0}]}, who:{group:'all',filter:{}}, do:[{id:'clearScreen'}] },
   { name:'Mucha gente → oferta flash (manda)', priority:5, when:{conds:[{fact:'people',op:'>=',value:20}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'promo'},{id:'screenTone',value:'hype'},{id:'jingle',value:'promo'}] },
   { name:'Noche → happy hour + glow', priority:1, when:{conds:[{fact:'night',value:true}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'happyhour'},{id:'equip',value:'glow'}] },
   { name:'Finde → plan finde', priority:1, when:{conds:[{fact:'weekend',value:true}]}, who:{group:'all',filter:{}}, do:[{id:'showAd',value:'weekendDeal'}] },
@@ -464,6 +486,9 @@ function refreshChips(){
 $('#tempR').oninput=e=>{ World.temperature=+e.target.value; $('#tempLbl').textContent=World.temperature+'°'; };
 $('#peopR').oninput=e=>{ World.people=+e.target.value; $('#peopLbl').textContent=World.people; };
 $('#seasonR').onchange=e=>{ World.season=e.target.value; };
+$('#viewR').oninput=e=>{ World.viewers=+e.target.value; $('#viewLbl').textContent=World.viewers; };
+$('#audGenderR').onchange=e=>{ World.audGender=e.target.value; };
+$('#audAgeR').onchange=e=>{ World.audAge=e.target.value; };
 
 /* ===========================================================================
  * MINI-MUNDO (canvas) + bucle
