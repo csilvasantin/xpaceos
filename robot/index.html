@@ -230,6 +230,7 @@
             <button class="cli-chip" type="button" data-cli="/medio video">/medio video</button>
             <button class="cli-chip" type="button" data-cli="/tag robots">/tag robots</button>
             <button class="cli-chip" type="button" data-cli="/slot auto">/slot auto</button>
+            <button class="cli-chip" type="button" data-cli="/playnext">/playnext</button>
             <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
@@ -281,9 +282,11 @@
     slot: 'auto',
     refresh: '20',
     max: '24',
-    muted: '1'
+    muted: '1',
+    bridge: '20260621-playnext'
   };
   const feedParams = Object.assign({}, defaultFeedParams);
+  const pendingBridge = new Map();
 
   function verticalFeedUrl(extra){
     const params = Object.assign({}, feedParams, extra || {});
@@ -305,6 +308,23 @@
     feedState.textContent = 'feed loading';
     iframe.src = verticalFeedUrl({ robot: Date.now() });
     cliWrite('feed', reason + ' · format=9:16');
+  }
+
+  function sendPlayerCommand(raw){
+    const requestId = 'robot-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    pendingBridge.set(requestId, raw);
+    try{
+      iframe.contentWindow.postMessage({ source:'xpaceos-robot-cli', command:raw, requestId }, 'https://admira.tv');
+      cliWrite('send', raw + ' → chest player');
+      window.setTimeout(() => {
+        if (!pendingBridge.has(requestId)) return;
+        pendingBridge.delete(requestId);
+        cliWrite('wait', raw + ' sent; no ack yet');
+      }, 1800);
+    }catch(e){
+      pendingBridge.delete(requestId);
+      cliWrite('err', 'could not send ' + raw);
+    }
   }
 
   const modes = {
@@ -351,7 +371,11 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', '/playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      return;
+    }
+    if (['playnext','next','playprevious','playprev','previous','prev','playfirst','first','playlast','last'].includes(cmd) || cmd === 'play' || /^play\d+$/.test(cmd)) {
+      sendPlayerCommand('/' + input);
       return;
     }
     if (cmd === 'reload') { applyFeed('reload'); return; }
@@ -414,7 +438,7 @@
       applyFeed('reset');
       return;
     }
-    if (cmd === 'direct' || cmd === 'directo' || cmd === 'play') {
+    if (cmd === 'direct' || cmd === 'directo') {
       cliWrite('lock', '/' + cmd + ' disabled here: robot chest accepts vertical 9:16 channel content only');
       return;
     }
@@ -436,6 +460,15 @@
 
   document.querySelectorAll('[data-cli]').forEach((button) => {
     button.addEventListener('click', () => runCli(button.dataset.cli));
+  });
+
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://admira.tv') return;
+    const data = event.data || {};
+    if (data.source !== 'admira-tv-canal') return;
+    const raw = pendingBridge.get(data.requestId) || 'command';
+    pendingBridge.delete(data.requestId);
+    cliWrite(data.ok ? 'ack' : 'err', raw + ' · ' + (data.message || (data.ok ? 'ok' : 'failed')));
   });
 
   window.setTimeout(revealFeed, 1500);
