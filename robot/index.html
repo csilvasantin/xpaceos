@@ -127,7 +127,8 @@
   .cli-chip{min-height:30px;border:1px solid rgba(120,243,255,.20);border-radius:999px;background:rgba(120,243,255,.06);color:var(--mut);padding:0 10px;cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.04em}
   .cli-chip:hover{border-color:rgba(120,243,255,.55);color:var(--ink)}
   .emission-modes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-  .emission-mode{min-height:36px;border:1px solid rgba(120,243,255,.22);border-radius:8px;background:rgba(120,243,255,.06);color:var(--mut);cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+  .emission-mode{min-height:36px;border:1px solid rgba(120,243,255,.22);border-radius:8px;background:rgba(120,243,255,.06);color:var(--mut);cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;padding:0 4px}
+  .emission-mode[data-emission="portrait"],.emission-mode[data-emission="landscape"]{font-size:9px;letter-spacing:0}
   .emission-mode:hover{border-color:rgba(120,243,255,.62);color:var(--ink)}
   .emission-mode.active{border-color:rgba(255,216,107,.78);background:rgba(255,216,107,.12);color:var(--gold)}
   @media (max-width:560px){.emission-modes{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -216,7 +217,7 @@
           <div class="emission-modes" aria-label="Emission Mode">
             <button class="emission-mode active" type="button" data-emission="local">Local</button>
             <button class="emission-mode" type="button" data-emission="sync">Sincro</button>
-            <button class="emission-mode" type="button" data-emission="conditional">Condicional</button>
+            <button class="emission-mode" type="button" data-emission="conditional">Cond</button>
             <button class="emission-mode" type="button" data-emission="portrait">Portrait</button>
             <button class="emission-mode" type="button" data-emission="landscape">Landscape</button>
           </div>
@@ -662,6 +663,16 @@
     if (cmd === 'mute' || cmd === 'muted') {
       const muted = rest === '0' ? '0' : '1';
       setFeedAudio(muted === '0');
+      return;
+    }
+    if (cmd === 'admiratv') {
+      const mode = rest.toLowerCase();
+      if (['sincro','sync','sincronizado'].includes(mode)) { setAdmiraMode('sync'); return; }
+      if (['cond','condicional','conditional','xpl'].includes(mode)) { setAdmiraMode('conditional'); return; }
+      if (['local','off'].includes(mode)) { setAdmiraMode('local'); return; }
+      if (['portrait','vertical'].includes(mode)) { setAdmiraMode('portrait'); return; }
+      if (['landscape','horizontal'].includes(mode)) { setAdmiraMode('landscape'); return; }
+      cliWrite('err', 'usage: /admiraTV sincro|cond|local|portrait|landscape');
       return;
     }
     if (cmd === 'admiratvsincro' || cmd === 'admiratvsync' || cmd === 'sincro' || cmd === 'sync') {
