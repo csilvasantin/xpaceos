@@ -176,7 +176,7 @@
             <div class="part torso">
               <div class="part chest" id="chest">
                 <div class="screen-fallback"><div><small>Admira.tv vertical feed</small><b>9:16</b></div></div>
-                <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playnext" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
                 <div class="screen-glass" aria-hidden="true"></div>
               </div>
             </div>
@@ -213,7 +213,7 @@
             <button class="mode" type="button" data-mode="standby">Standby</button>
           </div>
           <div class="feed-row">
-            <a href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1" target="_blank" rel="noopener">Open vertical feed</a>
+            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playnext" target="_blank" rel="noopener">Open vertical feed</a>
             <button type="button" id="reload-feed">Reload feed</button>
           </div>
         </div>
@@ -235,7 +235,7 @@
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p>commands: /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
           </div>
         </div>
 
@@ -272,6 +272,7 @@
   const cliForm = document.getElementById('admira-cli');
   const cliInput = document.getElementById('admira-cli-input');
   const cliLog = document.getElementById('admira-cli-log');
+  const openFeed = document.getElementById('open-feed');
   const feedBase = 'https://admira.tv/canal.html';
   const defaultFeedParams = {
     clean: '1',
@@ -306,7 +307,9 @@
   function applyFeed(reason){
     chest.classList.remove('screen-loaded');
     feedState.textContent = 'feed loading';
-    iframe.src = verticalFeedUrl({ robot: Date.now() });
+    const nextFeed = verticalFeedUrl({ robot: Date.now() });
+    iframe.src = nextFeed;
+    openFeed.href = nextFeed;
     cliWrite('feed', reason + ' · format=9:16');
   }
 
