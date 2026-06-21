@@ -1,0 +1,21 @@
+{
+  "name": "XpaceOS",
+  "description": "MCP de la red XpaceOS de retail media: flota, emisión en vivo, audiencia, proof-of-play y alta de pantallas/robots. Puente silicio↔carbono.",
+  "version": "1.0.0",
+  "endpoint": "https://mcp.admira.store/mcp",
+  "transport": "streamable-http",
+  "auth": "none",
+  "docs": "https://www.xpaceos.com/mcp/",
+  "tools": [
+    { "name": "fleet_status", "description": "Pantallas/robots dados de alta y cuáles emiten ahora (asset + audiencia)." },
+    { "name": "list_screens", "description": "Inventario de Xpaces activos: ubicación, screen, tipo y orientación." },
+    { "name": "screen_now", "description": "Qué emite ahora una pantalla y su audiencia por cámara; si está conectada." },
+    { "name": "emission_report", "description": "Proof-of-play de un circuito: pases, segundos, por tipo y segmento." },
+    { "name": "register_device", "description": "Da de alta una pantalla o robot y devuelve la URL del canal." }
+  ],
+  "ecosystem": {
+    "create": "https://www.pixeria.com",
+    "operate": "https://www.xpaceos.com",
+    "broadcast": "https://admira.tv"
+  }
+}
