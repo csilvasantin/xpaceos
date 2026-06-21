@@ -195,22 +195,6 @@
     return !!document.body && !document.body.classList.contains('splash-visible');
   }
 
-  // Imagen de reposo cuando la pantalla está apagada (screen off). Vacío por
-  // defecto (sigue en negro); se configura con localStorage('xpl_idle_img') = URL.
-  var IDLE_DEFAULT = '';
-  function idleImgUrl() { try { return localStorage.getItem('xpl_idle_img') || IDLE_DEFAULT; } catch (e) { return IDLE_DEFAULT; } }
-  function setIdleImg(src, show) {
-    var img = document.getElementById('xpl-sg-idle');
-    if (!show) { if (img) img.style.display = 'none'; return; }
-    if (!img) {
-      img = document.createElement('img'); img.id = 'xpl-sg-idle'; img.alt = '';
-      img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff';
-      if (el) el.appendChild(img);
-    }
-    if (src && img.getAttribute('src') !== src) img.src = src;
-    img.style.display = 'block';
-  }
-
   function renderOverlay() {
     if (!el) return;
     var inside = gateInside();
@@ -222,20 +206,10 @@
     var chipAd = document.getElementById('xpl-chip-ad');
     if (dot) dot.style.background = on ? '#5bd6c0' : '#5a6678';
     if (!on || !ad) {
-      var idle = idleImgUrl();
-      if (idle) {                                   // screen off → imagen de reposo
-        el.style.display = 'block'; el.style.background = '#fff';
-        var io = document.getElementById('xpl-sg-icon'), lo = document.getElementById('xpl-sg-label');
-        if (io) io.style.display = 'none'; if (lo) lo.style.display = 'none';
-        setIdleImg(idle, true);
-      } else { el.style.display = 'none'; }          // sin reposo configurado → negro como antes
+      el.style.display = 'none';
       if (chipAd) chipAd.textContent = on ? '—' : 'off';
       return;
     }
-    // hay anuncio: oculta el reposo y restaura icono/label
-    setIdleImg(null, false);
-    var io2 = document.getElementById('xpl-sg-icon'), lo2 = document.getElementById('xpl-sg-label');
-    if (io2) io2.style.display = ''; if (lo2) lo2.style.display = '';
     el.style.display = 'block';
     el.style.background = ad.bg;
     document.getElementById('xpl-sg-icon').textContent = ad.icon;
