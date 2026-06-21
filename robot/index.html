@@ -112,6 +112,19 @@
   .feed-row a,.feed-row button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(120,243,255,.26);background:rgba(255,255,255,.04);color:var(--ink);font-weight:700}
   .feed-row a{flex:1;color:#061016;background:var(--brand)}
   .feed-row button{cursor:pointer}
+  .cli-panel{display:grid;gap:12px}
+  .cli-form{display:flex;align-items:center;gap:8px;min-height:46px;border:1px solid rgba(120,243,255,.28);border-radius:8px;background:#050d13;padding:0 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .cli-prompt{color:var(--green);font-weight:900}
+  .cli-form input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;font-size:12px}
+  .cli-form input::placeholder{color:#5a7480}
+  .cli-run{min-height:30px;border:1px solid rgba(120,243,255,.32);border-radius:6px;background:rgba(120,243,255,.12);color:var(--ink);cursor:pointer;font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:0 10px}
+  .cli-run:hover{border-color:rgba(120,243,255,.68);background:rgba(120,243,255,.20)}
+  .cli-log{min-height:78px;max-height:132px;overflow:auto;border:1px solid rgba(120,243,255,.12);border-radius:8px;background:rgba(0,0,0,.18);padding:10px 12px;color:var(--mut);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.45}
+  .cli-log p{margin:0 0 5px}
+  .cli-log b{color:var(--brand)}
+  .cli-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .cli-chip{min-height:30px;border:1px solid rgba(120,243,255,.20);border-radius:999px;background:rgba(120,243,255,.06);color:var(--mut);padding:0 10px;cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.04em}
+  .cli-chip:hover{border-color:rgba(120,243,255,.55);color:var(--ink)}
   .timeline{display:grid;gap:10px}
   .event{display:grid;grid-template-columns:72px 1fr;gap:12px;padding-top:10px;border-top:1px solid var(--line)}
   .event span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--accent)}
@@ -125,7 +138,7 @@
     .sim-grid{grid-template-columns:1fr}.stage{min-height:720px}.robot{width:min(430px,84vw);height:600px}.stat-grid{grid-template-columns:repeat(4,1fr)}
   }
   @media (max-width:640px){
-    .wrap{width:min(100% - 28px,1180px)}header .wrap{min-height:66px}nav{display:none}.simulator{padding-top:20px}.stage{min-height:700px}.robot-area{inset:78px 0 112px}.robot{width:min(330px,88vw);height:500px;min-height:500px}.head{height:86px}.neck{top:82px;height:42px}.torso{top:120px;height:226px}.chest{left:28%;top:24px;width:44%}.arm{top:150px;width:62px;height:182px}.arm::after{left:13px;width:36px;height:48px}.hip{top:332px}.leg{top:392px;width:64px;height:86px}.floor-label{font-size:11px}.stat-grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.event{grid-template-columns:1fr;gap:4px}
+    .wrap{width:min(100% - 28px,1180px)}header .wrap{min-height:66px}nav{display:none}.simulator{padding-top:20px}.stage{min-height:700px}.robot-area{inset:78px 0 112px}.robot{width:min(330px,88vw);height:500px;min-height:500px}.head{height:86px}.neck{top:82px;height:42px}.torso{top:120px;height:226px}.chest{left:28%;top:24px;width:44%}.arm{top:150px;width:62px;height:182px}.arm::after{left:13px;width:36px;height:48px}.hip{top:332px}.leg{top:392px;width:64px;height:86px}.floor-label{font-size:11px}.stat-grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.feed-row{flex-direction:column}.feed-row a,.feed-row button{width:100%}.event{grid-template-columns:1fr;gap:4px}
   }
 </style>
 </head>
@@ -205,6 +218,26 @@
           </div>
         </div>
 
+        <div class="panel cli-panel">
+          <h2>Admira.tv CLI</h2>
+          <form class="cli-form" id="admira-cli" autocomplete="off">
+            <span class="cli-prompt">adtv&gt;</span>
+            <input id="admira-cli-input" type="text" placeholder="/tag robots · /medio video · /slot tarde · /reload" spellcheck="false" aria-label="Admira.tv CLI command">
+            <button class="cli-run" type="submit">Run</button>
+          </form>
+          <div class="cli-chips" aria-label="Admira.tv quick commands">
+            <button class="cli-chip" type="button" data-cli="/vertical">/vertical</button>
+            <button class="cli-chip" type="button" data-cli="/medio video">/medio video</button>
+            <button class="cli-chip" type="button" data-cli="/tag robots">/tag robots</button>
+            <button class="cli-chip" type="button" data-cli="/slot auto">/slot auto</button>
+            <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
+          </div>
+          <div class="cli-log" id="admira-cli-log" aria-live="polite">
+            <p><b>ready</b> vertical lock active · format=9:16</p>
+            <p>commands: /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+          </div>
+        </div>
+
         <div class="panel timeline" aria-label="Signal timeline">
           <h2>Signal path</h2>
           <div class="event"><span>01 · FEED</span><p>Admira.tv renders a clean vertical playlist for the chest display.</p></div>
@@ -235,7 +268,44 @@
   const modeStat = document.getElementById('mode-stat');
   const missionLabel = document.getElementById('mission-label');
   const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
-  const verticalFeedUrl = 'https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1';
+  const cliForm = document.getElementById('admira-cli');
+  const cliInput = document.getElementById('admira-cli-input');
+  const cliLog = document.getElementById('admira-cli-log');
+  const feedBase = 'https://admira.tv/canal.html';
+  const defaultFeedParams = {
+    clean: '1',
+    screen: 'xpaceos-robot-chest',
+    circuit: 'xpaceos-robot',
+    tag: 'vertical',
+    format: '9:16',
+    slot: 'auto',
+    refresh: '20',
+    max: '24',
+    muted: '1'
+  };
+  const feedParams = Object.assign({}, defaultFeedParams);
+
+  function verticalFeedUrl(extra){
+    const params = Object.assign({}, feedParams, extra || {});
+    params.clean = '1';
+    params.format = '9:16';
+    const qs = new URLSearchParams(params);
+    return feedBase + '?' + qs.toString();
+  }
+
+  function cliWrite(kind, text){
+    const p = document.createElement('p');
+    p.innerHTML = '<b>' + kind + '</b> ' + text.replace(/[<>]/g, '');
+    cliLog.prepend(p);
+    while (cliLog.children.length > 8) cliLog.lastElementChild.remove();
+  }
+
+  function applyFeed(reason){
+    chest.classList.remove('screen-loaded');
+    feedState.textContent = 'feed loading';
+    iframe.src = verticalFeedUrl({ robot: Date.now() });
+    cliWrite('feed', reason + ' · format=9:16');
+  }
 
   const modes = {
     patrol: { label: 'Patrol', mission: 'mission · retail media patrol', className: 'walk', screen: 'Live' },
@@ -262,9 +332,104 @@
   });
 
   document.getElementById('reload-feed').addEventListener('click', () => {
-    chest.classList.remove('screen-loaded');
-    feedState.textContent = 'feed loading';
-    iframe.src = verticalFeedUrl + '&robot=' + Date.now();
+    applyFeed('reload');
+  });
+
+  function runCli(raw){
+    const value = raw.trim();
+    if (!value) return;
+    const input = value.replace(/^\//, '');
+    const parts = input.split(/\s+/);
+    const cmd = (parts.shift() || '').toLowerCase();
+    const rest = parts.join(' ').trim();
+    cliWrite('cmd', '/' + input);
+
+    if (cmd === 'help' || cmd === '?') {
+      cliWrite('help', '/vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      return;
+    }
+    if (cmd === 'reload') { applyFeed('reload'); return; }
+    if (cmd === 'vertical' || cmd === 'portrait') {
+      feedParams.tag = 'vertical';
+      feedParams.format = '9:16';
+      applyFeed('vertical lock');
+      return;
+    }
+    if (cmd === 'tag') {
+      feedParams.tag = (rest || 'vertical').toLowerCase();
+      applyFeed('tag=' + feedParams.tag);
+      return;
+    }
+    if (cmd === 'medio' || cmd === 'media') {
+      const medio = (rest || 'all').toLowerCase();
+      if (!['all','video','image','audio'].includes(medio)) { cliWrite('err', 'medio must be all, video, image or audio'); return; }
+      feedParams.medio = medio;
+      applyFeed('medio=' + medio);
+      return;
+    }
+    if (cmd === 'category' || cmd === 'categoria') {
+      feedParams.category = (rest || 'all').toLowerCase();
+      applyFeed('category=' + feedParams.category);
+      return;
+    }
+    if (cmd === 'slot') {
+      const slot = (rest || 'auto').toLowerCase();
+      if (!['auto','all','manana','mediodia','tarde','noche'].includes(slot)) { cliWrite('err', 'slot must be auto, all, manana, mediodia, tarde or noche'); return; }
+      feedParams.slot = slot;
+      applyFeed('slot=' + slot);
+      return;
+    }
+    if (cmd === 'max') {
+      const max = Math.max(1, Math.min(200, parseInt(rest, 10) || 24));
+      feedParams.max = String(max);
+      applyFeed('max=' + max);
+      return;
+    }
+    if (cmd === 'refresh') {
+      const refresh = Math.max(10, Math.min(900, parseInt(rest, 10) || 20));
+      feedParams.refresh = String(refresh);
+      applyFeed('refresh=' + refresh + 's');
+      return;
+    }
+    if (cmd === 'mute' || cmd === 'muted') {
+      const muted = rest === '0' ? '0' : '1';
+      feedParams.muted = muted;
+      applyFeed('muted=' + muted);
+      return;
+    }
+    if (cmd === 'screen') {
+      feedParams.screen = rest || defaultFeedParams.screen;
+      applyFeed('screen=' + feedParams.screen);
+      return;
+    }
+    if (cmd === 'reset' || cmd === 'clear') {
+      Object.keys(feedParams).forEach((key) => delete feedParams[key]);
+      Object.assign(feedParams, defaultFeedParams);
+      applyFeed('reset');
+      return;
+    }
+    if (cmd === 'direct' || cmd === 'directo' || cmd === 'play') {
+      cliWrite('lock', '/' + cmd + ' disabled here: robot chest accepts vertical 9:16 channel content only');
+      return;
+    }
+    cliWrite('err', 'unknown command /' + cmd + ' · try /help');
+  }
+
+  cliForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    runCli(cliInput.value);
+    cliInput.value = '';
+  });
+
+  cliInput.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    runCli(cliInput.value);
+    cliInput.value = '';
+  });
+
+  document.querySelectorAll('[data-cli]').forEach((button) => {
+    button.addEventListener('click', () => runCli(button.dataset.cli));
   });
 
   window.setTimeout(() => {
