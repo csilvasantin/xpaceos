@@ -126,6 +126,11 @@
   .cli-chips{display:flex;flex-wrap:wrap;gap:8px}
   .cli-chip{min-height:30px;border:1px solid rgba(120,243,255,.20);border-radius:999px;background:rgba(120,243,255,.06);color:var(--mut);padding:0 10px;cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.04em}
   .cli-chip:hover{border-color:rgba(120,243,255,.55);color:var(--ink)}
+  .emission-modes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .emission-mode{min-height:36px;border:1px solid rgba(120,243,255,.22);border-radius:8px;background:rgba(120,243,255,.06);color:var(--mut);cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+  .emission-mode:hover{border-color:rgba(120,243,255,.62);color:var(--ink)}
+  .emission-mode.active{border-color:rgba(255,216,107,.78);background:rgba(255,216,107,.12);color:var(--gold)}
+  @media (max-width:560px){.emission-modes{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .timeline{display:grid;gap:10px}
   .event{display:grid;grid-template-columns:72px 1fr;gap:12px;padding-top:10px;border-top:1px solid var(--line)}
   .event span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--accent)}
@@ -172,14 +177,14 @@
           <div class="robot" id="robot" role="img" aria-label="Robot with a chest screen fed by Admira.tv">
             <img class="robot-photo" src="/assets/xpaceos-robot-chest-photo.png?v=transparent" alt="">
             <div class="chest" id="chest">
-              <div class="screen-fallback"><div><small>Admira.tv vertical feed</small><b>9:16</b></div></div>
-              <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
+              <div class="screen-fallback"><div><small>Admira.tv local feed</small><b>DOOH</b></div></div>
+              <iframe id="admira-feed" title="Admira.tv digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio&mode=local" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
               <video id="robot-camera" class="camera-view" autoplay playsinline muted></video>
               <div class="screen-glass" aria-hidden="true"></div>
             </div>
           </div>
         </div>
-        <div class="floor-label"><span id="surface-label">Admira.tv vertical chest screen · 9:16 mobile DOOH</span><b id="feed-state">feed loading</b></div>
+        <div class="floor-label"><span id="surface-label">Admira.tv local chest screen · local decision</span><b id="feed-state">feed loading</b></div>
       </div>
 
       <aside class="console" aria-label="Robot console">
@@ -201,29 +206,32 @@
             <button class="mode" type="button" data-mode="standby">Standby</button>
           </div>
           <div class="feed-row">
-            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio" target="_blank" rel="noopener">Open vertical feed</a>
+            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio&mode=local" target="_blank" rel="noopener">Open feed</a>
             <button type="button" id="reload-feed">Reload feed</button>
           </div>
         </div>
 
         <div class="panel cli-panel">
-          <h2>Admira.tv CLI</h2>
+          <h2>Emission Mode</h2>
+          <div class="emission-modes" aria-label="Emission Mode">
+            <button class="emission-mode active" type="button" data-emission="local">Local</button>
+            <button class="emission-mode" type="button" data-emission="sync">Sincro</button>
+            <button class="emission-mode" type="button" data-emission="conditional">Condicional</button>
+            <button class="emission-mode" type="button" data-emission="portrait">Portrait</button>
+            <button class="emission-mode" type="button" data-emission="landscape">Landscape</button>
+          </div>
           <form class="cli-form" id="admira-cli" autocomplete="off">
             <span class="cli-prompt">adtv&gt;</span>
             <input id="admira-cli-input" type="text" placeholder="/tag robots · /medio video · /slot tarde · /reload" spellcheck="false" aria-label="Admira.tv CLI command">
             <button class="cli-run" type="submit">Run</button>
           </form>
           <div class="cli-chips" aria-label="Admira.tv quick commands">
-            <button class="cli-chip" type="button" data-cli="/vertical">/vertical</button>
             <button class="cli-chip" type="button" data-cli="/medio video">/medio video</button>
             <button class="cli-chip" type="button" data-cli="/tag robots">/tag robots</button>
             <button class="cli-chip" type="button" data-cli="/slot auto">/slot auto</button>
             <button class="cli-chip" type="button" data-cli="/playnext">/playnext</button>
             <button class="cli-chip" type="button" data-cli="/playtagmusic">/playtagmusic</button>
             <button class="cli-chip" type="button" data-cli="/playtagtecnologia">/playtagtecnologia</button>
-            <button class="cli-chip" type="button" data-cli="/admiraTVsincro">/admiraTVsincro</button>
-            <button class="cli-chip" type="button" data-cli="/admiraTVcondicional">/admiraTVcondicional</button>
-            <button class="cli-chip" type="button" data-cli="/admiraTVlocal">/admiraTVlocal</button>
             <button class="cli-chip" type="button" data-cli="/audioon">/audioon</button>
             <button class="cli-chip" type="button" data-cli="/audiooff">/audiooff</button>
             <button class="cli-chip" type="button" data-cli="/pantalla off">/pantalla off</button>
@@ -232,8 +240,8 @@
             <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
-            <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /pantalla off, /pantalla on, /admiraTVsincro, /admiraTVcondicional, /admiraTVlocal, /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p><b>ready</b> emission mode · local</p>
+            <p>modes: Local, Sincro, Condicional, Portrait, Landscape · CLI commands still available below.</p>
           </div>
         </div>
 
@@ -270,6 +278,7 @@
   const modeStat = document.getElementById('mode-stat');
   const missionLabel = document.getElementById('mission-label');
   const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
+  const emissionButtons = Array.from(document.querySelectorAll('[data-emission]'));
   const cliForm = document.getElementById('admira-cli');
   const cliInput = document.getElementById('admira-cli-input');
   const cliLog = document.getElementById('admira-cli-log');
@@ -279,8 +288,6 @@
     clean: '1',
     screen: 'xpaceos-robot-chest',
     circuit: 'xpaceos-robot',
-    tag: 'vertical',
-    format: '9:16',
     slot: 'auto',
     refresh: '20',
     max: '24',
@@ -297,7 +304,17 @@
   function modeSurfaceLabel(){
     if (admiraMode === 'sync') return 'Admira.tv synchronized chest screen · global feed';
     if (admiraMode === 'conditional') return 'Admira.tv conditional chest screen · XPL';
-    return 'Admira.tv vertical chest screen · 9:16 mobile DOOH';
+    if (admiraMode === 'portrait') return 'Admira.tv portrait chest screen · 9:16';
+    if (admiraMode === 'landscape') return 'Admira.tv landscape chest screen · 16:9';
+    return 'Admira.tv local chest screen · local decision';
+  }
+
+  function modeFeedText(){
+    if (admiraMode === 'sync') return 'sincro feed live';
+    if (admiraMode === 'conditional') return 'conditional feed live';
+    if (admiraMode === 'portrait') return 'portrait feed live';
+    if (admiraMode === 'landscape') return 'landscape feed live';
+    return 'local feed live';
   }
 
   function admiraFeedUrl(extra){
@@ -316,10 +333,18 @@
       delete params.format;
       params.mode = 'conditional';
       params.xpl = 'https://xpl.xpaceos.com/admira-tv.json';
+    } else if (admiraMode === 'portrait') {
+      params.mode = 'local';
+      params.tag = 'vertical';
+      params.format = '9:16';
+    } else if (admiraMode === 'landscape') {
+      params.mode = 'local';
+      params.tag = 'horizontal';
+      params.format = '16:9';
     } else {
       params.mode = 'local';
-      params.format = '9:16';
-      if (!params.tag) params.tag = 'vertical';
+      delete params.tag;
+      delete params.format;
     }
     const qs = new URLSearchParams(params);
     return feedBase + '?' + qs.toString();
@@ -377,20 +402,25 @@
     const nextFeed = admiraFeedUrl({ robot: Date.now() });
     iframe.src = nextFeed;
     openFeed.href = nextFeed;
-    const modeLabel = admiraMode === 'sync' ? 'admiraTVsincro · global' : admiraMode === 'conditional' ? 'admiraTVcondicional · XPL' : 'admiraTVlocal · format=9:16';
+    const modeLabel = admiraMode === 'sync' ? 'Sincro · global' : admiraMode === 'conditional' ? 'Condicional · XPL' : admiraMode === 'portrait' ? 'Portrait · 9:16' : admiraMode === 'landscape' ? 'Landscape · 16:9' : 'Local · local decision';
     surfaceLabel.textContent = modeSurfaceLabel();
     sourceStat.textContent = admiraMode === 'conditional' ? 'XPL' : 'Admira.tv';
     cliWrite('feed', reason + ' · ' + modeLabel);
   }
 
+  function syncEmissionButtons(){
+    emissionButtons.forEach((button) => button.classList.toggle('active', button.dataset.emission === admiraMode));
+  }
+
   function setAdmiraMode(mode){
-    admiraMode = mode === 'sync' ? 'sync' : mode === 'conditional' ? 'conditional' : 'local';
+    admiraMode = ['sync','conditional','portrait','landscape'].includes(mode) ? mode : 'local';
     if (admiraMode === 'local') {
       Object.keys(feedParams).forEach((key) => delete feedParams[key]);
       Object.assign(feedParams, defaultFeedParams);
     }
+    syncEmissionButtons();
     screenStat.textContent = 'Live';
-    applyFeed(admiraMode === 'sync' ? '/admiraTVsincro' : admiraMode === 'conditional' ? '/admiraTVcondicional' : '/admiraTVlocal');
+    applyFeed(admiraMode === 'sync' ? 'Emission Mode · Sincro' : admiraMode === 'conditional' ? 'Emission Mode · Condicional' : admiraMode === 'portrait' ? 'Emission Mode · Portrait' : admiraMode === 'landscape' ? 'Emission Mode · Landscape' : 'Emission Mode · Local');
   }
 
   function applyPlayTag(tag, raw){
@@ -399,6 +429,8 @@
       cliWrite('err', 'usage: /playtagmusic or /playtag <tag>');
       return;
     }
+    admiraMode = 'portrait';
+    syncEmissionButtons();
     feedParams.tag = clean;
     feedParams.format = '9:16';
     cliWrite('play', '/' + raw + ' · tag=' + clean);
@@ -485,7 +517,7 @@
       cliWrite('ack', '/playcamera · camera live');
     }catch(e){
       stopCamera(false);
-      feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
+      feedState.textContent = modeFeedText();
       screenStat.textContent = 'Live';
       cliWrite('err', 'camera blocked or unavailable');
     }
@@ -509,18 +541,21 @@
   modeButtons.forEach((button) => {
     button.addEventListener('click', () => setMode(button.dataset.mode));
   });
+  emissionButtons.forEach((button) => {
+    button.addEventListener('click', () => setAdmiraMode(button.dataset.emission));
+  });
 
   iframe.addEventListener('load', () => {
     if (chest.classList.contains('camera-active')) return;
     chest.classList.add('screen-loaded');
-    feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
+    feedState.textContent = modeFeedText();
   });
 
   function revealFeed(){
     if (chest.classList.contains('camera-active')) return;
     if (chest.classList.contains('screen-loaded')) return;
     chest.classList.add('screen-loaded');
-    feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
+    feedState.textContent = modeFeedText();
   }
 
   document.getElementById('reload-feed').addEventListener('click', () => {
@@ -537,7 +572,7 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/pantalla off|on /admiraTVsincro /admiraTVcondicional /admiraTVlocal /audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', 'Emission Mode: Local, Sincro, Condicional, Portrait, Landscape · /pantalla off|on /audioon /audiooff /playtagmusic /playcamera /playnext /tag /medio /slot /reload');
       return;
     }
     if ((cmd === 'pantalla' || cmd === 'screen') && ['off','on'].includes(rest.toLowerCase())) {
@@ -571,7 +606,7 @@
     }
     if (cmd === 'stopcamera' || cmd === 'camerastop') {
       stopCamera(true);
-      feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
+      feedState.textContent = modeFeedText();
       screenStat.textContent = 'Live';
       return;
     }
@@ -581,9 +616,11 @@
     }
     if (cmd === 'reload') { applyFeed('reload'); return; }
     if (cmd === 'vertical' || cmd === 'portrait') {
-      feedParams.tag = 'vertical';
-      feedParams.format = '9:16';
-      applyFeed('vertical lock');
+      setAdmiraMode('portrait');
+      return;
+    }
+    if (cmd === 'horizontal' || cmd === 'landscape') {
+      setAdmiraMode('landscape');
       return;
     }
     if (cmd === 'tag') {
@@ -647,11 +684,13 @@
     if (cmd === 'reset' || cmd === 'clear') {
       Object.keys(feedParams).forEach((key) => delete feedParams[key]);
       Object.assign(feedParams, defaultFeedParams);
+      admiraMode = 'local';
+      syncEmissionButtons();
       applyFeed('reset');
       return;
     }
     if (cmd === 'direct' || cmd === 'directo') {
-      cliWrite('lock', '/' + cmd + ' disabled here: robot chest accepts vertical 9:16 channel content only');
+      cliWrite('lock', '/' + cmd + ' disabled here: use Emission Mode or Admira.tv CLI commands');
       return;
     }
     cliWrite('err', 'unknown command /' + cmd + ' · try /help');
