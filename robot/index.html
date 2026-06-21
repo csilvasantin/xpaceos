@@ -331,6 +331,12 @@
     feedState.textContent = 'vertical feed live';
   });
 
+  function revealFeed(){
+    if (chest.classList.contains('screen-loaded')) return;
+    chest.classList.add('screen-loaded');
+    feedState.textContent = 'vertical feed live';
+  }
+
   document.getElementById('reload-feed').addEventListener('click', () => {
     applyFeed('reload');
   });
@@ -432,12 +438,7 @@
     button.addEventListener('click', () => runCli(button.dataset.cli));
   });
 
-  window.setTimeout(() => {
-    if (!chest.classList.contains('screen-loaded')) {
-      feedState.textContent = 'fallback active';
-      screenStat.textContent = 'Fallback';
-    }
-  }, 4500);
+  window.setTimeout(revealFeed, 1500);
 
   setMode('patrol');
 </script>
