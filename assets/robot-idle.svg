@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 640" width="520" height="640" role="img" aria-label="Robot XpaceOS en reposo">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#0b1622"/>
+      <stop offset="100%" stop-color="#050a11"/>
+    </radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="62%" stop-color="#eef3f6"/>
+      <stop offset="100%" stop-color="#d7e0e6"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfd9de"/>
+      <stop offset="100%" stop-color="#9fb0b8"/>
+    </linearGradient>
+    <radialGradient id="screen" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#0c3b3b"/>
+      <stop offset="100%" stop-color="#05201f"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <rect width="520" height="640" fill="url(#bg)"/>
+  <!-- halo de reposo -->
+  <ellipse cx="260" cy="300" rx="190" ry="220" fill="#7dffd0" opacity="0.06" filter="url(#soft)"/>
+  <!-- sombra suelo -->
+  <ellipse cx="260" cy="600" rx="140" ry="26" fill="#000" opacity="0.35" filter="url(#soft)"/>
+
+  <!-- brazos hinchables -->
+  <path d="M140 300 q-58 30 -54 132 q2 44 30 58 q26 12 40 -16 q-22 -86 4 -176 z" fill="url(#body)" stroke="#c2ccd2" stroke-width="2"/>
+  <path d="M380 300 q58 30 54 132 q-2 44 -30 58 q-26 12 -40 -16 q22 -86 -4 -176 z" fill="url(#body)" stroke="#c2ccd2" stroke-width="2"/>
+
+  <!-- piernas -->
+  <rect x="206" y="468" width="44" height="120" rx="22" fill="url(#body)" stroke="#c2ccd2" stroke-width="2"/>
+  <rect x="270" y="468" width="44" height="120" rx="22" fill="url(#body)" stroke="#c2ccd2" stroke-width="2"/>
+
+  <!-- cuerpo redondeado -->
+  <path d="M260 188 C150 188 116 290 120 372 C124 456 168 500 260 500 C352 500 396 456 400 372 C404 290 370 188 260 188 Z" fill="url(#body)" stroke="#c2ccd2" stroke-width="2.5"/>
+
+  <!-- pantalla del pecho en standby (apagada, con icono de reposo) -->
+  <rect x="206" y="300" width="108" height="150" rx="20" fill="url(#screen)" stroke="#0b3a39" stroke-width="3"/>
+  <!-- icono standby: media luna (reposo) -->
+  <path d="M268 348 a30 30 0 1 0 0 60 a24 24 0 0 1 0 -60 z" fill="#7dffd0" opacity="0.85"/>
+  <!-- z z z -->
+  <g fill="#7dffd0" opacity="0.7" font-family="ui-monospace, Menlo, monospace" font-weight="700">
+    <text x="296" y="330" font-size="15">z</text>
+    <text x="308" y="318" font-size="12">z</text>
+  </g>
+
+  <!-- cuello -->
+  <rect x="238" y="150" width="44" height="34" rx="14" fill="url(#metal)"/>
+
+  <!-- cabeza -->
+  <ellipse cx="260" cy="116" rx="92" ry="78" fill="url(#body)" stroke="#c2ccd2" stroke-width="2.5"/>
+  <!-- visor cara -->
+  <rect x="196" y="92" width="128" height="50" rx="25" fill="#0a1117"/>
+  <!-- ojos en reposo (curvas, dormido) -->
+  <path d="M222 116 q14 14 28 0" fill="none" stroke="#7dffd0" stroke-width="6" stroke-linecap="round"/>
+  <path d="M270 116 q14 14 28 0" fill="none" stroke="#7dffd0" stroke-width="6" stroke-linecap="round"/>
+  <!-- antena -->
+  <line x1="260" y1="38" x2="260" y2="20" stroke="#9fb0b8" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="260" cy="14" r="8" fill="#7dffd0"/>
+</svg>
