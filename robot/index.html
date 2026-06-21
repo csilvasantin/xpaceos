@@ -124,9 +124,12 @@
   .cli-log{min-height:78px;max-height:132px;overflow:auto;border:1px solid rgba(120,243,255,.12);border-radius:8px;background:rgba(0,0,0,.18);padding:10px 12px;color:var(--mut);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.45}
   .cli-log p{margin:0 0 5px}
   .cli-log b{color:var(--brand)}
-  .cli-chips{display:flex;flex-wrap:wrap;gap:8px}
-  .cli-chip{min-height:30px;border:1px solid rgba(120,243,255,.20);border-radius:999px;background:rgba(120,243,255,.06);color:var(--mut);padding:0 10px;cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.04em}
-  .cli-chip:hover{border-color:rgba(120,243,255,.55);color:var(--ink)}
+  .emission-controller{display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 0 2px}
+  .emit-btn{width:40px;height:40px;border-radius:50%;border:1px solid rgba(120,243,255,.38);background:rgba(5,13,19,.78);color:var(--ink);cursor:pointer;display:grid;place-items:center;font-size:15px;line-height:1;box-shadow:inset 0 0 16px rgba(120,243,255,.05);transition:border-color .16s ease,background .16s ease,transform .1s ease,color .16s ease}
+  .emit-btn:hover{border-color:rgba(120,243,255,.74);background:rgba(120,243,255,.13);color:var(--brand)}
+  .emit-btn:active{transform:scale(.92)}
+  .emit-btn.audio-live{border-color:rgba(121,255,178,.68);color:var(--green);box-shadow:0 0 14px rgba(121,255,178,.15),inset 0 0 16px rgba(121,255,178,.08)}
+  .emit-btn[data-player-command="/playnext"],.emit-btn[data-player-command="/playprevious"]{width:44px;height:44px}
   .emission-modes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
   .emission-mode{min-height:36px;border:1px solid rgba(120,243,255,.22);border-radius:8px;background:rgba(120,243,255,.06);color:var(--mut);cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;padding:0 4px}
   .emission-mode[data-emission="portrait"],.emission-mode[data-emission="landscape"]{font-size:9px;letter-spacing:0}
@@ -227,19 +230,12 @@
             <input id="admira-cli-input" type="text" placeholder="/tag robots · /medio video · /slot tarde · /reload" spellcheck="false" aria-label="Admira.tv CLI command">
             <button class="cli-run" type="submit">Run</button>
           </form>
-          <div class="cli-chips" aria-label="Admira.tv quick commands">
-            <button class="cli-chip" type="button" data-cli="/medio video">/medio video</button>
-            <button class="cli-chip" type="button" data-cli="/tag robots">/tag robots</button>
-            <button class="cli-chip" type="button" data-cli="/slot auto">/slot auto</button>
-            <button class="cli-chip" type="button" data-cli="/playnext">/playnext</button>
-            <button class="cli-chip" type="button" data-cli="/playtagmusic">/playtagmusic</button>
-            <button class="cli-chip" type="button" data-cli="/playtagtecnologia">/playtagtecnologia</button>
-            <button class="cli-chip" type="button" data-cli="/audioon">/audioon</button>
-            <button class="cli-chip" type="button" data-cli="/audiooff">/audiooff</button>
-            <button class="cli-chip" type="button" data-cli="/pantalla off">/pantalla off</button>
-            <button class="cli-chip" type="button" data-cli="/pantalla on">/pantalla on</button>
-            <button class="cli-chip" type="button" data-cli="/playcamera">/playcamera</button>
-            <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
+          <div class="emission-controller" aria-label="Emission controller">
+            <button class="emit-btn" type="button" data-player-command="/playfirst" title="Primero" aria-label="Primero">⏮</button>
+            <button class="emit-btn" type="button" data-player-command="/playprevious" title="Anterior" aria-label="Anterior">◀</button>
+            <button class="emit-btn" id="audio-toggle" type="button" data-audio-toggle title="Mute" aria-label="Mute">🔇</button>
+            <button class="emit-btn" type="button" data-player-command="/playnext" title="Siguiente" aria-label="Siguiente">▶</button>
+            <button class="emit-btn" type="button" data-player-command="/playlast" title="Último" aria-label="Último">⏭</button>
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> emission mode · local</p>
@@ -282,6 +278,7 @@
   const missionLabel = document.getElementById('mission-label');
   const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
   const emissionButtons = Array.from(document.querySelectorAll('[data-emission]'));
+  const audioToggle = document.getElementById('audio-toggle');
   const cliForm = document.getElementById('admira-cli');
   const cliInput = document.getElementById('admira-cli-input');
   const cliLog = document.getElementById('admira-cli-log');
@@ -409,6 +406,7 @@
     stopCamera(false);
     chest.classList.remove('screen-loaded');
     feedState.textContent = 'feed loading';
+    syncAudioControl();
     const nextFeed = admiraFeedUrl({ robot: Date.now() });
     iframe.src = nextFeed;
     openFeed.href = nextFeed;
@@ -454,8 +452,17 @@
   function setFeedAudio(on){
     feedParams.muted = on ? '0' : '1';
     feedParams.volume = on ? '1' : '0';
+    syncAudioControl();
     cliWrite('audio', on ? 'audio on · volume=1' : 'audio off');
     applyFeed(on ? 'audio on' : 'audio off');
+  }
+
+  function syncAudioControl(){
+    const live = feedParams.muted === '0' && feedParams.volume !== '0';
+    audioToggle.classList.toggle('audio-live', live);
+    audioToggle.textContent = live ? '🔊' : '🔇';
+    audioToggle.title = live ? 'Mute' : 'Audio on';
+    audioToggle.setAttribute('aria-label', live ? 'Mute' : 'Audio on');
   }
 
   function setChestScreen(on){
@@ -558,6 +565,13 @@
   });
   emissionButtons.forEach((button) => {
     button.addEventListener('click', () => setAdmiraMode(button.dataset.emission));
+  });
+  document.querySelectorAll('[data-player-command]').forEach((button) => {
+    button.addEventListener('click', () => runCli(button.dataset.playerCommand));
+  });
+  audioToggle.addEventListener('click', () => {
+    const audioIsLive = feedParams.muted === '0' && feedParams.volume !== '0';
+    runCli(audioIsLive ? '/audiooff' : '/audioon');
   });
 
   iframe.addEventListener('load', () => {
@@ -734,10 +748,6 @@
     cliInput.value = '';
   });
 
-  document.querySelectorAll('[data-cli]').forEach((button) => {
-    button.addEventListener('click', () => runCli(button.dataset.cli));
-  });
-
   window.addEventListener('message', (event) => {
     if (event.origin !== 'https://admira.tv') return;
     const data = event.data || {};
@@ -757,6 +767,7 @@
   window.setTimeout(revealFeed, 1500);
 
   setMode('patrol');
+  syncAudioControl();
 </script>
 </body>
 </html>
