@@ -87,6 +87,7 @@
   .screen-fallback small{display:block;margin-bottom:7px;color:var(--accent);font:700 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.13em;text-transform:uppercase}
   .screen-fallback b{display:block;font-size:clamp(20px,3vw,29px);line-height:1}
   .screen-loaded .screen-fallback{display:none}
+  .screen-off .chest{opacity:0;visibility:hidden;pointer-events:none}
   .arm{top:184px;width:88px;height:242px;border-radius:48px;background:linear-gradient(150deg,#b9c9cc,#526870);box-shadow:inset 0 14px 24px rgba(255,255,255,.16);transform-origin:50% 24px}
   .arm.left{left:4%;transform:rotate(13deg)}
   .arm.right{right:4%;transform:rotate(-14deg)}
@@ -222,12 +223,14 @@
             <button class="cli-chip" type="button" data-cli="/playtagtecnologia">/playtagtecnologia</button>
             <button class="cli-chip" type="button" data-cli="/audioon">/audioon</button>
             <button class="cli-chip" type="button" data-cli="/audiooff">/audiooff</button>
+            <button class="cli-chip" type="button" data-cli="/pantalla off">/pantalla off</button>
+            <button class="cli-chip" type="button" data-cli="/pantalla on">/pantalla on</button>
             <button class="cli-chip" type="button" data-cli="/playcamera">/playcamera</button>
             <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p>commands: /pantalla off, /pantalla on, /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
           </div>
         </div>
 
@@ -285,6 +288,7 @@
   const feedParams = Object.assign({}, defaultFeedParams);
   const pendingBridge = new Map();
   let cameraStream = null;
+  let screenEnabled = true;
 
   function verticalFeedUrl(extra){
     const params = Object.assign({}, feedParams, extra || {});
@@ -336,6 +340,10 @@
   }
 
   function applyFeed(reason){
+    if (!screenEnabled) {
+      cliWrite('lock', 'pantalla off · use /pantalla on');
+      return;
+    }
     stopCamera(false);
     chest.classList.remove('screen-loaded');
     feedState.textContent = 'feed loading';
@@ -364,7 +372,31 @@
     applyFeed(on ? 'audio on' : 'audio off');
   }
 
+  function setChestScreen(on){
+    screenEnabled = !!on;
+    if (!screenEnabled) {
+      stopCamera(false);
+      robot.classList.add('screen-off');
+      screenStat.textContent = 'Off';
+      sourceStat.textContent = 'None';
+      feedState.textContent = 'screen off';
+      surfaceLabel.textContent = 'robot chest screen · off';
+      cliWrite('ack', '/pantalla off · chest screen hidden');
+      return;
+    }
+    robot.classList.remove('screen-off');
+    screenStat.textContent = 'Live';
+    sourceStat.textContent = 'Admira.tv';
+    surfaceLabel.textContent = 'Admira.tv vertical chest screen · 9:16 mobile DOOH';
+    cliWrite('ack', '/pantalla on · chest screen live');
+    applyFeed('screen on');
+  }
+
   function sendPlayerCommand(raw){
+    if (!screenEnabled) {
+      cliWrite('lock', 'pantalla off · use /pantalla on');
+      return;
+    }
     stopCamera(false);
     const requestId = 'robot-' + Date.now() + '-' + Math.random().toString(16).slice(2);
     pendingBridge.set(requestId, raw);
@@ -383,6 +415,10 @@
   }
 
   async function playCamera(){
+    if (!screenEnabled) {
+      cliWrite('lock', 'pantalla off · use /pantalla on');
+      return;
+    }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       cliWrite('err', 'camera unavailable in this browser');
       return;
@@ -461,7 +497,19 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', '/pantalla off|on /audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      return;
+    }
+    if ((cmd === 'pantalla' || cmd === 'screen') && ['off','on'].includes(rest.toLowerCase())) {
+      setChestScreen(rest.toLowerCase() === 'on');
+      return;
+    }
+    if (cmd === 'pantallaoff' || cmd === 'screenoff') {
+      setChestScreen(false);
+      return;
+    }
+    if (cmd === 'pantallaon' || cmd === 'screenon') {
+      setChestScreen(true);
       return;
     }
     if (cmd === 'audioon' || cmd === 'soundon' || cmd === 'unmute' || (cmd === 'audio' && rest !== 'off')) {
