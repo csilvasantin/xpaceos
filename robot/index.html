@@ -77,7 +77,8 @@
   .neck{left:43%;top:106px;width:14%;height:52px;border-radius:0 0 12px 12px;background:linear-gradient(180deg,#b2c1c5,#536871)}
   .torso{left:18%;top:148px;width:64%;height:286px;border:1px solid rgba(230,251,255,.22);border-radius:48px 48px 34px 34px;background:linear-gradient(145deg,#dce7e8 0%,#82979f 42%,#293b43 100%);box-shadow:inset 0 22px 38px rgba(255,255,255,.26),0 24px 64px rgba(0,0,0,.42)}
   .torso::after{content:"";position:absolute;left:50%;bottom:30px;width:44%;height:18px;transform:translateX(-50%);border-radius:18px;background:linear-gradient(90deg,transparent,var(--brand),transparent);opacity:.68}
-  .chest{position:absolute;left:40.7%;top:35.1%;width:17.5%;aspect-ratio:9/16;border:2px solid rgba(120,243,255,.72);border-radius:8%;background:#02080d;overflow:hidden;box-shadow:0 0 20px rgba(120,243,255,.30),inset 0 0 18px rgba(120,243,255,.15)}
+  .chest{position:absolute;left:40.7%;top:35.1%;width:17.5%;aspect-ratio:9/16;border:2px solid rgba(120,243,255,.72);border-radius:8%;background:#02080d;overflow:hidden;box-shadow:0 0 20px rgba(120,243,255,.30),inset 0 0 18px rgba(120,243,255,.15);transition:left .28s ease,top .28s ease,width .28s ease,aspect-ratio .28s ease,border-radius .28s ease}
+  .chest.screen-landscape{left:36%;top:42.4%;width:27%;aspect-ratio:16/9;border-radius:6%}
   .chest iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#02080d;transform:scale(1.01);transform-origin:center}
   .camera-view{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;background:#02080d;opacity:0;pointer-events:none;transition:opacity .24s ease}
   .camera-active iframe{opacity:0;pointer-events:none}
@@ -194,7 +195,7 @@
           <div class="stat-grid">
             <div class="stat"><span>Screen</span><b id="screen-stat">Live</b></div>
             <div class="stat"><span>Source</span><b id="source-stat">Admira.tv</b></div>
-            <div class="stat"><span>Format</span><b>9:16</b></div>
+            <div class="stat"><span>Format</span><b id="format-stat">Auto</b></div>
             <div class="stat"><span>Mode</span><b id="mode-stat">Patrol</b></div>
           </div>
         </div>
@@ -276,6 +277,7 @@
   const surfaceLabel = document.getElementById('surface-label');
   const screenStat = document.getElementById('screen-stat');
   const sourceStat = document.getElementById('source-stat');
+  const formatStat = document.getElementById('format-stat');
   const modeStat = document.getElementById('mode-stat');
   const missionLabel = document.getElementById('mission-label');
   const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
@@ -316,6 +318,12 @@
     if (admiraMode === 'portrait') return 'portrait feed live';
     if (admiraMode === 'landscape') return 'landscape feed live';
     return 'local feed live';
+  }
+
+  function setChestOrientation(orientation, locked){
+    const isLandscape = orientation === 'landscape';
+    chest.classList.toggle('screen-landscape', isLandscape);
+    formatStat.textContent = isLandscape ? '16:9' : (locked ? '9:16' : 'Auto');
   }
 
   function admiraFeedUrl(extra){
@@ -420,6 +428,9 @@
       Object.keys(feedParams).forEach((key) => delete feedParams[key]);
       Object.assign(feedParams, defaultFeedParams);
     }
+    if (admiraMode === 'landscape') setChestOrientation('landscape', true);
+    else if (admiraMode === 'portrait') setChestOrientation('portrait', true);
+    else setChestOrientation('portrait', false);
     syncEmissionButtons();
     screenStat.textContent = 'Live';
     applyFeed(admiraMode === 'sync' ? 'Emission Mode · Sincro' : admiraMode === 'conditional' ? 'Emission Mode · Condicional' : admiraMode === 'portrait' ? 'Emission Mode · Portrait' : admiraMode === 'landscape' ? 'Emission Mode · Landscape' : 'Emission Mode · Local');
@@ -432,6 +443,7 @@
       return;
     }
     admiraMode = 'portrait';
+    setChestOrientation('portrait', true);
     syncEmissionButtons();
     feedParams.tag = clean;
     feedParams.format = '9:16';
@@ -498,6 +510,7 @@
       return;
     }
     stopCamera(false);
+    setChestOrientation('portrait', true);
     chest.classList.add('screen-loaded', 'camera-active');
     feedState.textContent = 'camera opening';
     surfaceLabel.textContent = 'robot camera view · local device';
@@ -729,6 +742,13 @@
     if (event.origin !== 'https://admira.tv') return;
     const data = event.data || {};
     if (data.source !== 'admira-tv-canal') return;
+    if (data.event === 'media-state') {
+      if (admiraMode !== 'portrait' && admiraMode !== 'landscape') {
+        setChestOrientation(data.orientation === 'landscape' ? 'landscape' : 'portrait', false);
+      }
+      return;
+    }
+    if (!data.requestId) return;
     const raw = pendingBridge.get(data.requestId) || 'command';
     pendingBridge.delete(data.requestId);
     cliWrite(data.ok ? 'ack' : 'err', raw + ' · ' + (data.message || (data.ok ? 'ok' : 'failed')));
