@@ -303,7 +303,7 @@
   let admiraMode = 'local';
 
   function modeSurfaceLabel(){
-    if (admiraMode === 'sync') return 'Admira.tv synchronized chest screen · global feed';
+    if (admiraMode === 'sync') return 'Cloning www.admira.tv/canal · synchronized';
     if (admiraMode === 'conditional') return 'Admira.tv conditional chest screen · XPL';
     if (admiraMode === 'portrait') return 'Admira.tv portrait chest screen · 9:16';
     if (admiraMode === 'landscape') return 'Admira.tv landscape chest screen · 16:9';
@@ -327,8 +327,9 @@
       delete params.slot;
       params.mode = 'sync';
       params.sincro = '1';
-      params.max = '200';
+      params.max = '50';
       params.syncSlot = '20';
+      params.syncSource = 'canal';
     } else if (admiraMode === 'conditional') {
       delete params.tag;
       delete params.format;
@@ -403,7 +404,7 @@
     const nextFeed = admiraFeedUrl({ robot: Date.now() });
     iframe.src = nextFeed;
     openFeed.href = nextFeed;
-    const modeLabel = admiraMode === 'sync' ? 'Sincro · global' : admiraMode === 'conditional' ? 'Condicional · XPL' : admiraMode === 'portrait' ? 'Portrait · 9:16' : admiraMode === 'landscape' ? 'Landscape · 16:9' : 'Local · local decision';
+    const modeLabel = admiraMode === 'sync' ? 'Sincro · www.admira.tv/canal' : admiraMode === 'conditional' ? 'Condicional · XPL' : admiraMode === 'portrait' ? 'Portrait · 9:16' : admiraMode === 'landscape' ? 'Landscape · 16:9' : 'Local · local decision';
     surfaceLabel.textContent = modeSurfaceLabel();
     sourceStat.textContent = admiraMode === 'conditional' ? 'XPL' : 'Admira.tv';
     cliWrite('feed', reason + ' · ' + modeLabel);
