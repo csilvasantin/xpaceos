@@ -58,6 +58,17 @@
 
   var screen = { ad: null, tone: 'calm' };
 
+  // OVERRIDE de emisión (control remoto CLI): manda POR ENCIMA de las reglas
+  // durante 'until'. ad:'' = forzar apagado · ad:null = no tocar · auto = soltar.
+  var override = { ad: null, tone: null, until: 0 };
+  function applyOverride() {
+    if (override.until && Date.now() < override.until) {
+      if (override.ad !== null) screen.ad = override.ad || null;
+      if (override.tone) screen.tone = override.tone;
+    } else if (override.until) { override.until = 0; override.ad = null; override.tone = null; }
+  }
+  function overrideMs() { return Math.max(0, override.until - Date.now()); }
+
   var world = {
     fact: function (id) {
       var g = window.G || {};
@@ -353,6 +364,7 @@
     gemeloDayHooks();
     screen.ad = null; // se "apaga" si ninguna regla 'while' lo pone
     engine.tick();
+    applyOverride();  // el control remoto (CLI) manda por encima de las reglas
     renderOverlay();
     positionSignage();
     publishState();
@@ -386,8 +398,36 @@
       var t = String(text || '').trim();
       if (/^\/pantallacondicional\b/i.test(t)) { handlePantalla(t); return Promise.resolve('xpl'); }
       if (/^\/(condicional|condicionados|xpl)\b/i.test(t)) { handleCmd(t); return Promise.resolve('xpl'); }
+      if (/^\/(show|ad|anuncia|tone|tono|clear|apaga|auto|release|libre|weather|clima)\b/i.test(t)) {
+        if (handleEmit(t)) return Promise.resolve('xpl-emit');
+      }
       return prev.apply(this, arguments);
     };
+  }
+  // Control remoto de EMISIÓN (override sobre las reglas). Devuelve true si lo reconoció.
+  function handleEmit(t) {
+    var p = t.trim().replace(/^\//, '').split(/\s+/);
+    var cmd = (p[0] || '').toLowerCase(), arg = (p[1] || '').toLowerCase();
+    var SEC = 120;  // el override dura 2 min y luego vuelve a las reglas
+    if (cmd === 'show' || cmd === 'ad' || cmd === 'anuncia') {
+      if (!window.XPL.byId(window.XPL.ADS, arg)) return false;   // creatividad válida
+      override.ad = arg; override.until = Date.now() + SEC * 1000; screen.ad = arg; return true;
+    }
+    if (cmd === 'tone' || cmd === 'tono') {
+      if (['calm', 'hype', 'lux'].indexOf(arg) < 0) return false;
+      override.tone = arg; override.until = Date.now() + SEC * 1000; screen.tone = arg; return true;
+    }
+    if (cmd === 'clear' || cmd === 'apaga') {
+      override.ad = ''; override.tone = null; override.until = Date.now() + SEC * 1000; screen.ad = null; return true;
+    }
+    if (cmd === 'auto' || cmd === 'release' || cmd === 'libre') {
+      override.until = 0; override.ad = null; override.tone = null; return true;
+    }
+    if (cmd === 'weather' || cmd === 'clima') {
+      if (window.G) window.G.weather = { type: arg === 'sun' ? 'sun' : arg, timer: 600 };
+      return true;
+    }
+    return false;
   }
   function handleCmd(t) {
     var arg = (t.split(/\s+/)[1] || 'toggle').toLowerCase();

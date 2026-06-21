@@ -169,8 +169,23 @@
       </div>
 
       <div class="card" style="margin-top:14px">
+        <h3>🎮 CLI de emisión · control remoto</h3>
+        <p class="muted" style="margin-top:0">Como el CLI de admira.tv: escribe un comando y se envía a la pantalla destino por el store (el gemelo lo ejecuta en ≤3s). Manda <b>por encima de las reglas</b> durante 2 min; <b>/auto</b> lo libera.</p>
+        <div class="row" style="gap:8px;align-items:center">
+          <label class="muted" style="font-size:12px">📺 pantalla</label>
+          <input id="cli-screen" type="text" placeholder="xtore-inicial" style="font-family:var(--mono);padding:6px 9px;min-width:170px">
+        </div>
+        <form id="cli-form" autocomplete="off" style="display:flex;align-items:center;gap:7px;margin-top:8px;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:rgba(0,0,0,.2)">
+          <span style="color:var(--acc);font-family:var(--mono)">›</span>
+          <input id="cli-in" type="text" spellcheck="false" placeholder="/show icecream · /tone hype · /clear · /auto · /weather sun" style="flex:1;background:transparent;border:0;outline:0;color:var(--ink);font-family:var(--mono);font-size:13px">
+        </form>
+        <div class="muted" id="cli-msg" style="margin-top:8px;font-family:var(--mono);font-size:12px;min-height:16px"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
         <h3>Comandos CLI (chat del gemelo · Telegram · StreamDeck)</h3>
         <div class="cli">
+          <b>/show</b> <span>&lt;creatividad&gt;</span> · <b>/tone</b> <span>calm|hype|lux</span> · <b>/clear</b> · <b>/auto</b> <span>(soltar)</span> · <b>/weather</b> <span>sun|rain|snow</span> &nbsp;<span>— emisión (override)</span><br>
           <b>/condicional</b> <span>on | off | toggle | reload | status</span> &nbsp;<span>— la pantalla condicional</span><br>
           <b>/ifthendothat</b> <span>on | off | toggle</span> &nbsp;<span>— el compositor IF·THEN·DO THAT</span>
         </div>
@@ -222,6 +237,32 @@ async function boCmd(screen, text){
     const d=await r.json(); boMsg(r.ok&&!d.error ? ('→ «'+text+'» enviado a '+screen) : (d.error||'error'), !(r.ok&&!d.error));
   }catch(e){ boMsg('no se pudo enviar el comando',true); }
 }
+/* ---------- CLI de emisión (control remoto, estilo admira.tv) ---------- */
+(function(){
+  const form=$('#cli-form'), inp=$('#cli-in'), scr=$('#cli-screen'), msg=$('#cli-msg');
+  if(!form) return;
+  const hist=[]; let hi=-1;
+  scr.value = (localStorage.getItem('pixer-xtore-screen-id')||'xtore-inicial');
+  function cmsg(t,err){ if(msg){ msg.textContent=t; msg.style.color=err?'var(--bad)':'var(--mut)'; } }
+  async function send(screen, text){
+    if(!BO_TOKEN){ const t=prompt('Token de escritura XPL (para controlar gemelos):',''); if(t){ BO_TOKEN=t.trim(); localStorage.setItem('xpl_store_token',BO_TOKEN); } else { cmsg('necesitas el token 🔑',true); return; } }
+    try{
+      const r=await fetch(STORE+'/xpl/cmd?screen='+encodeURIComponent(screen),{method:'POST',headers:{'Content-Type':'application/json','X-XPL-Token':BO_TOKEN},body:JSON.stringify({text})});
+      const d=await r.json().catch(()=>({}));
+      cmsg(r.ok&&!d.error ? ('✓ «'+text+'» → '+screen+'  · el gemelo lo ejecuta en ≤3s') : ('⚠ '+(d.error||('HTTP '+r.status))), !(r.ok&&!d.error));
+    }catch(e){ cmsg('⚠ no se pudo enviar (red)',true); }
+  }
+  form.onsubmit=ev=>{ ev.preventDefault();
+    let text=inp.value.trim(); if(!text) return;
+    if(text[0]!=='/') text='/'+text;
+    const screen=(scr.value||'').trim(); if(!screen){ cmsg('pon una pantalla destino',true); scr.focus(); return; }
+    hist.unshift(text); hi=-1; inp.value=''; send(screen,text);
+  };
+  inp.onkeydown=e=>{
+    if(e.key==='ArrowUp'){ if(hi<hist.length-1){ hi++; inp.value=hist[hi]; } e.preventDefault(); }
+    else if(e.key==='ArrowDown'){ if(hi>0){ hi--; inp.value=hist[hi]; } else { hi=-1; inp.value=''; } e.preventDefault(); }
+  };
+})();
 async function loadLive(){
   try{
     const d=await fetch(STORE+'/xpl/live').then(r=>r.json());
