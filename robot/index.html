@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>XpaceOS Robot · Admira.tv chest screen simulator</title>
-<meta name="description" content="XpaceOS Robot simulator: a mobile retail media robot with a chest screen fed by Admira.tv digital signage.">
-<meta property="og:title" content="XpaceOS Robot · Admira.tv chest screen">
-<meta property="og:description" content="Simulate a robot surface where the chest display is powered by Admira.tv.">
+<title>XpaceOS Robot · Vertical Admira.tv chest screen simulator</title>
+<meta name="description" content="XpaceOS Robot simulator: a mobile retail media robot with a vertical 9:16 chest screen fed by Admira.tv digital signage.">
+<meta property="og:title" content="XpaceOS Robot · Vertical Admira.tv chest screen">
+<meta property="og:description" content="Simulate a robot surface where the chest display is powered by vertical Admira.tv signage content.">
 <meta property="og:url" content="https://www.xpaceos.com/robot/">
 <meta property="og:image" content="https://www.xpaceos.com/assets/xpaceos-logo-card.jpg">
 <link rel="canonical" href="https://www.xpaceos.com/robot/">
@@ -76,7 +76,7 @@
   .neck{left:43%;top:106px;width:14%;height:52px;border-radius:0 0 12px 12px;background:linear-gradient(180deg,#b2c1c5,#536871)}
   .torso{left:18%;top:148px;width:64%;height:286px;border:1px solid rgba(230,251,255,.22);border-radius:48px 48px 34px 34px;background:linear-gradient(145deg,#dce7e8 0%,#82979f 42%,#293b43 100%);box-shadow:inset 0 22px 38px rgba(255,255,255,.26),0 24px 64px rgba(0,0,0,.42)}
   .torso::after{content:"";position:absolute;left:50%;bottom:30px;width:44%;height:18px;transform:translateX(-50%);border-radius:18px;background:linear-gradient(90deg,transparent,var(--brand),transparent);opacity:.68}
-  .chest{left:24%;top:38px;width:52%;height:158px;border:2px solid rgba(120,243,255,.74);border-radius:16px;background:#02080d;overflow:hidden;box-shadow:0 0 34px rgba(120,243,255,.22),inset 0 0 24px rgba(120,243,255,.15)}
+  .chest{left:30%;top:20px;width:40%;aspect-ratio:9/16;border:2px solid rgba(120,243,255,.74);border-radius:18px;background:#02080d;overflow:hidden;box-shadow:0 0 34px rgba(120,243,255,.22),inset 0 0 24px rgba(120,243,255,.15)}
   .chest iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#02080d;transform:scale(1.01);transform-origin:center}
   .screen-glass{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(125deg,rgba(255,255,255,.16),transparent 28%),repeating-linear-gradient(0deg,rgba(255,255,255,.055) 0 1px,transparent 1px 4px)}
   .screen-fallback{position:absolute;inset:0;z-index:1;display:grid;place-items:center;text-align:center;padding:14px;background:radial-gradient(circle at center,rgba(120,243,255,.18),transparent 62%),#02080d;color:var(--ink);font-weight:900}
@@ -125,7 +125,7 @@
     .sim-grid{grid-template-columns:1fr}.stage{min-height:720px}.robot{width:min(430px,84vw);height:600px}.stat-grid{grid-template-columns:repeat(4,1fr)}
   }
   @media (max-width:640px){
-    .wrap{width:min(100% - 28px,1180px)}header .wrap{min-height:66px}nav{display:none}.simulator{padding-top:20px}.stage{min-height:700px}.robot-area{inset:78px 0 112px}.robot{width:min(330px,88vw);height:500px;min-height:500px}.head{height:86px}.neck{top:82px;height:42px}.torso{top:120px;height:226px}.chest{top:30px;height:128px}.arm{top:150px;width:62px;height:182px}.arm::after{left:13px;width:36px;height:48px}.hip{top:332px}.leg{top:392px;width:64px;height:86px}.floor-label{font-size:11px}.stat-grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.event{grid-template-columns:1fr;gap:4px}
+    .wrap{width:min(100% - 28px,1180px)}header .wrap{min-height:66px}nav{display:none}.simulator{padding-top:20px}.stage{min-height:700px}.robot-area{inset:78px 0 112px}.robot{width:min(330px,88vw);height:500px;min-height:500px}.head{height:86px}.neck{top:82px;height:42px}.torso{top:120px;height:226px}.chest{left:28%;top:24px;width:44%}.arm{top:150px;width:62px;height:182px}.arm::after{left:13px;width:36px;height:48px}.hip{top:332px}.leg{top:392px;width:64px;height:86px}.floor-label{font-size:11px}.stat-grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.event{grid-template-columns:1fr;gap:4px}
   }
 </style>
 </head>
@@ -162,8 +162,8 @@
             <div class="part arm right"></div>
             <div class="part torso">
               <div class="part chest" id="chest">
-                <div class="screen-fallback"><div><small>Admira.tv feed</small><b>www.admira.tv</b></div></div>
-                <iframe id="admira-feed" title="Admira.tv digital signage feed" src="https://admira.tv/" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                <div class="screen-fallback"><div><small>Admira.tv vertical feed</small><b>9:16</b></div></div>
+                <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
                 <div class="screen-glass" aria-hidden="true"></div>
               </div>
             </div>
@@ -172,14 +172,14 @@
             <div class="part leg right"></div>
           </div>
         </div>
-        <div class="floor-label"><span>Admira.tv chest screen · mobile DOOH surface</span><b id="feed-state">feed loading</b></div>
+        <div class="floor-label"><span>Admira.tv vertical chest screen · 9:16 mobile DOOH</span><b id="feed-state">feed loading</b></div>
       </div>
 
       <aside class="console" aria-label="Robot console">
         <div class="copy">
           <p class="eyebrow">XpaceOS · Robot subgroup</p>
-          <h1>Robot simulator with Admira.tv on the chest.</h1>
-          <p class="lede">A mobile retail-media robot where the chest display is a live digital signage surface fed by Admira.tv.</p>
+          <h1>Robot simulator with vertical Admira.tv on the chest.</h1>
+          <p class="lede">A mobile retail-media robot where the chest display is a 9:16 digital signage surface fed only by vertical Admira.tv content.</p>
         </div>
 
         <div class="panel">
@@ -187,7 +187,7 @@
           <div class="stat-grid">
             <div class="stat"><span>Screen</span><b id="screen-stat">Live</b></div>
             <div class="stat"><span>Source</span><b>Admira.tv</b></div>
-            <div class="stat"><span>Format</span><b>DOOH</b></div>
+            <div class="stat"><span>Format</span><b>9:16</b></div>
             <div class="stat"><span>Mode</span><b id="mode-stat">Patrol</b></div>
           </div>
         </div>
@@ -200,14 +200,14 @@
             <button class="mode" type="button" data-mode="standby">Standby</button>
           </div>
           <div class="feed-row">
-            <a href="https://admira.tv/" target="_blank" rel="noopener">Open Admira.tv</a>
+            <a href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1" target="_blank" rel="noopener">Open vertical feed</a>
             <button type="button" id="reload-feed">Reload feed</button>
           </div>
         </div>
 
         <div class="panel timeline" aria-label="Signal timeline">
           <h2>Signal path</h2>
-          <div class="event"><span>01 · FEED</span><p>Admira.tv renders the content playlist for the chest display.</p></div>
+          <div class="event"><span>01 · FEED</span><p>Admira.tv renders a clean vertical playlist for the chest display.</p></div>
           <div class="event"><span>02 · ROBOT</span><p>XpaceOS treats the robot as a mobile surface with location and mission context.</p></div>
           <div class="event"><span>03 · MEDIA</span><p>Every visible impression can become inventory for retail media and live demos.</p></div>
         </div>
@@ -235,6 +235,7 @@
   const modeStat = document.getElementById('mode-stat');
   const missionLabel = document.getElementById('mission-label');
   const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
+  const verticalFeedUrl = 'https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1';
 
   const modes = {
     patrol: { label: 'Patrol', mission: 'mission · retail media patrol', className: 'walk', screen: 'Live' },
@@ -257,13 +258,13 @@
 
   iframe.addEventListener('load', () => {
     chest.classList.add('screen-loaded');
-    feedState.textContent = 'admira.tv live';
+    feedState.textContent = 'vertical feed live';
   });
 
   document.getElementById('reload-feed').addEventListener('click', () => {
     chest.classList.remove('screen-loaded');
     feedState.textContent = 'feed loading';
-    iframe.src = 'https://admira.tv/?robot=' + Date.now();
+    iframe.src = verticalFeedUrl + '&robot=' + Date.now();
   });
 
   window.setTimeout(() => {
