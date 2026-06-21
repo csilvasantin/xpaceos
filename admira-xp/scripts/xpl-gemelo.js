@@ -237,7 +237,7 @@
   // ── Store REMOTO de reglas (backoffice XPL) ────────────────────────────────
   // El gemelo baja LO SUYO por screenId (cascada global→circuito→pantalla). Si el
   // store responde, manda; si no, cae a la caché local y al composer/semilla.
-  var XPL_STORE = 'https://xpl-store.csilvasantin.workers.dev';
+  var XPL_STORE = 'https://xpl.admira.store';   // dominio propio CF (esquiva bloqueo workers.dev en ES)
   var REMOTE = null;              // reglas remotas en memoria (null = aún no/offline)
   function screenId() {
     try { return localStorage.getItem('pixer-xtore-screen-id') || 'xtore-inicial'; } catch (e) { return 'xtore-inicial'; }

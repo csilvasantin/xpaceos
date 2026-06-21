@@ -216,7 +216,7 @@ document.querySelectorAll('nav button').forEach(b=>{
 });
 
 /* ---------- BACKOFFICE: store remoto (segmentar por ámbito) ---------- */
-const STORE='https://xpl-store.csilvasantin.workers.dev';
+const STORE='https://xpl.admira.store';   // dominio propio CF (esquiva bloqueo workers.dev en ES)
 let BO_TOKEN=localStorage.getItem('xpl_store_token')||'';
 function boScope(){
   const kind=$('#bo-scope-kind').value;
