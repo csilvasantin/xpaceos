@@ -77,8 +77,8 @@
   .neck{left:43%;top:106px;width:14%;height:52px;border-radius:0 0 12px 12px;background:linear-gradient(180deg,#b2c1c5,#536871)}
   .torso{left:18%;top:148px;width:64%;height:286px;border:1px solid rgba(230,251,255,.22);border-radius:48px 48px 34px 34px;background:linear-gradient(145deg,#dce7e8 0%,#82979f 42%,#293b43 100%);box-shadow:inset 0 22px 38px rgba(255,255,255,.26),0 24px 64px rgba(0,0,0,.42)}
   .torso::after{content:"";position:absolute;left:50%;bottom:30px;width:44%;height:18px;transform:translateX(-50%);border-radius:18px;background:linear-gradient(90deg,transparent,var(--brand),transparent);opacity:.68}
-  .chest{position:absolute;left:40.7%;top:35.1%;width:17.5%;aspect-ratio:9/16;border:2px solid rgba(120,243,255,.72);border-radius:8%;background:#02080d;overflow:hidden;box-shadow:0 0 20px rgba(120,243,255,.30),inset 0 0 18px rgba(120,243,255,.15);transition:left .28s ease,top .28s ease,width .28s ease,aspect-ratio .28s ease,border-radius .28s ease}
-  .chest.screen-landscape{left:36%;top:42.4%;width:27%;aspect-ratio:16/9;border-radius:6%}
+  .chest{position:absolute;left:39.8%;top:31.6%;width:19.3%;aspect-ratio:9/16;border:2px solid rgba(120,243,255,.72);border-radius:8%;background:#02080d;overflow:hidden;box-shadow:0 0 20px rgba(120,243,255,.30),inset 0 0 18px rgba(120,243,255,.15);transition:left .28s ease,top .28s ease,width .28s ease,aspect-ratio .28s ease,border-radius .28s ease}
+  .chest.screen-landscape{left:34.7%;top:38.2%;width:29.7%;aspect-ratio:16/9;border-radius:6%}
   .chest iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#02080d;transform:scale(1.01);transform-origin:center}
   .camera-view{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;background:#02080d;opacity:0;pointer-events:none;transition:opacity .24s ease}
   .camera-active iframe{opacity:0;pointer-events:none}
@@ -177,7 +177,7 @@
         </div>
         <div class="robot-area">
           <div class="robot" id="robot" role="img" aria-label="Robot with a chest screen fed by Admira.tv">
-            <img class="robot-photo" src="/assets/xpaceos-robot-chest-photo.png?v=admirito" alt="">
+            <img class="robot-photo" src="/assets/xpaceos-robot-chest-photo.png?v=admirito-cut3" alt="">
             <div class="chest" id="chest">
               <div class="screen-fallback"><div><small>Admira.tv local feed</small><b>DOOH</b></div></div>
               <iframe id="admira-feed" title="Admira.tv digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio&mode=local" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
