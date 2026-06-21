@@ -78,6 +78,9 @@
   .torso::after{content:"";position:absolute;left:50%;bottom:30px;width:44%;height:18px;transform:translateX(-50%);border-radius:18px;background:linear-gradient(90deg,transparent,var(--brand),transparent);opacity:.68}
   .chest{left:30%;top:20px;width:40%;aspect-ratio:9/16;border:2px solid rgba(120,243,255,.74);border-radius:18px;background:#02080d;overflow:hidden;box-shadow:0 0 34px rgba(120,243,255,.22),inset 0 0 24px rgba(120,243,255,.15)}
   .chest iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#02080d;transform:scale(1.01);transform-origin:center}
+  .camera-view{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;background:#02080d;opacity:0;pointer-events:none;transition:opacity .24s ease}
+  .camera-active iframe{opacity:0;pointer-events:none}
+  .camera-active .camera-view{opacity:1}
   .screen-glass{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(125deg,rgba(255,255,255,.16),transparent 28%),repeating-linear-gradient(0deg,rgba(255,255,255,.055) 0 1px,transparent 1px 4px)}
   .screen-fallback{position:absolute;inset:0;z-index:1;display:grid;place-items:center;text-align:center;padding:14px;background:radial-gradient(circle at center,rgba(120,243,255,.18),transparent 62%),#02080d;color:var(--ink);font-weight:900}
   .screen-fallback small{display:block;margin-bottom:7px;color:var(--accent);font:700 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.13em;text-transform:uppercase}
@@ -177,6 +180,7 @@
               <div class="part chest" id="chest">
                 <div class="screen-fallback"><div><small>Admira.tv vertical feed</small><b>9:16</b></div></div>
                 <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playnext" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                <video id="robot-camera" class="camera-view" autoplay playsinline muted></video>
                 <div class="screen-glass" aria-hidden="true"></div>
               </div>
             </div>
@@ -185,7 +189,7 @@
             <div class="part leg right"></div>
           </div>
         </div>
-        <div class="floor-label"><span>Admira.tv vertical chest screen · 9:16 mobile DOOH</span><b id="feed-state">feed loading</b></div>
+        <div class="floor-label"><span id="surface-label">Admira.tv vertical chest screen · 9:16 mobile DOOH</span><b id="feed-state">feed loading</b></div>
       </div>
 
       <aside class="console" aria-label="Robot console">
@@ -199,7 +203,7 @@
           <h2>Surface status</h2>
           <div class="stat-grid">
             <div class="stat"><span>Screen</span><b id="screen-stat">Live</b></div>
-            <div class="stat"><span>Source</span><b>Admira.tv</b></div>
+            <div class="stat"><span>Source</span><b id="source-stat">Admira.tv</b></div>
             <div class="stat"><span>Format</span><b>9:16</b></div>
             <div class="stat"><span>Mode</span><b id="mode-stat">Patrol</b></div>
           </div>
@@ -231,11 +235,12 @@
             <button class="cli-chip" type="button" data-cli="/tag robots">/tag robots</button>
             <button class="cli-chip" type="button" data-cli="/slot auto">/slot auto</button>
             <button class="cli-chip" type="button" data-cli="/playnext">/playnext</button>
+            <button class="cli-chip" type="button" data-cli="/playcamera">/playcamera</button>
             <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p>commands: /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
           </div>
         </div>
 
@@ -264,8 +269,11 @@
   const robot = document.getElementById('robot');
   const chest = document.getElementById('chest');
   const iframe = document.getElementById('admira-feed');
+  const cameraVideo = document.getElementById('robot-camera');
   const feedState = document.getElementById('feed-state');
+  const surfaceLabel = document.getElementById('surface-label');
   const screenStat = document.getElementById('screen-stat');
+  const sourceStat = document.getElementById('source-stat');
   const modeStat = document.getElementById('mode-stat');
   const missionLabel = document.getElementById('mission-label');
   const modeButtons = Array.from(document.querySelectorAll('[data-mode]'));
@@ -288,6 +296,7 @@
   };
   const feedParams = Object.assign({}, defaultFeedParams);
   const pendingBridge = new Map();
+  let cameraStream = null;
 
   function verticalFeedUrl(extra){
     const params = Object.assign({}, feedParams, extra || {});
@@ -304,7 +313,22 @@
     while (cliLog.children.length > 8) cliLog.lastElementChild.remove();
   }
 
+  function stopCamera(report){
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      cameraStream = null;
+    }
+    cameraVideo.pause();
+    cameraVideo.srcObject = null;
+    chest.classList.remove('camera-active');
+    sourceStat.textContent = 'Admira.tv';
+    if (screenStat.textContent === 'Camera') screenStat.textContent = 'Live';
+    surfaceLabel.textContent = 'Admira.tv vertical chest screen · 9:16 mobile DOOH';
+    if (report) cliWrite('ack', '/stopcamera · camera off');
+  }
+
   function applyFeed(reason){
+    stopCamera(false);
     chest.classList.remove('screen-loaded');
     feedState.textContent = 'feed loading';
     const nextFeed = verticalFeedUrl({ robot: Date.now() });
@@ -314,6 +338,7 @@
   }
 
   function sendPlayerCommand(raw){
+    stopCamera(false);
     const requestId = 'robot-' + Date.now() + '-' + Math.random().toString(16).slice(2);
     pendingBridge.set(requestId, raw);
     try{
@@ -327,6 +352,39 @@
     }catch(e){
       pendingBridge.delete(requestId);
       cliWrite('err', 'could not send ' + raw);
+    }
+  }
+
+  async function playCamera(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      cliWrite('err', 'camera unavailable in this browser');
+      return;
+    }
+    stopCamera(false);
+    chest.classList.add('screen-loaded', 'camera-active');
+    feedState.textContent = 'camera opening';
+    surfaceLabel.textContent = 'robot camera view · local device';
+    screenStat.textContent = 'Camera';
+    sourceStat.textContent = 'Camera';
+    try{
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1080 },
+          height: { ideal: 1920 },
+          aspectRatio: { ideal: 0.5625 }
+        }
+      });
+      cameraVideo.srcObject = cameraStream;
+      await cameraVideo.play();
+      feedState.textContent = 'camera live';
+      cliWrite('ack', '/playcamera · camera live');
+    }catch(e){
+      stopCamera(false);
+      feedState.textContent = 'vertical feed live';
+      screenStat.textContent = 'Live';
+      cliWrite('err', 'camera blocked or unavailable');
     }
   }
 
@@ -350,11 +408,13 @@
   });
 
   iframe.addEventListener('load', () => {
+    if (chest.classList.contains('camera-active')) return;
     chest.classList.add('screen-loaded');
     feedState.textContent = 'vertical feed live';
   });
 
   function revealFeed(){
+    if (chest.classList.contains('camera-active')) return;
     if (chest.classList.contains('screen-loaded')) return;
     chest.classList.add('screen-loaded');
     feedState.textContent = 'vertical feed live';
@@ -374,7 +434,17 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', '/playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      return;
+    }
+    if (cmd === 'playcamera' || cmd === 'camera') {
+      playCamera();
+      return;
+    }
+    if (cmd === 'stopcamera' || cmd === 'camerastop') {
+      stopCamera(true);
+      feedState.textContent = 'vertical feed live';
+      screenStat.textContent = 'Live';
       return;
     }
     if (['playnext','next','playprevious','playprev','previous','prev','playfirst','first','playlast','last'].includes(cmd) || cmd === 'play' || /^play\d+$/.test(cmd)) {
