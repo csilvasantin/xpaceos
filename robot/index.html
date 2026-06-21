@@ -222,6 +222,8 @@
             <button class="cli-chip" type="button" data-cli="/playtagmusic">/playtagmusic</button>
             <button class="cli-chip" type="button" data-cli="/playtagtecnologia">/playtagtecnologia</button>
             <button class="cli-chip" type="button" data-cli="/admiraTVsincro">/admiraTVsincro</button>
+            <button class="cli-chip" type="button" data-cli="/admiraTVcondicional">/admiraTVcondicional</button>
+            <button class="cli-chip" type="button" data-cli="/admiraTVlocal">/admiraTVlocal</button>
             <button class="cli-chip" type="button" data-cli="/audioon">/audioon</button>
             <button class="cli-chip" type="button" data-cli="/audiooff">/audiooff</button>
             <button class="cli-chip" type="button" data-cli="/pantalla off">/pantalla off</button>
@@ -231,7 +233,7 @@
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /pantalla off, /pantalla on, /admiraTVsincro, /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p>commands: /pantalla off, /pantalla on, /admiraTVsincro, /admiraTVcondicional, /admiraTVlocal, /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
           </div>
         </div>
 
@@ -290,11 +292,35 @@
   const pendingBridge = new Map();
   let cameraStream = null;
   let screenEnabled = true;
+  let admiraMode = 'local';
 
-  function verticalFeedUrl(extra){
+  function modeSurfaceLabel(){
+    if (admiraMode === 'sync') return 'Admira.tv synchronized chest screen · global feed';
+    if (admiraMode === 'conditional') return 'Admira.tv conditional chest screen · XPL';
+    return 'Admira.tv vertical chest screen · 9:16 mobile DOOH';
+  }
+
+  function admiraFeedUrl(extra){
     const params = Object.assign({}, feedParams, extra || {});
     params.clean = '1';
-    params.format = '9:16';
+    if (admiraMode === 'sync') {
+      delete params.tag;
+      delete params.format;
+      delete params.slot;
+      params.mode = 'sync';
+      params.sincro = '1';
+      params.max = '200';
+      params.syncSlot = '20';
+    } else if (admiraMode === 'conditional') {
+      delete params.tag;
+      delete params.format;
+      params.mode = 'conditional';
+      params.xpl = 'https://xpl.xpaceos.com/admira-tv.json';
+    } else {
+      params.mode = 'local';
+      params.format = '9:16';
+      if (!params.tag) params.tag = 'vertical';
+    }
     const qs = new URLSearchParams(params);
     return feedBase + '?' + qs.toString();
   }
@@ -334,9 +360,9 @@
     cameraVideo.pause();
     cameraVideo.srcObject = null;
     chest.classList.remove('camera-active');
-    sourceStat.textContent = 'Admira.tv';
+    sourceStat.textContent = admiraMode === 'conditional' ? 'XPL' : 'Admira.tv';
     if (screenStat.textContent === 'Camera') screenStat.textContent = 'Live';
-    surfaceLabel.textContent = 'Admira.tv vertical chest screen · 9:16 mobile DOOH';
+    surfaceLabel.textContent = modeSurfaceLabel();
     if (report) cliWrite('ack', '/stopcamera · camera off');
   }
 
@@ -348,10 +374,23 @@
     stopCamera(false);
     chest.classList.remove('screen-loaded');
     feedState.textContent = 'feed loading';
-    const nextFeed = verticalFeedUrl({ robot: Date.now() });
+    const nextFeed = admiraFeedUrl({ robot: Date.now() });
     iframe.src = nextFeed;
     openFeed.href = nextFeed;
-    cliWrite('feed', reason + ' · format=9:16');
+    const modeLabel = admiraMode === 'sync' ? 'admiraTVsincro · global' : admiraMode === 'conditional' ? 'admiraTVcondicional · XPL' : 'admiraTVlocal · format=9:16';
+    surfaceLabel.textContent = modeSurfaceLabel();
+    sourceStat.textContent = admiraMode === 'conditional' ? 'XPL' : 'Admira.tv';
+    cliWrite('feed', reason + ' · ' + modeLabel);
+  }
+
+  function setAdmiraMode(mode){
+    admiraMode = mode === 'sync' ? 'sync' : mode === 'conditional' ? 'conditional' : 'local';
+    if (admiraMode === 'local') {
+      Object.keys(feedParams).forEach((key) => delete feedParams[key]);
+      Object.assign(feedParams, defaultFeedParams);
+    }
+    screenStat.textContent = 'Live';
+    applyFeed(admiraMode === 'sync' ? '/admiraTVsincro' : admiraMode === 'conditional' ? '/admiraTVcondicional' : '/admiraTVlocal');
   }
 
   function applyPlayTag(tag, raw){
@@ -387,8 +426,8 @@
     }
     robot.classList.remove('screen-off');
     screenStat.textContent = 'Live';
-    sourceStat.textContent = 'Admira.tv';
-    surfaceLabel.textContent = 'Admira.tv vertical chest screen · 9:16 mobile DOOH';
+    sourceStat.textContent = admiraMode === 'conditional' ? 'XPL' : 'Admira.tv';
+    surfaceLabel.textContent = modeSurfaceLabel();
     cliWrite('ack', '/pantalla on · chest screen live');
     applyFeed('screen on');
   }
@@ -446,7 +485,7 @@
       cliWrite('ack', '/playcamera · camera live');
     }catch(e){
       stopCamera(false);
-      feedState.textContent = 'vertical feed live';
+      feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
       screenStat.textContent = 'Live';
       cliWrite('err', 'camera blocked or unavailable');
     }
@@ -474,14 +513,14 @@
   iframe.addEventListener('load', () => {
     if (chest.classList.contains('camera-active')) return;
     chest.classList.add('screen-loaded');
-    feedState.textContent = 'vertical feed live';
+    feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
   });
 
   function revealFeed(){
     if (chest.classList.contains('camera-active')) return;
     if (chest.classList.contains('screen-loaded')) return;
     chest.classList.add('screen-loaded');
-    feedState.textContent = 'vertical feed live';
+    feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
   }
 
   document.getElementById('reload-feed').addEventListener('click', () => {
@@ -498,7 +537,7 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/pantalla off|on /admiraTVsincro [off] /audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', '/pantalla off|on /admiraTVsincro /admiraTVcondicional /admiraTVlocal /audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
       return;
     }
     if ((cmd === 'pantalla' || cmd === 'screen') && ['off','on'].includes(rest.toLowerCase())) {
@@ -532,7 +571,7 @@
     }
     if (cmd === 'stopcamera' || cmd === 'camerastop') {
       stopCamera(true);
-      feedState.textContent = 'vertical feed live';
+      feedState.textContent = admiraMode === 'sync' ? 'sincro feed live' : admiraMode === 'conditional' ? 'conditional feed live' : 'vertical feed live';
       screenStat.textContent = 'Live';
       return;
     }
@@ -588,8 +627,16 @@
       setFeedAudio(muted === '0');
       return;
     }
-    if (['admiratvsincro','admiratvsync','sincro','sync','admiratvsincrooff','sincrooff','syncoff'].includes(cmd)) {
-      sendPlayerCommand('/' + input);
+    if (cmd === 'admiratvsincro' || cmd === 'admiratvsync' || cmd === 'sincro' || cmd === 'sync') {
+      setAdmiraMode(/^(off|0|false|no|local)$/i.test(rest) ? 'local' : 'sync');
+      return;
+    }
+    if (cmd === 'admiratvcondicional' || cmd === 'admiratvconditional' || cmd === 'condicional' || cmd === 'conditional' || cmd === 'xpl') {
+      setAdmiraMode('conditional');
+      return;
+    }
+    if (cmd === 'admiratvlocal' || cmd === 'local' || cmd === 'admiratvsincrooff' || cmd === 'sincrooff' || cmd === 'syncoff') {
+      setAdmiraMode('local');
       return;
     }
     if (cmd === 'screen') {
