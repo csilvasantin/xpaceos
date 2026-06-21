@@ -51,9 +51,9 @@
   .nav-contact{padding:6px 14px;border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
   .nav-contact:hover{border-color:rgba(120,243,255,.55);background:rgba(120,243,255,.06)}
   main{min-height:calc(100vh - 72px)}
-  .simulator{padding:34px 0 28px}
+  .simulator{padding:18px 0 22px}
   .sim-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.42fr);gap:24px;align-items:stretch}
-  .stage{position:relative;min-height:calc(100vh - 134px);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(13,32,45,.92),rgba(2,8,13,.96)),radial-gradient(circle at 50% 8%,rgba(120,243,255,.20),transparent 34%);box-shadow:var(--shadow)}
+  .stage{position:relative;min-height:calc(100svh - 112px);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(13,32,45,.92),rgba(2,8,13,.96)),radial-gradient(circle at 50% 8%,rgba(120,243,255,.20),transparent 34%);box-shadow:var(--shadow)}
   .stage::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.07),transparent 38%),radial-gradient(ellipse at center bottom,rgba(120,243,255,.16),transparent 55%);pointer-events:none}
   .stage::after{content:"";position:absolute;left:8%;right:8%;bottom:82px;height:1px;background:linear-gradient(90deg,transparent,rgba(230,251,255,.48),transparent)}
   .scanline{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--brand),transparent);opacity:.55;animation:scan 5.8s linear infinite}
@@ -63,8 +63,8 @@
   .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.8s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
   .mission{color:var(--accent)}
-  .robot-area{position:absolute;inset:62px 0 72px;display:grid;place-items:center}
-  .robot{position:relative;width:min(620px,82vw);max-height:calc(100vh - 210px);aspect-ratio:1258/1422;transform:translateY(8px);transition:transform .35s ease}
+  .robot-area{position:absolute;inset:50px 0 64px;display:grid;place-items:center}
+  .robot{position:relative;width:min(620px,82vw);max-height:calc(100svh - 190px);aspect-ratio:1258/1422;transform:translateY(0);transition:transform .35s ease}
   .robot-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 30px 70px rgba(0,0,0,.42))}
   .robot.walk{animation:walk 3.8s ease-in-out infinite}
   .robot.wave .arm.right{animation:wave 1.6s ease-in-out infinite}
@@ -99,10 +99,6 @@
   .floor-label{position:absolute;z-index:3;left:22px;right:22px;bottom:22px;display:flex;justify-content:space-between;gap:12px;color:var(--mut);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
   .floor-label b{color:var(--green)}
   .console{display:flex;flex-direction:column;gap:16px}
-  .copy{padding:8px 0 2px}
-  .eyebrow{margin:0 0 12px;color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
-  h1{margin:0 0 16px;font-size:clamp(38px,5vw,64px);line-height:1.02;letter-spacing:-.02em}
-  .lede{margin:0;color:var(--mut);font-size:18px}
   .panel{border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,rgba(13,32,45,.92),rgba(8,23,33,.92));padding:18px}
   .panel h2{margin:0 0 14px;font-size:16px;letter-spacing:.02em}
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -139,10 +135,10 @@
   footer a:hover{color:var(--ink)}
   .sig{margin-left:auto;color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
   @media (max-width:960px){
-    .sim-grid{grid-template-columns:1fr}.stage{min-height:720px}.robot{width:min(620px,90vw);max-height:610px}.stat-grid{grid-template-columns:repeat(4,1fr)}
+    .sim-grid{grid-template-columns:1fr}.stage{min-height:calc(100svh - 104px)}.robot{width:min(620px,90vw);max-height:calc(100svh - 190px)}.stat-grid{grid-template-columns:repeat(4,1fr)}
   }
   @media (max-width:640px){
-    .wrap{width:min(100% - 28px,1180px)}header .wrap{min-height:66px}nav{display:none}.simulator{padding-top:20px}.stage{min-height:650px}.robot-area{inset:74px -8px 104px}.robot{width:min(380px,98vw);max-height:500px}.floor-label{font-size:11px}.stat-grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.feed-row{flex-direction:column}.feed-row a,.feed-row button{width:100%}.event{grid-template-columns:1fr;gap:4px}
+    .wrap{width:min(100% - 28px,1180px)}header .wrap{min-height:58px}nav{display:none}.simulator{padding-top:8px}.stage{min-height:calc(100svh - 82px)}.hud{left:14px;right:14px;top:14px}.pill{min-height:30px;padding:0 10px;font-size:10px}.robot-area{inset:54px -8px 76px}.robot{width:min(390px,98vw);max-height:calc(100svh - 176px)}.floor-label{left:14px;right:14px;bottom:14px;font-size:10px}.stat-grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.feed-row{flex-direction:column}.feed-row a,.feed-row button{width:100%}.event{grid-template-columns:1fr;gap:4px}
   }
 </style>
 </head>
@@ -186,12 +182,6 @@
       </div>
 
       <aside class="console" aria-label="Robot console">
-        <div class="copy">
-          <p class="eyebrow">XpaceOS · Robot subgroup</p>
-          <h1>Robot simulator with vertical Admira.tv on the chest.</h1>
-          <p class="lede">A mobile retail-media robot where the chest display is a 9:16 digital signage surface fed only by vertical Admira.tv content.</p>
-        </div>
-
         <div class="panel">
           <h2>Surface status</h2>
           <div class="stat-grid">
