@@ -3833,8 +3833,27 @@ async function startFaceLoop(){
     if(FACE_LOOP&&!FACE_LOOP.stop) FACE_LOOP.timer=setTimeout(loop,400);
   };
   loop();
+  startAudienceSender();
 }
-function stopFaceLoop(){ if(FACE_LOOP){ FACE_LOOP.stop=true; if(FACE_LOOP.timer) clearTimeout(FACE_LOOP.timer); FACE_LOOP=null; } LIVE_FACE.faces=0; }
+function stopFaceLoop(){ if(FACE_LOOP){ FACE_LOOP.stop=true; if(FACE_LOOP.timer) clearTimeout(FACE_LOOP.timer); FACE_LOOP=null; } LIVE_FACE.faces=0; stopAudienceSender(); }
+
+// ── Envío de audiencia (cámara → /audience) para el informe de clearchannel.tv ──
+//    Cada 20s manda presencia + género + edad medidos por la cámara (LIVE_FACE).
+//    loc/screen configurables por ?audloc= &audscreen= o localStorage (default xtanco).
+const AUDIENCE_URL='https://api.admira.store/audience';
+const AUD_CFG={ loc:(new URLSearchParams(location.search).get('audloc')||localStorage.getItem('xp_aud_loc')||'xtanco'),
+                screen:(new URLSearchParams(location.search).get('audscreen')||localStorage.getItem('xp_aud_screen')||'xtanco-totem') };
+let AUD_TIMER=null;
+function sendAudienceSample(){
+  try{
+    if(typeof LIVE_FACE==='undefined'||!LIVE_FACE.ready) return;
+    const b={loc:AUD_CFG.loc,screen:AUD_CFG.screen,faces:LIVE_FACE.faces||0,gender:LIVE_FACE.gender||'',
+      genderScore:LIVE_FACE.genderScore||0,ageBucket:LIVE_FACE.ageBucket||'',emotion:LIVE_FACE.emotion||''};
+    fetch(AUDIENCE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),keepalive:true}).catch(()=>{});
+  }catch(e){}
+}
+function startAudienceSender(){ if(AUD_TIMER) return; sendAudienceSample(); AUD_TIMER=setInterval(sendAudienceSample,20000); }
+function stopAudienceSender(){ if(AUD_TIMER){ clearInterval(AUD_TIMER); AUD_TIMER=null; } }
 
 // ── /generovideo: las DOS pantallas siguen el sexo detectado en cámara ─────
 // Hombre → "Money For Nothing" + overlay HOMBRE · Mujer → "Take On Me" + MUJER.
