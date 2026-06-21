@@ -176,7 +176,7 @@
             <img class="robot-photo" src="/assets/xpaceos-robot-chest-photo.png" alt="">
             <div class="chest" id="chest">
               <div class="screen-fallback"><div><small>Admira.tv vertical feed</small><b>9:16</b></div></div>
-              <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playtag" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+              <iframe id="admira-feed" title="Admira.tv vertical digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
               <video id="robot-camera" class="camera-view" autoplay playsinline muted></video>
               <div class="screen-glass" aria-hidden="true"></div>
             </div>
@@ -210,7 +210,7 @@
             <button class="mode" type="button" data-mode="standby">Standby</button>
           </div>
           <div class="feed-row">
-            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&bridge=20260621-playtag" target="_blank" rel="noopener">Open vertical feed</a>
+            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&tag=vertical&format=9%3A16&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio" target="_blank" rel="noopener">Open vertical feed</a>
             <button type="button" id="reload-feed">Reload feed</button>
           </div>
         </div>
@@ -230,12 +230,14 @@
             <button class="cli-chip" type="button" data-cli="/playnext">/playnext</button>
             <button class="cli-chip" type="button" data-cli="/playtagmusic">/playtagmusic</button>
             <button class="cli-chip" type="button" data-cli="/playtagtecnologia">/playtagtecnologia</button>
+            <button class="cli-chip" type="button" data-cli="/audioon">/audioon</button>
+            <button class="cli-chip" type="button" data-cli="/audiooff">/audiooff</button>
             <button class="cli-chip" type="button" data-cli="/playcamera">/playcamera</button>
             <button class="cli-chip" type="button" data-cli="/reload">/reload</button>
           </div>
           <div class="cli-log" id="admira-cli-log" aria-live="polite">
             <p><b>ready</b> vertical lock active · format=9:16</p>
-            <p>commands: /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
+            <p>commands: /audioon, /audiooff, /playtagmusic, /playtagtecnologia, /playcamera, /stopcamera, /playnext, /playprev, /tag, /medio, /category, /slot, /max, /refresh, /mute, /screen, /reset, /help</p>
           </div>
         </div>
 
@@ -287,7 +289,8 @@
     refresh: '20',
     max: '24',
     muted: '1',
-    bridge: '20260621-playtag'
+    volume: '1',
+    bridge: '20260621-audio'
   };
   const feedParams = Object.assign({}, defaultFeedParams);
   const pendingBridge = new Map();
@@ -362,6 +365,13 @@
     feedParams.format = '9:16';
     cliWrite('play', '/' + raw + ' · tag=' + clean);
     applyFeed('playtag=' + clean);
+  }
+
+  function setFeedAudio(on){
+    feedParams.muted = on ? '0' : '1';
+    feedParams.volume = on ? '1' : '0';
+    cliWrite('audio', on ? 'audio on · volume=1' : 'audio off');
+    applyFeed(on ? 'audio on' : 'audio off');
   }
 
   function sendPlayerCommand(raw){
@@ -461,7 +471,15 @@
     cliWrite('cmd', '/' + input);
 
     if (cmd === 'help' || cmd === '?') {
-      cliWrite('help', '/playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      cliWrite('help', '/audioon /audiooff /playtagmusic /playtagtecnologia /playtag <tag> /playcamera /stopcamera /playnext /playprev /playfirst /playlast /play<N> /vertical /tag <tema> /medio all|video|image|audio /category <x> /slot auto|manana|mediodia|tarde|noche|all /max <n> /refresh <s> /mute 0|1 /screen <id> /reset /reload');
+      return;
+    }
+    if (cmd === 'audioon' || cmd === 'soundon' || cmd === 'unmute' || (cmd === 'audio' && rest !== 'off')) {
+      setFeedAudio(true);
+      return;
+    }
+    if (cmd === 'audiooff' || cmd === 'soundoff' || cmd === 'muteoff' || (cmd === 'audio' && rest === 'off')) {
+      setFeedAudio(false);
       return;
     }
     const playTag = parsePlayTag(value, cmd);
@@ -528,8 +546,7 @@
     }
     if (cmd === 'mute' || cmd === 'muted') {
       const muted = rest === '0' ? '0' : '1';
-      feedParams.muted = muted;
-      applyFeed('muted=' + muted);
+      setFeedAudio(muted === '0');
       return;
     }
     if (cmd === 'screen') {
