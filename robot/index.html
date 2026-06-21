@@ -183,7 +183,7 @@
             <img class="robot-photo" src="/assets/xpaceos-robot-chest-photo.png?v=admirito-cut3" alt="">
             <div class="chest" id="chest">
               <div class="screen-fallback"><div><small>Admira.tv local feed</small><b>DOOH</b></div></div>
-              <iframe id="admira-feed" title="Admira.tv digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio&mode=local" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
+              <iframe id="admira-feed" title="Admira.tv digital signage feed" src="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&slot=auto&refresh=20&max=24&muted=1&volume=1&cam=1&bridge=20260621-audio&mode=local" loading="eager" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; camera; microphone"></iframe>
               <video id="robot-camera" class="camera-view" autoplay playsinline muted></video>
               <div class="screen-glass" aria-hidden="true"></div>
             </div>
@@ -211,7 +211,7 @@
             <button class="mode" type="button" data-mode="standby">Standby</button>
           </div>
           <div class="feed-row">
-            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&slot=auto&refresh=20&max=24&muted=1&volume=1&bridge=20260621-audio&mode=local" target="_blank" rel="noopener">Open feed</a>
+            <a id="open-feed" href="https://admira.tv/canal.html?clean=1&screen=xpaceos-robot-chest&circuit=xpaceos-robot&slot=auto&refresh=20&max=24&muted=1&volume=1&cam=1&bridge=20260621-audio&mode=local" target="_blank" rel="noopener">Open feed</a>
             <button type="button" id="reload-feed">Reload feed</button>
           </div>
         </div>
@@ -293,6 +293,7 @@
     max: '24',
     muted: '1',
     volume: '1',
+    cam: '1',
     bridge: '20260621-audio'
   };
   const feedParams = Object.assign({}, defaultFeedParams);
