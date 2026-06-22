@@ -56,7 +56,19 @@
     return 0;
   }
 
-  var screen = { ad: null, tone: 'calm' };
+  var screen = { ad: null, tone: 'calm', content: null, contentReq: null };
+
+  // Audiencia por cámara (anónima, on-device): la lee el modelo facial de
+  // index.html y la deja en window.LIVE_FACE {faces, gender, age, ageBucket, ts}.
+  // Aquí la exponemos como HECHOS XPL (viewers/audGender/audAge) para que las
+  // reglas reaccionen a quién mira la pantalla.
+  function lfFresh() {
+    var lf = window.LIVE_FACE;
+    return (lf && lf.faces > 0 && (performance.now() - (lf.ts || 0)) < 5000) ? lf : null;
+  }
+  function camFaces()  { var lf = lfFresh(); return lf ? lf.faces : 0; }
+  function camGender() { var lf = lfFresh(); if (!lf) return 'none'; return lf.gender === 'female' ? 'female' : lf.gender === 'male' ? 'male' : 'mixed'; }
+  function camAge()    { var lf = lfFresh(); if (!lf) return 'none'; return lf.ageBucket || 'adulto'; }
 
   // OVERRIDE de emisión (control remoto CLI): manda POR ENCIMA de las reglas
   // durante 'until'. ad:'' = forzar apagado · ad:null = no tocar · auto = soltar.
@@ -89,6 +101,10 @@
         case 'thief':       return !!g.thief;
         case 'satisfaction':return typeof g.satisfaction === 'number' ? g.satisfaction : 70;
         case 'money':       return typeof g.money === 'number' ? g.money : 0;
+        // — audiencia por cámara (anónima) —
+        case 'viewers':     return camFaces();
+        case 'audGender':   return camGender();
+        case 'audAge':      return camAge();
       }
       return 0;
     },
@@ -96,8 +112,11 @@
     act: function (id, value /*, npc */) {
       var g = window.G;
       switch (id) {
-        case 'showAd':      screen.ad = value; break;
-        case 'clearScreen': screen.ad = null; break;
+        case 'showAd':      screen.ad = value; screen.contentReq = null; break;
+        // showContent NO resuelve aquí (pick es async): solo fija la intención;
+        // resolveContent() la convierte en un asset real tras el engine.tick().
+        case 'showContent': screen.contentReq = value || 'auto'; screen.ad = null; break;
+        case 'clearScreen': screen.ad = null; screen.contentReq = null; break;
         case 'screenTone':  screen.tone = value; break;
         case 'setWeather':  if (g) { g.weather = { type: value === 'sun' ? 'sun' : value, timer: 600 }; } break;
         case 'jingle':      beep(value); break;
@@ -143,11 +162,13 @@
       'transition:background .4s'
     ].join(';');
     el.innerHTML =
+      // capa de CONTENIDO REAL (img/video del Stock) — encima del fondo, debajo del badge
+      '<div id="xpl-sg-media" style="position:absolute;inset:0;display:none;background:#000;overflow:hidden"></div>' +
       '<div id="xpl-sg-body" style="position:absolute;inset:0;display:flex;flex-direction:column;' +
       'align-items:center;justify-content:center;gap:4px;color:#fff;text-align:center">' +
       '<div id="xpl-sg-icon" style="font-size:46px;line-height:1"></div>' +
       '<div id="xpl-sg-label" style="font:700 11px ui-monospace,monospace;letter-spacing:1px"></div></div>' +
-      '<div style="position:absolute;top:5px;left:7px;font:700 8px ui-monospace,monospace;color:#fff9;letter-spacing:1px">XPACEOS · LIVE</div>';
+      '<div id="xpl-sg-badge" style="position:absolute;top:5px;left:7px;font:700 8px ui-monospace,monospace;color:#fff9;letter-spacing:1px;z-index:2;text-shadow:0 1px 2px #000a">XPACEOS · LIVE</div>';
     document.body.appendChild(el);
     dragify(el);
 
@@ -195,29 +216,66 @@
     return !!document.body && !document.body.classList.contains('splash-visible');
   }
 
+  // Pinta un asset REAL del Stock (img o video) en la capa de media, reutilizando
+  // el elemento si no cambió la url (evita recargas y cortes de vídeo).
+  function setMedia(asset) {
+    var m = document.getElementById('xpl-sg-media'); if (!m) return;
+    if (m.__key === asset.url) return;
+    m.__key = asset.url; m.innerHTML = '';
+    var isVid = asset.type === 'video' || asset.type === 'animation' ||
+      /^video\//.test(asset.mime || '') || /\.(mp4|webm|mov)(\?|$)/i.test(asset.url);
+    var node = document.createElement(isVid ? 'video' : 'img');
+    node.src = asset.url;
+    node.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block';
+    if (isVid) {
+      node.muted = true; node.loop = true; node.autoplay = true;
+      node.playsInline = true; node.setAttribute('playsinline', ''); node.setAttribute('muted', '');
+      var p = node.play && node.play(); if (p && p.catch) p.catch(function () {});
+    }
+    m.appendChild(node);
+  }
+  function clearMedia() {
+    var m = document.getElementById('xpl-sg-media'); if (!m) return;
+    if (m.__key) { m.__key = ''; m.innerHTML = ''; }
+    m.style.display = 'none';
+  }
+
   function renderOverlay() {
     if (!el) return;
     var inside = gateInside();
     // chip y ventana ocultos por completo mientras estemos en el intro
     if (chip) chip.style.display = inside ? 'flex' : 'none';
-    if (!inside) { el.style.display = 'none'; return; }
-    var ad = screen.ad ? window.XPL.byId(window.XPL.ADS, screen.ad) : null;
+    if (!inside) { el.style.display = 'none'; clearMedia(); return; }
+    // contenido REAL gana sobre la creatividad de juguete (mismo canal 'content')
+    var content = (on && screen.content) ? screen.content : null;
+    var ad = (!content && on && screen.ad) ? window.XPL.byId(window.XPL.ADS, screen.ad) : null;
     var dot = document.getElementById('xpl-dot');
     var chipAd = document.getElementById('xpl-chip-ad');
+    var media = document.getElementById('xpl-sg-media');
+    var body = document.getElementById('xpl-sg-body');
     if (dot) dot.style.background = on ? '#5bd6c0' : '#5a6678';
-    if (!on || !ad) {
-      el.style.display = 'none';
+    if (!content && !ad) {
+      el.style.display = 'none'; clearMedia();
       if (chipAd) chipAd.textContent = on ? '—' : 'off';
       return;
     }
     el.style.display = 'block';
-    el.style.background = ad.bg;
-    document.getElementById('xpl-sg-icon').textContent = ad.icon;
-    document.getElementById('xpl-sg-label').textContent = ad.es.toUpperCase();
-    if (chipAd) chipAd.textContent = ad.icon + ' ' + ad.es;
-    // tono: animación sutil
-    el.style.animation = screen.tone === 'hype'
-      ? 'xplPulse .9s ease-in-out infinite' : 'none';
+    el.style.animation = screen.tone === 'hype' ? 'xplPulse .9s ease-in-out infinite' : 'none';
+    if (content) {
+      setMedia(content);
+      if (media) media.style.display = 'block';
+      if (body) body.style.display = 'none';
+      el.style.background = '#000';
+      var title = String(content.title || content.type || 'contenido').slice(0, 42);
+      if (chipAd) chipAd.textContent = '🎬 ' + title;
+    } else {
+      clearMedia();
+      if (body) body.style.display = 'flex';
+      el.style.background = ad.bg;
+      document.getElementById('xpl-sg-icon').textContent = ad.icon;
+      document.getElementById('xpl-sg-label').textContent = ad.es.toUpperCase();
+      if (chipAd) chipAd.textContent = ad.icon + ' ' + ad.es;
+    }
   }
 
   // keyframes
@@ -250,11 +308,19 @@
     var raw = localStorage.getItem(LS_RULES);                          // 3) composer local
     if (raw) { try { var a = JSON.parse(raw); if (Array.isArray(a) && a.length) return a; } catch (e) {} }
     return [                                                           // 4) semilla
+      // — contenido REAL del Stock de Pixeria (el puente) —
+      // Audiencia joven mirando → contenido de marca real (gana a todo).
+      { id: 'seed-content-young', name: 'Público joven → contenido de marca real', priority: 5, enabled: true,
+        when: { join: 'and', conds: [{ fact: 'audAge', value: 'joven' }] }, who: { group: 'all', filter: {} }, do: [{ id: 'showContent', value: 'marca' }] },
+      // Por defecto, sin nada especial → contenido real auto (lo que pida el público que mira).
+      { id: 'seed-content-base', name: 'Por defecto → contenido real (auto)', priority: 1, enabled: true,
+        when: { join: 'and', conds: [] }, who: { group: 'all', filter: {} }, do: [{ id: 'showContent', value: 'auto' }] },
+      // — eventos de clima: la creatividad de juguete del juego pop por encima del baseline —
       { id: 'seed-rain', name: 'Llueve → botas de agua', priority: 3, enabled: true,
         when: { join: 'and', conds: [{ fact: 'rain', value: true }] }, who: { group: 'all', filter: {} }, do: [{ id: 'showAd', value: 'rainboots' }] },
-      { id: 'seed-hot', name: 'Calor → helado', priority: 1, enabled: true,
+      { id: 'seed-hot', name: 'Calor → helado', priority: 3, enabled: true,
         when: { join: 'and', conds: [{ fact: 'temperature', op: '>=', value: 28 }] }, who: { group: 'all', filter: {} }, do: [{ id: 'showAd', value: 'icecream' }] },
-      { id: 'seed-night', name: 'Noche → happy hour', priority: 1, enabled: true,
+      { id: 'seed-night', name: 'Noche → happy hour', priority: 3, enabled: true,
         when: { join: 'and', conds: [{ fact: 'night', value: true }] }, who: { group: 'all', filter: {} }, do: [{ id: 'showAd', value: 'happyhour' }] }
     ];
   }
@@ -359,12 +425,44 @@
     else setPantallaWall(!pantallaWall);
   }
 
+  // ── PUENTE A CONTENIDO REAL ─────────────────────────────────────────────────
+  // showContent fija screen.contentReq (la intención). Aquí lo convertimos en un
+  // asset real del Stock vía XPLStock, segmentando con los HECHOS vivos (la cámara
+  // decide el público). El pick es async; mientras resuelve, mantenemos el asset
+  // anterior (cero parpadeo) y rotamos cada ROTATE_MS para que la pantalla respire.
+  var contentState = { sig: '', asset: null, picking: false, ts: 0 };
+  var ROTATE_MS = 15000;
+  var DAYPART_TS = { morning: 'manana', noon: 'mediodia', afternoon: 'tarde', night: 'noche' };
+  function resolveContent() {
+    var req = screen.contentReq;
+    if (!req) { screen.content = null; contentState.sig = ''; contentState.asset = null; return; }
+    if (!window.XPLStock) { return; }
+    var gv = world.fact('audGender');
+    var aud = gv === 'female' ? 'f' : gv === 'male' ? 'm' : '';
+    var av = world.fact('audAge');
+    var age = (av && av !== 'none') ? av : '';
+    var ts  = DAYPART_TS[world.fact('dayPart')] || '';
+    var cat = req === 'auto' ? '' : req;
+    var sig = [cat, aud, age, ts].join('|');
+    var now = Date.now();
+    var stale = sig !== contentState.sig || !contentState.asset || (now - contentState.ts) > ROTATE_MS;
+    if (stale && !contentState.picking) {
+      contentState.picking = true; contentState.sig = sig;
+      window.XPLStock.pickAsync({ category: cat, audience: aud, age: age, timeSlot: ts })
+        .then(function (a) { if (a) contentState.asset = a; contentState.ts = Date.now(); contentState.picking = false; })
+        .catch(function () { contentState.picking = false; });
+    }
+    screen.content = contentState.asset;
+  }
+
   function tick() {
     if (!window.G) return;
     gemeloDayHooks();
-    screen.ad = null; // se "apaga" si ninguna regla 'while' lo pone
+    screen.ad = null;          // se "apaga" si ninguna regla 'while' lo pone
+    screen.contentReq = null;  // idem para el canal de contenido real
     engine.tick();
-    applyOverride();  // el control remoto (CLI) manda por encima de las reglas
+    resolveContent();  // intención → asset real del Stock (async, sin parpadeo)
+    applyOverride();   // el control remoto (CLI) manda por encima de las reglas
     renderOverlay();
     positionSignage();
     publishState();
