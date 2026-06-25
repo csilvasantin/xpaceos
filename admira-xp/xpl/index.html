@@ -73,6 +73,7 @@
 <nav>
   <button data-view="estudio" class="on">🎛️ Estudio</button>
   <button data-view="backoffice">🗂️ Backoffice</button>
+  <button data-view="resolucion">🔎 Resolución</button>
   <button data-view="gemelo">📺 Gemelo</button>
   <button data-view="catalogo">📚 Catálogo</button>
 </nav>
@@ -102,12 +103,31 @@
         </div>
         <div class="muted" id="bo-msg" style="margin-top:8px"></div>
         <div class="muted" id="bo-current" style="margin-top:4px"></div>
+        <!-- historial del ámbito cargado -->
+        <div id="bo-history" style="margin-top:10px;display:none">
+          <h3 style="margin:0 0 6px">🕘 Historial de este ámbito</h3>
+          <div class="muted" id="bo-history-list">—</div>
+        </div>
       </div>
 
       <div class="card" style="margin-top:14px">
         <h3>🖥️ Gemelos abiertos <span class="pill" id="bo-count">0</span> <button class="btn" id="bo-refresh" style="float:right;padding:4px 10px">↻</button></h3>
         <div class="muted" id="bo-gemelos">cargando…</div>
         <div class="muted" style="margin-top:6px;font-size:11px">Control remoto: cada botón encola un comando para esa pantalla (el gemelo lo ejecuta en ≤3s).</div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>🔗 Vincular pantalla → circuito</h3>
+        <p class="muted" style="margin-top:0">Asocia una pantalla a un circuito/cliente. Así sus reglas de <b>circuito</b> le llegan solas (el store lo resuelve, sin configurar el kiosko).</p>
+        <div class="row" style="gap:8px">
+          <input type="text" id="bind-screen" placeholder="pantalla (p.ej. xtore-inicial)" style="font-family:var(--mono);padding:6px 9px;min-width:180px">
+          <span class="muted">→</span>
+          <input type="text" id="bind-circuit" placeholder="circuito (p.ej. estancos)" list="bind-circuit-list" style="font-family:var(--mono);padding:6px 9px;min-width:150px">
+          <datalist id="bind-circuit-list"></datalist>
+          <button class="btn primary" id="bind-save">Vincular</button>
+        </div>
+        <div class="muted" id="bind-msg" style="margin-top:6px"></div>
+        <div class="muted" id="bind-list" style="margin-top:8px"></div>
       </div>
 
       <div class="grid" style="margin-top:14px">
@@ -128,6 +148,35 @@
           2) <b>📥 Editar</b> → carga sus reglas en el <b>🎛️ Estudio</b> (te lleva allí). Edítalas como siempre.<br>
           3) Vuelve aquí y <b>📤 Publicar</b> → se guardan en el store; los gemelos de ese ámbito las recogen en ≤20s.<br>
           <span style="color:var(--mut)">Resolución en el gemelo: global, luego circuito, luego pantalla; mismo id en un ámbito más específico sustituye al heredado.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOLUCIÓN: qué recibe de verdad una pantalla tras la cascada -->
+  <section class="view" id="v-resolucion">
+    <div class="wrap">
+      <div class="card">
+        <h3>🔎 Qué recibe una pantalla (cascada resuelta)</h3>
+        <p class="muted" style="margin-top:0">Simula la resolución del gemelo: fusiona <b>global → circuito → pantalla</b> y muestra las reglas EFECTIVAS, marcando de qué capa viene cada una. Así ves lo que de verdad emitirá esa pantalla, sin abrir el gemelo.</p>
+        <div class="row" style="gap:8px">
+          <label class="muted" style="font-size:12px">📺 pantalla</label>
+          <input id="rs-screen" type="text" placeholder="xtore-inicial" style="font-family:var(--mono);padding:6px 9px;min-width:160px">
+          <label class="muted" style="font-size:12px">🔗 circuito</label>
+          <input id="rs-circuit" type="text" placeholder="(opcional)" style="font-family:var(--mono);padding:6px 9px;min-width:130px">
+          <button class="btn primary" id="rs-go">Resolver</button>
+        </div>
+        <div class="muted" id="rs-screens" style="margin-top:8px;font-size:12px"></div>
+      </div>
+      <div class="card" style="margin-top:14px" id="rs-out" hidden>
+        <h3>Reglas efectivas <span class="pill" id="rs-count">0</span></h3>
+        <div class="muted" id="rs-scopes" style="margin:0 0 10px"></div>
+        <div id="rs-rules"></div>
+        <div class="muted" style="margin-top:10px;font-size:11.5px">
+          <span class="tag2" style="border-color:var(--acc2);color:var(--acc2)">global</span>
+          <span class="tag2" style="border-color:var(--acc);color:var(--acc)">circuito</span>
+          <span class="tag2" style="border-color:var(--warn);color:var(--warn)">pantalla</span>
+          — la capa más específica que define un id <b>gana</b>.
         </div>
       </div>
     </div>
@@ -212,6 +261,7 @@ document.querySelectorAll('nav button').forEach(b=>{
     if(b.dataset.view==='catalogo') renderCatalog();
     if(b.dataset.view==='gemelo') refreshGemelo();
     if(b.dataset.view==='backoffice') initBackoffice();
+    if(b.dataset.view==='resolucion') initResolucion();
   };
 });
 
@@ -286,7 +336,9 @@ async function loadLive(){
       const ago=Math.round((now-s.lastSeen)/1000); const when=ago<90?'🟢 '+ago+'s':'hace '+Math.round(ago/60)+'min';
       return '<div class="row" style="justify-content:space-between;gap:8px"><a href="#" data-screen="'+s.screen+'" style="color:var(--acc2);text-decoration:none">📺 '+s.screen+'</a><span style="color:var(--mut);font-size:11px">'+(s.circuit?'🔗'+s.circuit+' · ':'')+when+'</span></div>';
     }).join('') : '<i>ninguna pantalla aún</i>';
+    window.__boScopes=d.scopes||[];
     $('#bo-scopes').innerHTML=(d.scopes||[]).length ? d.scopes.map(s=>'<span class="tag2">'+s+'</span>').join(' ') : '<i>sin reglas publicadas</i>';
+    loadBinds();
     $('#bo-screens').querySelectorAll('[data-screen]').forEach(a=>a.onclick=e=>{ e.preventDefault(); $('#bo-scope-kind').value='screen'; $('#bo-scope-id').style.display='block'; $('#bo-scope-id').value=a.dataset.screen; boMsg('ámbito → pantalla '+a.dataset.screen); });
   }catch(e){ $('#bo-gemelos').textContent='error de conexión con el store'; }
 }
@@ -297,6 +349,7 @@ $('#bo-load').onclick=async()=>{
     if(d.error){ boMsg(d.error,true); return; }
     localStorage.setItem('xpl_rules', JSON.stringify(d.rules||[]));
     $('#bo-current').textContent='Editando «'+scope+'» ('+(d.rules||[]).length+' reglas). Edítalas en Estudio y vuelve a Publicar.';
+    loadHistory(scope);   // muestra el historial de este ámbito (con rollback)
     const fr=$('#estudio-frame'); fr.src=fr.src;   // recarga el editor con estas reglas
     document.querySelector('nav button[data-view="estudio"]').click();
   }catch(e){ boMsg('no se pudo cargar el ámbito',true); }
@@ -312,6 +365,106 @@ $('#bo-publish').onclick=async()=>{
     boMsg('✓ Publicado en «'+scope+'» ('+d.count+' reglas). Los gemelos de ese ámbito lo recogen en ≤20s.');
     loadLive();
   }catch(e){ boMsg('no se pudo publicar',true); }
+};
+
+/* ---------- RESOLUCIÓN: cascada efectiva por pantalla ---------- */
+const ORIGIN_COLOR={global:'var(--acc2)',circuit:'var(--acc)',screen:'var(--warn)'};
+const ORIGIN_ES={global:'global',circuit:'circuito',screen:'pantalla'};
+let rsInit=false;
+function initResolucion(){
+  if(!rsInit){ rsInit=true;
+    $('#rs-go').onclick=resolveScreen;
+    $('#rs-screen').addEventListener('keydown',e=>{ if(e.key==='Enter') resolveScreen(); });
+    if(!$('#rs-screen').value) $('#rs-screen').value=(localStorage.getItem('pixer-xtore-screen-id')||'');
+  }
+  // sugerir pantallas vistas (reutiliza el store live)
+  fetch(STORE+'/xpl/live').then(r=>r.json()).then(d=>{
+    const ss=(d.screens||[]);
+    $('#rs-screens').innerHTML = ss.length ? ('vistas: '+ss.map(s=>'<a href="#" data-rs="'+s.screen+'" data-rc="'+(s.circuit||'')+'" style="color:var(--acc2);text-decoration:none">📺'+s.screen+'</a>').join(' · ')) : '';
+    $('#rs-screens').querySelectorAll('[data-rs]').forEach(a=>a.onclick=e=>{ e.preventDefault(); $('#rs-screen').value=a.dataset.rs; $('#rs-circuit').value=a.dataset.rc; resolveScreen(); });
+  }).catch(()=>{});
+}
+async function resolveScreen(){
+  const screen=($('#rs-screen').value||'').trim();
+  const circuit=($('#rs-circuit').value||'').trim();
+  if(!screen){ $('#rs-screens').innerHTML='<span style="color:var(--bad)">indica una pantalla</span>'; return; }
+  const q='screen='+encodeURIComponent(screen)+(circuit?'&circuit='+encodeURIComponent(circuit):'');
+  try{
+    const d=await fetch(STORE+'/xpl/resolve?'+q).then(r=>r.json());
+    const rules=d.rules||[], origin=d.origin||{};
+    $('#rs-out').hidden=false;
+    $('#rs-count').textContent=rules.length;
+    const sc=d.scopes||{};
+    const cInfo = d.circuit ? (' · circuito <b>'+d.circuit+'</b>'+(d.circuitFrom==='bind'?' <span style="color:var(--mut)">(vínculo)</span>':'')) : '';
+    $('#rs-scopes').innerHTML='capas → 🌍 global <b>'+(sc.global||0)+'</b> · 🔗 circuito <b>'+(sc.circuit||0)+'</b> · 📺 pantalla <b>'+(sc.screen||0)+'</b>'+cInfo;
+    $('#rs-rules').innerHTML = rules.length ? rules.map(r=>{
+      const og=origin[r.id]||'global'; const col=ORIGIN_COLOR[og]||'var(--mut)';
+      let sentence=''; try{ sentence=XPL.ruleSentence(r,'es'); }catch(e){ sentence='(regla '+(r.id||'?')+')'; }
+      const prio=Number(r.priority||0);
+      return '<div style="border:1px solid var(--line);border-left:3px solid '+col+';border-radius:9px;padding:9px 12px;margin-bottom:8px">'+
+        '<div class="row" style="justify-content:space-between;gap:8px">'+
+        '<span class="tag2" style="border-color:'+col+';color:'+col+'">'+(ORIGIN_ES[og]||og)+'</span>'+
+        '<span style="color:var(--mut);font-size:11px;font-family:var(--mono)">id '+(r.id||'?')+' · prio '+prio+'</span></div>'+
+        '<div style="margin-top:5px;font-size:13px;line-height:1.5">'+sentence+'</div></div>';
+    }).join('') : '<i>esta pantalla no recibe ninguna regla (ni global, ni circuito, ni propia).</i>';
+  }catch(e){ $('#rs-out').hidden=false; $('#rs-rules').innerHTML='<span style="color:var(--bad)">error consultando el store</span>'; }
+}
+
+/* ---------- HISTORIAL de un scope (en el Backoffice) ---------- */
+async function loadHistory(scope){
+  const box=$('#bo-history'), list=$('#bo-history-list');
+  try{
+    const d=await fetch(STORE+'/xpl/history?scope='+encodeURIComponent(scope)).then(r=>r.json());
+    const h=d.history||[];
+    box.style.display='block';
+    list.innerHTML = h.length ? h.map(v=>{
+      const when=new Date(v.ts).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      return '<div class="row" style="justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:4px 0">'+
+        '<span>🕘 '+when+' · <b>'+v.count+'</b> reglas'+(v.note?' · <i style="color:var(--mut)">'+v.note+'</i>':'')+'</span>'+
+        '<button class="btn" data-rollback="'+v.ts+'" style="padding:3px 9px;font-size:12px">↩︎ restaurar</button></div>';
+    }).join('') : '<i>sin versiones previas</i>';
+    list.querySelectorAll('[data-rollback]').forEach(b=>b.onclick=()=>rollbackScope(scope,b.dataset.rollback));
+  }catch(e){ box.style.display='block'; list.innerHTML='<span style="color:var(--bad)">no se pudo leer el historial</span>'; }
+}
+async function rollbackScope(scope,ts){
+  if(!BO_TOKEN){ boMsg('falta el token (🔑) para restaurar',true); return; }
+  if(!confirm('¿Restaurar esa versión de «'+scope+'»? La actual se guardará en el historial.')) return;
+  try{
+    const r=await fetch(STORE+'/xpl/rollback?scope='+encodeURIComponent(scope)+'&ts='+ts,{method:'POST',headers:{'X-XPL-Token':BO_TOKEN}});
+    const d=await r.json();
+    if(!r.ok||d.error){ boMsg(d.error||('HTTP '+r.status),true); return; }
+    boMsg('✓ Restaurada versión en «'+scope+'» ('+d.count+' reglas). Recargando…');
+    loadHistory(scope); loadLive();
+  }catch(e){ boMsg('no se pudo restaurar',true); }
+}
+
+/* ---------- VÍNCULOS pantalla → circuito ---------- */
+async function loadBinds(){
+  try{
+    const d=await fetch(STORE+'/xpl/binds').then(r=>r.json());
+    const bs=d.binds||[];
+    $('#bind-list').innerHTML = bs.length ? ('Vínculos: '+bs.map(b=>'<span class="tag2">📺'+b.screen+' → 🔗'+b.circuit+' <a href="#" data-unbind="'+b.screen+'" style="color:var(--bad);text-decoration:none">✕</a></span>').join(' ')) : '<i>sin vínculos · todas las pantallas resuelven solo global + su propio scope</i>';
+    $('#bind-list').querySelectorAll('[data-unbind]').forEach(a=>a.onclick=e=>{ e.preventDefault(); saveBind(a.dataset.unbind,''); });
+    // sugerencias de circuito = scopes circuit:* + circuitos ya vinculados
+    const circs=new Set(bs.map(b=>b.circuit));
+    (window.__boScopes||[]).forEach(s=>{ if(s.indexOf('circuit:')===0) circs.add(s.slice(8)); });
+    $('#bind-circuit-list').innerHTML=[...circs].map(c=>'<option value="'+c+'">').join('');
+  }catch(e){ $('#bind-list').textContent='no se pudieron leer los vínculos'; }
+}
+async function saveBind(screen, circuit){
+  if(!BO_TOKEN){ $('#bind-msg').innerHTML='<span style="color:var(--bad)">falta el token (🔑)</span>'; return; }
+  try{
+    const r=await fetch(STORE+'/xpl/bind?screen='+encodeURIComponent(screen)+'&circuit='+encodeURIComponent(circuit),{method:'POST',headers:{'X-XPL-Token':BO_TOKEN}});
+    const d=await r.json();
+    if(!r.ok||d.error){ $('#bind-msg').innerHTML='<span style="color:var(--bad)">'+(d.error||('HTTP '+r.status))+'</span>'; return; }
+    $('#bind-msg').textContent = circuit ? ('✓ '+screen+' → '+circuit) : ('✓ vínculo de '+screen+' quitado');
+    loadBinds();
+  }catch(e){ $('#bind-msg').innerHTML='<span style="color:var(--bad)">no se pudo guardar</span>'; }
+}
+$('#bind-save').onclick=()=>{
+  const s=($('#bind-screen').value||'').trim(), c=($('#bind-circuit').value||'').trim();
+  if(!s){ $('#bind-msg').innerHTML='<span style="color:var(--bad)">pon una pantalla</span>'; return; }
+  saveBind(s,c);
 };
 
 /* ---------- GEMELO: estado en vivo ---------- */

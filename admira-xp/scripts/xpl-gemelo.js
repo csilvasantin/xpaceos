@@ -56,6 +56,42 @@
     return 0;
   }
 
+  // ── Audiencia por "cámara": composición real de quien está delante ──────────
+  // Lee G.passersby + G.custs (cada persona lleva look.gender 'm'/'f' y look.age
+  // nino/joven/adulto/senior/vejez). Devuelve {viewers, gender, age} para que las
+  // reglas con audGender/audAge (ya en el catálogo) disparen sobre el gemelo real.
+  function audiencePeople() {
+    var g = window.G || {}, out = [];
+    [g.passersby, g.custs].forEach(function (arr) {
+      if (Array.isArray(arr)) for (var i = 0; i < arr.length; i++) {
+        var p = arr[i]; if (p && p.look && (p.look.gender || p.look.age)) out.push(p);
+      }
+    });
+    return out;
+  }
+  var _audCache = { ts: 0, val: null };
+  function audienceComposition() {
+    if (_audCache.val && (Date.now() - _audCache.ts) < 1000) return _audCache.val; // cachea 1s (se llama por fact)
+    var ppl = audiencePeople();
+    var male = 0, female = 0, ageCount = {};
+    for (var i = 0; i < ppl.length; i++) {
+      var lk = ppl[i].look;
+      if (lk.gender === 'f') female++; else if (lk.gender === 'm') male++;
+      if (lk.age) ageCount[lk.age] = (ageCount[lk.age] || 0) + 1;
+    }
+    var total = male + female;
+    var gender = 'none';
+    if (total > 0) {
+      var minor = Math.min(male, female);
+      gender = (minor / total) >= 0.35 ? 'mixed' : (female > male ? 'female' : 'male');
+    }
+    var age = 'none', best = 0;
+    for (var k in ageCount) if (ageCount[k] > best) { best = ageCount[k]; age = k; }
+    var val = { viewers: Math.min(12, ppl.length), gender: gender, age: age };
+    _audCache = { ts: Date.now(), val: val };
+    return val;
+  }
+
   var screen = { ad: null, tone: 'calm' };
 
   // OVERRIDE de emisión (control remoto CLI): manda POR ENCIMA de las reglas
@@ -89,6 +125,9 @@
         case 'thief':       return !!g.thief;
         case 'satisfaction':return typeof g.satisfaction === 'number' ? g.satisfaction : 70;
         case 'money':       return typeof g.money === 'number' ? g.money : 0;
+        case 'viewers':     return audienceComposition().viewers;
+        case 'audGender':   return audienceComposition().gender;
+        case 'audAge':      return audienceComposition().age;
       }
       return 0;
     },
