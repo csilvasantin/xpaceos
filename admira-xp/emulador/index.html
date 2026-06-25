@@ -78,6 +78,7 @@
     <button class="btn" id="load">📷 Cargar captura</button>
     <button class="btn" id="auto">🎯 Auto-encajar</button>
     <button class="btn" id="adjust">✥ Ajustar a mano</button>
+    <button class="btn" id="save">💾 Guardar imagen</button>
   </div>
   <div class="row">
     <label class="stat">público</label>
@@ -257,7 +258,7 @@ function segNow(){ var g=$('#seg-g').value, a=$('#seg-a').value, h=new Date().ge
 function setMedia(asset){
   var m=$('#mupi-media'); if(m.__k===asset.url) return; m.__k=asset.url; m.innerHTML='';
   var vid=asset.type==='video'||asset.type==='animation'||/\.(mp4|webm|mov)(\?|$)/i.test(asset.url||'');
-  var n=document.createElement(vid?'video':'img'); n.src=asset.url;
+  var n=document.createElement(vid?'video':'img'); n.crossOrigin='anonymous'; n.src=asset.url;
   if(vid){ n.muted=true;n.loop=true;n.autoplay=true;n.playsInline=true;n.setAttribute('playsinline','');n.setAttribute('muted','');var p=n.play&&n.play();if(p&&p.catch)p.catch(()=>{}); }
   m.appendChild(n);
 }
@@ -287,6 +288,63 @@ function showStop(){
 }
 $('#prev').onclick=()=>{ STOPS=circuit(); IDX=(IDX-1+STOPS.length)%STOPS.length; showStop(); };
 $('#next').onclick=()=>{ STOPS=circuit(); IDX=(IDX+1)%STOPS.length; showStop(); };
+
+/* ---------- GUARDAR: hornear captura + MUPI en perspectiva → PNG ---------- */
+function solve3(M,r){ // x con M·x=r (M 3x3 row-major)
+  const a=M, det=a[0]*(a[4]*a[8]-a[5]*a[7])-a[1]*(a[3]*a[8]-a[5]*a[6])+a[2]*(a[3]*a[7]-a[4]*a[6]);
+  if(Math.abs(det)<1e-9) return null;
+  const v=[a[4]*a[8]-a[5]*a[7],a[2]*a[7]-a[1]*a[8],a[1]*a[5]-a[2]*a[4],
+           a[5]*a[6]-a[3]*a[8],a[0]*a[8]-a[2]*a[6],a[2]*a[3]-a[0]*a[5],
+           a[3]*a[7]-a[4]*a[6],a[1]*a[6]-a[0]*a[7],a[0]*a[4]-a[1]*a[3]].map(x=>x/det);
+  return [v[0]*r[0]+v[1]*r[1]+v[2]*r[2], v[3]*r[0]+v[4]*r[1]+v[5]*r[2], v[6]*r[0]+v[7]*r[1]+v[8]*r[2]];
+}
+function drawTri(ctx,img,s,d){
+  const M=[s[0][0],s[0][1],1, s[1][0],s[1][1],1, s[2][0],s[2][1],1];
+  const A=solve3(M,[d[0][0],d[1][0],d[2][0]]), B=solve3(M,[d[0][1],d[1][1],d[2][1]]); if(!A||!B) return;
+  // clip a un triángulo ligeramente INFLADO (~0.8px hacia fuera) para tapar las costuras del mallado
+  const cx=(d[0][0]+d[1][0]+d[2][0])/3, cy=(d[0][1]+d[1][1]+d[2][1])/3, PX=0.8;
+  const e=d.map(p=>{ const dx=p[0]-cx, dy=p[1]-cy, l=Math.hypot(dx,dy)||1; return [p[0]+dx/l*PX, p[1]+dy/l*PX]; });
+  ctx.save(); ctx.beginPath(); ctx.moveTo(e[0][0],e[0][1]); ctx.lineTo(e[1][0],e[1][1]); ctx.lineTo(e[2][0],e[2][1]); ctx.closePath(); ctx.clip();
+  ctx.setTransform(A[0],B[0],A[1],B[1],A[2],B[2]); ctx.drawImage(img,0,0); ctx.restore();
+}
+function warpImage(ctx,img,dst,sw,sh){
+  const [TL,TR,BL,BR]=dst, NX=12,NY=18;
+  const P=(u,v)=>[ (1-u)*(1-v)*TL[0]+u*(1-v)*TR[0]+(1-u)*v*BL[0]+u*v*BR[0],
+                   (1-u)*(1-v)*TL[1]+u*(1-v)*TR[1]+(1-u)*v*BL[1]+u*v*BR[1] ];
+  for(let i=0;i<NX;i++)for(let j=0;j<NY;j++){
+    const u0=i/NX,u1=(i+1)/NX,v0=j/NY,v1=(j+1)/NY;
+    const s00=[u0*sw,v0*sh],s10=[u1*sw,v0*sh],s01=[u0*sw,v1*sh],s11=[u1*sw,v1*sh];
+    const d00=P(u0,v0),d10=P(u1,v0),d01=P(u0,v1),d11=P(u1,v1);
+    drawTri(ctx,img,[s00,s10,s11],[d00,d10,d11]); drawTri(ctx,img,[s00,s11,s01],[d00,d11,d01]);
+  }
+  ctx.setTransform(1,0,0,1,0,0);
+}
+function exportImage(){
+  if(bg.hidden){ flash('pega o carga una captura primero 📋'); return; }
+  const node=$('#mupi-media').querySelector('img,video');
+  const sw=stage.clientWidth, sh=stage.clientHeight, SC=2;
+  const cv=document.createElement('canvas'); cv.width=Math.round(sw*SC); cv.height=Math.round(sh*SC);
+  const cx=cv.getContext('2d');
+  const iw=bg.naturalWidth, ih=bg.naturalHeight, ar=iw/ih, sar=sw/sh; let sx,sy,sW,sH;
+  if(ar>sar){ sH=ih; sW=ih*sar; sx=(iw-sW)/2; sy=0;} else { sW=iw; sH=iw/sar; sx=0; sy=(ih-sH)/2; }
+  cx.drawImage(bg, sx,sy,sW,sH, 0,0, cv.width, cv.height);
+  if(node && corners){
+    const dst=corners.map(c=>[c[0]*SC,c[1]*SC]);
+    const isV=node.tagName==='VIDEO', w2=isV?node.videoWidth:node.naturalWidth, h2=isV?node.videoHeight:node.naturalHeight;
+    if(w2&&h2) warpImage(cx,node,dst,w2,h2);
+    const tx=(dst[0][0]+dst[1][0])/2, ty=(dst[0][1]+dst[1][1])/2;
+    cx.setTransform(1,0,0,1,0,0); cx.textAlign='center'; cx.font='bold '+Math.round(15*SC)+'px ui-monospace,monospace';
+    cx.shadowColor='#000'; cx.shadowBlur=6*SC; cx.fillStyle='#fff'; cx.fillText('admira.tv', tx, ty+20*SC); cx.shadowBlur=0;
+  }
+  try{
+    cv.toBlob(b=>{ if(!b){ flash('no se pudo generar (¿contenido aún cargando?)'); return; }
+      const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+      a.download='mupi-'+(STOPS[IDX]?STOPS[IDX].id:'kiosko')+'.png';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+      flash('💾 imagen guardada con el MUPI encima'); }, 'image/png');
+  }catch(e){ flash('⚠ el contenido bloquea el guardado (CORS) · reintenta en unos segundos'); }
+}
+$('#save').onclick=exportImage;
 
 /* ---------- arranque ---------- */
 STOPS=circuit(); IDX=0;
