@@ -48,10 +48,10 @@
 <div id="stage">
   <img id="bg" alt="" hidden>
   <div id="empty">
-    <div class="big">🗺️📡</div>
-    <div>Emulador de <b>cartelería de exterior</b> sobre Street View.<br>
-    Arrastra aquí (o pulsa <b>📷 Cargar captura</b>) una captura de Street View del kiosko,<br>
-    y ajusta el MUPI encima para ver <b>admira.tv emitiendo</b>.</div>
+    <div class="big">📋📡</div>
+    <div><b>Pega aquí (⌘V / Ctrl+V)</b> una captura de Street View del kiosko.<br>
+    También puedes arrastrarla o <b>📷 Cargar captura</b>.<br>
+    El MUPI se <b>encaja solo</b> sobre la pantalla y empieza a emitir <b>admira.tv</b>.</div>
   </div>
   <div id="mupi">
     <div id="mupi-media"></div>
@@ -145,6 +145,16 @@ $('#file').onchange=e=>{ if(e.target.files[0]) setBackdrop(e.target.files[0]); }
 ['dragenter','dragover'].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();$('#drop').classList.add('show');}));
 ['dragleave','drop'].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();if(ev==='drop'||e.relatedTarget===null)$('#drop').classList.remove('show');}));
 window.addEventListener('drop',e=>{ e.preventDefault(); $('#drop').classList.remove('show'); var f=[...(e.dataTransfer.files||[])].find(x=>/^image\//.test(x.type)); if(f) setBackdrop(f); });
+// PEGAR (⌘V/Ctrl+V): la vía más cómoda — copias la captura y la pegas aquí
+window.addEventListener('paste',e=>{
+  var items=(e.clipboardData||window.clipboardData||{}).items||[];
+  for(var i=0;i<items.length;i++){
+    if(items[i].type && items[i].type.indexOf('image')===0){
+      var f=items[i].getAsFile(); if(f){ setBackdrop(f); e.preventDefault(); }
+      return;
+    }
+  }
+});
 
 /* ---------- ajustar esquinas ---------- */
 let adjusting=false;
