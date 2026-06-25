@@ -14,12 +14,21 @@
   #side.collapsed{width:0}
   .side-in{width:340px;height:100%;display:flex;flex-direction:column;border-right:1px solid var(--line)}
   /* pestaña plegable (como Google Maps) */
-  #side-toggle{position:fixed;top:50%;left:340px;transform:translateY(-50%);z-index:70;width:22px;height:56px;
+  #side-toggle{position:fixed;top:50%;left:340px;transform:translateY(-50%);z-index:1100;width:22px;height:56px;
     background:var(--panel);border:1px solid var(--line);border-left:none;border-radius:0 10px 10px 0;color:var(--mut);
     cursor:pointer;display:flex;align-items:center;justify-content:center;font:700 15px var(--mono);
     transition:left .28s ease,color .15s;box-shadow:3px 0 12px #0006}
   #side-toggle:hover{color:var(--ink)}
-  #side-toggle.collapsed{left:0}
+  #side-toggle.collapsed{left:54px}
+  /* mini-rail de iconos cuando el panel está plegado (estilo Google Maps) */
+  #rail{position:fixed;left:0;top:0;bottom:0;width:54px;z-index:1100;background:var(--panel);border-right:1px solid var(--line);
+    display:none;flex-direction:column;align-items:center;gap:6px;padding:12px 0;box-shadow:3px 0 12px #0005}
+  #rail.show{display:flex}
+  #rail button{width:40px;height:40px;border:1px solid transparent;background:transparent;color:var(--mut);border-radius:11px;
+    cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;position:relative}
+  #rail button:hover{background:#1a212e;color:var(--ink)}
+  #rail .rbadge{position:absolute;top:1px;right:1px;min-width:15px;height:15px;border-radius:8px;background:var(--acc);color:#06231e;
+    font:700 9px var(--mono);display:flex;align-items:center;justify-content:center;padding:0 3px}
   header{padding:12px 14px;border-bottom:1px solid var(--line)}
   header h1{font-size:15px;margin:0;font-weight:800}
   header h1 .tag{color:var(--acc);font-family:var(--mono)}
@@ -70,6 +79,12 @@
   </div></div>
   <div id="map"></div>
   <button id="side-toggle" title="ocultar / mostrar panel">‹</button>
+  <div id="rail">
+    <button id="rail-menu" title="abrir panel">☰</button>
+    <button id="rail-search" title="buscar kioskos">🔍</button>
+    <button id="rail-circuit" title="circuito del emulador">🎬<span class="rbadge" id="rail-count" style="display:none">0</span></button>
+    <button id="rail-emu" title="abrir emulador">🗺️</button>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -136,17 +151,22 @@ function render(els){
 function circuit(){ try{ return JSON.parse(localStorage.getItem('mupiCircuit')||'[]'); }catch(e){ return []; } }
 function saveCircuit(c){ localStorage.setItem('mupiCircuit', JSON.stringify(c)); renderChips(); }
 window.addStop=function(id,name,lat,lon){ const c=circuit(); if(c.find(s=>s.id===id)) return; c.push({id,name,lat,lon}); saveCircuit(c); $('#stat').textContent='➕ '+name+' al circuito ('+c.length+')'; };
-function renderChips(){ const c=circuit(); $('#chips').innerHTML = c.length? c.map(s=>`<span class="chip">📍 ${s.name} <a href="#" onclick="delStop('${s.id}');return false">✕</a></span>`).join('') : 'vacío · añade kioskos con ➕'; }
+function renderChips(){ const c=circuit(); $('#chips').innerHTML = c.length? c.map(s=>`<span class="chip">📍 ${s.name} <a href="#" onclick="delStop('${s.id}');return false">✕</a></span>`).join('') : 'vacío · añade kioskos con ➕';
+  const rc=$('#rail-count'); if(rc){ rc.textContent=c.length; rc.style.display=c.length?'flex':'none'; } }
 window.delStop=function(id){ saveCircuit(circuit().filter(s=>s.id!==id)); };
 $('#open-emu').onclick=()=>window.open('../emulador/','_blank');
 $('#search').onclick=search;
 // panel plegable estilo Google Maps
 (function(){
-  const side=$('#side'), tog=$('#side-toggle');
-  function set(col){ side.classList.toggle('collapsed',col); tog.classList.toggle('collapsed',col); tog.textContent=col?'›':'‹';
+  const side=$('#side'), tog=$('#side-toggle'), rail=$('#rail');
+  function set(col){ side.classList.toggle('collapsed',col); tog.classList.toggle('collapsed',col); rail.classList.toggle('show',col); tog.textContent=col?'›':'‹';
     try{ localStorage.setItem('buscadorCollapsed', col?'1':'0'); }catch(e){}
     setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){} }, 300); }
   tog.onclick=()=>set(!side.classList.contains('collapsed'));
+  $('#rail-menu').onclick=()=>set(false);
+  $('#rail-search').onclick=()=>{ set(false); setTimeout(()=>{ try{ $('#search').focus(); }catch(e){} },360); };
+  $('#rail-circuit').onclick=()=>{ set(false); setTimeout(()=>{ const c=document.querySelector('.circuit'); if(c) c.scrollIntoView({behavior:'smooth'}); },360); };
+  $('#rail-emu').onclick=()=>window.open('../emulador/','_blank');
   let init=false; try{ init=localStorage.getItem('buscadorCollapsed')==='1'; }catch(e){}
   if(init) set(true);
 })();
