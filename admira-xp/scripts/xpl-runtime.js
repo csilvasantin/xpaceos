@@ -139,6 +139,17 @@
     { id: 'goInside',   scope: 'npc',   mode: 'on',    es: 'meterlos dentro', en: 'send them inside' },
     { id: 'showAd',     scope: 'screen', mode: 'while', es: 'en las pantallas anunciar', en: 'on the screens advertise',
       param: { kind: 'enum', es: 'creatividad', en: 'creative', values: ADS } },
+    // showContent = el PUENTE a contenido real: no una creatividad de juguete,
+    // sino un asset del Stock de Pixeria que casa con el segmento. La audiencia
+    // (género/edad) y la franja se toman de los HECHOS vivos al resolver, así que
+    // el operador solo decide la INTENCIÓN (auto = lo que pida el público que mira).
+    { id: 'showContent',scope: 'screen', mode: 'while', es: 'en las pantallas, contenido real', en: 'on the screens, real content',
+      param: { kind: 'enum', es: 'intención', en: 'intent', values: [
+        { id: 'auto',     es: 'auto (según el público)', en: 'auto (by audience)', icon: '🎯' },
+        { id: 'atraer',   es: 'para atraer',  en: 'to attract',  icon: '🧲' },
+        { id: 'producto', es: 'de producto',  en: 'product',     icon: '📦' },
+        { id: 'marca',    es: 'de marca',     en: 'brand',       icon: '⭐' },
+        { id: 'promo',    es: 'de promoción', en: 'promo',       icon: '🏷️' } ] } },
     { id: 'clearScreen',scope: 'screen', mode: 'while', es: 'apagar las pantallas', en: 'clear the screens' },
     { id: 'screenTone', scope: 'screen', mode: 'while', es: 'el tono de las pantallas', en: 'screen tone',
       param: { kind: 'enum', es: 'tono', en: 'tone', values: [
@@ -346,7 +357,7 @@
 
     // Canal de pantalla para resolver conflictos: la "content" (showAd/clearScreen)
     // y el "tone" se resuelven por prioridad — solo gana una regla por canal.
-    const SCREEN_CHANNEL = { showAd: 'content', clearScreen: 'content', screenTone: 'tone' };
+    const SCREEN_CHANNEL = { showAd: 'content', showContent: 'content', clearScreen: 'content', screenTone: 'tone' };
 
     function tick() {
       const npcs = world.npcs ? world.npcs() : [];
