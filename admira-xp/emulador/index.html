@@ -81,6 +81,10 @@
     <button class="btn" id="save">💾 Guardar imagen</button>
   </div>
   <div class="row">
+    <button class="btn" id="rec">🎥 Grabar vídeo</button>
+    <select id="dur" title="duración del vídeo"><option value="5">5s</option><option value="10" selected>10s</option><option value="15">15s</option><option value="20">20s</option><option value="30">30s</option></select>
+  </div>
+  <div class="row">
     <label class="stat">público</label>
     <select id="seg-g"><option value="">auto</option><option value="female">♀ mujer</option><option value="male">♂ hombre</option><option value="mixed">⚥ mixto</option></select>
     <select id="seg-a"><option value="">auto</option><option value="nino">niño</option><option value="joven">joven</option><option value="adulto">adulto</option><option value="senior">senior</option></select>
@@ -307,8 +311,8 @@ function drawTri(ctx,img,s,d){
   ctx.save(); ctx.beginPath(); ctx.moveTo(e[0][0],e[0][1]); ctx.lineTo(e[1][0],e[1][1]); ctx.lineTo(e[2][0],e[2][1]); ctx.closePath(); ctx.clip();
   ctx.setTransform(A[0],B[0],A[1],B[1],A[2],B[2]); ctx.drawImage(img,0,0); ctx.restore();
 }
-function warpImage(ctx,img,dst,sw,sh){
-  const [TL,TR,BL,BR]=dst, NX=12,NY=18;
+function warpImage(ctx,img,dst,sw,sh,nx,ny){
+  const [TL,TR,BL,BR]=dst, NX=nx||12, NY=ny||18;
   const P=(u,v)=>[ (1-u)*(1-v)*TL[0]+u*(1-v)*TR[0]+(1-u)*v*BL[0]+u*v*BR[0],
                    (1-u)*(1-v)*TL[1]+u*(1-v)*TR[1]+(1-u)*v*BL[1]+u*v*BR[1] ];
   for(let i=0;i<NX;i++)for(let j=0;j<NY;j++){
@@ -345,6 +349,48 @@ function exportImage(){
   }catch(e){ flash('⚠ el contenido bloquea el guardado (CORS) · reintenta en unos segundos'); }
 }
 $('#save').onclick=exportImage;
+
+/* ---------- GRABAR VÍDEO: clip del MUPI emitiendo (duración elegible) → WebM ---------- */
+let recording=false;
+function recordVideo(){
+  if(recording) return;
+  if(bg.hidden){ flash('pega o carga una captura primero 📋'); return; }
+  if(!('MediaRecorder' in window)){ flash('este navegador no soporta grabación'); return; }
+  const node=$('#mupi-media').querySelector('video,img');
+  const secs=parseInt($('#dur').value||'10',10);
+  const sw=stage.clientWidth, sh=stage.clientHeight, RW=Math.min(1280,sw), sc=RW/sw, RH=Math.round(sh*sc);
+  const cv=document.createElement('canvas'); cv.width=RW; cv.height=RH; const cx=cv.getContext('2d');
+  const iw=bg.naturalWidth, ih=bg.naturalHeight, ar=iw/ih, sar=sw/sh; let sx,sy,sW,sH;
+  if(ar>sar){ sH=ih; sW=ih*sar; sx=(iw-sW)/2; sy=0;} else { sW=iw; sH=iw/sar; sx=0; sy=(ih-sH)/2; }
+  const dstAt=()=>corners.map(c=>[c[0]*sc,c[1]*sc]);
+  const stream=cv.captureStream(30);
+  let mime='video/webm;codecs=vp9'; if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm;codecs=vp8'; if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
+  let rec; try{ rec=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:6000000}); }catch(e){ flash('no pude iniciar la grabación'); return; }
+  const chunks=[]; rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+  recording=true; const btn=$('#rec'); btn.classList.add('on'); btn.textContent='⏺ Grabando…';
+  if(node&&node.tagName==='VIDEO'){ try{ node.currentTime=0; node.play(); }catch(e){} }
+  let timer, t0=performance.now();
+  // setInterval (no requestAnimationFrame): sigue corriendo aunque la pestaña no tenga foco.
+  function frame(){
+    cx.drawImage(bg, sx,sy,sW,sH, 0,0, RW,RH);
+    const d=dstAt();
+    if(node){ const isV=node.tagName==='VIDEO', w2=isV?node.videoWidth:node.naturalWidth, h2=isV?node.videoHeight:node.naturalHeight;
+      if(w2&&h2) warpImage(cx,node,d,w2,h2,8,11); }
+    cx.setTransform(1,0,0,1,0,0); cx.textAlign='center'; cx.font='bold 13px ui-monospace,monospace'; cx.shadowColor='#000'; cx.shadowBlur=5; cx.fillStyle='#fff';
+    cx.fillText('admira.tv',(d[0][0]+d[1][0])/2,(d[0][1]+d[1][1])/2+15); cx.shadowBlur=0;
+    const el=(performance.now()-t0)/1000;
+    btn.textContent='⏺ '+el.toFixed(1)+'s / '+secs+'s';
+    if(el>=secs || !recording){ clearInterval(timer); try{ rec.stop(); }catch(e){} }
+  }
+  timer=setInterval(frame, 34);
+  rec.onstop=()=>{ clearInterval(timer); recording=false; btn.classList.remove('on'); btn.textContent='🎥 Grabar vídeo';
+    const blob=new Blob(chunks,{type:'video/webm'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mupi-'+(STOPS[IDX]?STOPS[IDX].id:'kiosko')+'-'+secs+'s.webm';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    flash('🎥 vídeo guardado ('+secs+'s · '+Math.round(blob.size/1024)+' KB)'); };
+  rec.start(200);
+}
+$('#rec').onclick=()=>{ if(recording){ recording=false; } else recordVideo(); };
 
 /* ---------- arranque ---------- */
 STOPS=circuit(); IDX=0;
