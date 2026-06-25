@@ -76,7 +76,7 @@
   // Captura la etiqueta de equipo (?device=) ANTES de que el gemelo limpie la URL,
   // para que el registro de gemelos del backoffice muestre el nombre del equipo.
   try { var dp = new URLSearchParams(location.search).get('device'); if (dp) localStorage.setItem('xpl_device', dp); } catch (e) {}
-  const V = '?v=12';
+  const V = '?v=13';
   // xpl-stock.js (resolver del Stock real) va ANTES del adapter: showContent lo usa.
   ['scripts/xpl-runtime.js', 'scripts/xpl-stock.js', 'scripts/xpl-gemelo.js', 'scripts/xpl-composer.js'].forEach((src) => {
     const s = document.createElement('script');

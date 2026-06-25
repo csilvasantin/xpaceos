@@ -57,6 +57,7 @@
   }
 
   var screen = { ad: null, tone: 'calm', content: null, contentReq: null };
+  var extScreen = { ad: null };   // pantalla de exterior (MUPI de calle), dirigida al viandante
 
   // Audiencia por cámara (anónima, on-device): la lee el modelo facial de
   // index.html y la deja en window.LIVE_FACE {faces, gender, age, ageBucket, ts}.
@@ -69,6 +70,12 @@
   function camFaces()  { var lf = lfFresh(); return lf ? lf.faces : 0; }
   function camGender() { var lf = lfFresh(); if (!lf) return 'none'; return lf.gender === 'female' ? 'female' : lf.gender === 'male' ? 'male' : 'mixed'; }
   function camAge()    { var lf = lfFresh(); if (!lf) return 'none'; return lf.ageBucket || 'adulto'; }
+
+  // Viandante por la MUPICAM (audiencia de la PANTALLA DE EXTERIOR): el gemelo deja
+  // en G.exteriorAd {gender:'f'|'m', age:'nino'|...} a quien cruza el frente del mupi.
+  function extFresh()   { var e = window.G && window.G.exteriorAd; return (e && e.gender) ? e : null; }
+  function extGenderV() { var e = extFresh(); if (!e) return 'none'; return e.gender === 'f' ? 'female' : e.gender === 'm' ? 'male' : 'mixed'; }
+  function extAgeV()    { var e = extFresh(); return (e && e.age) ? e.age : 'none'; }
 
   // OVERRIDE de emisión (control remoto CLI): manda POR ENCIMA de las reglas
   // durante 'until'. ad:'' = forzar apagado · ad:null = no tocar · auto = soltar.
@@ -105,6 +112,9 @@
         case 'viewers':     return camFaces();
         case 'audGender':   return camGender();
         case 'audAge':      return camAge();
+        // — viandante (pantalla de exterior) —
+        case 'extGender':   return extGenderV();
+        case 'extAge':      return extAgeV();
       }
       return 0;
     },
@@ -118,6 +128,8 @@
         case 'showContent': screen.contentReq = value || 'auto'; screen.ad = null; break;
         case 'clearScreen': screen.ad = null; screen.contentReq = null; break;
         case 'screenTone':  screen.tone = value; break;
+        case 'showExtAd':      extScreen.ad = value; break;
+        case 'clearExtScreen': extScreen.ad = null; break;
         case 'setWeather':  if (g) { g.weather = { type: value === 'sun' ? 'sun' : value, timer: 600 }; } break;
         case 'jingle':      beep(value); break;
         case 'command':     if (typeof window.__xtExec === 'function' && value) window.__xtExec(String(value)); break;
@@ -148,7 +160,7 @@
   /* ---------------------------------------------------------------------------
    * 3) OVERLAY DE SEÑALIZACIÓN  (la "pantalla" contextual del gemelo)
    * ------------------------------------------------------------------------- */
-  var el, chip, on = localStorage.getItem(LS_ON) !== '0';
+  var el, chip, extEl, on = localStorage.getItem(LS_ON) !== '0';
 
   function buildUI() {
     // ---- pantalla flotante (movible) ----
@@ -171,6 +183,26 @@
       '<div id="xpl-sg-badge" style="position:absolute;top:5px;left:7px;font:700 8px ui-monospace,monospace;color:#fff9;letter-spacing:1px;z-index:2;text-shadow:0 1px 2px #000a">XPACEOS · LIVE</div>';
     document.body.appendChild(el);
     dragify(el);
+
+    // ---- PANTALLA DE EXTERIOR (MUPI de calle, vertical) — dirigida al viandante ----
+    extEl = document.createElement('div');
+    extEl.id = 'xpl-ext-signage';
+    extEl.style.cssText = [
+      'position:fixed', 'left:18px', 'bottom:64px', 'width:116px', 'height:196px',
+      'border-radius:12px', 'overflow:hidden', 'z-index:100050', 'cursor:grab',
+      'box-shadow:0 8px 30px rgba(0,0,0,.5)', 'border:2px solid rgba(255,255,255,.14)',
+      'font-family:-apple-system,Segoe UI,Roboto,sans-serif', 'display:none', 'user-select:none',
+      'transition:background .4s'
+    ].join(';');
+    extEl.innerHTML =
+      '<div id="xpl-ext-body" style="position:absolute;inset:0;display:flex;flex-direction:column;' +
+      'align-items:center;justify-content:center;gap:6px;color:#fff;text-align:center;padding:0 8px">' +
+      '<div id="xpl-ext-icon" style="font-size:52px;line-height:1"></div>' +
+      '<div id="xpl-ext-label" style="font:700 11px ui-monospace,monospace;letter-spacing:.5px"></div></div>' +
+      '<div style="position:absolute;top:5px;left:0;right:0;text-align:center;font:700 7px ui-monospace,monospace;color:#fff9;letter-spacing:1px;text-shadow:0 1px 2px #000a">MUPI · EXTERIOR</div>' +
+      '<div id="xpl-ext-seg" style="position:absolute;bottom:5px;left:0;right:0;text-align:center;font:700 8px ui-monospace,monospace;color:#ffffffcc;text-shadow:0 1px 2px #000a"></div>';
+    document.body.appendChild(extEl);
+    dragify(extEl);
 
     // ---- chip de estado ----
     chip = document.createElement('div');
@@ -245,6 +277,7 @@
     var inside = gateInside();
     // chip y ventana ocultos por completo mientras estemos en el intro
     if (chip) chip.style.display = inside ? 'flex' : 'none';
+    renderExt(inside);   // la pantalla de exterior se pinta aparte (canal propio)
     if (!inside) { el.style.display = 'none'; clearMedia(); return; }
     // contenido REAL gana sobre la creatividad de juguete (mismo canal 'content')
     var content = (on && screen.content) ? screen.content : null;
@@ -275,6 +308,26 @@
       document.getElementById('xpl-sg-icon').textContent = ad.icon;
       document.getElementById('xpl-sg-label').textContent = ad.es.toUpperCase();
       if (chipAd) chipAd.textContent = ad.icon + ' ' + ad.es;
+    }
+  }
+
+  // Pantalla de exterior (MUPI): creatividad dirigida al viandante de delante.
+  function renderExt(inside) {
+    if (!extEl) return;
+    var ad = (inside && on && extScreen.ad) ? window.XPL.byId(window.XPL.ADS, extScreen.ad) : null;
+    if (!ad) { extEl.style.display = 'none'; return; }
+    extEl.style.display = 'block';
+    extEl.style.background = ad.bg;
+    var ic = document.getElementById('xpl-ext-icon');
+    var lb = document.getElementById('xpl-ext-label');
+    var sg = document.getElementById('xpl-ext-seg');
+    if (ic) ic.textContent = ad.icon;
+    if (lb) lb.textContent = ad.es.toUpperCase();
+    if (sg) {
+      var GS = { female: '♀ mujer', male: '♂ hombre', mixed: '⚥ mixto' };
+      var AS = { nino: 'niño', joven: 'joven', adulto: 'adulto', senior: 'senior' };
+      var seg = [GS[extGenderV()] || '', AS[extAgeV()] || ''].filter(Boolean).join(' · ');
+      sg.textContent = seg ? ('▸ ' + seg) : '';
     }
   }
 

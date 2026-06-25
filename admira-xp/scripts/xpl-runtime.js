@@ -56,7 +56,15 @@
     { id: 'audAge',       type: 'enum', es: 'la edad de la audiencia', en: 'the audience age', icon: '🎂',
       values: [ { id: 'none', es: 'nadie', en: 'nobody', icon: '🚷' }, { id: 'nino', es: 'niño', en: 'child', icon: '🧒' },
                 { id: 'joven', es: 'joven', en: 'young', icon: '🧑' }, { id: 'adulto', es: 'adulto', en: 'adult', icon: '🧔' },
-                { id: 'senior', es: 'senior', en: 'senior', icon: '👴' }, { id: 'vejez', es: 'vejez', en: 'elder', icon: '👵' } ] }
+                { id: 'senior', es: 'senior', en: 'senior', icon: '👴' }, { id: 'vejez', es: 'vejez', en: 'elder', icon: '👵' } ] },
+    // — viandante por la MUPICAM (audiencia de la PANTALLA DE EXTERIOR / MUPI de calle) —
+    { id: 'extGender',    type: 'enum', es: 'el género del viandante', en: 'the passer-by gender', icon: '🚶',
+      values: [ { id: 'none', es: 'nadie', en: 'nobody', icon: '🚷' }, { id: 'female', es: 'mujer', en: 'women', icon: '♀️' },
+                { id: 'male', es: 'hombre', en: 'men', icon: '♂️' }, { id: 'mixed', es: 'mixto', en: 'mixed', icon: '⚥' } ] },
+    { id: 'extAge',       type: 'enum', es: 'la edad del viandante', en: 'the passer-by age', icon: '🚶',
+      values: [ { id: 'none', es: 'nadie', en: 'nobody', icon: '🚷' }, { id: 'nino', es: 'niño', en: 'child', icon: '🧒' },
+                { id: 'joven', es: 'joven', en: 'young', icon: '🧑' }, { id: 'adulto', es: 'adulto', en: 'adult', icon: '🧔' },
+                { id: 'senior', es: 'senior', en: 'senior', icon: '👴' } ] }
   ];
 
   // Operadores para hechos numéricos
@@ -107,7 +115,13 @@
     { id: 'weekendDeal',es: 'plan finde',       en: 'weekend deal',   icon: '🎈', bg: '#c46a2a' },
     { id: 'breakfast',  es: 'desayunos',        en: 'breakfast',      icon: '🥐', bg: '#a07a3a' },
     { id: 'dinner',     es: 'cena',             en: 'dinner',         icon: '🍽️', bg: '#5a3a4a' },
-    { id: 'nightlife',  es: 'noche / copas',    en: 'nightlife',      icon: '🌃', bg: '#2a2a4a' }
+    { id: 'nightlife',  es: 'noche / copas',    en: 'nightlife',      icon: '🌃', bg: '#2a2a4a' },
+    // — creatividades de estanco (pantalla de exterior / MUPI de calle) —
+    { id: 'perfume_mujer',  es: 'perfume mujer',     en: "women's perfume", icon: '💄', bg: '#7a2a4a' },
+    { id: 'perfume_hombre', es: 'perfume hombre',    en: "men's perfume",   icon: '🧴', bg: '#23356a' },
+    { id: 'vapeadores',     es: 'vapeadores',        en: 'vapes',           icon: '💨', bg: '#2f6a5a' },
+    { id: 'prensa_loteria', es: 'prensa · lotería',  en: 'press · lottery', icon: '📰', bg: '#6a5a2a' },
+    { id: 'chuches',        es: 'chuches',           en: 'sweets',          icon: '🍬', bg: '#c46a8a' }
   ];
 
   /* --------------------------------------------------------------------------
@@ -151,6 +165,9 @@
         { id: 'marca',    es: 'de marca',     en: 'brand',       icon: '⭐' },
         { id: 'promo',    es: 'de promoción', en: 'promo',       icon: '🏷️' } ] } },
     { id: 'clearScreen',scope: 'screen', mode: 'while', es: 'apagar las pantallas', en: 'clear the screens' },
+    { id: 'showExtAd',  scope: 'extScreen', mode: 'while', es: 'en la pantalla de exterior anunciar', en: 'on the outdoor screen advertise',
+      param: { kind: 'enum', es: 'creatividad', en: 'creative', values: ADS } },
+    { id: 'clearExtScreen', scope: 'extScreen', mode: 'while', es: 'apagar la pantalla de exterior', en: 'clear the outdoor screen' },
     { id: 'screenTone', scope: 'screen', mode: 'while', es: 'el tono de las pantallas', en: 'screen tone',
       param: { kind: 'enum', es: 'tono', en: 'tone', values: [
         { id: 'calm',  es: 'tranquilo', en: 'calm' },
@@ -357,7 +374,8 @@
 
     // Canal de pantalla para resolver conflictos: la "content" (showAd/clearScreen)
     // y el "tone" se resuelven por prioridad — solo gana una regla por canal.
-    const SCREEN_CHANNEL = { showAd: 'content', showContent: 'content', clearScreen: 'content', screenTone: 'tone' };
+    const SCREEN_CHANNEL = { showAd: 'content', showContent: 'content', clearScreen: 'content', screenTone: 'tone',
+      showExtAd: 'extContent', clearExtScreen: 'extContent' };
 
     function tick() {
       const npcs = world.npcs ? world.npcs() : [];
@@ -375,7 +393,7 @@
           if (!a) continue;
           const fire = a.mode === 'on' ? rising : cond;
           if (!fire) continue;
-          if (a.scope === 'screen') {
+          if (a.scope === 'screen' || a.scope === 'extScreen') {
             // no se aplica aún: compite por su canal (mayor prioridad gana;
             // empate -> la regla declarada más abajo, como en una cascada)
             const ch = SCREEN_CHANNEL[act.id] || 'content';
