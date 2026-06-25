@@ -74,6 +74,7 @@
   <button data-view="estudio" class="on">🎛️ Estudio</button>
   <button data-view="backoffice">🗂️ Backoffice</button>
   <button data-view="resolucion">🔎 Resolución</button>
+  <button data-view="probador">🧪 Probador</button>
   <button data-view="gemelo">📺 Gemelo</button>
   <button data-view="catalogo">📚 Catálogo</button>
 </nav>
@@ -182,6 +183,54 @@
     </div>
   </section>
 
+  <!-- PROBADOR: réplica de las pantallas del Xtanco + CLI para simular segmentaciones -->
+  <section class="view" id="v-probador">
+    <div class="wrap" style="max-width:1000px">
+      <div class="card">
+        <h3>🧪 Probador de segmentaciones <span class="muted" style="font-weight:400">· sin tocar el gemelo</span></h3>
+        <p class="muted" style="margin-top:0">Carga las reglas de una pantalla y simula <b>quién pasa / quién mira</b> con el CLI. Las pantallas reaccionan con el <b>motor XPL real</b> — igual que el Xtanco — para que veas las segmentaciones antes de desplegar.</p>
+        <div class="row" style="gap:8px">
+          <label class="muted" style="font-size:12px">📥 reglas de</label>
+          <input id="pr-screen" type="text" placeholder="xtore-ext-demo" value="xtore-ext-demo" style="font-family:var(--mono);padding:6px 9px;min-width:150px">
+          <button class="btn" id="pr-load">Cargar reglas</button>
+          <span class="pill" id="pr-rules">0 reglas</span>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:14px;grid-template-columns:1fr 1fr">
+        <div class="card" style="display:flex;flex-direction:column;align-items:center">
+          <h3 style="align-self:flex-start">🪧 Pantalla de EXTERIOR (MUPI · viandante)</h3>
+          <div id="pr-ext" style="width:140px;height:236px;border-radius:12px;border:2px solid #ffffff22;overflow:hidden;position:relative;background:#0a0d13;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;box-shadow:0 8px 24px #0007">
+            <div style="position:absolute;top:6px;left:0;right:0;font:700 8px var(--mono);color:#fff9;letter-spacing:1px">MUPI · EXTERIOR</div>
+            <div id="pr-ext-ic" style="font-size:60px;line-height:1"></div>
+            <div id="pr-ext-lb" style="font:700 12px var(--mono);margin-top:6px;padding:0 8px"></div>
+            <div id="pr-ext-seg" style="position:absolute;bottom:6px;left:0;right:0;font:700 9px var(--mono);color:#fffc"></div>
+          </div>
+          <div class="muted" id="pr-ext-fact" style="margin-top:8px;font-size:11px;font-family:var(--mono)"></div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;align-items:center">
+          <h3 style="align-self:flex-start">📺 Pantalla INTERIOR (escaparate · cámara)</h3>
+          <div id="pr-int" style="width:220px;height:130px;border-radius:12px;border:2px solid #ffffff22;overflow:hidden;position:relative;background:#0a0d13;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;box-shadow:0 8px 24px #0007">
+            <div style="position:absolute;top:6px;left:8px;font:700 8px var(--mono);color:#fff9;letter-spacing:1px">XPACEOS · LIVE</div>
+            <div id="pr-int-ic" style="font-size:46px;line-height:1"></div>
+            <div id="pr-int-lb" style="font:700 11px var(--mono);margin-top:4px;padding:0 8px"></div>
+          </div>
+          <div class="muted" id="pr-int-fact" style="margin-top:8px;font-size:11px;font-family:var(--mono)"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>🎮 CLI del probador</h3>
+        <div class="muted" id="pr-world" style="font-family:var(--mono);font-size:11.5px;margin-bottom:8px"></div>
+        <form id="pr-form" autocomplete="off" style="display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:rgba(0,0,0,.25)">
+          <span style="color:var(--acc);font-family:var(--mono)">›</span>
+          <input id="pr-cli" type="text" spellcheck="false" placeholder="/viandante mujer senior · /camara hombre joven · /lluvia · /hora 22 · /help" style="flex:1;background:transparent;border:0;outline:0;color:var(--ink);font-family:var(--mono);font-size:13px">
+        </form>
+        <div id="pr-log" class="muted" style="margin-top:8px;font-family:var(--mono);font-size:12px;line-height:1.7;min-height:18px;white-space:pre-wrap"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- GEMELO: estado en vivo + control + CLI -->
   <section class="view" id="v-gemelo">
     <div class="wrap">
@@ -248,7 +297,7 @@
   </section>
 </main>
 
-<script src="../scripts/xpl-runtime.js"></script>
+<script src="../scripts/xpl-runtime.js?v=13"></script>
 <script>
 const $=s=>document.querySelector(s);
 const XPL=window.XPL;
@@ -262,6 +311,7 @@ document.querySelectorAll('nav button').forEach(b=>{
     if(b.dataset.view==='gemelo') refreshGemelo();
     if(b.dataset.view==='backoffice') initBackoffice();
     if(b.dataset.view==='resolucion') initResolucion();
+    if(b.dataset.view==='probador') initProbador();
   };
 });
 
@@ -466,6 +516,71 @@ $('#bind-save').onclick=()=>{
   if(!s){ $('#bind-msg').innerHTML='<span style="color:var(--bad)">pon una pantalla</span>'; return; }
   saveBind(s,c);
 };
+
+/* ---------- PROBADOR: motor XPL real + CLI (simula segmentaciones) ---------- */
+const PR = (function(){
+  const DEF = ()=>({ rain:false, wind:false, night:false, weekend:false, holiday:false, doorOpen:true, thief:false, rush:false,
+    hour:13, temperature:20, people:5, satisfaction:70, money:0, season:'summer', dayPart:'noon',
+    viewers:0, audGender:'none', audAge:'none', extGender:'none', extAge:'none' });
+  let tw = DEF();
+  let tScreen={ad:null,tone:'calm'}, tExt={ad:null};
+  let engine=null, ruleCount=0, started=false;
+  const world={
+    fact:id=>{ if(id in tw) return tw[id]; const f=XPL.byId(XPL.FACTS,id); return f&&f.type==='bool'?false:(f&&f.type==='enum'?'none':0); },
+    npcs:()=>[],
+    act:(id,v)=>{ if(id==='showAd')tScreen.ad=v; else if(id==='clearScreen')tScreen.ad=null;
+      else if(id==='screenTone')tScreen.tone=v; else if(id==='showExtAd')tExt.ad=v; else if(id==='clearExtScreen')tExt.ad=null; }
+  };
+  function ensure(){ if(!engine) engine=XPL.createEngine(world); }
+  function tick(){ ensure(); tScreen.ad=null; tExt.ad=null; engine.tick(); render(); }
+  function $e(id){ return document.getElementById(id); }
+  function paint(box,ic,lb,ad,off){ if(ad){ $e(box).style.background=ad.bg; $e(ic).textContent=ad.icon; $e(lb).textContent=ad.es.toUpperCase(); } else { $e(box).style.background='#0a0d13'; $e(ic).textContent='—'; $e(lb).textContent=off; } }
+  function render(){
+    const GS={female:'♀ mujer',male:'♂ hombre',mixed:'⚥ mixto'}, AS={nino:'niño',joven:'joven',adulto:'adulto',senior:'senior'};
+    paint('pr-ext','pr-ext-ic','pr-ext-lb', tExt.ad?XPL.byId(XPL.ADS,tExt.ad):null, 'apagada');
+    const eseg=[GS[tw.extGender]||'',AS[tw.extAge]||''].filter(Boolean).join(' · ');
+    $e('pr-ext-seg').textContent=eseg?('▸ '+eseg):'';
+    $e('pr-ext-fact').textContent='viandante: '+tw.extGender+' / '+tw.extAge;
+    paint('pr-int','pr-int-ic','pr-int-lb', tScreen.ad?XPL.byId(XPL.ADS,tScreen.ad):null, 'apagada');
+    $e('pr-int-fact').textContent='cámara: '+tw.audGender+' / '+tw.audAge+' · '+tw.viewers+' mirando';
+    $e('pr-world').textContent='🌍 '+[ tw.rain?'lluvia':'', tw.night?'noche':'', tw.weekend?'finde':'', tw.holiday?'festivo':'',
+      'hora '+tw.hour, tw.temperature+'°', tw.people+' personas' ].filter(Boolean).join(' · ');
+  }
+  function log(t){ const l=$e('pr-log'); l.textContent=(t+'\n'+l.textContent).split('\n').slice(0,8).join('\n'); }
+  const GMAP={mujer:'female',hombre:'male',mixto:'mixed',nadie:'none',female:'female',male:'male',mixed:'mixed',none:'none'};
+  const AMAP={nino:'nino','niño':'nino',joven:'joven',adulto:'adulto',senior:'senior',nadie:'none',none:'none'};
+  async function loadRules(scr){
+    if(!scr){ log('uso: /cargar <pantalla>'); return; }
+    try{ const d=await fetch(STORE+'/xpl/resolve?screen='+encodeURIComponent(scr)).then(r=>r.json());
+      ensure(); engine.setRules(d.rules||[]); ruleCount=(d.rules||[]).length;
+      $e('pr-rules').textContent=ruleCount+' reglas';
+      log('✓ '+ruleCount+' reglas de «'+scr+'»'+(d.circuit?' (circuito '+d.circuit+')':'')); tick();
+    }catch(e){ log('⚠ no pude cargar reglas de '+scr); }
+  }
+  function cmd(line){
+    const a=line.trim().replace(/^\//,'').split(/\s+/); const c=(a.shift()||'').toLowerCase();
+    if(c==='help'||c===''){ log('/viandante <mujer|hombre|mixto|nadie> [nino|joven|adulto|senior] · /camara <…> · /lluvia|/noche|/finde|/festivo [on|off] · /hora N · /temp N · /gente N · /cargar <pantalla> · /reset'); return; }
+    if(c==='viandante'||c==='v'){ if(a[0]&&GMAP[a[0].toLowerCase()]!==undefined){ tw.extGender=GMAP[a[0].toLowerCase()]; if(tw.extGender==='none')tw.extAge='none'; } if(a[1]&&AMAP[a[1].toLowerCase()]!==undefined)tw.extAge=AMAP[a[1].toLowerCase()]; log('viandante → '+tw.extGender+' / '+tw.extAge); }
+    else if(c==='camara'||c==='cam'){ if(a[0]&&GMAP[a[0].toLowerCase()]!==undefined){ tw.audGender=GMAP[a[0].toLowerCase()]; if(tw.audGender==='none')tw.audAge='none'; } if(a[1]&&AMAP[a[1].toLowerCase()]!==undefined)tw.audAge=AMAP[a[1].toLowerCase()]; tw.viewers=(tw.audGender==='none')?0:Math.max(1,tw.viewers||1); log('cámara → '+tw.audGender+' / '+tw.audAge); }
+    else if(['lluvia','noche','finde','festivo','viento'].includes(c)){ const m={lluvia:'rain',noche:'night',finde:'weekend',festivo:'holiday',viento:'wind'}[c]; tw[m]=a[0]?(a[0].toLowerCase()==='on'):!tw[m]; log(c+' → '+(tw[m]?'on':'off')); }
+    else if(c==='hora'){ tw.hour=Math.max(0,Math.min(23,parseInt(a[0]||'13',10)||0)); tw.night=(tw.hour<8||tw.hour>=21); log('hora → '+tw.hour); }
+    else if(c==='temp'){ tw.temperature=parseInt(a[0]||'20',10)||0; log('temp → '+tw.temperature+'°'); }
+    else if(c==='gente'){ tw.people=Math.max(0,parseInt(a[0]||'0',10)||0); tw.rush=tw.people>=12; log('gente → '+tw.people); }
+    else if(c==='cargar'){ $e('pr-screen').value=a[0]||''; loadRules((a[0]||'').trim()); return; }
+    else if(c==='reset'){ tw=DEF(); log('mundo reiniciado'); }
+    else { log('? desconocido: '+c+' (prueba /help)'); return; }
+    tick();
+  }
+  function initProbador(){
+    if(!started){ started=true;
+      $e('pr-form').addEventListener('submit',ev=>{ ev.preventDefault(); const i=$e('pr-cli'); const v=i.value; i.value=''; if(v.trim()) cmd(v); });
+      $e('pr-load').onclick=()=>loadRules(($e('pr-screen').value||'').trim());
+      loadRules(($e('pr-screen').value||'xtore-ext-demo').trim());
+    } else { tick(); }
+  }
+  return { initProbador };
+})();
+function initProbador(){ return PR.initProbador(); }
 
 /* ---------- GEMELO: estado en vivo ---------- */
 function readState(){ try{ return JSON.parse(localStorage.getItem('xpl_state')||'null'); }catch(e){ return null; } }
