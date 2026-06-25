@@ -95,7 +95,10 @@
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const stage=$('#stage'), mupi=$('#mupi'), bg=$('#bg'), empty=$('#empty');
 const W=300,H=500;                       // tamaño base del MUPI (se deforma por homografía)
-const KIOSK='salmeron';
+// circuito compartido con el buscador (localStorage 'mupiCircuit'); fallback a Salmerón.
+function circuit(){ try{ const c=JSON.parse(localStorage.getItem('mupiCircuit')||'[]'); return c.length?c:[{id:'salmeron',name:'Salmerón · Gràcia'}]; }catch(e){ return [{id:'salmeron',name:'Salmerón · Gràcia'}]; } }
+let STOPS=circuit(), IDX=0;
+function KIOSKID(){ return STOPS[IDX] ? STOPS[IDX].id : 'salmeron'; }
 
 /* ---------- homografía: mapear (0,0)-(W,H) a 4 esquinas (matrix3d) ---------- */
 function adj(m){return[m[4]*m[8]-m[5]*m[7],m[2]*m[7]-m[1]*m[8],m[1]*m[5]-m[2]*m[4],m[5]*m[6]-m[3]*m[8],m[0]*m[8]-m[2]*m[6],m[2]*m[3]-m[0]*m[5],m[3]*m[7]-m[4]*m[6],m[1]*m[6]-m[0]*m[7],m[0]*m[4]-m[1]*m[3]];}
@@ -117,12 +120,12 @@ let corners=null;
 function defaultCorners(){ var w=stage.clientWidth,h=stage.clientHeight; var cx=w*0.62,cy=h*0.5,bw=w*0.12,bh=h*0.34;
   return [[cx-bw,cy-bh],[cx+bw,cy-bh],[cx-bw,cy+bh],[cx+bw,cy+bh]]; }
 function loadState(){
-  try{ var st=JSON.parse(localStorage.getItem('mupiEmu_'+KIOSK)||'null');
+  try{ var st=JSON.parse(localStorage.getItem('mupiEmu_'+KIOSKID())||'null');
     if(st){ if(st.bg){ bg.src=st.bg; bg.hidden=false; empty.style.display='none'; } corners=st.corners||null; } }catch(e){}
   if(!corners) corners=defaultCorners();
   applyMupi(corners);
 }
-function saveState(){ try{ localStorage.setItem('mupiEmu_'+KIOSK, JSON.stringify({ bg: bg.hidden?'':bg.src, corners })); }catch(e){} }
+function saveState(){ try{ localStorage.setItem('mupiEmu_'+KIOSKID(), JSON.stringify({ bg: bg.hidden?'':bg.src, corners })); }catch(e){} }
 
 /* ---------- cargar captura (downscale a dataURL) ---------- */
 function setBackdrop(file){
@@ -261,10 +264,25 @@ function tick(){
   $('#stat').textContent='📡 '+(n?(n+' assets de admira.tv · emitiendo'):'conectando admira.tv…');
 }
 $('#seg-g').onchange=$('#seg-a').onchange=()=>{ cur.sig=''; tick(); };
-$('#prev').onclick=$('#next').onclick=()=>alert('Circuito: añadiremos más kioskos. De momento, MVP en Salmerón · Gràcia.');
+// --- circuito: ‹ › navegan las paradas que añadiste en el buscador ---
+function showStop(){
+  const s=STOPS[IDX]||{name:'Salmerón · Gràcia'};
+  const k=$('#kiosk'); k.textContent=(s.name||('Parada '+(IDX+1)))+(STOPS.length>1?(' ('+(IDX+1)+'/'+STOPS.length+')'):'');
+  k.style.cursor=s.lat?'pointer':'default';
+  k.onclick=s.lat?()=>window.open('https://www.google.com/maps?q=&layer=c&cbll='+s.lat+','+s.lon,'_blank'):null;
+  // recargar fondo+esquinas de ESTA parada
+  bg.hidden=true; bg.removeAttribute('src'); empty.style.display='flex'; corners=null;
+  loadState();
+  if(bg.hidden) flash(s.lat?('parada sin captura · toca el nombre para abrir Street View y captúrala'):'parada sin captura · 📷 Cargar captura');
+}
+$('#prev').onclick=()=>{ STOPS=circuit(); IDX=(IDX-1+STOPS.length)%STOPS.length; showStop(); };
+$('#next').onclick=()=>{ STOPS=circuit(); IDX=(IDX+1)%STOPS.length; showStop(); };
 
 /* ---------- arranque ---------- */
+STOPS=circuit(); IDX=0;
 loadState();
+{ const s=STOPS[0]; const k=$('#kiosk'); k.textContent=(s.name||'Salmerón · Gràcia')+(STOPS.length>1?(' (1/'+STOPS.length+')'):'');
+  if(s.lat){ k.style.cursor='pointer'; k.onclick=()=>window.open('https://www.google.com/maps?q=&layer=c&cbll='+s.lat+','+s.lon,'_blank'); } }
 if(window.XPLStock&&window.XPLStock.ensure){ window.XPLStock.ensure().then(()=>tick()).catch(()=>{}); }
 setInterval(tick, 4000); tick();   // rota contenido / mantiene emisión
 </script>
