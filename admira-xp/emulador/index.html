@@ -76,7 +76,8 @@
   </div>
   <div class="row">
     <button class="btn" id="load">📷 Cargar captura</button>
-    <button class="btn" id="adjust">✥ Ajustar MUPI</button>
+    <button class="btn" id="auto">🎯 Auto-encajar</button>
+    <button class="btn" id="adjust">✥ Ajustar a mano</button>
   </div>
   <div class="row">
     <label class="stat">público</label>
@@ -130,6 +131,7 @@ function setBackdrop(file){
     var max=1600, sc=Math.min(1,max/Math.max(im.width,im.height));
     var cv=document.createElement('canvas'); cv.width=im.width*sc; cv.height=im.height*sc;
     cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+    bg.onload=()=>{ bg.onload=null; setTimeout(autoFit, 60); };   // captura nueva → auto-encaje
     bg.src=cv.toDataURL('image/jpeg',0.85); bg.hidden=false; empty.style.display='none'; saveState();
   }; im.src=fr.result; };
   fr.readAsDataURL(file);
@@ -152,6 +154,86 @@ $$('.handle').forEach(h=>{
   });
 });
 window.addEventListener('resize',()=>{ if(corners) applyMupi(corners); });
+
+/* ---------- AUTO-ENCAJE: detectar el panel del kiosko y poner el MUPI solo ----------
+   El MUPI es una pantalla ILUMINADA (rectángulo brillante y vertical) sobre el kiosko.
+   1) dibujo la captura recortada igual que en pantalla (object-fit:cover) en un canvas
+      de trabajo → coords canvas == coords del stage (×escala).
+   2) detección: brillo + zona; saco el mayor blob brillante con forma de pantalla.
+   3) 4 esquinas del blob (min/max de x±y) → cuadrilátero en perspectiva. */
+function workCanvas(){
+  const sw=stage.clientWidth, sh=stage.clientHeight;
+  const cw=Math.min(420, sw), ch=Math.round(cw*sh/sw);
+  const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+  const cx=cv.getContext('2d',{willReadFrequently:true});
+  const iw=bg.naturalWidth, ih=bg.naturalHeight; if(!iw) return null;
+  const ar=iw/ih, sar=sw/sh; let sx,sy,sW,sH;
+  if(ar>sar){ sH=ih; sW=ih*sar; sx=(iw-sW)/2; sy=0; } else { sW=iw; sH=iw/sar; sx=0; sy=(ih-sH)/2; }
+  cx.drawImage(bg, sx,sy,sW,sH, 0,0, cw,ch);
+  return { cv, cx, cw, ch, kx:sw/cw, ky:sh/ch };   // kx,ky: canvas→stage
+}
+// blob de píxeles "pantalla" alrededor de seed (o por brillo global si seed=null)
+function detectBlob(W, seed){
+  const {cw,ch}=W, data=W.cx.getImageData(0,0,cw,ch).data;
+  const lum=i=>0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+  const N=cw*ch; let sum=0; for(let p=0;p<N;p++) sum+=lum(p*4); const mean=sum/N;
+  let mark;
+  if(seed){
+    // flood-fill por similitud de brillo desde el clic (tolerante)
+    const si=(seed.y*cw+seed.x)*4, sl=lum(si), tol=44;
+    mark=new Uint8Array(N); const st=[seed.y*cw+seed.x];
+    while(st.length){ const q=st.pop(); if(mark[q]) continue; const l=lum(q*4);
+      if(Math.abs(l-sl)>tol) continue; mark[q]=1;
+      const x=q%cw,y=(q/cw)|0;
+      if(x>0)st.push(q-1); if(x<cw-1)st.push(q+1); if(y>0)st.push(q-cw); if(y<ch-1)st.push(q+cw);
+    }
+  } else {
+    // brillo alto; nos quedamos con el COMPONENTE conexo mayor (evita cielo disperso)
+    const thr=Math.max(150, mean+34); const bright=new Uint8Array(N);
+    for(let p=0;p<N;p++) bright[p]= lum(p*4)>thr ?1:0;
+    mark=new Uint8Array(N); let best=null,bestN=0;
+    for(let p=0;p<N;p++){ if(!bright[p]||mark[p]) continue;
+      const comp=[]; const st=[p]; while(st.length){ const q=st.pop(); if(mark[q]||!bright[q])continue; mark[q]=1; comp.push(q);
+        const x=q%cw,y=(q/cw)|0; if(x>0)st.push(q-1); if(x<cw-1)st.push(q+1); if(y>0)st.push(q-cw); if(y<ch-1)st.push(q+cw); }
+      if(comp.length>bestN){ bestN=comp.length; best=comp; } }
+    mark=new Uint8Array(N); if(best) for(const q of best) mark[q]=1;
+  }
+  // 4 esquinas del blob
+  let n=0,TL=1e9,TR=-1e9,BL=1e9,BR=-1e9,tl,tr,bl,br;
+  let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+  for(let q=0;q<N;q++){ if(!mark[q])continue; n++; const x=q%cw,y=(q/cw)|0;
+    if(x+y<TL){TL=x+y;tl=[x,y];} if(x+y>BR){BR=x+y;br=[x,y];}
+    if(x-y>TR){TR=x-y;tr=[x,y];} if(x-y<BL){BL=x-y;bl=[x,y];}
+    if(x<minx)minx=x; if(x>maxx)maxx=x; if(y<miny)miny=y; if(y>maxy)maxy=y; }
+  if(n<60||!tl) return null;
+  return { corners:[tl,tr,bl,br], n, w:maxx-minx, h:maxy-miny, kx:W.kx, ky:W.ky };
+}
+function fitFromBlob(b){
+  if(!b) return false;
+  // filtro de cordura: algo vertical-ish y no minúsculo
+  if(b.h < stage.clientHeight*0.12) return false;
+  corners=b.corners.map(c=>[c[0]*b.kx, c[1]*b.ky]);
+  applyMupi(corners); saveState(); return true;
+}
+function autoFit(){
+  if(bg.hidden){ flash('carga primero una captura 📷'); return; }
+  const W=workCanvas(); if(!W){ return; }
+  const ok=fitFromBlob(detectBlob(W,null));
+  flash(ok? '🎯 panel detectado · si no encaja, toca el panel o «✥ a mano»'
+          : 'no vi el panel claro · toca el panel del kiosko 👆');
+}
+function flash(t){ const s=document.getElementById('stat'); const o=s.textContent; s.textContent=t; setTimeout(()=>{ if(s.textContent===t) s.textContent=o; }, 4000); }
+$('#auto').onclick=autoFit;
+// clic en el panel (cuando NO estoy en modo ajuste) → flood-fill desde el clic
+stage.addEventListener('click',e=>{
+  if(adjusting || bg.hidden) return;
+  if(e.target.closest('#hud')||e.target.closest('.handle')) return;
+  const W=workCanvas(); if(!W) return;
+  const r=stage.getBoundingClientRect();
+  const sx=Math.round((e.clientX-r.left)/W.kx), sy=Math.round((e.clientY-r.top)/W.ky);
+  if(sx<0||sy<0||sx>=W.cw||sy>=W.ch) return;
+  fitFromBlob(detectBlob(W,{x:sx,y:sy})) ? flash('🎯 encajado al panel') : flash('ahí no detecto pantalla; prueba en el centro del panel');
+});
 
 /* ---------- emisión: asset real de admira.tv por segmento ---------- */
 const XPL=window.XPL;
