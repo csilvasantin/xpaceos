@@ -201,19 +201,21 @@
         <div class="card" style="display:flex;flex-direction:column;align-items:center">
           <h3 style="align-self:flex-start">🪧 Pantalla de EXTERIOR (MUPI · viandante)</h3>
           <div id="pr-ext" style="width:140px;height:236px;border-radius:12px;border:2px solid #ffffff22;overflow:hidden;position:relative;background:#0a0d13;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;box-shadow:0 8px 24px #0007">
-            <div style="position:absolute;top:6px;left:0;right:0;font:700 8px var(--mono);color:#fff9;letter-spacing:1px">MUPI · EXTERIOR</div>
-            <div id="pr-ext-ic" style="font-size:60px;line-height:1"></div>
-            <div id="pr-ext-lb" style="font:700 12px var(--mono);margin-top:6px;padding:0 8px"></div>
-            <div id="pr-ext-seg" style="position:absolute;bottom:6px;left:0;right:0;font:700 9px var(--mono);color:#fffc"></div>
+            <div id="pr-ext-media" style="position:absolute;inset:0;display:none;background:#000;overflow:hidden"></div>
+            <div style="position:absolute;top:6px;left:0;right:0;font:700 8px var(--mono);color:#fff9;letter-spacing:1px;z-index:2;text-shadow:0 1px 2px #000a">MUPI · EXTERIOR</div>
+            <div id="pr-ext-ic" style="font-size:60px;line-height:1;z-index:1"></div>
+            <div id="pr-ext-lb" style="font:700 12px var(--mono);margin-top:6px;padding:0 8px;z-index:2;text-shadow:0 1px 3px #000c"></div>
+            <div id="pr-ext-seg" style="position:absolute;bottom:6px;left:0;right:0;font:700 9px var(--mono);color:#fffc;z-index:2;text-shadow:0 1px 2px #000a"></div>
           </div>
           <div class="muted" id="pr-ext-fact" style="margin-top:8px;font-size:11px;font-family:var(--mono)"></div>
         </div>
         <div class="card" style="display:flex;flex-direction:column;align-items:center">
           <h3 style="align-self:flex-start">📺 Pantalla INTERIOR (escaparate · cámara)</h3>
           <div id="pr-int" style="width:220px;height:130px;border-radius:12px;border:2px solid #ffffff22;overflow:hidden;position:relative;background:#0a0d13;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;box-shadow:0 8px 24px #0007">
-            <div style="position:absolute;top:6px;left:8px;font:700 8px var(--mono);color:#fff9;letter-spacing:1px">XPACEOS · LIVE</div>
-            <div id="pr-int-ic" style="font-size:46px;line-height:1"></div>
-            <div id="pr-int-lb" style="font:700 11px var(--mono);margin-top:4px;padding:0 8px"></div>
+            <div id="pr-int-media" style="position:absolute;inset:0;display:none;background:#000;overflow:hidden"></div>
+            <div style="position:absolute;top:6px;left:8px;font:700 8px var(--mono);color:#fff9;letter-spacing:1px;z-index:2;text-shadow:0 1px 2px #000a">XPACEOS · LIVE</div>
+            <div id="pr-int-ic" style="font-size:46px;line-height:1;z-index:1"></div>
+            <div id="pr-int-lb" style="font:700 11px var(--mono);margin-top:4px;padding:0 8px;z-index:2;text-shadow:0 1px 3px #000c"></div>
           </div>
           <div class="muted" id="pr-int-fact" style="margin-top:8px;font-size:11px;font-family:var(--mono)"></div>
         </div>
@@ -298,6 +300,7 @@
 </main>
 
 <script src="../scripts/xpl-runtime.js?v=13"></script>
+<script src="../scripts/xpl-stock.js?v=13"></script>
 <script>
 const $=s=>document.querySelector(s);
 const XPL=window.XPL;
@@ -534,17 +537,59 @@ const PR = (function(){
   function ensure(){ if(!engine) engine=XPL.createEngine(world); }
   function tick(){ ensure(); tScreen.ad=null; tExt.ad=null; engine.tick(); render(); }
   function $e(id){ return document.getElementById(id); }
-  function paint(box,ic,lb,ad,off){ if(ad){ $e(box).style.background=ad.bg; $e(ic).textContent=ad.icon; $e(lb).textContent=ad.es.toUpperCase(); } else { $e(box).style.background='#0a0d13'; $e(ic).textContent='—'; $e(lb).textContent=off; } }
+
+  // ── conexión con admira.tv: el asset REAL del Stock que casa con el segmento ──
+  let REAL=true;                       // /contenido on|off
+  const extC={sig:'',asset:null,picking:false}, intC={sig:'',asset:null,picking:false};
+  // mapeo creatividad → categoría del Stock (mejor casado; '' = auto)
+  const CREATIVE_CAT={ perfume_mujer:'producto', perfume_hombre:'producto', vapeadores:'producto',
+    prensa_loteria:'atraer', chuches:'producto', newColl:'marca', nightlife:'atraer', hotCoffee:'producto', icecream:'producto' };
+  function tsFromHour(h){ return h<12?'manana':h<15?'mediodia':h<21?'tarde':'noche'; }
+  function setMedia(boxId, mediaId, asset){
+    const m=$e(mediaId); if(!m) return;
+    if(m.__key!==asset.url){ m.__key=asset.url; m.innerHTML='';
+      const isVid=asset.type==='video'||asset.type==='animation'||/\.(mp4|webm|mov)(\?|$)/i.test(asset.url||'');
+      const node=document.createElement(isVid?'video':'img');
+      node.src=asset.url; node.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+      if(isVid){ node.muted=true; node.loop=true; node.autoplay=true; node.playsInline=true; node.setAttribute('playsinline',''); node.setAttribute('muted',''); const p=node.play&&node.play(); if(p&&p.catch)p.catch(()=>{}); }
+      m.appendChild(node); }
+    m.style.display='block';
+  }
+  function clearMedia(mediaId){ const m=$e(mediaId); if(m){ m.__key=''; m.innerHTML=''; m.style.display='none'; } }
+  function resolveContent(state, gender, age, creativeId){
+    if(!REAL || !window.XPLStock || !creativeId){ state.asset=null; return; }
+    const aud=gender==='female'?'f':gender==='male'?'m':'';
+    const ag=(age&&age!=='none')?age:'';
+    const sig=[CREATIVE_CAT[creativeId]||'',aud,ag,tsFromHour(tw.hour)].join('|');
+    if(sig!==state.sig && !state.picking){ state.picking=true; state.sig=sig;
+      window.XPLStock.pickAsync({category:CREATIVE_CAT[creativeId]||'',audience:aud,age:ag,timeSlot:tsFromHour(tw.hour)})
+        .then(a=>{ state.asset=a||null; state.picking=false; render(); }).catch(()=>{state.picking=false;}); }
+  }
+  function paintScreen(prefix, ad, state){
+    const box=$e('pr-'+prefix), ic=$e('pr-'+prefix+'-ic'), lb=$e('pr-'+prefix+'-lb'), media='pr-'+prefix+'-media';
+    if(!ad){ box.style.background='#0a0d13'; ic.style.display='block'; ic.textContent='—'; lb.textContent='apagada'; clearMedia(media); return; }
+    if(REAL && state.asset){
+      setMedia('pr-'+prefix, media, state.asset); ic.style.display='none'; box.style.background='#000';
+      lb.textContent='📡 '+ad.es.toUpperCase()+' · '+String(state.asset.title||state.asset.type||'admira.tv').replace(/&#39;/g,"'").slice(0,26);
+    } else {
+      clearMedia(media); ic.style.display='block'; box.style.background=ad.bg; ic.textContent=ad.icon;
+      lb.textContent=ad.es.toUpperCase()+(REAL?' · buscando…':'');
+    }
+  }
   function render(){
     const GS={female:'♀ mujer',male:'♂ hombre',mixed:'⚥ mixto'}, AS={nino:'niño',joven:'joven',adulto:'adulto',senior:'senior'};
-    paint('pr-ext','pr-ext-ic','pr-ext-lb', tExt.ad?XPL.byId(XPL.ADS,tExt.ad):null, 'apagada');
+    const extAd=tExt.ad?XPL.byId(XPL.ADS,tExt.ad):null, intAd=tScreen.ad?XPL.byId(XPL.ADS,tScreen.ad):null;
+    resolveContent(extC, tw.extGender, tw.extAge, tExt.ad);
+    resolveContent(intC, tw.audGender, tw.audAge, tScreen.ad);
+    paintScreen('ext', extAd, extC);
+    paintScreen('int', intAd, intC);
     const eseg=[GS[tw.extGender]||'',AS[tw.extAge]||''].filter(Boolean).join(' · ');
     $e('pr-ext-seg').textContent=eseg?('▸ '+eseg):'';
     $e('pr-ext-fact').textContent='viandante: '+tw.extGender+' / '+tw.extAge;
-    paint('pr-int','pr-int-ic','pr-int-lb', tScreen.ad?XPL.byId(XPL.ADS,tScreen.ad):null, 'apagada');
     $e('pr-int-fact').textContent='cámara: '+tw.audGender+' / '+tw.audAge+' · '+tw.viewers+' mirando';
     $e('pr-world').textContent='🌍 '+[ tw.rain?'lluvia':'', tw.night?'noche':'', tw.weekend?'finde':'', tw.holiday?'festivo':'',
-      'hora '+tw.hour, tw.temperature+'°', tw.people+' personas' ].filter(Boolean).join(' · ');
+      'hora '+tw.hour, tw.temperature+'°', tw.people+' personas',
+      (window.XPLStock&&window.XPLStock.ready())?('📡 '+window.XPLStock.count()+' assets admira.tv'):'📡 conectando admira.tv…' ].filter(Boolean).join(' · ');
   }
   function log(t){ const l=$e('pr-log'); l.textContent=(t+'\n'+l.textContent).split('\n').slice(0,8).join('\n'); }
   const GMAP={mujer:'female',hombre:'male',mixto:'mixed',nadie:'none',female:'female',male:'male',mixed:'mixed',none:'none'};
@@ -559,7 +604,9 @@ const PR = (function(){
   }
   function cmd(line){
     const a=line.trim().replace(/^\//,'').split(/\s+/); const c=(a.shift()||'').toLowerCase();
-    if(c==='help'||c===''){ log('/viandante <mujer|hombre|mixto|nadie> [nino|joven|adulto|senior] · /camara <…> · /lluvia|/noche|/finde|/festivo [on|off] · /hora N · /temp N · /gente N · /cargar <pantalla> · /reset'); return; }
+    if(c==='help'||c===''){ log('/viandante <mujer|hombre|mixto|nadie> [nino|joven|adulto|senior] · /camara <…> · /lluvia|/noche|/finde|/festivo [on|off] · /hora N · /temp N · /gente N · /contenido on|off (real admira.tv ↔ icono) · /stock · /cargar <pantalla> · /reset'); return; }
+    if(c==='contenido'){ REAL=a[0]?(a[0].toLowerCase()==='on'):!REAL; extC.sig=intC.sig=''; extC.asset=intC.asset=null; log('contenido real (admira.tv) → '+(REAL?'on':'off')); tick(); return; }
+    if(c==='stock'){ log('📡 '+(window.XPLStock&&window.XPLStock.ready()?(window.XPLStock.count()+' assets cargados de admira.tv'):'cargando índice…')); return; }
     if(c==='viandante'||c==='v'){ if(a[0]&&GMAP[a[0].toLowerCase()]!==undefined){ tw.extGender=GMAP[a[0].toLowerCase()]; if(tw.extGender==='none')tw.extAge='none'; } if(a[1]&&AMAP[a[1].toLowerCase()]!==undefined)tw.extAge=AMAP[a[1].toLowerCase()]; log('viandante → '+tw.extGender+' / '+tw.extAge); }
     else if(c==='camara'||c==='cam'){ if(a[0]&&GMAP[a[0].toLowerCase()]!==undefined){ tw.audGender=GMAP[a[0].toLowerCase()]; if(tw.audGender==='none')tw.audAge='none'; } if(a[1]&&AMAP[a[1].toLowerCase()]!==undefined)tw.audAge=AMAP[a[1].toLowerCase()]; tw.viewers=(tw.audGender==='none')?0:Math.max(1,tw.viewers||1); log('cámara → '+tw.audGender+' / '+tw.audAge); }
     else if(['lluvia','noche','finde','festivo','viento'].includes(c)){ const m={lluvia:'rain',noche:'night',finde:'weekend',festivo:'holiday',viento:'wind'}[c]; tw[m]=a[0]?(a[0].toLowerCase()==='on'):!tw[m]; log(c+' → '+(tw[m]?'on':'off')); }
@@ -575,6 +622,7 @@ const PR = (function(){
     if(!started){ started=true;
       $e('pr-form').addEventListener('submit',ev=>{ ev.preventDefault(); const i=$e('pr-cli'); const v=i.value; i.value=''; if(v.trim()) cmd(v); });
       $e('pr-load').onclick=()=>loadRules(($e('pr-screen').value||'').trim());
+      if(window.XPLStock&&window.XPLStock.ensure){ window.XPLStock.ensure().then(()=>render()).catch(()=>{}); }
       loadRules(($e('pr-screen').value||'xtore-ext-demo').trim());
     } else { tick(); }
   }
