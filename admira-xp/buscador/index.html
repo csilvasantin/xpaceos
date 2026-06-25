@@ -10,7 +10,16 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
   #app{display:flex;height:100%}
-  #side{width:340px;flex:none;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel)}
+  #side{width:340px;flex:none;min-width:0;overflow:hidden;background:var(--panel);transition:width .28s ease}
+  #side.collapsed{width:0}
+  .side-in{width:340px;height:100%;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+  /* pestaña plegable (como Google Maps) */
+  #side-toggle{position:fixed;top:50%;left:340px;transform:translateY(-50%);z-index:70;width:22px;height:56px;
+    background:var(--panel);border:1px solid var(--line);border-left:none;border-radius:0 10px 10px 0;color:var(--mut);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;font:700 15px var(--mono);
+    transition:left .28s ease,color .15s;box-shadow:3px 0 12px #0006}
+  #side-toggle:hover{color:var(--ink)}
+  #side-toggle.collapsed{left:0}
   header{padding:12px 14px;border-bottom:1px solid var(--line)}
   header h1{font-size:15px;margin:0;font-weight:800}
   header h1 .tag{color:var(--acc);font-family:var(--mono)}
@@ -39,7 +48,7 @@
 </head>
 <body>
 <div id="app">
-  <div id="side">
+  <div id="side"><div class="side-in">
     <header>
       <h1>Buscador urbano <span class="tag">· XpaceOS</span></h1>
       <div class="sub">elementos de OOH en la ciudad · sin clave (OpenStreetMap)</div>
@@ -58,8 +67,9 @@
       <h3>🎬 Circuito del emulador <button class="btn" id="open-emu" style="float:right;padding:3px 8px;font-size:11px">abrir ▶</button></h3>
       <div id="chips" class="stat">vacío · añade kioskos con ➕</div>
     </div>
-  </div>
+  </div></div>
   <div id="map"></div>
+  <button id="side-toggle" title="ocultar / mostrar panel">‹</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -130,6 +140,16 @@ function renderChips(){ const c=circuit(); $('#chips').innerHTML = c.length? c.m
 window.delStop=function(id){ saveCircuit(circuit().filter(s=>s.id!==id)); };
 $('#open-emu').onclick=()=>window.open('../emulador/','_blank');
 $('#search').onclick=search;
+// panel plegable estilo Google Maps
+(function(){
+  const side=$('#side'), tog=$('#side-toggle');
+  function set(col){ side.classList.toggle('collapsed',col); tog.classList.toggle('collapsed',col); tog.textContent=col?'›':'‹';
+    try{ localStorage.setItem('buscadorCollapsed', col?'1':'0'); }catch(e){}
+    setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){} }, 300); }
+  tog.onclick=()=>set(!side.classList.contains('collapsed'));
+  let init=false; try{ init=localStorage.getItem('buscadorCollapsed')==='1'; }catch(e){}
+  if(init) set(true);
+})();
 renderChips();
 setTimeout(search, 500);   // primera búsqueda en BCN
 </script>
