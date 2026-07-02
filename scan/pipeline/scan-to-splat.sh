@@ -25,10 +25,17 @@ echo "   $N frames"
 [ "$N" -ge 20 ] || { echo "muy pocos frames ($N) — graba 60-120 s"; exit 1; }
 
 echo "-- 2/4 COLMAP: features + matching…"
+# COLMAP >=3.12 renombró SiftExtraction/SiftMatching → FeatureExtraction/FeatureMatching
+if colmap feature_extractor --help 2>&1 | grep -q FeatureExtraction.use_gpu; then
+  GPU_EXTRACT="--FeatureExtraction.use_gpu"; GPU_MATCH="--FeatureMatching.use_gpu"
+else
+  GPU_EXTRACT="--SiftExtraction.use_gpu"; GPU_MATCH="--SiftMatching.use_gpu"
+fi
+USE_GPU=0; command -v nvidia-smi >/dev/null && USE_GPU=1
 colmap feature_extractor  --database_path "$DB" --image_path "$FRAMES" \
   --ImageReader.single_camera 1 --ImageReader.camera_model OPENCV \
-  --SiftExtraction.use_gpu 0 >/dev/null
-colmap sequential_matcher --database_path "$DB" --SiftMatching.use_gpu 0 >/dev/null
+  "$GPU_EXTRACT" $USE_GPU >/dev/null
+colmap sequential_matcher --database_path "$DB" "$GPU_MATCH" $USE_GPU >/dev/null
 
 echo "-- 3/4 COLMAP: reconstrucción sparse (poses de cámara)…"
 mkdir -p "$OUT/sparse"
@@ -36,7 +43,15 @@ colmap mapper --database_path "$DB" --image_path "$FRAMES" --output_path "$OUT/s
 [ -d "$OUT/sparse/0" ] || { echo "mapper no convergió — más solape entre tomas"; exit 1; }
 
 echo "-- 4/4 exportando nube de puntos points.ply…"
-colmap model_converter --input_path "$OUT/sparse/0" \
+# el mapper puede fragmentar en varios modelos: elegir el de más imágenes registradas
+BEST=""; BESTN=0
+for m in "$OUT"/sparse/*/; do
+  n=$(colmap model_analyzer --path "$m" 2>&1 | grep -o "Registered images: [0-9]*" | grep -o "[0-9]*$" || echo 0)
+  echo "   modelo $(basename "$m"): $n imágenes"
+  [ "$n" -gt "$BESTN" ] && { BEST="$m"; BESTN=$n; }
+done
+echo "   → exportando $(basename "$BEST") ($BESTN imágenes)"
+colmap model_converter --input_path "$BEST" \
   --output_path "$OUT/points.ply" --output_type PLY >/dev/null
 
 echo ""

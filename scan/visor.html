@@ -263,7 +263,12 @@ async function loadPLY(srcOrBuffer,name){
   const geo=(srcOrBuffer instanceof ArrayBuffer)?loader.parse(srcOrBuffer)
     :await loader.loadAsync(srcOrBuffer);
   geo.computeBoundingBox();
-  const c=new THREE.Vector3(); geo.boundingBox.getCenter(c); geo.translate(-c.x,-geo.boundingBox.min.y,-c.z);
+  const c=new THREE.Vector3(); geo.boundingBox.getCenter(c); geo.translate(-c.x,-c.y,-c.z);
+  // escala de COLMAP es arbitraria: normalizar al tamaño de la rejilla (~14 u)
+  const dim=new THREE.Vector3(); geo.boundingBox.getSize(dim);
+  const esc=14/Math.max(dim.x,dim.y,dim.z); geo.scale(esc,esc,esc);
+  geo.computeBoundingBox(); geo.translate(0,-geo.boundingBox.min.y,0);
+  log('autoescala ×'+esc.toFixed(2));
   ptsMat=new THREE.PointsMaterial({size:parseFloat($('pt-size').value)||.035,
     vertexColors:geo.hasAttribute('color')});
   if(!geo.hasAttribute('color')) ptsMat.color.set(0x28e07c);
