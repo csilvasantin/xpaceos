@@ -2,3 +2,5 @@ scenes/*/frames/
 scenes/*/colmap.db
 scenes/*/sparse/
 scenes/*/mapper.log
+scenes/*/walk.mov
+scenes/*/sparse-txt/
