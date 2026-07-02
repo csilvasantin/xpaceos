@@ -46,6 +46,12 @@ html,body{margin:0; height:100%; background:var(--bg); color:var(--txt);
 .maquina.viva .estado-dot{background:var(--acc); box-shadow:0 0 8px var(--acc)}
 .maquina .rol{font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px}
 .maquina .focus{font-size:13px; color:var(--warn); min-height:20px; margin-bottom:8px}
+.prog{height:14px; background:#03120a; border:1px solid var(--line); border-radius:8px;
+  overflow:hidden; margin-bottom:4px}
+.prog .fill{height:100%; width:0%; background:linear-gradient(90deg,#123524,var(--acc));
+  transition:width .8s}
+.prog-lbl{font-size:12px; color:var(--acc); min-height:18px; margin-bottom:8px;
+  font-variant-numeric:tabular-nums}
 .feed{flex:1; overflow:auto; border-top:1px dashed var(--line); padding-top:8px;
   font:11.5px/1.6 ui-monospace,Menlo,monospace; color:var(--dim)}
 .feed .e{margin-bottom:6px}
@@ -78,17 +84,23 @@ html,body{margin:0; height:100%; background:var(--bg); color:var(--txt);
     <div class="maquina" id="m-mac">
       <h3><span class="estado-dot"></span>MacBookProNegro14</h3>
       <div class="rol">Morfeo · captura + COLMAP</div>
-      <div class="focus"></div><div class="feed"></div>
+      <div class="focus"></div>
+      <div class="prog"><div class="fill"></div></div><div class="prog-lbl">sin tarea activa</div>
+      <div class="feed"></div>
     </div>
     <div class="maquina" id="m-ts">
       <h3><span class="estado-dot"></span>ThinkStation PGX</h3>
       <div class="rol">GB10 · entrenamiento 3DGS</div>
-      <div class="focus"></div><div class="feed"></div>
+      <div class="focus"></div>
+      <div class="prog"><div class="fill"></div></div><div class="prog-lbl">sin tarea activa</div>
+      <div class="feed"></div>
     </div>
     <div class="maquina" id="m-dgx">
       <h3><span class="estado-dot"></span>DGX Spark</h3>
       <div class="rol">GB10 · COLMAP A/B + refuerzo</div>
-      <div class="focus"></div><div class="feed"></div>
+      <div class="focus"></div>
+      <div class="prog"><div class="fill"></div></div><div class="prog-lbl">sin tarea activa</div>
+      <div class="feed"></div>
     </div>
   </div>
 
@@ -128,6 +140,18 @@ async function tick(){
         `<div class="e ${cls}"><span class="t">${hora(e.date)}</span>${e.text.replace(/^🧊 XpaceScan · /,'')}</div>`);
     }
     $('#raw').innerHTML=raw.slice(0,40).join('<br>');
+    // progreso por máquina: primer (más reciente) mensaje con [NN% ...]
+    const hecho={};
+    for(const e of es){
+      const sel=MAQ[e.machine]; if(!sel||hecho[sel]) continue;
+      const m=(e.text||'').match(/\[(\d+)%(?:[^\]]*?(faltan[^\]]+))?\]/);
+      if(m){ hecho[sel]=1;
+        $(sel+' .prog .fill').style.width=m[1]+'%';
+        $(sel+' .prog-lbl').textContent=m[1]+'%'+(m[2]?' · '+m[2]:'')+
+          (m[1]==='100'?' · ✅ completado':'');
+      } else if(/ERROR/i.test(e.text)){ hecho[sel]=1;
+        $(sel+' .prog-lbl').textContent='⛔ error — ver feed'; }
+    }
     // etapas del pipeline (según lo más reciente que mencione cada etapa)
     const todo=es.map(e=>e.text).join(' · ');
     for(const [k,re] of ETAPAS){
