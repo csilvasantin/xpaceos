@@ -5043,7 +5043,7 @@ const GROK={
   proxyUrl:typeof GROK_CONFIG.proxyUrl==='string'?GROK_CONFIG.proxyUrl.replace(/\/+$/,''):'',
   enabled:!!GROK_CONFIG.enabled||!!GROK_CONFIG.proxyUrl,
   proxyPort:Number(GROK_CONFIG.proxyPort)||9124,
-  model:typeof GROK_CONFIG.model==='string'?GROK_CONFIG.model:'grok-4-latest',
+  model:typeof GROK_CONFIG.model==='string'?GROK_CONFIG.model:'grok-4.5',
   lastPrompt:'',
   lastAnswer:'',
   lastLatencyMs:0,
@@ -16372,6 +16372,7 @@ const HELP_PAGES={
     '  xtAPI.command("/ladron")',
     '  xtAPI.command("/lluvia off")',
     '  xtAPI.command("/subasta")  → abre/cierra (toggle) la subasta · /subasta off cierra',
+    '  xtAPI.command("/pantallateve")  → momento «LA PANTALLA TE VE»: audiencia (real o simulada) → creativo se adapta en vivo · demo-proof · →/espacio siguiente · L cámara real · off',
     '  xtAPI.command("/targetPublicity aforo|genero")  → publicidad segmentada (genero=sexo+edad por LiveCam on-device) · off para parar',
     '  xtAPI.command("/generovideo")  → las 2 pantallas siguen el sexo de la cámara: 👨→Money For Nothing · 👩→Take On Me · off para parar',
     '  xtAPI.command("/aforo real")  → la cámara Hikvision (ieu.ai) marca el objetivo de clientes (ambiente)',
@@ -26580,6 +26581,20 @@ window.xtAPI = (function(){
         return {ok:true,message:'📷 Cámara MUPI · '+MUPICAM.shots.length+' viandante(s) · vista '+MUPICAM._mode+' · /mupicam pixel|normal · /mupicam reset · /mupicam off',data:{shots:MUPICAM.shots.length,mode:MUPICAM._mode}};
       }
 
+      // ── /pantallateve — momento demo-proof «LA PANTALLA TE VE» ─────────
+      //   Overlay a prueba de fallo para la presentación: audiencia (real o
+      //   simulada) → el creativo se adapta en vivo. →/espacio siguiente ·
+      //   ← anterior · L cámara real · Esc salir. También Shift+V o botón 👁.
+      if(['pantallateve','lapantallateve','screenseesyou','teve','percibe','audiencedemo','demopercibe'].includes(cmd)){
+        if(!window.__PERCIBE) return {ok:false,message:'Módulo «la pantalla te ve» no disponible'};
+        const a=String(arg||'').trim().toLowerCase();
+        if(['off','stop','cerrar','close','0','salir','no'].includes(a)){ window.__PERCIBE.close(); return {ok:true,message:'👁 «La pantalla te ve» cerrado',data:{on:false}}; }
+        if(['next','siguiente','+'].includes(a)){ window.__PERCIBE.next(); return {ok:true,message:'👁 siguiente audiencia'}; }
+        if(['live','vivo','camara','cámara'].includes(a)){ window.__PERCIBE.live(); return {ok:true,message:'👁 alternando cámara real / simulado'}; }
+        window.__PERCIBE.open();
+        return {ok:true,message:'👁 LA PANTALLA TE VE · →/espacio = siguiente · ← = anterior · L = cámara real · Esc = salir (o botón 👁 / Shift+V)',data:{on:true}};
+      }
+
       // ── /targetPublicity — publicidad segmentada ──────────────────────
       // Toggle como /subasta. Lee una señal de audiencia y empuja el creativo
       // adecuado a ESTA pantalla (reutiliza el targeting por screen del feed).
@@ -31932,6 +31947,319 @@ window.xtAPI = (function(){
   window.TwinPresent={ open:open, close:close, next:next, prev:prev, goto:goto,
     toggleAuto:toggleAuto, isOpen:function(){ return isOpen; },
     showButton:function(v){ openBtn.classList.toggle("show",v!==false); } };
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LA PANTALLA TE VE — momento demo-proof del gemelo XpaceOS (crear→emitir→
+     PERCIBIR→monetizar). Overlay a prueba de presentación en vivo: si la
+     cámara real (LIVE_CAM + Human on-device) funciona, muestra el dato REAL;
+     si falla (permisos, WiFi, luz), el presentador dispara escenas simuladas
+     y deterministas por TECLA o BOTÓN — el WoW «la pantalla reacciona a quién
+     mira» se ve SÍ O SÍ. Legible a 3 m. Metaestilo AdmiraNeXT (cian espina).
+     Abrir: /pantallateve  ·  atajo global Shift+V  ·  botón flotante 👁
+     Dentro: → / Espacio = siguiente · ← = anterior · L = live/sim · Esc = salir
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  #percibeOverlay{position:fixed;inset:0;z-index:2147483000;display:none;flex-direction:column;
+    background:radial-gradient(1200px 700px at 30% 0%,#0a1a24 0%,#05070c 62%,#03050a 100%);
+    color:var(--xp-ink,#dff8ff);font-family:"JetBrains Mono",ui-monospace,monospace;
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+  #percibeOverlay.on{display:flex;animation:pcbFade .35s ease}
+  @keyframes pcbFade{from{opacity:0}to{opacity:1}}
+  .pcb-scan{position:absolute;left:0;right:0;height:3px;top:0;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--xp-cyan,#78f3ff),transparent);
+    box-shadow:0 0 24px 4px rgba(120,243,255,.7);opacity:0}
+  .pcb-scan.go{animation:pcbSweep 1.05s ease}
+  @keyframes pcbSweep{0%{top:0;opacity:.95}100%{top:100%;opacity:0}}
+  .pcb-top{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:clamp(14px,2.4vh,30px) clamp(20px,3vw,52px) 0}
+  .pcb-brand{display:flex;align-items:center;gap:14px}
+  .pcb-eye{font-size:clamp(30px,4.4vw,58px);filter:drop-shadow(0 0 14px rgba(120,243,255,.7))}
+  .pcb-title{font-weight:800;letter-spacing:.06em;line-height:1;
+    font-size:clamp(26px,4.4vw,60px);
+    background:linear-gradient(180deg,#eafcff,#78f3ff);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;text-shadow:0 0 40px rgba(120,243,255,.25)}
+  .pcb-sub{font-size:clamp(10px,1.2vw,15px);color:var(--xp-cyan,#78f3ff);letter-spacing:.34em;
+    text-transform:uppercase;opacity:.85;margin-top:6px}
+  .pcb-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;
+    font-weight:800;letter-spacing:.12em;font-size:clamp(11px,1.3vw,16px);border:1.5px solid;white-space:nowrap}
+  .pcb-badge.live{color:#05070c;background:var(--xp-mint,#7dffb5);border-color:#7dffb5;
+    box-shadow:0 0 26px rgba(125,255,181,.55);animation:pcbPulse 1.4s infinite}
+  .pcb-badge.sim{color:var(--xp-gold,#f7c95d);background:rgba(247,201,93,.08);border-color:var(--xp-gold,#f7c95d)}
+  @keyframes pcbPulse{0%,100%{box-shadow:0 0 20px rgba(125,255,181,.4)}50%{box-shadow:0 0 40px rgba(125,255,181,.85)}}
+  .pcb-body{flex:1;min-height:0;display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(16px,2.4vw,44px);
+    align-items:stretch;padding:clamp(12px,2vh,26px) clamp(20px,3vw,52px)}
+  @media (max-width:900px){.pcb-body{grid-template-columns:1fr;overflow:auto}}
+  .pcb-panel{border:1px solid var(--xp-line,#1f6b78);border-radius:18px;background:rgba(8,20,29,.72);
+    box-shadow:0 0 0 1px rgba(120,243,255,.06),0 22px 60px rgba(0,0,0,.5);
+    padding:clamp(16px,2.4vh,32px) clamp(18px,2.2vw,34px);display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .pcb-label{font-size:clamp(11px,1.2vw,15px);letter-spacing:.28em;text-transform:uppercase;
+    color:var(--xp-muted,#80a0a9)}
+  .pcb-people{font-weight:800;line-height:.98;font-size:clamp(38px,6vw,92px);
+    color:#fff;margin:4px 0 2px;text-shadow:0 0 30px rgba(120,243,255,.3)}
+  .pcb-people small{font-size:.34em;font-weight:700;color:var(--xp-cyan,#78f3ff);letter-spacing:.04em}
+  .pcb-dots{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 4px}
+  .pcb-dot{width:clamp(16px,1.7vw,26px);height:clamp(16px,1.7vw,26px);border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#bff6ff,#2b8fb0);box-shadow:0 0 14px rgba(120,243,255,.6)}
+  .pcb-dot.empty{background:transparent;border:2px dashed #2b6b78;box-shadow:none}
+  .pcb-splitwrap{margin:clamp(14px,2vh,24px) 0 6px}
+  .pcb-bar{height:clamp(22px,3vh,38px);border-radius:999px;overflow:hidden;display:flex;
+    border:1px solid rgba(120,243,255,.25);background:#08141d}
+  .pcb-bar .m{background:linear-gradient(90deg,#2f7fff,#5aa0ff);display:flex;align-items:center;
+    justify-content:center;font-weight:800;font-size:clamp(11px,1.2vw,16px);color:#eaf3ff;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .pcb-bar .f{background:linear-gradient(90deg,#ff4fa3,#ff86c2);display:flex;align-items:center;
+    justify-content:center;font-weight:800;font-size:clamp(11px,1.2vw,16px);color:#fff;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .pcb-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:auto;padding-top:16px}
+  .pcb-chip{border:1px solid var(--xp-line,#1f6b78);border-radius:10px;padding:8px 14px;
+    font-size:clamp(11px,1.2vw,16px);background:rgba(15,34,43,.6)}
+  .pcb-chip b{color:var(--xp-cyan,#78f3ff)}
+  /* Creativo que se adapta */
+  .pcb-creative{color:#fff;justify-content:space-between;transition:background .6s ease,border-color .6s ease;padding-bottom:clamp(44px,6vh,60px)}
+  .pcb-cre-tag{align-self:flex-start;font-weight:800;letter-spacing:.18em;font-size:clamp(11px,1.3vw,17px);
+    padding:7px 15px;border-radius:999px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.35)}
+  .pcb-cre-emoji{font-size:clamp(48px,8vw,116px);line-height:1;margin:clamp(4px,1vh,14px) 0;
+    filter:drop-shadow(0 10px 26px rgba(0,0,0,.5))}
+  .pcb-cre-head{font-weight:800;line-height:1.02;font-size:clamp(28px,4.6vw,64px);letter-spacing:-.01em}
+  .pcb-cre-sub{font-size:clamp(15px,1.9vw,26px);opacity:.94;margin-top:12px;line-height:1.3;max-width:22ch}
+  .pcb-cre-cta{align-self:flex-start;margin-top:clamp(12px,2vh,24px);font-weight:800;
+    font-size:clamp(15px,1.9vw,26px);padding:12px 26px;border-radius:14px;background:#05070c;color:#fff;
+    box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .pcb-cre-why{position:absolute;left:0;right:0;bottom:0;padding:10px 18px;font-size:clamp(11px,1.15vw,15px);
+    background:rgba(0,0,0,.42);border-top:1px solid rgba(255,255,255,.18)}
+  .pcb-cre-why b{opacity:.7;font-weight:700}
+  /* Barra inferior: first-party + ADcelerate + clearchannel.tv */
+  .pcb-foot{display:flex;align-items:center;gap:clamp(10px,1.6vw,26px);flex-wrap:wrap;
+    padding:clamp(10px,1.6vh,20px) clamp(20px,3vw,52px);border-top:1px solid rgba(120,243,255,.14);
+    background:rgba(4,8,13,.7);font-size:clamp(11px,1.15vw,15px)}
+  .pcb-foot .fp{display:inline-flex;align-items:center;gap:8px;color:var(--xp-mint,#7dffb5);
+    border:1px solid rgba(125,255,181,.4);border-radius:999px;padding:6px 14px;font-weight:700;letter-spacing:.04em}
+  .pcb-foot .src{color:var(--xp-muted,#80a0a9)}
+  .pcb-foot .src b{color:var(--xp-ink,#dff8ff)}
+  .pcb-foot .cpm{margin-left:auto;display:inline-flex;align-items:center;gap:10px;color:var(--xp-gold,#f7c95d);font-weight:800;letter-spacing:.04em}
+  .pcb-foot a{color:var(--xp-cyan,#78f3ff);text-decoration:none;border-bottom:1px dotted rgba(120,243,255,.5)}
+  /* Controles del presentador */
+  .pcb-ctl{display:flex;gap:10px;align-items:center;justify-content:center;z-index:5;
+    padding:clamp(8px,1.4vh,16px) clamp(20px,3vw,52px) 0}
+  .pcb-ctl button{font-family:inherit;font-weight:800;cursor:pointer;border-radius:12px;
+    border:1px solid var(--xp-cyan,#78f3ff);background:rgba(8,20,29,.9);color:var(--xp-cyan,#78f3ff);
+    font-size:clamp(13px,1.4vw,18px);padding:10px 16px;box-shadow:0 0 18px rgba(120,243,255,.25)}
+  .pcb-ctl button:hover{background:var(--xp-cyan,#78f3ff);color:#05070c}
+  .pcb-ctl .hint{color:var(--xp-muted,#80a0a9);font-size:clamp(10px,1vw,13px);margin-right:8px;letter-spacing:.05em}
+  .pcb-close{position:absolute;top:clamp(14px,2.2vh,26px);right:clamp(16px,2.4vw,40px);z-index:6;
+    cursor:pointer;border:1px solid var(--xp-line,#1f6b78);background:rgba(8,20,29,.9);color:var(--xp-ink,#dff8ff);
+    border-radius:10px;font-size:18px;line-height:1;padding:8px 12px;font-family:inherit}
+  .pcb-close:hover{border-color:var(--xp-danger,#ff6b6b);color:var(--xp-danger,#ff6b6b)}
+  /* Botón flotante para abrir (discreto) */
+  #percibeFab{position:fixed;right:16px;bottom:16px;z-index:2147482500;cursor:pointer;
+    width:52px;height:52px;border-radius:50%;border:1px solid var(--xp-cyan,#78f3ff);
+    background:rgba(8,20,29,.92);color:var(--xp-cyan,#78f3ff);font-size:24px;display:none;
+    align-items:center;justify-content:center;box-shadow:0 0 20px rgba(120,243,255,.35)}
+  #percibeFab:hover{background:var(--xp-cyan,#78f3ff);color:#05070c}
+</style>
+<script>
+/* LA PANTALLA TE VE — módulo autónomo, sin dependencias de red: si el worker o
+   la cámara fallan, el momento se ve igual. Lee LIVE_CAM/LIVE_FACE si existen. */
+(function(){
+  if(window.__PERCIBE) return;
+  var franjaNow=function(){ var h=new Date().getHours();
+    return h<12?'mañana':h<16?'mediodía':h<20?'tarde':'noche'; };
+
+  // Escenas deterministas (fallback demo-proof). Cada una: público → creativo adaptado.
+  var SCENES=[
+    { people:2, m:65, f:35, age:'25-40', franja:'tarde',
+      tag:'DEPORTE · TECH', emoji:'⌚', bg:'linear-gradient(140deg,#123a7a,#2f7fff 70%,#4f97ff)', border:'#7db3ff',
+      head:'Rendimiento sin límites', sub:'Smartwatch Series X — mide, supera, repite.', cta:'−20% solo hoy',
+      why:'Mayoría hombres 25-40 · franja tarde → producto tech aspiracional' },
+    { people:1, m:0, f:100, age:'20-30', franja:'mediodía',
+      tag:'BELLEZA · PREMIUM', emoji:'💄', bg:'linear-gradient(140deg,#7a1550,#ff4fa3 72%,#ff86c2)', border:'#ff9ccb',
+      head:'Tu ritual, tu momento', sub:'Nueva colección premium · edición limitada.', cta:'Descúbrela',
+      why:'Mujer joven · mirada individual → moda/belleza, tono aspiracional' },
+    { people:4, m:50, f:50, age:'familias', franja:'mañana',
+      tag:'FAMILIA · OFERTA', emoji:'🛒', bg:'linear-gradient(140deg,#7a4410,#f7a83d 70%,#ffcf8a)', border:'#ffcf8a',
+      head:'Todo para los tuyos', sub:'Pack familiar — ahorra en la cesta semanal.', cta:'2×1 este finde',
+      why:'Grupo mixto (4) · franja mañana → oferta familiar de volumen' },
+    { people:3, m:30, f:70, age:'50+', franja:'tarde',
+      tag:'SALUD · BIENESTAR', emoji:'🌿', bg:'linear-gradient(140deg,#0d5a3c,#37c98a 72%,#8ff0c4)', border:'#8ff0c4',
+      head:'Cuídate cada día', sub:'Bienestar senior, cerca de ti.', cta:'Consulta gratis',
+      why:'Mayoría mujeres 50+ → salud y bienestar, tono cercano' },
+    { people:0, m:0, f:0, age:'—', franja:'—', idle:true,
+      tag:'MARCA · ATRAER', emoji:'✨', bg:'linear-gradient(140deg,#062733,#0e4a5a 68%,#137d90)', border:'#78f3ff',
+      head:'La pantalla que te ve', sub:'Se adapta a quién la mira. Acércate.', cta:'XpaceOS',
+      why:'Nadie mira → contenido de marca para atraer (idle)' }
+  ];
+
+  var idx=0, liveMode=false, root=null, els={};
+
+  function liveScene(){
+    var lf=(typeof LIVE_FACE!=='undefined')?LIVE_FACE:null;
+    var camOn=!!(typeof LIVE_CAM!=='undefined'&&LIVE_CAM&&LIVE_CAM.active);
+    var fresh=!!(camOn&&lf&&lf.faces>0&&(performance.now()-lf.ts)<6000);
+    if(!fresh) return null;
+    var isF=lf.gender==='female';
+    var base=SCENES[isF?1:0];
+    var people=lf.faces||1;
+    return { live:true, people:people, m:isF?0:100, f:isF?100:0,
+      age:lf.ageBucket||base.age, franja:franjaNow(),
+      tag:base.tag, emoji:base.emoji, bg:base.bg, border:base.border,
+      head:base.head, sub:base.sub, cta:base.cta,
+      why:'Cámara on-device · '+people+' cara(s) · '+(isF?'femenino':'masculino')+(lf.age?(' ~'+lf.age+'a'):'')+' · anónimo, sin almacenamiento' };
+  }
+
+  function current(){
+    if(liveMode){ var l=liveScene(); if(l) return l; }
+    return SCENES[((idx%SCENES.length)+SCENES.length)%SCENES.length];
+  }
+
+  function build(){
+    if(root) return;
+    root=document.createElement('div');
+    root.id='percibeOverlay';
+    root.innerHTML=
+      '<div class="pcb-scan" id="pcbScan"></div>'+
+      '<button class="pcb-close" id="pcbClose" title="Salir (Esc)">✕</button>'+
+      '<div class="pcb-top">'+
+        '<div class="pcb-brand"><div class="pcb-eye">👁</div><div>'+
+          '<div class="pcb-title">LA PANTALLA TE VE</div>'+
+          '<div class="pcb-sub">crear · emitir · <span style="color:#fff">percibir</span> · monetizar</div>'+
+        '</div></div>'+
+        '<div id="pcbBadge" class="pcb-badge sim">SIMULADO</div>'+
+      '</div>'+
+      '<div class="pcb-body">'+
+        '<div class="pcb-panel">'+
+          '<div class="pcb-label">Audiencia detectada</div>'+
+          '<div class="pcb-people" id="pcbPeople">0 <small>personas</small></div>'+
+          '<div class="pcb-dots" id="pcbDots"></div>'+
+          '<div class="pcb-splitwrap">'+
+            '<div class="pcb-label" style="margin-bottom:8px">Reparto por género</div>'+
+            '<div class="pcb-bar"><div class="m" id="pcbM"></div><div class="f" id="pcbF"></div></div>'+
+          '</div>'+
+          '<div class="pcb-meta">'+
+            '<div class="pcb-chip">Edad <b id="pcbAge">—</b></div>'+
+            '<div class="pcb-chip">Franja <b id="pcbFranja">—</b></div>'+
+            '<div class="pcb-chip">Emoción <b id="pcbMood">neutra</b></div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="pcb-panel pcb-creative" id="pcbCre">'+
+          '<div class="pcb-cre-tag" id="pcbTag">—</div>'+
+          '<div class="pcb-cre-emoji" id="pcbEmoji">✨</div>'+
+          '<div><div class="pcb-cre-head" id="pcbHead">—</div>'+
+          '<div class="pcb-cre-sub" id="pcbSub">—</div></div>'+
+          '<div class="pcb-cre-cta" id="pcbCta">—</div>'+
+          '<div class="pcb-cre-why" id="pcbWhy"><b>por qué:</b> —</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pcb-ctl">'+
+        '<span class="hint">← · →/espacio · L live · Esc</span>'+
+        '<button id="pcbPrev" title="Anterior">◀</button>'+
+        '<button id="pcbLive" title="Alternar cámara real / simulado">EN VIVO</button>'+
+        '<button id="pcbNext" title="Siguiente audiencia">SIGUIENTE ▶</button>'+
+      '</div>'+
+      '<div class="pcb-foot">'+
+        '<span class="fp">🔒 first-party · sin cookies · on-device</span>'+
+        '<span class="src">dato de zona <b>ADcelerate</b> (telco) × cámara del punto = <b>audiencia real</b></span>'+
+        '<span class="cpm" id="pcbCpm">clearchannel.tv · proof-of-play · CPM €—</span>'+
+      '</div>';
+    document.body.appendChild(root);
+    els.scan=root.querySelector('#pcbScan'); els.badge=root.querySelector('#pcbBadge');
+    els.people=root.querySelector('#pcbPeople'); els.dots=root.querySelector('#pcbDots');
+    els.m=root.querySelector('#pcbM'); els.f=root.querySelector('#pcbF');
+    els.age=root.querySelector('#pcbAge'); els.franja=root.querySelector('#pcbFranja'); els.mood=root.querySelector('#pcbMood');
+    els.cre=root.querySelector('#pcbCre'); els.tag=root.querySelector('#pcbTag'); els.emoji=root.querySelector('#pcbEmoji');
+    els.head=root.querySelector('#pcbHead'); els.sub=root.querySelector('#pcbSub'); els.cta=root.querySelector('#pcbCta');
+    els.why=root.querySelector('#pcbWhy'); els.cpm=root.querySelector('#pcbCpm');
+    root.querySelector('#pcbClose').onclick=close;
+    root.querySelector('#pcbPrev').onclick=function(){ prev(); };
+    root.querySelector('#pcbNext').onclick=function(){ next(); };
+    root.querySelector('#pcbLive').onclick=function(){ toggleLive(); };
+  }
+
+  function sweep(){ if(!els.scan) return; els.scan.classList.remove('go'); void els.scan.offsetWidth; els.scan.classList.add('go'); }
+
+  function render(animate){
+    build();
+    var s=current();
+    // Badge live/sim
+    var isLive=!!s.live;
+    els.badge.className='pcb-badge '+(isLive?'live':'sim');
+    els.badge.textContent=isLive?'● EN VIVO (cámara on-device)':'SIMULADO · demo';
+    // Audiencia
+    els.people.innerHTML=s.people+' <small>'+(s.people===1?'persona':'personas')+'</small>';
+    // Dots
+    els.dots.innerHTML='';
+    if(s.people===0){ var e=document.createElement('div'); e.className='pcb-dot empty'; els.dots.appendChild(e); }
+    for(var i=0;i<s.people;i++){ var d=document.createElement('div'); d.className='pcb-dot'; els.dots.appendChild(d); }
+    // Reparto
+    els.m.style.width=s.m+'%'; els.m.textContent=s.m>=12?(s.m+'% ♂'):'';
+    els.f.style.width=s.f+'%'; els.f.textContent=s.f>=12?(s.f+'% ♀'):'';
+    els.age.textContent=s.age; els.franja.textContent=s.franja;
+    els.mood.textContent=s.idle?'—':(isLive?'atención':'interés');
+    // Creativo adaptado
+    els.cre.style.background=s.bg; els.cre.style.borderColor=s.border;
+    els.tag.textContent=s.tag; els.emoji.textContent=s.emoji;
+    els.head.textContent=s.head; els.sub.textContent=s.sub; els.cta.textContent=s.cta;
+    els.why.innerHTML='<b>por qué:</b> '+s.why;
+    // CPM demo (dato monetización: audiencia segmentada sube el CPM)
+    var cpm=s.people===0?4.0:(6.5+s.people*1.4+(Math.max(s.m,s.f)-50)*0.05);
+    els.cpm.textContent='clearchannel.tv · proof-of-play · CPM €'+cpm.toFixed(2);
+    if(animate!==false) sweep();
+  }
+
+  function next(){ liveMode=false; idx++; render(true); }
+  function prev(){ liveMode=false; idx--; render(true); }
+  function toggleLive(){
+    liveMode=!liveMode;
+    var camOn=!!(typeof LIVE_CAM!=='undefined'&&LIVE_CAM&&LIVE_CAM.active);
+    if(liveMode){
+      if(!camOn && typeof setLiveCamState==='function'){ try{ setLiveCamState(true); }catch(_){} }
+      if(typeof startFaceLoop==='function'){ try{ startFaceLoop(); }catch(_){} }
+    }
+    render(true);
+  }
+
+  var keyHandler=function(e){
+    if(!root||!root.classList.contains('on')) return;
+    var k=e.key;
+    if(k==='Escape'||k==='q'||k==='Q'){ close(); e.preventDefault(); e.stopPropagation(); return; }
+    if(k==='ArrowRight'||k===' '||k==='Enter'||k==='PageDown'){ next(); e.preventDefault(); e.stopPropagation(); return; }
+    if(k==='ArrowLeft'||k==='PageUp'){ prev(); e.preventDefault(); e.stopPropagation(); return; }
+    if(k==='l'||k==='L'){ toggleLive(); e.preventDefault(); e.stopPropagation(); return; }
+  };
+
+  function open(){
+    build(); idx=0; liveMode=false;
+    render(false);
+    root.classList.add('on'); sweep();
+    document.addEventListener('keydown',keyHandler,true);
+    try{ if(typeof showEv==='function') showEv('👁 LA PANTALLA TE VE · →/espacio siguiente · L en vivo · Esc salir','#78f3ff'); }catch(_){}
+    var fab=document.getElementById('percibeFab'); if(fab) fab.style.display='none';
+  }
+  function close(){
+    if(root){ root.classList.remove('on'); }
+    document.removeEventListener('keydown',keyHandler,true);
+    var fab=document.getElementById('percibeFab'); if(fab) fab.style.display='flex';
+  }
+  function toggle(){ (root&&root.classList.contains('on'))?close():open(); }
+
+  // Botón flotante discreto (aparece a los 2 s; el presentador también puede usar Shift+V o /pantallateve)
+  function fab(){
+    if(document.getElementById('percibeFab')) return;
+    var b=document.createElement('div'); b.id='percibeFab'; b.textContent='👁'; b.title='La pantalla te ve (Shift+V)';
+    b.onclick=open; document.body.appendChild(b);
+    setTimeout(function(){ b.style.display='flex'; },2000);
+  }
+  if(document.readyState!=='loading') fab(); else document.addEventListener('DOMContentLoaded',fab);
+
+  // Atajo global para ABRIR (no colisiona con el juego: sólo fuera de inputs).
+  window.addEventListener('keydown',function(e){
+    if(e.repeat) return;
+    var t=e.target, tag=t&&t.tagName;
+    if(tag==='INPUT'||tag==='TEXTAREA'||(t&&t.isContentEditable)) return;
+    if(e.shiftKey && (e.key==='V'||e.key==='v')){ e.preventDefault(); toggle(); }
+  });
+
+  window.__PERCIBE={ open:open, close:close, toggle:toggle, next:next, prev:prev, live:toggleLive,
+    isOpen:function(){ return !!(root&&root.classList.contains('on')); } };
 })();
 </script>
 </body>
