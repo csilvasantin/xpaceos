@@ -18953,6 +18953,28 @@ function mhFaceOff(){
   if(e.frame) e.frame.removeAttribute('src'); // corta la conexión WebRTC al cerrar
 }
 // Publica la respuesta en el worker; el avatar UE la sondea (/metahuman/next) y la HABLA.
+// ── /metahuman (toggle): la cara viva sobre la PANTALLA GIGANTE de la pared larga ──
+// Mismo patron que el modo pared del Condicional: ancla al hitbox del gestor de
+// turnos (pared larga) y escala el panel encima. Al apagar, restaura el panel.
+window.MH_WALL = false;
+function mhWallTick(force){
+  const els=_mhEls(); if(!els||!els.panel) return;
+  const p=els.panel;
+  if(!window.MH_WALL){
+    if(p.dataset.wall==='1'){ p.dataset.wall=''; p.style.left=''; p.style.top=''; p.style.width=''; p.style.right=''; p.style.bottom=''; try{ _mhPositionPanel(); }catch(_){}}
+    return;
+  }
+  const cv=document.getElementById('c'); const btn=window.BTNS&&window.BTNS.turnKioskCall;
+  if(!cv||!btn) return;
+  const r=cv.getBoundingClientRect(), sx=r.width/cv.width, sy=r.height/cv.height;
+  const w=Math.max(260, btn.w*sx*6.5);
+  const cxp=r.left+(btn.x+btn.w/2)*sx;
+  const topY=r.top+btn.y*sy - w*0.78 - 26*sy;   // encima del gestor, en la pared larga
+  p.dataset.wall='1';
+  p.style.left=Math.round(cxp-w/2)+'px'; p.style.top=Math.round(Math.max(r.top+8,topY))+'px';
+  p.style.right='auto'; p.style.bottom='auto'; p.style.width=Math.round(w)+'px';
+}
+setInterval(function(){ try{ mhWallTick(); }catch(_){} }, 150);
 window.MH_SAY_URL = window.MH_SAY_URL || 'https://omnipublicity-api.csilvasantin.workers.dev/metahuman/say';
 window.MH_ROOM = window.MH_ROOM || 'xtanco';
 function mhSayToFace(text){
@@ -29762,7 +29784,18 @@ window.xtAPI = (function(){
           if(typeof mhFaceOn==='function'){ window.MH_FACE_ENABLED?mhFaceOn():mhFaceOff(); }
           return 'Cara del Metahuman '+(window.MH_FACE_ENABLED?'ON':'OFF')+'.';
         }
-        if(!arg) return 'Uso: /metahuman <pregunta>  ·  /metahuman face on|off';
+        if(!arg){
+          // Toggle pared (Carlos, 15-jul-2026): /metahuman lleva la cara viva a la
+          // pantalla GIGANTE de la pared larga; otro /metahuman la devuelve al panel.
+          window.MH_WALL=!window.MH_WALL;
+          if(window.MH_WALL){
+            window.MH_FACE_ENABLED=true;
+            if(typeof openMetahumanPanel==='function') openMetahumanPanel();
+            if(typeof mhFaceOn==='function') mhFaceOn();
+          }
+          if(typeof mhWallTick==='function') mhWallTick(true);
+          return '\ud83e\udde0 Metahuman en la pantalla de la pared '+(window.MH_WALL?'ENCENDIDO':'APAGADO')+'.  ·  /metahuman <pregunta> · /metahuman face on|off';
+        }
         if(typeof openMetahumanPanel==='function') openMetahumanPanel();
         if(typeof askMetahuman==='function'){
           await askMetahuman(arg);
