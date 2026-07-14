@@ -9824,6 +9824,7 @@ function doAction(id){
     ]);
     return;
   }
+  if(id==='turnScreenClick'){ try{ openTurnFull(); }catch(_){} return; }
   if(id==='camCPMClick'){
     // Cámara de seguridad → dashboard CPM/audiencia en la TFT de la pared
     // larga (toggle). El canal cede prioridad al CCTV si hay ladrón.
@@ -20358,6 +20359,9 @@ function drawTurnManager(){
   const frameTR={x:right.x,y:topY+slopeY};
   const frameBL={x:left.x,y:topY+62};
   const frameBR={x:right.x,y:topY+62+slopeY};
+  // Clic en la pantalla del gestor de turnos -> vista a pantalla completa (Carlos, 16-jul-2026)
+  BTNS['turnScreenClick']={x:Math.min(frameTL.x,frameBL.x), y:Math.min(frameTL.y,frameTR.y),
+    w:Math.abs(frameTR.x-frameTL.x), h:Math.abs(Math.max(frameBL.y,frameBR.y)-Math.min(frameTL.y,frameTR.y))};
   cx.save();
   cx.beginPath();
   cx.moveTo(frameTL.x,frameTL.y);cx.lineTo(frameTR.x,frameTR.y);
@@ -27748,13 +27752,50 @@ window.xtAPI = (function(){
       const j = await r.json();
       if(j && j.ok && j.b64){
         const im = new Image();
-        im.onload = () => { if(window.ADMIRA_CREA){ window.ADMIRA_CREA.img = im; window.ADMIRA_CREA.until = Date.now() + 30000; } };
+        im.onload = () => { if(window.ADMIRA_CREA){ window.ADMIRA_CREA.img = im; window.ADMIRA_CREA.until = Date.now() + 30000; window.ADMIRA_CREA_LAST = window.ADMIRA_CREA; } };
         im.src = 'data:image/jpeg;base64,' + j.b64;
         return '\ud83c\udfa8 PixerIA ha creado \u00ab' + d.slice(0,40) + '\u00bb \u2192 pantalla del contador (30 s).';
       }
       window.ADMIRA_CREA = null;
       return 'PixerIA no pudo crear la imagen (' + ((j&&j.error)||'sin respuesta') + ').';
     }catch(e){ window.ADMIRA_CREA = null; return 'PixerIA error: ' + String((e&&e.message)||e); }
+  }
+  // \u2500\u2500 Pantalla del gestor de turnos a PANTALLA COMPLETA (clic en la pantalla) \u2500\u2500
+  // Muestra la creaci\u00f3n de PixerIA (o la \u00faltima) en grande, o el turno; \u2715 vuelve al Xtanco.
+  function openTurnFull(){
+    let ov=document.getElementById('turnFullOv');
+    if(!ov){
+      ov=document.createElement('div'); ov.id='turnFullOv';
+      ov.style.cssText='position:fixed;inset:0;z-index:2147482600;background:#031316f2;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;backdrop-filter:blur(4px)';
+      ov.innerHTML='<button id="turnFullX" style="position:absolute;top:14px;right:18px;z-index:2;font:700 15px ui-monospace,monospace;background:#0b2a30;color:#8defff;border:1px solid #1e6a72;border-radius:10px;padding:8px 16px;cursor:pointer">\u2715 Volver al Xtanco</button>'+
+        '<div id="turnFullBody" style="max-width:92vw;max-height:86vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center"></div>';
+      document.body.appendChild(ov);
+      ov.querySelector('#turnFullX').onclick=()=>{ ov.style.display='none'; };
+      ov.addEventListener('click',e=>{ if(e.target===ov) ov.style.display='none'; });
+      setInterval(()=>{ try{ if(ov.style.display!=='none') renderTurnFull(); }catch(_){} }, 900);
+    }
+    renderTurnFull(); ov.style.display='flex';
+  }
+  function renderTurnFull(){
+    const body=document.getElementById('turnFullBody'); if(!body) return;
+    const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const AC=window.ADMIRA_CREA||window.ADMIRA_CREA_LAST;
+    let html;
+    if(AC && AC.img){
+      html='<img src="'+AC.img.src+'" style="max-width:92vw;max-height:76vh;border-radius:16px;box-shadow:0 0 70px rgba(141,239,255,.28)">'+
+        '<div style="color:#8defff;font:700 16px ui-monospace,monospace;letter-spacing:.08em">PIXERIA \u00b7 '+esc(AC.desc)+'</div>';
+    } else if(AC){
+      const pr=Math.min(0.95,(Date.now()-AC.t0)/(AC.eta||18000));
+      html='<div style="color:#8defff;font:700 30px ui-monospace,monospace">ADMIRA CREA IMAGEN</div>'+
+        '<div style="color:#fff;font:17px ui-monospace,monospace">'+esc(AC.desc)+'</div>'+
+        '<div style="width:min(70vw,520px);height:16px;border:1px solid #1e6a72;border-radius:9px;overflow:hidden"><div style="height:100%;width:'+Math.round(pr*100)+'%;background:#ffd86b"></div></div>'+
+        '<div style="color:#88aab5;font:14px ui-monospace,monospace">PixerIA generando\u2026 '+Math.round(pr*100)+'%</div>';
+    } else {
+      const num=String((typeof currentTurnNumber==='function')?currentTurnNumber():0).padStart(3,'0');
+      html='<div style="color:#8defff;font:700 26px ui-monospace,monospace;letter-spacing:.12em">TURNO \u00b7 CAJA</div>'+
+        '<div style="color:#ffd86b;font:700 140px ui-monospace,monospace;line-height:1">'+num+'</div>';
+    }
+    if(body.dataset.h!==html){ body.dataset.h=html; body.innerHTML=html; }
   }
   async function grokDraw(prompt){
     const clean=String(prompt||'').trim();
