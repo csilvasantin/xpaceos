@@ -19161,8 +19161,8 @@ function metahumanWallUrl(){
     if(h==='localhost'||h==='127.0.0.1'||h==='0.0.0.0'||h===''||location.protocol==='file:')
       return 'http://localhost/uiless.html?'+q;
   }catch(e){}
-  // prod: mismo host del MetaHuman por el funnel (limpio, sin UI)
-  return 'https://macbook-pro-16.tail48b61c.ts.net/uiless.html?'+q;
+  // prod: MetaHuman por el funnel PÚBLICO dedicado (:8443 → :80, limpio, sin UI)
+  return 'https://macbook-pro-16.tail48b61c.ts.net:8443/uiless.html?'+q;
 }
 // Avatar RPM elegido (/avatar3d model <id|url de readyplayer.me>). Vacío = el de
 // best.html por defecto. Se pasa como &avatar= y se aplica en vivo por postMessage.
