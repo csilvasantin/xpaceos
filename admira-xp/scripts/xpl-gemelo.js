@@ -281,17 +281,23 @@
     var inside = gateInside();
     // XPL -> pared: publicar el resultado para las DOS pantallas DS gigantes del
     // fondo (window.__dsXplMsg). Independiente del panel flotante (on/off).
+    // Vigencia 60s (no 15s): el tick de 1s se retrasa hasta ~40s cuando el juego
+    // satura el hilo/el navegador degrada los timers, y con 15s el mensaje pasaba
+    // caducado casi todo el tiempo y la pared ca\u00eda a la rotaci\u00f3n (14-jul-2026).
+    // Si el motor no produce resultado (o salimos del Xtanco), limpieza expl\u00edcita.
     try {
       var wc = inside ? (screen.content || null) : null;
       var wa = (!wc && inside && screen.ad) ? window.XPL.byId(window.XPL.ADS, screen.ad) : null;
       if (wc) {
         window.__dsXplMsg = { txt: String(wc.title || wc.type || 'CONTENIDO').toUpperCase().slice(0, 26),
           sub: 'XPL \u00b7 se\u00f1alizaci\u00f3n condicional', bg: '#0a1a2a', fg: '#3df08a',
-          img: (wc.type === 'image' && wc.url) ? wallImg(wc.url) : null, until: Date.now() + 15000 };
+          img: (wc.type === 'image' && wc.url) ? wallImg(wc.url) : null, until: Date.now() + 60000 };
       } else if (wa) {
         window.__dsXplMsg = { txt: String(wa.es || '').toUpperCase().slice(0, 26),
           sub: (wa.icon || '') + ' XPL \u00b7 condicional', bg: wa.bg || '#0a1a2a', fg: '#3df08a',
-          img: null, until: Date.now() + 15000 };
+          img: null, until: Date.now() + 60000 };
+      } else {
+        window.__dsXplMsg = null;
       }
     } catch (e) {}
     // chip y ventana ocultos por completo mientras estemos en el intro
