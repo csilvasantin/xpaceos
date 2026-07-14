@@ -311,7 +311,7 @@
       if (chipAd) chipAd.textContent = on ? '—' : 'off';
       return;
     }
-    el.style.display = 'block';
+    el.style.display = 'none';   // Condicional solo en pared (las dobles del fondo); el panel flotante no se muestra
     el.style.animation = screen.tone === 'hype' ? 'xplPulse .9s ease-in-out infinite' : 'none';
     if (content) {
       setMedia(content);
@@ -333,6 +333,9 @@
   // Pantalla de exterior (MUPI): creatividad dirigida al viandante de delante.
   function renderExt(inside) {
     if (!extEl) return;
+    // Condicional SOLO en las pantallas dobles del fondo (Carlos, 14-jul-2026):
+    // la pantalla de exterior queda para el CanalKiosk (la puerta).
+    extEl.style.display = 'none'; return;
     var ad = (inside && on && extScreen.ad) ? window.XPL.byId(window.XPL.ADS, extScreen.ad) : null;
     if (!ad) { extEl.style.display = 'none'; return; }
     extEl.style.display = 'block';

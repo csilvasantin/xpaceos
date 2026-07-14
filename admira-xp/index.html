@@ -20333,6 +20333,24 @@ function drawExteriorAd(g,age,vW,vH){
   const fem=(g==='f'); const cr=adCreative(g,age);
   // ¿Hay una CAMPAÑA comprada en admira.app para este segmento? Su creatividad manda.
   const camp=(typeof window!=='undefined'&&window.__campCreatives)?window.__campCreatives[age+'_'+g]:null;
+  // La puerta ES un CanalKiosk (Carlos, 14-jul-2026): reproduce la parrilla EXACTA
+  // (window.__doorMedia, canalkiosk-door.js v4). Una campaña real comprada manda.
+  const dm=(typeof window!=='undefined')?window.__doorMedia:null;
+  if(!camp && dm && dm.el){
+    cx.fillStyle='#000'; cx.fillRect(0,0,vW,vH);
+    try{
+      const mw=dm.el.videoWidth||dm.el.naturalWidth, mh=dm.el.videoHeight||dm.el.naturalHeight;
+      if(mw&&mh){ const s2=Math.max(vW/mw,vH/mh), dw=mw*s2, dh=mh*s2; cx.drawImage(dm.el,(vW-dw)/2,(vH-dh)/2,dw,dh); }
+    }catch(_){}
+    cx.textAlign='center';
+    cx.fillStyle='rgba(0,0,0,.55)'; cx.fillRect(0,0,vW,11);
+    cx.fillStyle='#8defff'; cx.font='bold 7px sans-serif'; cx.fillText('CANALKIOSK',vW/2,8);
+    cx.fillStyle='rgba(0,0,0,.55)'; cx.fillRect(0,vH-12,vW,12);
+    cx.fillStyle='#ffffff'; cx.font='bold 7px sans-serif';
+    cx.fillText(String(dm.title||'').toUpperCase().slice(0,22),vW/2,vH-4);
+    cx.textAlign='left';
+    return;
+  }
   cx.fillStyle=fem?'#2a0f1e':'#0c1430'; cx.fillRect(0,0,vW,vH);
   const im=(camp&&camp.url)?imgFromUrl(camp.url):adImg(cr.id);
   if(im){ const s=Math.min(vW*0.62,vH*0.62); try{ cx.drawImage(im, vW/2-s/2, vH*0.14, s, s); }catch(_){} }
