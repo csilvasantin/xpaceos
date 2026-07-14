@@ -274,9 +274,26 @@
     m.style.display = 'none';
   }
 
+  var __wallImgs = {};
+  function wallImg(u){ var im=__wallImgs[u]; if(!im){ im=new Image(); im.crossOrigin='anonymous'; im.src=u; __wallImgs[u]=im; } return im; }
   function renderOverlay() {
     if (!el) return;
     var inside = gateInside();
+    // XPL -> pared: publicar el resultado para las DOS pantallas DS gigantes del
+    // fondo (window.__dsXplMsg). Independiente del panel flotante (on/off).
+    try {
+      var wc = inside ? (screen.content || null) : null;
+      var wa = (!wc && inside && screen.ad) ? window.XPL.byId(window.XPL.ADS, screen.ad) : null;
+      if (wc) {
+        window.__dsXplMsg = { txt: String(wc.title || wc.type || 'CONTENIDO').toUpperCase().slice(0, 26),
+          sub: 'XPL \u00b7 se\u00f1alizaci\u00f3n condicional', bg: '#0a1a2a', fg: '#3df08a',
+          img: (wc.type === 'image' && wc.url) ? wallImg(wc.url) : null, until: Date.now() + 15000 };
+      } else if (wa) {
+        window.__dsXplMsg = { txt: String(wa.es || '').toUpperCase().slice(0, 26),
+          sub: (wa.icon || '') + ' XPL \u00b7 condicional', bg: wa.bg || '#0a1a2a', fg: '#3df08a',
+          img: null, until: Date.now() + 15000 };
+      }
+    } catch (e) {}
     // chip y ventana ocultos por completo mientras estemos en el intro
     if (chip) chip.style.display = inside ? 'flex' : 'none';
     renderExt(inside);   // la pantalla de exterior se pinta aparte (canal propio)

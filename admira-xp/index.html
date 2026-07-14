@@ -3232,6 +3232,34 @@ function renderDSCanvas(ctx,w,h,frame,displayIdx){
     ctx.fillText((typeof lang!=='undefined'&&lang==='en'?'Loading':'Cargando')+dots,w/2,h/2+8);
     return;
   }
+  // XPL -> pared (Carlos, 14-jul-2026): el resultado de la señalización condicional
+  // se emite en las DOS pantallas gigantes del fondo. Manda sobre la rotación
+  // (vídeos/slides) pero NO sobre un PIN explícito (que ya retornó arriba).
+  const xm=(typeof window!=='undefined')?window.__dsXplMsg:null;
+  if(xm && Date.now()<(xm.until||0)){
+    const grd=ctx.createLinearGradient(0,0,w,h);
+    grd.addColorStop(0,xm.bg||'#0a1a2a'); grd.addColorStop(1,'#000');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,w,h);
+    try{ const im=xm.img;
+      if(im && im.complete && im.naturalWidth>0){
+        const iw=im.naturalWidth, ih=im.naturalHeight, ar=iw/ih, tar=w/h; let sx2,sy2,sw2,sh2;
+        if(ar>tar){ sh2=ih; sw2=ih*tar; sx2=(iw-sw2)/2; sy2=0; } else { sw2=iw; sh2=iw/tar; sx2=0; sy2=(ih-sh2)/2; }
+        ctx.drawImage(im,sx2,sy2,sw2,sh2,0,0,w,h);
+        ctx.globalAlpha=0.04; for(let y2=0;y2<h;y2+=3){ctx.fillStyle='#fff';ctx.fillRect(0,y2,w,1);} ctx.globalAlpha=1;
+      }
+    }catch(_){}
+    ctx.fillStyle='#00000066'; ctx.fillRect(0,0,w,12);
+    ctx.fillStyle=xm.fg||'#3df08a'; ctx.font='bold 7px monospace'; ctx.textAlign='center';
+    ctx.fillText('\u25cf XPACEOS \u00b7 LIVE',w/2,9);
+    if(xm.txt && !(xm.img && xm.img.complete && xm.img.naturalWidth>0)){
+      ctx.fillStyle='#ffffff'; ctx.font='bold '+(String(xm.txt).length>14?9:12)+'px monospace';
+      ctx.fillText(String(xm.txt).slice(0,26),w/2,h/2+4);
+    }
+    if(xm.sub){ ctx.fillStyle='#00000088';ctx.fillRect(0,h-12,w,12);
+      ctx.fillStyle='#ffffff99'; ctx.font='7px monospace'; ctx.fillText(String(xm.sub).slice(0,30),w/2,h-3); }
+    ctx.textAlign='left';
+    return;
+  }
   // If we have a video file playing, draw the video frame
   if(dsMode==='video' && dsVideoEl.readyState>=2 && !dsVideoEl.paused){
     ctx.drawImage(dsVideoEl,0,0,w,h);
