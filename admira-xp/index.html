@@ -27891,6 +27891,9 @@ window.xtAPI = (function(){
     }
     if(body.dataset.h!==html){ body.dataset.h=html; body.innerHTML=html; }
   }
+  // doAction (clic en la pantalla de turnos) vive FUERA de este IIFE: sin
+  // exportarla a window, openTurnFull() lanzaba ReferenceError silenciado.
+  window.openTurnFull = openTurnFull;
   async function grokDraw(prompt){
     const clean=String(prompt||'').trim();
     if(!clean) return 'Uso: /draw describe el dibujo';
