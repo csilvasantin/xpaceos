@@ -19452,9 +19452,13 @@ window.addEventListener('message',function(ev){
     try{ const els=(typeof _mhEls==='function')?_mhEls():null; if(els&&els.prompt) els.prompt.focus(); }catch(e){}
   } else if(d.type==='da-answer'){
     // La avatar (tótem/pared) devuelve su respuesta → la mostramos aquí, en el panel.
+    // La vista detalle SOLO se abre si el usuario preguntó (Carlos, 14-jul-2026): los
+    // saludos espontáneos del avatar (p.ej. al encender el tótem con el botón Avatar3D)
+    // no la abren — para abrirla a mano: /avatar3ddetalle o /metahumandetalle.
+    const wasAsked=avatar3dAskPending!==0;
     avatar3dAskPending=0;   // cancela el vigilante anti-cuelgue
     const en=(typeof lang!=='undefined'&&lang==='en');
-    try{ if(typeof openMetahumanPanel==='function') openMetahumanPanel(); }catch(e){}
+    try{ if(wasAsked && typeof openMetahumanPanel==='function') openMetahumanPanel(); }catch(e){}
     const els=(typeof _mhEls==='function')?_mhEls():null;
     if(d.error){
       if(els&&els.status) els.status.textContent='error';
@@ -26967,6 +26971,17 @@ window.xtAPI = (function(){
         if(typeof genVideoStart==='function') genVideoStart();
         if(typeof showEv==='function') showEv('🎬 Género→vídeo ON'+(camOn?'':' · enciende 📷 LiveCam'),'#66ddaa');
         return {ok:true,message:'Género→vídeo activado · 👨 hombre→Money For Nothing · 👩 mujer→Take On Me'+(camOn?'':' · ⚠ LiveCam off (enciéndela para que detecte)'),data:{on:true,camOn}};
+      }
+
+      // ── /avatar3ddetalle | /metahumandetalle — vista detalle del Metahuman ──
+      //   Abre el panel grande (Keanu) SOLO a petición (Carlos, 14-jul-2026); el
+      //   botón Avatar3D del cuadro de mandos ya no la abre solo.
+      if(['avatar3ddetalle','avatar-3d-detalle','metahumandetalle','mhdetalle','detalleavatar'].includes(cmd)){
+        if(typeof openMetahumanPanel==='function'){
+          openMetahumanPanel();
+          return {ok:true,message:'🧑‍💻 Vista detalle del Metahuman abierta. Ciérrala con la ×.'};
+        }
+        return {ok:false,message:'Metahuman no disponible.'};
       }
 
       // ── /avatar3d on|off|<pregunta> — avatar 3D de DigitalAvatar.ai ─────────
