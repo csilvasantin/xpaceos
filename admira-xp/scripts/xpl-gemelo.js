@@ -216,10 +216,10 @@
       'color:#cdd8e8', 'font:600 12px -apple-system,Segoe UI,sans-serif',
       'cursor:pointer', 'backdrop-filter:blur(6px)'
     ].join(';');
-    chip.title = 'XPL — contenidos condicionados · clic: on/off · CLI: /condicional on|off|toggle';
+    chip.title = 'Condicional — contenidos condicionados · clic: on/off · CLI: /condicional on|off|toggle';
     chip.innerHTML = '<span id="xpl-dot" style="width:8px;height:8px;border-radius:50%;background:#5bd6c0"></span>' +
-      '<b>XPL</b><span id="xpl-chip-ad" style="color:#8a97ab">—</span>' +
-      '<a href="xpl/" title="panel de control XPL" style="color:#7aa2ff;text-decoration:none;margin-left:2px">✎</a>';
+      '<b>Condicional</b><span id="xpl-chip-ad" style="color:#8a97ab">—</span>' +
+      '<a href="xpl/" title="panel de control del Condicional" style="color:#7aa2ff;text-decoration:none;margin-left:2px">✎</a>';
     chip.addEventListener('click', function (e) {
       if (e.target.tagName === 'A') return; // dejar pasar el lápiz
       setOn(!on);
