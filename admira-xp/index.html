@@ -20390,6 +20390,38 @@ function drawTurnManager(){
   cx.globalAlpha=1;
   cx.textAlign='center'; const cX=vW/2;
   const trunc=(s,n)=>{ s=String(s||''); return s.length>n?s.slice(0,n-1)+'…':s; };
+  // \u2500\u2500 ADMIRA CREA IMAGEN (PixerIA): toma de pantalla con progreso e imagen \u2500\u2500
+  const AC = (typeof window!=='undefined') ? window.ADMIRA_CREA : null;
+  if(AC){
+    if(AC.until && Date.now() > AC.until){ window.ADMIRA_CREA = null; }
+    else {
+      const sh = s => { s = String(s||''); return s.length > 26 ? s.slice(0,25) + '\u2026' : s; };
+      if(AC.img){
+        try{
+          const iw=AC.img.naturalWidth, ih=AC.img.naturalHeight, ar=iw/ih, tar=vW/vH;
+          let sx2,sy2,sw2,sh2;
+          if(ar>tar){ sh2=ih; sw2=ih*tar; sx2=(iw-sw2)/2; sy2=0; } else { sw2=iw; sh2=iw/tar; sx2=0; sy2=(ih-sh2)/2; }
+          cx.drawImage(AC.img,sx2,sy2,sw2,sh2,0,0,vW,vH);
+        }catch(_){}
+        cx.fillStyle='rgba(3,19,22,.78)'; cx.fillRect(0,vH-9,vW,9);
+        cx.fillStyle='#8defff'; cx.font='bold 5px monospace';
+        cx.fillText('PIXERIA \u00b7 '+sh(AC.desc), cX, vH-3);
+      } else {
+        cx.fillStyle='#8defff'; cx.font='bold 7px monospace';
+        cx.fillText('ADMIRA CREA IMAGEN', cX, 12);
+        cx.fillStyle='#ffffff'; cx.font='6px monospace';
+        cx.fillText(sh(AC.desc), cX, 22);
+        const pr = Math.min(0.95, (Date.now()-AC.t0)/(AC.eta||18000));
+        cx.strokeStyle='#1e6a72'; cx.lineWidth=1; cx.strokeRect(10,30,vW-20,7);
+        cx.fillStyle='#ffd86b'; cx.fillRect(11,31,(vW-22)*pr,5);
+        cx.fillStyle='#88aab5'; cx.font='5px monospace';
+        cx.fillText('PixerIA generando\u2026 '+Math.round(pr*100)+'%', cX, 47);
+      }
+      cx.restore();   // clip + transform del lienzo virtual
+      cx.restore();   // save exterior de la funci\u00f3n
+      return;
+    }
+  }
   // /turno off → no se pinta el número; la publi (producto/TPV) se centra y
   // ocupa toda la pantalla. /turno on → publi arriba, turno abajo.
   const showTurn=(typeof turnScreenOn==='undefined')?true:turnScreenOn;
@@ -27699,6 +27731,31 @@ window.xtAPI = (function(){
     return JSON.parse(candidate.slice(start,end+1));
   }
 
+  // \u2500\u2500 \u00abAdmira crea imagen\u00bb: PixerIA (grok-proxy /grok/image) \u2192 pantalla del contador \u2500\u2500
+  // Mientras genera, drawTurnManager pinta la descripci\u00f3n + barra de progreso;
+  // al llegar la imagen, ocupa la pantalla 30 s y luego vuelve el turno/publi.
+  window.ADMIRA_CREA = window.ADMIRA_CREA || null;
+  async function admiraCreaImagen(desc){
+    const d = String(desc||'').trim();
+    if(!d) return 'Uso: Admira crea imagen <descripci\u00f3n>  (o /creaimagen <descripci\u00f3n>)';
+    window.ADMIRA_CREA = { desc: d.slice(0,60), t0: Date.now(), eta: 18000, img: null, until: 0 };
+    try{
+      const base = (typeof GROK!=='undefined' && GROK && GROK.proxyUrl) ? GROK.proxyUrl : 'https://admira-grok-proxy.csilvasantin.workers.dev';
+      const r = await fetch(base + '/grok/image', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: 'Creatividad de publicidad para pantalla de tienda (digital signage), colores vivos, sin texto peque\u00f1o: ' + d })
+      });
+      const j = await r.json();
+      if(j && j.ok && j.b64){
+        const im = new Image();
+        im.onload = () => { if(window.ADMIRA_CREA){ window.ADMIRA_CREA.img = im; window.ADMIRA_CREA.until = Date.now() + 30000; } };
+        im.src = 'data:image/jpeg;base64,' + j.b64;
+        return '\ud83c\udfa8 PixerIA ha creado \u00ab' + d.slice(0,40) + '\u00bb \u2192 pantalla del contador (30 s).';
+      }
+      window.ADMIRA_CREA = null;
+      return 'PixerIA no pudo crear la imagen (' + ((j&&j.error)||'sin respuesta') + ').';
+    }catch(e){ window.ADMIRA_CREA = null; return 'PixerIA error: ' + String((e&&e.message)||e); }
+  }
   async function grokDraw(prompt){
     const clean=String(prompt||'').trim();
     if(!clean) return 'Uso: /draw describe el dibujo';
@@ -29146,6 +29203,10 @@ window.xtAPI = (function(){
   async function executeTelegramText(rawText){
     const text=String(rawText||'').trim();
     if(!text) return 'Comando vacio';
+    // \u00abAdmira crea imagen <descripci\u00f3n>\u00bb \u2192 PixerIA genera y la pantalla del contador
+    // muestra progreso e imagen (Carlos, 15-jul-2026). Tambi\u00e9n /creaimagen.
+    const _ac = text.match(/^admira[,:]?\s+crea\s+imagen\s*(.*)$/i);
+    if (_ac) return admiraCreaImagen(_ac[1]);
     try { if(window.AdmiraXP_SessionLog) window.AdmiraXP_SessionLog.logCommand(text); } catch(_){}
     const parts=text.replace(/^\/([a-zA-Z0-9_]+)@\w+/,'/$1').split(/\s+/);
     const cmd=parts.shift().replace(/^\//,'').toLowerCase();
@@ -29772,6 +29833,7 @@ window.xtAPI = (function(){
       }
       if(cmd==='grok'||cmd==='ask'||cmd==='pregunta') return await grokAsk(arg);
       if(cmd==='draw'||cmd==='dibuja'||cmd==='paint'||cmd==='pinta') return await grokDraw(arg);
+      if(cmd==='creaimagen'||cmd==='creaimg') return await admiraCreaImagen(arg);
       if(cmd==='metahuman'||cmd==='mh'){
         // Toggle de la cara viva (Pixel Streaming): /metahuman face on|off|toggle
         const fm=(arg||'').trim().match(/^cara|^face/i);
