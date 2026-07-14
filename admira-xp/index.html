@@ -8855,7 +8855,7 @@ function drawLeaderboard(bx,by,bw){
 // ── INPUT ─────────────────────────────────────────────────────
 let activeTab=0;
 const keys={};
-const BTNS={};
+const BTNS={}; try{ window.BTNS=BTNS; }catch(_){}  // expuesto: lo usan el modo pared del Condicional y del Metahuman
 let editorSceneActive=false;
 
 // ── AUTO-START — skip to game after 5s idle on menu ──────────
