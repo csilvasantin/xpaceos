@@ -19148,6 +19148,22 @@ const AVATAR3D={
 let avatar3dMuted=false;
 // Avatar 3D también en la pantalla TFT de la pared larga (/avatar3d ds on|off).
 let avatar3dWall=false;
+// Fuente de la pared larga: '' = avatar WEB (best.html); si tiene URL = MetaHuman
+// (Pixel Streaming). Lo pone /avatar3d ds metahuman [url] o el param ?wallmh=.
+let avatar3dWallSrc='';
+// URL por defecto del MetaHuman de Keanu para la pared: localhost si el gemelo
+// corre en local (sin mixed-content), si no el envoltorio HTTPS metahuman.html.
+function metahumanWallUrl(){
+  // uiless.html = player de Pixel Streaming SIN interfaz (solo vídeo, sin iconos).
+  const q='AutoConnect=true&AutoPlayVideo=true&StartVideoMuted=true';
+  try{
+    const h=location.hostname;
+    if(h==='localhost'||h==='127.0.0.1'||h==='0.0.0.0'||h===''||location.protocol==='file:')
+      return 'http://localhost/uiless.html?'+q;
+  }catch(e){}
+  // prod: mismo host del MetaHuman por el funnel (limpio, sin UI)
+  return 'https://macbook-pro-16.tail48b61c.ts.net/uiless.html?'+q;
+}
 // Avatar RPM elegido (/avatar3d model <id|url de readyplayer.me>). Vacío = el de
 // best.html por defecto. Se pasa como &avatar= y se aplica en vivo por postMessage.
 let avatar3dModel='';
@@ -19280,6 +19296,8 @@ function postTotemAvatar(msg, ensureOn){
 // Superpone el iframe del avatar sobre la pantalla TFT de la pared larga, usando
 // el cuadrilátero cacheado por drawAltadisTFT este frame.
 function wallAvatarUrl(){
+  // MetaHuman (Pixel Streaming): se usa la URL tal cual (ya trae su query correcta).
+  if(avatar3dWallSrc) return avatar3dWallSrc;
   const loc=avatar3dLoc();
   const lg=(typeof lang!=='undefined'&&lang==='en')?'en':'es';
   const bust=(typeof window!=='undefined'&&window.XTANCO_APP&&window.XTANCO_APP.build)?('&v='+window.XTANCO_APP.build):'';
@@ -19306,7 +19324,9 @@ function positionWallAvatar(){
     el.style.width=w0+'px'; el.style.height=h0+'px';
     el.style.transformOrigin='0 0';
     el.style.transform='matrix('+(ux/w0)+','+(uy/w0)+','+(vx/h0)+','+(vy/h0)+','+tl.x+','+tl.y+')';
-    if((el.src||'').indexOf('best.html')<0) el.src=wallAvatarUrl();   // monta una vez (URL fresca)
+    // monta una vez; remonta si cambia el modo (web ↔ metahuman)
+    const wantMark=avatar3dWallSrc?'mh':'web';
+    if(el.dataset.avmark!==wantMark || !el.src || el.src==='about:blank'){ el.src=wallAvatarUrl(); el.dataset.avmark=wantMark; }
     el.style.display='block';
   }catch(e){}
 }
@@ -19322,6 +19342,37 @@ function setAvatar3dWall(on){
   return {ok:true,message:en?'🧑‍💻 Avatar 3D ON on the long-wall screen (DigitalAvatar.ai).':'🧑‍💻 Avatar 3D ENCENDIDO en la pantalla de la pared larga (DigitalAvatar.ai).'};
 }
 window.setAvatar3dWall=setAvatar3dWall;
+// ── /metahuman — Keanu (MetaHuman Pixel Streaming) en la pantalla de la PARED LARGA ──
+// Independiente de /avatar3d (que es la chica del mupi central). Aparece/desaparece.
+function metahumanWallOn(){ return !!(avatar3dWall && avatar3dWallSrc); }
+function toggleMetahumanWall(arg){
+  const en=(typeof lang!=='undefined'&&lang==='en');
+  const a=String(arg||'').trim().toLowerCase();
+  let want;
+  if(a==='on'||a==='1'||a==='show'||a==='encender') want=true;
+  else if(a==='off'||a==='0'||a==='hide'||a==='apagar') want=false;
+  else want=!metahumanWallOn();   // sin args = toggle
+  if(want){
+    avatar3dWallSrc=metahumanWallUrl();
+    if(typeof setAvatar3dWall==='function') setAvatar3dWall(true);
+    try{ if(typeof showEv==='function') showEv('🧑‍💼 MetaHuman · pared larga','#5fd0ff'); }catch(e){}
+    return {ok:true,message:en?'🧑‍💼 MetaHuman (Keanu) ON on the long-wall screen.':'🧑‍💼 MetaHuman (Keanu) ENCENDIDO en la pantalla de la pared larga.'};
+  }
+  avatar3dWallSrc='';
+  if(typeof setAvatar3dWall==='function') setAvatar3dWall(false);
+  return {ok:true,message:en?'MetaHuman OFF on the long-wall screen.':'MetaHuman APAGADO en la pantalla de la pared larga.'};
+}
+window.toggleMetahumanWall=toggleMetahumanWall;
+// Arranque con MetaHuman en la pared: ?wallmh=1 (URL por defecto) o ?wallmh=<url>.
+try{
+  const wm=new URLSearchParams(location.search).get('wallmh');
+  if(wm){
+    avatar3dWallSrc=(/^https?:\/\//i.test(wm)?wm:metahumanWallUrl());
+    const arm=function(){ try{ setAvatar3dWall(true); }catch(e){} };
+    if(document.readyState==='complete') setTimeout(arm,1500);
+    else window.addEventListener('load',function(){ setTimeout(arm,1500); });
+  }
+}catch(e){}
 // Presets de avatar con nombre (los da de alta el usuario con su URL real de RPM,
 // porque no se pueden inventar ids). Persisten en localStorage. 'default' = el
 // avatar local por defecto de best.html (valor vacío).
@@ -26931,11 +26982,13 @@ window.xtAPI = (function(){
           return {ok:false,message:'Avatar3D no disponible.'};
         }
         if(a==='off'||a==='stop'||a==='idle'){
+          avatar3dWallSrc='';
           if(typeof setAvatar3dTotem==='function') setAvatar3dTotem(false);
           if(typeof setAvatar3dWall==='function') setAvatar3dWall(false);   // mata también la pared
           return {ok:true,message:'Avatar 3D apagado (tótem y pared). Vuelve la cara AI.'};
         }
         if(a==='ds on'||a==='pared on'||a==='wall on'){
+          avatar3dWallSrc='';   // 'ds on' = avatar WEB por defecto (Keanu va por /metahuman)
           if(typeof setAvatar3dWall==='function') return setAvatar3dWall(true);
         }
         if(a==='ds off'||a==='pared off'||a==='wall off'){
@@ -29902,7 +29955,12 @@ window.xtAPI = (function(){
       if(cmd==='draw'||cmd==='dibuja'||cmd==='paint'||cmd==='pinta') return await grokDraw(arg);
       if(cmd==='creaimagen'||cmd==='crearimagen'||cmd==='creaimg'||cmd==='crearimg') return await admiraCreaImagen(arg);
       if(cmd==='metahuman'||cmd==='mh'){
-        // Toggle de la cara viva (Pixel Streaming): /metahuman face on|off|toggle
+        // /metahuman (sin args) o on|off|toggle → Keanu aparece/desaparece en la PARED LARGA.
+        const a0=(arg||'').trim().toLowerCase();
+        if(a0===''||a0==='on'||a0==='off'||a0==='toggle'||a0==='1'||a0==='0'||a0==='show'||a0==='hide'||a0==='encender'||a0==='apagar'||a0==='keanu'||a0==='pared'||a0==='wall'){
+          if(typeof toggleMetahumanWall==='function'){ const r=toggleMetahumanWall((a0==='keanu'||a0==='pared'||a0==='wall')?'':a0); return r.message; }
+        }
+        // Toggle de la cara viva del PANEL (Pixel Streaming): /metahuman face on|off|toggle
         const fm=(arg||'').trim().match(/^cara|^face/i);
         if(fm){
           const sub=(arg||'').trim().replace(/^(cara|face)\s*/i,'').toLowerCase();
