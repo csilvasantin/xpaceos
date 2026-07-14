@@ -1020,7 +1020,7 @@
 })();
 </script>
 <script src="xtanco-version.js"></script>
-<script src="xtanco-runtime-config.js"></script>
+<script src="xtanco-runtime-config.js?r=23"></script>
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
 <script src="xtanco-marketplace-client.js"></script>
@@ -20336,12 +20336,20 @@ function drawExteriorAd(g,age,vW,vH){
   // La puerta ES un CanalKiosk (Carlos, 14-jul-2026): reproduce la parrilla EXACTA
   // (window.__doorMedia, canalkiosk-door.js v4). Una campaña real comprada manda.
   const dm=(typeof window!=='undefined')?window.__doorMedia:null;
-  if(!camp && dm && dm.el){
+  if(!camp && dm){
     cx.fillStyle='#000'; cx.fillRect(0,0,vW,vH);
+    let painted=false;
     try{
-      const mw=dm.el.videoWidth||dm.el.naturalWidth, mh=dm.el.videoHeight||dm.el.naturalHeight;
-      if(mw&&mh){ const s2=Math.max(vW/mw,vH/mh), dw=mw*s2, dh=mh*s2; cx.drawImage(dm.el,(vW-dw)/2,(vH-dh)/2,dw,dh); }
+      const mw=dm.el?(dm.el.videoWidth||dm.el.naturalWidth):0, mh=dm.el?(dm.el.videoHeight||dm.el.naturalHeight):0;
+      if(mw&&mh){ const s2=Math.max(vW/mw,vH/mh), dw=mw*s2, dh=mh*s2; cx.drawImage(dm.el,(vW-dw)/2,(vH-dh)/2,dw,dh); painted=true; }
     }catch(_){}
+    if(!painted){
+      // pieza aún cargando: slide de título (nunca la publi por defecto)
+      cx.fillStyle='#06141a'; cx.fillRect(0,0,vW,vH);
+      cx.textAlign='center'; cx.fillStyle='#ffffff'; cx.font='bold 8px sans-serif';
+      const t1=String(dm.title||'').slice(0,18), t2=String(dm.title||'').slice(18,36);
+      cx.fillText(t1,vW/2,vH/2-2); if(t2) cx.fillText(t2,vW/2,vH/2+8);
+    }
     cx.textAlign='center';
     cx.fillStyle='rgba(0,0,0,.55)'; cx.fillRect(0,0,vW,11);
     cx.fillStyle='#8defff'; cx.font='bold 7px sans-serif'; cx.fillText('CANALKIOSK',vW/2,8);
@@ -29892,7 +29900,7 @@ window.xtAPI = (function(){
       }
       if(cmd==='grok'||cmd==='ask'||cmd==='pregunta') return await grokAsk(arg);
       if(cmd==='draw'||cmd==='dibuja'||cmd==='paint'||cmd==='pinta') return await grokDraw(arg);
-      if(cmd==='creaimagen'||cmd==='creaimg') return await admiraCreaImagen(arg);
+      if(cmd==='creaimagen'||cmd==='crearimagen'||cmd==='creaimg'||cmd==='crearimg') return await admiraCreaImagen(arg);
       if(cmd==='metahuman'||cmd==='mh'){
         // Toggle de la cara viva (Pixel Streaming): /metahuman face on|off|toggle
         const fm=(arg||'').trim().match(/^cara|^face/i);
