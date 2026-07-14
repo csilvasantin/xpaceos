@@ -30159,7 +30159,7 @@ window.xtAPI = (function(){
       // (CLI in-game) y aun no esta mapeado en este dispatcher de Telegram,
       // delegamos. Cubre /store, /people, /gente, /clientes, /personas y futuros
       // comandos sin necesidad de duplicar la logica.
-      if(['store','xtore','xtanco','tienda','people','gente','personas','clientes','staff','personal','subasta','subastar','auction','targetpublicity','targetpubliticy','targetpub','generovideo','genvideo','camgenero','sexovideo','videogenero','aforo','occupancy','camara','cámara','mupicam','fotos','viandantes','carrete','camaramupi','camiseta','camisetas','dorsal','dorsales','impactos','impacts','impresiones','cpm','audienciain','audin','publicoin','entran','audienciaout','audout','publicoout','pasan'].includes(cmd)){
+      if(['store','xtore','xtanco','tienda','people','gente','personas','clientes','staff','personal','subasta','subastar','auction','targetpublicity','targetpubliticy','targetpub','generovideo','genvideo','camgenero','sexovideo','videogenero','aforo','occupancy','camara','cámara','mupicam','fotos','viandantes','carrete','camaramupi','camiseta','camisetas','dorsal','dorsales','impactos','impacts','impresiones','cpm','audienciain','audin','publicoin','entran','audienciaout','audout','publicoout','pasan','avatar3ddetalle','metahumandetalle','mhdetalle','detalleavatar'].includes(cmd)){
         try{
           const res=api.command('/'+cmd+(arg?' '+arg:''));
           return res && res.message ? res.message : 'OK';
