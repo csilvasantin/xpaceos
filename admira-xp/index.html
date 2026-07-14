@@ -11547,6 +11547,21 @@ function mupiCamOpenGallery(){
       '<div id="mcBody" style="padding:8px 9px;overflow:auto"></div>';
     document.body.appendChild(p);
     p.querySelector('#mcClose').onclick=()=>mupiCamCloseGallery();
+    // Pulsar el rótulo «📷 CÁMARA MUPI» → puerta al Anonimizador de PixerIA
+    // (Carlos, 14-jul-2026): Aceptar abre pixeria.com/anonimizador para crear
+    // audiencia anónima y enviarla a la tienda; Cancelar anula la pulsación.
+    const ttl=p.querySelector('#mcHdr b');
+    if(ttl){ ttl.style.cursor='pointer'; ttl.title='Abrir el Anonimizador de PixerIA';
+      let tdx=0,tdy=0;
+      ttl.addEventListener('pointerdown',e=>{ tdx=e.clientX; tdy=e.clientY; });
+      ttl.addEventListener('click',e=>{
+        if(Math.hypot(e.clientX-tdx,e.clientY-tdy)>6) return;   // fue arrastre del panel, no clic
+        e.stopPropagation();
+        if(confirm('\u00bfAcceder al Anonimizador de PixerIA?\n\nAceptar: abre pixeria.com/anonimizador para crear audiencia an\u00f3nima y enviarla a la tienda.\nCancelar: nada.')){
+          window.open('https://www.pixeria.com/anonimizador','_blank','noopener');
+        }
+      });
+    }
     const md=p.querySelector('#mcMode'); md.onclick=()=>{ MUPICAM._mode=(MUPICAM._mode==='pixel')?'normal':'pixel'; mupiCamRenderGallery(); };
     const cm=p.querySelector('#mcCam'); if(cm) cm.onclick=()=>{ MUPICAM._cam=(MUPICAM._cam==='int')?'ext':'int'; mupiCamRenderGallery(); };
     // Delegado en el panel (sobrevive al re-render del body): ✨/muñeco → humanizar, 📌 → Stock.
