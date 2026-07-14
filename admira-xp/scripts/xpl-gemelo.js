@@ -160,7 +160,9 @@
   /* ---------------------------------------------------------------------------
    * 3) OVERLAY DE SEÑALIZACIÓN  (la "pantalla" contextual del gemelo)
    * ------------------------------------------------------------------------- */
-  var el, chip, extEl, on = localStorage.getItem(LS_ON) !== '0';
+  // OFF por defecto (Carlos, 14-jul-2026): la pantalla solo aparece si se enciende
+  // explicitamente (/xpl on o clic en el chip); la eleccion persiste en localStorage.
+  var el, chip, extEl, on = localStorage.getItem(LS_ON) === '1';
 
   function buildUI() {
     // ---- pantalla flotante (movible) ----
@@ -525,7 +527,7 @@
   var _lastPub = '';
   function publishState() {
     // lee la fuente de verdad de on/off (lo que persiste setOn), no la closure
-    var onNow = localStorage.getItem(LS_ON) !== '0';
+    var onNow = localStorage.getItem(LS_ON) === '1';
     var s = JSON.stringify({ on: onNow, ad: screen.ad, tone: screen.tone, inside: gateInside(),
       rules: engine.rules.length, ts: Date.now() });
     if (s !== _lastPub) { _lastPub = s; try { localStorage.setItem('xpl_state', s); } catch (e) {} }
