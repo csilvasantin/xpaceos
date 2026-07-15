@@ -101,15 +101,12 @@
 
   /* saga switcher */
   .saga{display:flex;gap:8px;pointer-events:auto}
-  .saga button{display:flex;align-items:center;gap:8px;background:rgba(9,20,36,.6);color:var(--muted);
+  .saga button,.saga a{display:flex;align-items:center;gap:8px;background:rgba(9,20,36,.6);color:var(--muted);
     border:1px solid var(--ice-soft);border-radius:999px;padding:7px 14px;font-size:12.5px;cursor:pointer;
-    transition:all .2s;backdrop-filter:blur(6px)}
-  .saga button .em{font-size:15px}
-  .saga button:hover{color:var(--ink);border-color:var(--steel)}
-  .saga button.active{color:#06101c;background:linear-gradient(120deg,var(--ice),#c8ecff);border-color:transparent;font-weight:650}
-  .saga button.soon{opacity:.7}
-  .saga button.soon::after{content:"próximamente";font-size:9px;letter-spacing:.5px;color:var(--muted);
-    background:rgba(0,0,0,.3);padding:1px 6px;border-radius:6px}
+    transition:all .2s;backdrop-filter:blur(6px);text-decoration:none}
+  .saga .em{font-size:15px}
+  .saga button:hover,.saga a:hover{color:var(--ink);border-color:var(--steel)}
+  .saga .active{color:#06101c;background:linear-gradient(120deg,var(--ice),#c8ecff);border-color:transparent;font-weight:650}
 
   /* audiencia (el Xpacio te ve) */
   .aud{bottom:20px;left:20px;pointer-events:auto;display:flex;align-items:center;gap:12px;
@@ -189,8 +186,17 @@
   .holo-msg{margin:16px auto 0;max-width:520px;padding:0 24px;color:#e7f3ff;font-size:17px;line-height:1.6;min-height:56px}
   .holo-msg .cursor{display:inline-block;width:9px;height:20px;background:var(--ice);margin-left:3px;
     vertical-align:-3px;animation:blink 1s steps(2) infinite}
-  .holo-close{margin-top:26px;background:rgba(9,20,36,.7);border:1px solid var(--ice-soft);color:var(--ink);
-    padding:11px 22px;border-radius:999px;cursor:pointer;font-size:13px;letter-spacing:.5px}
+  .holo-actions{margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .holo-live{background:linear-gradient(120deg,var(--sup-blue),#4d8bff);border:none;color:#fff;font-weight:650;
+    padding:12px 22px;border-radius:999px;cursor:pointer;font-size:13.5px;letter-spacing:.3px;
+    box-shadow:0 10px 30px rgba(43,108,255,.4);transition:transform .15s}
+  .holo-live:active{transform:scale(.97)}
+  .holo-live[disabled]{opacity:.5;cursor:default;box-shadow:none}
+  .holo-mh{background:rgba(9,20,36,.7);border:1px solid var(--ice-soft);color:var(--ice);text-decoration:none;
+    padding:12px 20px;border-radius:999px;font-size:13px;letter-spacing:.3px;display:inline-flex;align-items:center;gap:6px}
+  .holo-close{margin-top:16px;background:transparent;border:1px solid var(--ice-soft);color:var(--muted);
+    padding:9px 20px;border-radius:999px;cursor:pointer;font-size:12.5px;letter-spacing:.5px}
+  .holo-note{margin-top:12px;font-size:11px;color:var(--muted);letter-spacing:.3px}
   .holo-tag{position:absolute;top:24px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:2px;
     text-transform:uppercase;color:var(--muted);border:1px solid var(--ice-soft);padding:5px 12px;border-radius:999px;
     background:rgba(6,12,22,.5)}
@@ -270,8 +276,8 @@
     <div class="t"><b>El Templo de la Soledad</b><span>Xperiencia Admira</span></div>
   </div>
   <div class="saga">
-    <button class="soon"><span class="em">🛋️</span><span class="txt">Apartamento de Sheldon</span></button>
-    <button class="soon"><span class="em">🦇</span><span class="txt">La Batcueva</span></button>
+    <a href="../sheldon/"><span class="em">🛋️</span><span class="txt">Apartamento de Sheldon</span></a>
+    <a href="../batcueva/"><span class="em">🦇</span><span class="txt">La Batcueva</span></a>
     <button class="active"><span class="em">❄️</span><span class="txt">Fortaleza de la Soledad</span></button>
   </div>
 </div>
@@ -318,6 +324,11 @@
     <div class="holo-lines"></div>
     <div class="holo-name">Jor-El · Casa de El</div>
     <div class="holo-msg" id="holoMsg"></div>
+    <div class="holo-actions">
+      <button class="holo-live" id="joreLive" onclick="mountJorEl()">🔊 Hablar con Jor-El en vivo</button>
+      <a class="holo-mh" href="https://digitalavatar.ai/metahuman.html" target="_blank" rel="noopener">🎭 Ver en MetaHuman · Unreal 5</a>
+    </div>
+    <div class="holo-note" id="joreNote">Voz real + cerebro conversacional · digitalavatar.ai</div>
     <button class="holo-close" onclick="closeHolo()">Cerrar transmisión</button>
   </div>
 </div>
@@ -411,6 +422,31 @@ function openHolo(){
     if(i>=HOLO_MSG.length)clearInterval(typeTimer);},34);
 }
 function closeHolo(){$('holo').classList.remove('on');clearInterval(typeTimer);}
+
+/* ---------- Jor-El EN VIVO: avatar 3D real (digitalavatar.ai) ---------- */
+let joreApi=null,joreLoading=false;
+async function mountJorEl(){
+  const btn=$('joreLive'),note=$('joreNote');
+  if(joreApi){joreApi.open&&joreApi.open();return;}
+  if(joreLoading)return;
+  joreLoading=true;btn.disabled=true;btn.textContent='⏳ Despertando a Jor-El…';
+  try{
+    const mod=await import('https://digitalavatar.ai/embed.js');
+    joreApi=mod.mount({
+      title:'Jor-El · Casa de El',
+      greeting:'Kal-El… hijo mío. Aunque han pasado mil soles, aquí sigo. Bienvenido a la Fortaleza de la Soledad. Pregúntame lo que quieras sobre Krypton, sobre nuestra Casa de El… o sobre este Xpacio.',
+      brainUrl:'https://brain.digitalavatar.ai/metahuman/ask',
+      voiceUrl:'https://brain.digitalavatar.ai/metahuman/say',
+      accent:'#8fd6ff',lang:'es-ES'
+    });
+    if(joreApi&&joreApi.open)joreApi.open();
+    btn.textContent='🗣️ Jor-El está en vivo →';btn.disabled=false;
+    note.textContent='Avatar 3D en vivo (abajo a la derecha) · háblale y te responde';
+  }catch(e){
+    btn.textContent='🔊 Hablar con Jor-El en vivo';btn.disabled=false;
+    note.textContent='⚠️ El avatar en vivo necesita la versión desplegada (https). Aquí queda la transmisión holográfica.';
+  }finally{joreLoading=false;}
+}
 
 /* ---------- audiencia simulada (el Xpacio te ve) ---------- */
 (function(){
