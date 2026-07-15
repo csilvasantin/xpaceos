@@ -819,7 +819,7 @@
   /* Condicional movido al menú Avanzado: el chip flotante ya no se muestra */
   #xpl-chip{display:none !important}
   /* Barra limpia: sin SCREEN/QUIT (van a Opciones) ni mensaje de foco (Inspección/Optimiza/…) */
-  #topBar #btnConnectScreen,#topBar #btnQuit,#topBar #bbStatus{display:none !important}
+  #topBar #btnConnectScreen,#topBar #btnQuit,#topBar #bbStatus,#topBar #btnSave{display:none !important}
   /* Notificación de evento/música/vídeo/mudanza subida a la barra superior (antes flotaba sobre el Xpacio) */
   #topBar #xpTopNotify{display:none;align-items:center;gap:8px;font:bold 10px/1 monospace;letter-spacing:.03em;white-space:nowrap;max-width:46vw;overflow:hidden;padding:4px 10px;border-radius:999px;background:rgba(120,243,255,.08);border:1px solid rgba(120,243,255,.28);color:var(--xp-cyan)}
   #topBar #xpTopNotify.show{display:inline-flex}
@@ -19917,7 +19917,7 @@ function drawLED(scx,scy){
   const {fullMsg, msgW}=_getLedParams();
 
   // Back wall: LEFT to RIGHT (low cols → high cols) = increasing screen X
-  const bL=toIso(-0.5,0);   // left end of back wall
+  const bL=toIso(0,0);   // left end de la pared del fondo — EN la esquina (antes -0.5: se cruzaba con la pared izq)
   const bR=toIso(ISO.cols+0.5,0); // right end of back wall
   const backLen=Math.sqrt((bR.x-bL.x)**2+(bR.y-bL.y)**2);
 
@@ -19925,7 +19925,7 @@ function drawLED(scx,scy){
   // In screen coords: toIso(0,0) is top-right, toIso(0,rows) is bottom-left
   // So we go from bottom-left to top-right (increasing X) for readable text
   const lB=toIso(0,ISO.rows+1); // bottom of left wall (screen-left)
-  const lT=toIso(0,-0.5);       // top of left wall (screen-right)
+  const lT=toIso(0,0);          // top de la pared izq — EN la esquina (antes -0.5: se cruzaba con la del fondo)
   const leftLen=Math.sqrt((lT.x-lB.x)**2+(lT.y-lB.y)**2);
 
   const totalLen=leftLen+backLen;
