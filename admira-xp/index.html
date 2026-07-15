@@ -796,6 +796,14 @@
   .quad-left:not(.is-collapsed){transform:translateX(0);pointer-events:auto}
   .quad-left a,.quad-left button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
   .quad-left .qm-version{margin-top:auto;padding-top:12px;text-align:center;color:var(--xp-muted);font-size:10px;letter-spacing:.08em;opacity:.75}
+  /* Acordeones Música / Vídeo dentro de Opciones */
+  .quad-left .qm-acc{display:flex;flex-direction:column}
+  .quad-left .qm-acc-head{position:relative;padding-right:28px}
+  .quad-left .qm-acc-head::after{content:'▸';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--xp-muted);transition:transform .15s ease}
+  .quad-left .qm-acc.open .qm-acc-head::after{transform:translateY(-50%) rotate(90deg);color:var(--xp-cyan)}
+  .quad-left .qm-acc-body{display:none;flex-direction:column;gap:4px;padding-left:12px;margin:2px 0 2px;border-left:1px solid rgba(120,243,255,.14)}
+  .quad-left .qm-acc.open .qm-acc-body{display:flex}
+  .quad-left .qm-acc-body button{padding:9px 12px;font-size:12px}
   /* Panel Avanzado (▤) — columna derecha a altura completa; desliza de der→izq */
   .quad-right{top:38px;right:0;bottom:0;width:280px;z-index:200;display:flex;flex-direction:column;gap:6px;padding:16px 12px;border-radius:14px 0 0 14px;overflow-y:auto;transform:translateX(100%);pointer-events:none;transition:transform .22s ease}
   .quad-right:not(.is-collapsed){transform:translateX(0);pointer-events:auto}
@@ -826,22 +834,30 @@
   <button type="button" data-xp-opt="screen">📺 Pantalla</button>
   <a href="help.html" target="_blank" rel="noopener">❔ Ayuda</a>
   <button type="button" data-xp-opt="quit">⏻ Salir</button>
+  <div class="qm-acc" data-acc>
+    <button type="button" class="qm-acc-head" data-acc-head>♪ Música</button>
+    <div class="qm-acc-body">
+      <button type="button" data-xp-do="musicToggle" title="Reproducir / pausar la música">▶ Play / Pausa</button>
+      <button type="button" data-xp-do="musicPrev" title="Canción anterior">◀ Anterior</button>
+      <button type="button" data-xp-do="musicNext" title="Canción siguiente">▶ Siguiente</button>
+      <button type="button" data-xp-do="sfxToggle" title="Efectos de sonido on/off">🔊 Efectos (FX)</button>
+    </div>
+  </div>
+  <div class="qm-acc" data-acc>
+    <button type="button" class="qm-acc-head" data-acc-head>📺 Vídeo</button>
+    <div class="qm-acc-body">
+      <button type="button" data-xp-do="dsToggle" title="Reproducir / pausar el vídeo de las pantallas">▶ Play / Pausa</button>
+      <button type="button" data-xp-do="dsPrev" title="Vídeo anterior">◀ Vídeo anterior</button>
+      <button type="button" data-xp-do="dsNext" title="Vídeo siguiente">▶ Vídeo siguiente</button>
+      <button type="button" data-xp-do="dsMute" title="Audio de las pantallas on/off">🔈 Audio DS</button>
+    </div>
+  </div>
   <span class="qm-version" id="quadOptVersion"></span>
 </nav>
 <nav class="quad-menu quad-right is-collapsed" aria-label="Menú avanzado">
   <span class="qm-head">Condicional</span>
   <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
   <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional">✎ Panel de control</a>
-  <span class="qm-head">Música</span>
-  <button type="button" data-xp-do="musicToggle" title="Reproducir / pausar la música">♪ Play / Pausa</button>
-  <button type="button" data-xp-do="musicPrev" title="Canción anterior">◀ Anterior</button>
-  <button type="button" data-xp-do="musicNext" title="Canción siguiente">▶ Siguiente</button>
-  <button type="button" data-xp-do="sfxToggle" title="Efectos de sonido on/off">🔊 Efectos (FX)</button>
-  <span class="qm-head">Vídeo señalización (DS)</span>
-  <button type="button" data-xp-do="dsToggle" title="Reproducir / pausar el vídeo de las pantallas">📺 Play / Pausa</button>
-  <button type="button" data-xp-do="dsPrev" title="Vídeo anterior">◀ Vídeo anterior</button>
-  <button type="button" data-xp-do="dsNext" title="Vídeo siguiente">▶ Vídeo siguiente</button>
-  <button type="button" data-xp-do="dsMute" title="Audio de las pantallas on/off">🔈 Audio DS</button>
 </nav>
 <script>
 (function(){
@@ -914,11 +930,17 @@
     adv.textContent=(isOn?'◉ Condicional · ON':'○ Condicional · OFF');
     adv.classList.toggle('is-on', isOn);
   }
-  // Controles del sub-bar reubicados en Avanzado: cada botón invoca doAction(id) como un clic real
-  document.querySelectorAll('.quad-right [data-xp-do]').forEach(function(b){
+  // Controles del sub-bar (música / vídeo) en el menú Opciones: cada botón invoca doAction(id) como un clic real
+  document.querySelectorAll('.quad-menu [data-xp-do]').forEach(function(b){
     b.addEventListener('click', function(){
       var act=b.getAttribute('data-xp-do');
       if(typeof doAction==='function'){ try{ doAction(act); }catch(e){} }
+    });
+  });
+  // Acordeones (Música / Vídeo): pulsar la cabecera despliega/colapsa sus opciones
+  document.querySelectorAll('.quad-menu [data-acc-head]').forEach(function(h){
+    h.addEventListener('click', function(){
+      var acc=h.closest('[data-acc]'); if(acc) acc.classList.toggle('open');
     });
   });
   var advCond=document.getElementById('advCondToggle');
