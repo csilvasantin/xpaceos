@@ -825,6 +825,16 @@
   <span class="qm-head">Condicional</span>
   <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
   <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional">✎ Panel de control</a>
+  <span class="qm-head">Música</span>
+  <button type="button" data-xp-do="musicToggle" title="Reproducir / pausar la música">♪ Play / Pausa</button>
+  <button type="button" data-xp-do="musicPrev" title="Canción anterior">◀ Anterior</button>
+  <button type="button" data-xp-do="musicNext" title="Canción siguiente">▶ Siguiente</button>
+  <button type="button" data-xp-do="sfxToggle" title="Efectos de sonido on/off">🔊 Efectos (FX)</button>
+  <span class="qm-head">Vídeo señalización (DS)</span>
+  <button type="button" data-xp-do="dsToggle" title="Reproducir / pausar el vídeo de las pantallas">📺 Play / Pausa</button>
+  <button type="button" data-xp-do="dsPrev" title="Vídeo anterior">◀ Vídeo anterior</button>
+  <button type="button" data-xp-do="dsNext" title="Vídeo siguiente">▶ Vídeo siguiente</button>
+  <button type="button" data-xp-do="dsMute" title="Audio de las pantallas on/off">🔈 Audio DS</button>
 </nav>
 <script>
 (function(){
@@ -880,6 +890,13 @@
     adv.textContent=(isOn?'◉ Condicional · ON':'○ Condicional · OFF');
     adv.classList.toggle('is-on', isOn);
   }
+  // Controles del sub-bar reubicados en Avanzado: cada botón invoca doAction(id) como un clic real
+  document.querySelectorAll('.quad-right [data-xp-do]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var act=b.getAttribute('data-xp-do');
+      if(typeof doAction==='function'){ try{ doAction(act); }catch(e){} }
+    });
+  });
   var advCond=document.getElementById('advCondToggle');
   if(advCond) advCond.addEventListener('click', function(){
     var chip=document.getElementById('xpl-chip');
