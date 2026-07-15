@@ -809,9 +809,12 @@
   #xpl-chip{display:none !important}
   /* Barra limpia: sin SCREEN/QUIT (van a Opciones) ni mensaje de foco (Inspección/Optimiza/…) */
   #topBar #btnConnectScreen,#topBar #btnQuit,#topBar #bbStatus{display:none !important}
-  /* Notificación de evento/música/vídeo subida a la barra superior (antes flotaba sobre el Xpacio) */
-  #topBar #xpTopNotify{display:none;font:bold 10px/1 monospace;letter-spacing:.04em;white-space:nowrap;max-width:36vw;overflow:hidden;text-overflow:ellipsis;color:var(--xp-cyan)}
-  #topBar #xpTopNotify.show{display:inline-block}
+  /* Notificación de evento/música/vídeo/mudanza subida a la barra superior (antes flotaba sobre el Xpacio) */
+  #topBar #xpTopNotify{display:none;align-items:center;gap:8px;font:bold 10px/1 monospace;letter-spacing:.03em;white-space:nowrap;max-width:46vw;overflow:hidden;padding:4px 10px;border-radius:999px;background:rgba(120,243,255,.08);border:1px solid rgba(120,243,255,.28);color:var(--xp-cyan)}
+  #topBar #xpTopNotify.show{display:inline-flex}
+  #topBar #xpTopNotify > span{overflow:hidden;text-overflow:ellipsis}
+  #topBar #xpTopNotify .xp-notify-act{flex:0 0 auto;cursor:pointer;background:rgba(120,243,255,.16);border:1px solid rgba(120,243,255,.55);color:var(--xp-cyan);border-radius:6px;padding:2px 8px;font:bold 9px monospace}
+  #topBar #xpTopNotify .xp-notify-act:hover{background:rgba(120,243,255,.28)}
   .quad-bottom{left:50%;bottom:12px;transform:translate(-50%,calc(100% + 16px));min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
   .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
   .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
@@ -844,13 +847,20 @@
 (function(){
   // Notificación en la barra superior (música / vídeo DS / eventos), con auto-desvanecido
   var _xpNotifyT=0;
-  window.xpTopNotify=function(txt,col){
+  window.xpTopNotify=function(txt,col,action){
     var el=document.getElementById('xpTopNotify'); if(!el) return;
-    el.textContent=String(txt==null?'':txt);
-    if(col) el.style.color=col;
+    el.innerHTML='';
+    var s=document.createElement('span'); s.textContent=String(txt==null?'':txt);
+    if(col) s.style.color=col;
+    el.appendChild(s);
+    if(action && action.label && typeof action.fn==='function'){
+      var b=document.createElement('button'); b.className='xp-notify-act'; b.textContent=action.label;
+      b.onclick=function(){ try{action.fn();}catch(e){} el.classList.remove('show'); };
+      el.appendChild(b);
+    }
     el.classList.add('show');
     clearTimeout(_xpNotifyT);
-    _xpNotifyT=setTimeout(function(){ el.classList.remove('show'); }, 2800);
+    _xpNotifyT=setTimeout(function(){ el.classList.remove('show'); }, action?9000:2800);
   };
   var toggles = document.querySelectorAll('#topBar [data-quad-toggle]');
   toggles.forEach(function(btn){
@@ -923,12 +933,14 @@
   var exp = document.getElementById('pfExpert');
   if(exp) exp.addEventListener('click', function(){
     var hidden = document.body.classList.toggle('xp-docks-hidden');
-    exp.classList.toggle('is-active', hidden);
-    exp.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+    exp.classList.toggle('is-active', !hidden);            // activo = menú inferior VISIBLE
+    exp.setAttribute('aria-pressed', !hidden ? 'true' : 'false');
     // el Xpacio debe crecer/encoger según haya menú: recalcular el canvas
     if(typeof resizeCanvas === 'function') { try{ resizeCanvas(); }catch(e){} }
     else { window.dispatchEvent(new Event('resize')); }
   });
+  // Por defecto el menú inferior (docks) está OCULTO → el Xpacio ocupa el máximo; ⌘ Experto lo revela.
+  document.body.classList.add('xp-docks-hidden');
 })();
 </script>
 <audio id="bgMusic" loop preload="auto"><source src="music/titi.mp3" type="audio/mpeg"></audio>
@@ -31508,13 +31520,19 @@ window.xtAPI = (function(){
   // pueden compartir screenId (p.ej. 'xtore-inicial'), una Mudanza con id vacío
   // recoloca la sala "sola"; el toast lo deja claro y permite revertir.
   function mudanzaToast(msg, undoFn){
+    // Aviso en la barra superior (limpio), no un banner sobre el Xpacio.
+    if(typeof window.xpTopNotify==='function'){
+      window.xpTopNotify(msg, '#9effa0', undoFn?{label:'↶ Deshacer', fn:undoFn}:null);
+      return;
+    }
+    // Fallback (por si la barra no está lista): toast clásico compacto.
     let t=document.getElementById('mudanzaToast'); if(t) t.remove();
     t=document.createElement('div'); t.id='mudanzaToast';
-    t.style.cssText='position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:2147483647;background:#04140a;border:2px solid #2ee06a;border-radius:10px;padding:10px 16px;color:#9effa0;font:700 13px monospace;box-shadow:0 0 24px rgba(46,224,106,.5);display:flex;align-items:center;gap:12px;';
+    t.style.cssText='position:fixed;top:44px;right:14px;z-index:2147483647;background:#04140a;border:1px solid #2ee06a;border-radius:8px;padding:8px 12px;color:#9effa0;font:700 12px monospace;display:flex;align-items:center;gap:10px;';
     const span=document.createElement('span'); span.textContent=msg; t.appendChild(span);
     if(undoFn){
       const b=document.createElement('button'); b.textContent='↶ Deshacer';
-      b.style.cssText='cursor:pointer;background:#0a2a18;border:1px solid #2ee06a;color:#9effa0;border-radius:7px;padding:5px 10px;font:700 12px monospace;';
+      b.style.cssText='cursor:pointer;background:#0a2a18;border:1px solid #2ee06a;color:#9effa0;border-radius:7px;padding:4px 9px;font:700 11px monospace;';
       b.onclick=()=>{ try{ undoFn(); }catch(_){ } try{ t.remove(); }catch(_){ } };
       t.appendChild(b);
     }
