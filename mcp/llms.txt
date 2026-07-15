@@ -47,6 +47,17 @@ Misma convención /mcp/ en cada pata del ecosistema:
 - Preproducción: https://www.admira.app/mcp/
 - Consejo de Silicio: https://www.admira.live/mcp/
 
+## Doctrina Xpaces · elementos (obligatoria)
+
+En los Xpaces **todos los elementos tienen que ser movibles y sustituibles siempre**.
+
+- **Movibles:** posición, escala y orientación viven en la configuración del Xpacio; nunca hardcodeadas en el motor.
+- **Sustituibles:** se puede cambiar la representación (sprite → multivista → GLB → captura) o el propio activo sin reconstruir la sala.
+- **Alcance:** mobiliario, pantallas, sensores, figuras, NPCs, zonas de interés y cualquier pieza del gemelo.
+- Si un elemento no se puede reubicar o reemplazar desde datos, es un defecto de diseño — no una excepción aceptable.
+- Método humano: https://www.xpaceos.com/ayuda/
+- Comandos CLI layout/mobiliario: https://www.xpaceos.com/help/
+
 ## Convenciones
 
 - Avisos de cambios: Telegram grupo AdmiraXP, firmados "Admira IA".
