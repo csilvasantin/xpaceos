@@ -772,9 +772,70 @@
   <div class="comp-box" style="border-color:#2266aa"><span class="comp-name">PM</span><span class="comp-pct" id="compPM">0%</span></div>
   <div class="comp-box" style="border-color:#333399"><span class="comp-name">BAT</span><span class="comp-pct" id="compBAT">0%</span></div>
   <div class="spacer"></div>
+  <div id="pfToggles" class="pf-toggles" role="group" aria-label="Modos: opciones, avanzado, experto">
+    <button type="button" class="quad-icon" data-quad-toggle="left" aria-label="Desplegar barra de opciones" aria-expanded="false" title="Opciones">☰</button>
+    <button type="button" class="quad-icon" data-quad-toggle="right" aria-label="Desplegar menú avanzado" aria-expanded="false" title="Menú avanzado">▤</button>
+    <button type="button" class="quad-icon" data-quad-toggle="bottom" aria-label="Desplegar modo experto" aria-expanded="false" title="Modo experto">⌘</button>
+  </div>
   <button class="btn-save" id="btnConnectScreen" title="Conectar una pantalla física (QR): el escaparate del gemelo se refleja en vivo" style="margin-right:8px" onclick="window.open('conectar.html?screen=escaparate','_blank','noopener')">📺 Pantalla</button>
   <button class="btn-quit" id="btnQuit" title="Cerrar audios y videos, volver al menú principal">⏻ Quit</button>
 </div>
+<!-- Trío canónico opciones/avanzado/experto (mismo patrón que pixeria.com/musica.html, temado al Xpacio) -->
+<style id="quadCanonStyle">
+  #topBar .pf-toggles{display:flex;align-items:center;gap:6px;margin-right:8px}
+  #topBar .quad-icon{width:26px;height:26px;padding:0;border-radius:7px;font-size:14px;line-height:1;display:grid;place-items:center;background:rgba(2,8,13,.78);border:1px solid rgba(120,243,255,.34) !important;color:var(--xp-cyan);text-transform:none;box-shadow:inset 0 0 12px rgba(120,243,255,.06)}
+  #topBar .quad-icon:hover{border-color:var(--xp-cyan) !important;background:rgba(120,243,255,.12)}
+  #topBar .quad-icon.is-active{background:var(--xp-cyan);color:#03151a;border-color:var(--xp-cyan) !important;box-shadow:0 0 12px rgba(120,243,255,.5)}
+  .quad-menu{position:fixed;z-index:120;background:rgba(3,10,16,.94);border:1px solid rgba(120,243,255,.34);box-shadow:0 0 24px rgba(120,243,255,.12),inset 0 0 18px rgba(120,243,255,.05);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--xp-ink);font-family:monospace}
+  .quad-menu a,.quad-menu button{color:inherit;text-decoration:none;font:inherit;border:1px solid transparent;background:transparent;cursor:pointer}
+  .quad-menu a:hover,.quad-menu button:hover{border-color:var(--xp-cyan);color:var(--xp-cyan);background:rgba(120,243,255,.1)}
+  .quad-menu .qm-hint{color:var(--xp-muted);font-size:9px;letter-spacing:.1em;text-align:center;opacity:.8}
+  .quad-left,.quad-right{top:56px;bottom:20px;width:58px;display:grid;align-content:center;justify-items:stretch;gap:8px;padding:12px 6px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
+  .quad-left{left:10px;transform:translateX(calc(-100% - 16px))}
+  .quad-right{right:10px;transform:translateX(calc(100% + 16px))}
+  .quad-left:not(.is-collapsed),.quad-right:not(.is-collapsed){transform:translateX(0);opacity:1}
+  .quad-left a,.quad-left button,.quad-right a,.quad-right button{min-height:80px;display:flex;align-items:center;justify-content:center;gap:8px;writing-mode:vertical-rl;text-orientation:mixed;padding:8px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-radius:8px}
+  .quad-bottom{left:50%;bottom:12px;transform:translate(-50%,calc(100% + 16px));min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
+  .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
+  .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
+</style>
+<nav class="quad-menu quad-left is-collapsed" aria-label="Opciones">
+  <button type="button" data-xp-opt="save">💾 Guardar</button>
+  <a href="help.html" target="_blank" rel="noopener">❔ Ayuda</a>
+</nav>
+<nav class="quad-menu quad-right is-collapsed" aria-label="Menú avanzado">
+  <span class="qm-hint">por definir</span>
+</nav>
+<nav class="quad-menu quad-bottom is-collapsed" aria-label="Modo experto">
+  <span class="qm-hint">Modo experto · por definir</span>
+</nav>
+<script>
+(function(){
+  var toggles = document.querySelectorAll('#topBar [data-quad-toggle]');
+  toggles.forEach(function(btn){
+    var name = btn.dataset.quadToggle;
+    var panel = document.querySelector('.quad-' + name);
+    if(!panel) return;
+    function sync(){
+      var open = !panel.classList.contains('is-collapsed');
+      document.body.classList.toggle('quad-' + name + '-open', open);
+      btn.classList.toggle('is-active', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function(){
+      var willOpen = panel.classList.contains('is-collapsed');
+      // cierra los otros paneles del trío
+      document.querySelectorAll('.quad-menu').forEach(function(p){ if(p!==panel) p.classList.add('is-collapsed'); });
+      toggles.forEach(function(b){ if(b!==btn){ b.classList.remove('is-active'); b.setAttribute('aria-expanded','false'); document.body.classList.remove('quad-'+b.dataset.quadToggle+'-open'); } });
+      panel.classList.toggle('is-collapsed', !willOpen);
+      sync();
+    });
+    sync();
+  });
+  var saveOpt = document.querySelector('[data-xp-opt="save"]');
+  if(saveOpt) saveOpt.addEventListener('click', function(){ var b=document.getElementById('btnSave'); if(b) b.click(); });
+})();
+</script>
 <audio id="bgMusic" loop preload="auto"><source src="music/titi.mp3" type="audio/mpeg"></audio>
 <video id="dsVideo" preload="auto" playsinline style="display:none"></video>
 <input type="file" id="dsImportInput" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,audio/mpeg,audio/mp3,.mp3" multiple style="display:none">
