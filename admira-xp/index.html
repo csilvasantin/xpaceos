@@ -811,6 +811,8 @@
   .quad-right a,.quad-right button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
   /* al abrir Opciones, ocultar el badge de tienda que ocupa esa esquina (z-index máximo) */
   body.quad-left-open #xtancoIdBadge{opacity:0 !important;pointer-events:none}
+  /* título del panel (Equipo Silicio / Equipo Carbono) */
+  .quad-menu .qm-title{flex:0 0 auto;font:800 14px/1.2 monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--xp-cyan);text-align:center;padding:2px 6px 12px;margin-bottom:8px;border-bottom:1px solid rgba(120,243,255,.30);text-shadow:0 0 12px rgba(120,243,255,.35)}
   /* cabecera de sección dentro de un panel quad */
   .quad-menu .qm-head{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--xp-gold);padding:2px 6px 8px;border-bottom:1px solid rgba(120,243,255,.14);margin-bottom:4px}
   .quad-right #advCondToggle.is-on{border-color:var(--xp-mint) !important;color:var(--xp-mint) !important;background:rgba(125,255,181,.10)}
@@ -830,7 +832,8 @@
   /* ⌘ Experto: mostrar/ocultar el menú inferior (docks) */
   body.xp-docks-hidden #telegramDock,body.xp-docks-hidden #characterDock,body.xp-docks-hidden #dockSplitHandle,body.xp-docks-hidden #eraVerticalDock{display:none !important}
 </style>
-<nav class="quad-menu quad-left is-collapsed" aria-label="Opciones">
+<nav class="quad-menu quad-left is-collapsed" aria-label="Equipo Silicio">
+  <div class="qm-title">Equipo Silicio</div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>📢 Megafonía</button>
     <div class="qm-acc-body"><span class="qm-hint">· por definir ·</span></div>
@@ -867,7 +870,8 @@
   </div>
   <span class="qm-version" id="quadOptVersion" role="button" tabindex="0" title="Ayuda · funcionalidades"></span>
 </nav>
-<nav class="quad-menu quad-right is-collapsed" aria-label="Menú avanzado">
+<nav class="quad-menu quad-right is-collapsed" aria-label="Equipo Carbono">
+  <div class="qm-title">Equipo Carbono</div>
   <span class="qm-head">Condicional</span>
   <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
   <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional">✎ Panel de control</a>
