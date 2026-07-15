@@ -844,6 +844,9 @@
     var hidden = document.body.classList.toggle('xp-docks-hidden');
     exp.classList.toggle('is-active', hidden);
     exp.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+    // el Xpacio debe crecer/encoger según haya menú: recalcular el canvas
+    if(typeof resizeCanvas === 'function') { try{ resizeCanvas(); }catch(e){} }
+    else { window.dispatchEvent(new Event('resize')); }
   });
 })();
 </script>
@@ -1554,13 +1557,14 @@ function resizeCanvas(){
   const inGameplay=isGameplayUiState(currentState);
   const composeStart=inGameplay&&!telegramDockHidden&&telegramComposeStart;
   gameplayDockHeight=clampGameplayDockHeight(gameplayDockHeight,vh,barH);
-  let dockH=(inGameplay&&!telegramDockHidden)?gameplayDockHeight:0;
+  const docksForcedHidden=document.body.classList.contains('xp-docks-hidden');
+  let dockH=(inGameplay&&!telegramDockHidden&&!docksForcedHidden)?gameplayDockHeight:0;
   const availH=vh-barH-dockH;
   const ratio=W/H;
   let cw,ch;
   if(vw/availH > ratio){ ch=availH; cw=Math.floor(ch*ratio); }
   else { cw=vw; ch=Math.floor(cw/ratio); }
-  if(inGameplay&&!telegramDockHidden){
+  if(inGameplay&&!telegramDockHidden&&!docksForcedHidden){
     const spareH=Math.max(0,vh-barH-dockH-ch);
     if(spareH>2){
       dockH=Math.min(vh-barH-220,dockH+spareH);
