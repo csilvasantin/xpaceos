@@ -767,6 +767,7 @@
   <div class="stat" id="bbCamBox" title="Aforo real (cámara Hikvision)"><span class="stat-label">👁 Aforo real</span><span class="stat-val"><span id="bbCamDot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#cc4444;margin-right:4px;vertical-align:middle"></span><span id="bbCamVal">—</span></span></div>
   <div class="sep"></div>
   <span id="bbStatus" style="color:#88cc88;font-size:10px">Idle</span>
+  <span id="xpTopNotify" aria-live="polite"></span>
   <div class="sep"></div>
   <div class="comp-box" style="border-color:#1a3a6a"><span class="comp-name">Altadis</span><span class="comp-pct" id="compAlt">0%</span></div>
   <div class="comp-box" style="border-color:#cc2222"><span class="comp-name">JTI</span><span class="comp-pct" id="compJTI">0%</span></div>
@@ -807,7 +808,10 @@
   /* Condicional movido al menú Avanzado: el chip flotante ya no se muestra */
   #xpl-chip{display:none !important}
   /* Barra limpia: sin SCREEN/QUIT (van a Opciones) ni mensaje de foco (Inspección/Optimiza/…) */
-  #topBar #btnConnectScreen,#topBar #btnQuit,#topBar #bbStatus,#topBar #bbStatus + .sep{display:none !important}
+  #topBar #btnConnectScreen,#topBar #btnQuit,#topBar #bbStatus{display:none !important}
+  /* Notificación de evento/música/vídeo subida a la barra superior (antes flotaba sobre el Xpacio) */
+  #topBar #xpTopNotify{display:none;font:bold 10px/1 monospace;letter-spacing:.04em;white-space:nowrap;max-width:36vw;overflow:hidden;text-overflow:ellipsis;color:var(--xp-cyan)}
+  #topBar #xpTopNotify.show{display:inline-block}
   .quad-bottom{left:50%;bottom:12px;transform:translate(-50%,calc(100% + 16px));min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
   .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
   .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
@@ -838,6 +842,16 @@
 </nav>
 <script>
 (function(){
+  // Notificación en la barra superior (música / vídeo DS / eventos), con auto-desvanecido
+  var _xpNotifyT=0;
+  window.xpTopNotify=function(txt,col){
+    var el=document.getElementById('xpTopNotify'); if(!el) return;
+    el.textContent=String(txt==null?'':txt);
+    if(col) el.style.color=col;
+    el.classList.add('show');
+    clearTimeout(_xpNotifyT);
+    _xpNotifyT=setTimeout(function(){ el.classList.remove('show'); }, 2800);
+  };
   var toggles = document.querySelectorAll('#topBar [data-quad-toggle]');
   toggles.forEach(function(btn){
     var name = btn.dataset.quadToggle;
@@ -10331,8 +10345,14 @@ function showEv(msg,col){
   // (#eventBanner dentro de #topBarSub) que duplicaba el mensaje y aportaba
   // ruido visual; eliminado en v26.04.05.17.
   G.eventMsg=msg;G.eventTimer=160;G.eventColor=col||P.neon1;
+  try{ if(typeof window.xpTopNotify==='function') window.xpTopNotify(msg,col); }catch(e){}
 }
-function addFloat(x,y,txt,col){G.floats.push({x,y,txt,col,life:65,vy:-0.65});}
+function addFloat(x,y,txt,col){
+  // Notificaciones de arriba-centro (música / vídeo DS / eventos) → a la barra
+  // superior DOM en vez de flotar sobre el Xpacio (evita solaparse con las barras LED).
+  if(x===W/2 && y===40){ try{ if(typeof window.xpTopNotify==='function'){ window.xpTopNotify(txt,col); return; } }catch(e){} }
+  G.floats.push({x,y,txt,col,life:65,vy:-0.65});
+}
 function ensureUnitreeBot(){
   if(!G.unitreeBot){
     G.unitreeBot={phase:'idle',cooldown:2100,x:820,y:0,dir:-1,aFrame:0,aTimer:0,scanTimer:0,targetCol:7,targetRow:4,path:null,pathIdx:0,pathMode:'',bTimer:0,bMsg:''};
