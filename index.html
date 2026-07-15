@@ -88,7 +88,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .cta.secondary{background:transparent;color:var(--brand);border:1px solid var(--brand)}
   .cta.event{background:linear-gradient(90deg,var(--lenovo),var(--nvidia));color:#fff;border:0}
 
-  section{padding:64px 0;border-top:1px solid var(--line)}
+  section{padding:74px 0;border-top:1px solid var(--line)}
   section h2{font-size:32px;margin:0 0 18px;letter-spacing:-.01em}
   section h2 .num{color:var(--brand);font-family:monospace;font-size:18px;margin-right:10px;vertical-align:middle}
   section .lede{color:var(--mut);font-size:16px;max-width:780px;margin:0 0 32px}
@@ -126,7 +126,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .platform-flow{margin:24px 0 0;font-family:monospace;font-size:13px;color:var(--mut);text-align:center;letter-spacing:.02em}
   .platform-flow b{color:var(--ink)}
 
-  .layers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .layers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
   .layer{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:26px;transition:transform .12s,border-color .12s;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden}
   .layer:hover{border-color:var(--brand);transform:translateY(-3px)}
   .layer .lnum{position:absolute;top:14px;right:18px;font-family:monospace;font-size:48px;font-weight:800;color:rgba(120,243,255,.10)}
@@ -137,12 +137,12 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .layer ul{margin:0;padding:0 0 0 18px;color:var(--mut);font-size:13px}
   .layer ul li{margin-bottom:4px}
   .layer .more{margin-top:auto;font-size:13px;color:var(--brand);font-family:monospace;letter-spacing:.04em}
-  .deep{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:30px;margin-bottom:18px}
+  .deep{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:34px;margin-bottom:18px}
   .deep h3{margin:0 0 6px;font-size:22px;color:var(--accent)}
   .deep .who{font-size:13px;color:var(--mut);font-style:italic;margin-bottom:14px}
   .deep p{color:var(--ink);font-size:15px}
-  .deep .feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:18px 0;font-family:monospace;font-size:12px}
-  .deep .feats div{background:rgba(0,0,0,.3);border:1px solid var(--line);padding:10px 12px;border-radius:6px;color:var(--mut)}
+  .deep .feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:22px 0;font-family:monospace;font-size:12px}
+  .deep .feats div{background:rgba(0,0,0,.3);border:1px solid var(--line);padding:12px 14px;border-radius:6px;color:var(--mut);line-height:1.5}
   .deep .feats div b{color:var(--brand);display:block;letter-spacing:.05em;margin-bottom:2px}
   .deep .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
   .deep .links a{font-family:monospace;font-size:12px;border:1px solid var(--line);padding:6px 12px;border-radius:6px;color:var(--brand)}
@@ -238,8 +238,43 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   footer .footer-logo img{display:block;width:100%;height:auto;opacity:.92}
   footer .sig{margin-left:auto;font-family:monospace;font-size:11px;letter-spacing:.1em;color:var(--accent)}
 
+  /* Botón hamburguesa — sólo visible en móvil */
+  .nav-toggle{display:none;margin-left:auto;width:42px;height:42px;align-items:center;justify-content:center;background:rgba(120,243,255,.06);border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--brand);flex:0 0 auto;position:relative;z-index:50}
+  .nav-toggle:hover{border-color:rgba(120,243,255,.55)}
+  .nav-toggle .bars,.nav-toggle .bars::before,.nav-toggle .bars::after{display:block;width:20px;height:2px;background:currentColor;border-radius:2px;transition:transform .25s ease,opacity .2s ease,top .25s ease}
+  .nav-toggle .bars{position:relative}
+  .nav-toggle .bars::before,.nav-toggle .bars::after{content:"";position:absolute;left:0}
+  .nav-toggle .bars::before{top:-6px}
+  .nav-toggle .bars::after{top:6px}
+  .nav-toggle[aria-expanded="true"] .bars{background:transparent}
+  .nav-toggle[aria-expanded="true"] .bars::before{top:0;transform:rotate(45deg)}
+  .nav-toggle[aria-expanded="true"] .bars::after{top:0;transform:rotate(-45deg)}
+  .nav-backdrop{display:none;position:fixed;inset:0;background:rgba(2,8,13,.62);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:30}
+  .nav-backdrop.open{opacity:1;visibility:visible}
+
+  /* Scroll-spy — resalta la sección activa en el nav (desktop) */
+  nav a.nav-link.active{color:var(--ink)}
+  @media (min-width:821px){
+    nav a.nav-link{position:relative}
+    nav a.nav-link.active::after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:2px;background:var(--brand);border-radius:2px;box-shadow:0 0 8px rgba(120,243,255,.45)}
+  }
+
+  /* Eyebrow para diferenciar las dos vistas (suite vs capas) */
+  .sec-kicker{display:inline-flex;align-items:center;gap:8px;font-family:monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(255,216,102,.35);border-radius:999px;padding:5px 12px;margin:0 0 16px}
+  .sec-kicker.os{color:var(--brand);border-color:rgba(120,243,255,.35)}
+
   @media (max-width:820px){
     .brand-logo{width:128px}
+    .nav-toggle{display:inline-flex}
+    header .wrap{flex-wrap:nowrap;gap:14px}
+    nav{position:fixed;top:0;right:0;height:100dvh;width:min(82vw,320px);margin:0;padding:84px 22px 28px;flex-direction:column;align-items:stretch;gap:2px;font-size:15px;background:rgba(4,11,17,.98);backdrop-filter:blur(14px);border-left:1px solid var(--line);box-shadow:-20px 0 60px rgba(0,0,0,.5);transform:translateX(105%);transition:transform .32s cubic-bezier(.4,0,.2,1);z-index:35;overflow-y:auto}
+    nav.open{transform:translateX(0)}
+    nav a{padding:12px 4px;border-bottom:1px solid rgba(120,243,255,.08)}
+    nav .live{padding:12px 4px;font-size:12px}
+    .language-switcher{border-left:0;padding-left:0;margin:14px 0 0}
+    .lang-toggle{width:100%;text-align:center;padding:12px}
+    .nav-contact{margin:12px 0 0;text-align:center;padding:12px 14px}
+    body.nav-open-lock{overflow:hidden}
     .hero{padding:28px 0 54px}
     .starfield{inset:-18%;opacity:.62}
     .starfield::before,.starfield::after{background-size:190px 140px,260px 190px,420px 300px}
@@ -268,12 +303,13 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     <a class="brand-logo" href="#top" aria-label="XpaceOS">
       <img src="/assets/xpaceos-logo-transparent.png" alt="XpaceOS">
     </a>
-    <nav>
-      <a href="#booth" data-i18n="nav.booth">Shoptalk booth</a>
-      <a href="#plataforma" data-i18n="nav.platform">Platform</a>
-      <a href="#capas" data-i18n="nav.layers">3 layers</a>
-      <a href="#hardware">Lenovo + Nvidia</a>
-      <a href="#stack">Stack</a>
+    <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav"><span class="bars" aria-hidden="true"></span></button>
+    <nav id="primary-nav">
+      <a class="nav-link" href="#booth" data-i18n="nav.booth">Shoptalk booth</a>
+      <a class="nav-link" href="#plataforma" data-i18n="nav.platform">Platform</a>
+      <a class="nav-link" href="#capas" data-i18n="nav.layers">3 layers</a>
+      <a class="nav-link" href="#hardware">Lenovo + Nvidia</a>
+      <a class="nav-link" href="#stack">Stack</a>
       <a href="/cpm/">CPM</a>
       <a href="/robot/">Robot</a>
       <a href="/admira-xp/" class="live" data-demo-gate data-i18n="nav.demo">Live demo</a>
@@ -283,6 +319,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       <a class="nav-contact" href="#contact" data-admira-contact data-i18n="contact">Contact</a>
     </nav>
   </div>
+  <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 </header>
 
 <div class="hero">
@@ -361,6 +398,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
 <section id="plataforma">
   <div class="wrap">
     <h2 data-i18n-html="platform.title"><span class="num">01</span>The AdmiraNext platform, live at the booth</h2>
+    <div class="sec-kicker" data-i18n="platform.kicker">The suite — sister products, each on its own site</div>
     <p class="lede" data-i18n="platform.lede">At the Lenovo × Nvidia booth we did not show a single tool — we ran the whole AdmiraNext platform end to end. Three connected products that any visitor could use, from creating the content to putting it on air.</p>
 
     <div class="platform-lockup">
@@ -437,6 +475,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
 <section id="capas">
   <div class="wrap">
     <h2 data-i18n-html="layers.title"><span class="num">03</span>The three layers of XpaceOS</h2>
+    <div class="sec-kicker os" data-i18n="layers.kicker">Inside the OS — the functional layers of XpaceOS</div>
     <p class="lede" data-i18n="layers.lede">Each layer solves one part of the puzzle. Together, they form the full chain from creative prompt to advertising impression with audited metrics. Others sell fragments. XpaceOS is the whole operating system.</p>
     <div class="layers">
       <div class="layer">
@@ -627,6 +666,7 @@ const I18N = {
     'booth.li6': '🎯 <b>Lead scan</b> with integrated Club QR',
     'booth.bookDemo': 'Book demo',
     'platform.title': '<span class="num">01</span>The AdmiraNext platform, live at the booth',
+    'platform.kicker': 'The suite — sister products, each on its own site',
     'platform.lede': 'At the Lenovo × Nvidia booth we did not show a single tool — we ran the whole AdmiraNext platform end to end. Three connected products that any visitor could use, from creating the content to putting it on air.',
     'platform.when': 'SHOPTALK EUROPE · JUN 9-11 2026 · FIRA BARCELONA',
     'platform.studioKind': 'Creation',
@@ -657,6 +697,7 @@ const I18N = {
     'hardware.nvidiaLi3': 'Digital Twin response under 200 ms',
     'hardware.nvidiaLi4': 'Multi-stream: screens + tablets + camera',
     'layers.title': '<span class="num">03</span>The three layers of XpaceOS',
+    'layers.kicker': 'Inside the OS — the functional layers of XpaceOS',
     'layers.lede': 'Each layer solves one part of the puzzle. Together, they form the full chain from creative prompt to advertising impression with audited metrics. Others sell fragments. XpaceOS is the whole operating system.',
     'layers.pixerKind': 'Creation',
     'layers.pixerWho': 'For creatives, brands and store operators',
@@ -698,6 +739,7 @@ const I18N = {
     'gemelos.surfaces': 'surfaces',
     'gemelos.live': 'LIVE',
     'gemelos.count': '{n} twins · {s} surfaces · live from the shared catalog',
+    'gemelos.more': 'more twins in the live catalog',
     'omni.title': '<span class="num">06</span>OmniPublicity · Marketplace layer',
     'omni.deepTitle': 'Real-Time Bidding on every visible physical slot',
     'omni.who': 'The same model as Google Ads and The Trade Desk, on your real screens.',
@@ -755,6 +797,7 @@ const I18N = {
     'booth.li6': '🎯 <b>Captura de contactos</b> con QR del Club integrado',
     'booth.bookDemo': 'Reservar demo',
     'platform.title': '<span class="num">01</span>La plataforma AdmiraNext, en vivo en el stand',
+    'platform.kicker': 'La suite — productos hermanos, cada uno con su propia web',
     'platform.lede': 'En el stand Lenovo × Nvidia no enseñamos una sola herramienta — corrimos toda la plataforma AdmiraNext de punta a punta. Tres productos conectados que cualquier visitante pudo usar, desde crear el contenido hasta ponerlo en antena.',
     'platform.when': 'SHOPTALK EUROPE · 9-11 JUN 2026 · FIRA BARCELONA',
     'platform.studioKind': 'Creación',
@@ -785,6 +828,7 @@ const I18N = {
     'hardware.nvidiaLi3': 'Reactividad del Gemelo < 200 ms',
     'hardware.nvidiaLi4': 'Flujos múltiples: pantallas + tablets + cámara',
     'layers.title': '<span class="num">03</span>Las tres capas de XpaceOS',
+    'layers.kicker': 'Dentro del OS — las capas funcionales de XpaceOS',
     'layers.lede': 'Cada capa resuelve una pieza del puzzle. Juntas, forman la cadena completa que va del encargo creativo a la impresión publicitaria con métrica auditada. Otros venden trozos. XpaceOS es el sistema operativo entero.',
     'layers.pixerKind': 'Creación',
     'layers.pixerWho': 'Para creativos, marca y operadores de tienda',
@@ -826,6 +870,7 @@ const I18N = {
     'gemelos.surfaces': 'superficies',
     'gemelos.live': 'EN VIVO',
     'gemelos.count': '{n} gemelos · {s} superficies · en vivo del catálogo compartido',
+    'gemelos.more': 'gemelos más en el catálogo en vivo',
     'omni.title': '<span class="num">06</span>OmniPublicity · Capa de mercado',
     'omni.deepTitle': 'Puja en tiempo real sobre cada hueco físico visible',
     'omni.who': 'El mismo modelo que Google Ads y The Trade Desk, sobre tus pantallas reales.',
@@ -890,6 +935,7 @@ function applyLanguage(lang) {
 // shows up here. Train-proof: single fetch, 7s timeout, no retry loop.
 const GEMELOS_API = 'https://omnipublicity-api.csilvasantin.workers.dev/locations';
 const SURF_ICON = { pantalla:'📺', escaparate:'🪟', mostrador:'🧾', vending:'🥤', pwa:'📱' };
+const GEMELOS_MAX = 24; // tope de tarjetas renderizadas — el catálogo puede tener miles
 let gemelosData = null; // null = loading · 'error' · []/[…] = data
 
 function gmDict() { return I18N[document.documentElement.lang] || I18N.en; }
@@ -915,10 +961,10 @@ function renderGemelos() {
     grid.innerHTML = `<div class="gm-state">${d['gemelos.empty']}</div>`;
     return;
   }
-  let totalSurf = 0;
-  grid.innerHTML = gemelosData.map(loc => {
+  const totalSurf = gemelosData.reduce((n, loc) => n + (Array.isArray(loc.surfaces) ? loc.surfaces.length : 0), 0);
+  const shown = gemelosData.slice(0, GEMELOS_MAX);
+  grid.innerHTML = shown.map(loc => {
     const surfaces = Array.isArray(loc.surfaces) ? loc.surfaces : [];
-    totalSurf += surfaces.length;
     const live = surfaces.filter(s => s.status === 'live').length;
     const types = [...new Set(surfaces.map(s => s.surface))];
     const chips = types.map(t => `<span class="gm-chip">${SURF_ICON[t] || '▫'} ${gmEsc(t)}</span>`).join('');
@@ -930,6 +976,10 @@ function renderGemelos() {
       <div class="gm-chips"><span class="gm-chip">${surfaces.length} ${d['gemelos.surfaces']}</span>${liveChip}${chips}</div>
     </div>`;
   }).join('');
+  if (gemelosData.length > shown.length) {
+    const rest = gemelosData.length - shown.length;
+    grid.insertAdjacentHTML('beforeend', `<div class="gm-state">+ ${rest} ${d['gemelos.more'] || 'more'}</div>`);
+  }
   if (countEl) countEl.textContent = (d['gemelos.count'] || '').replace('{n}', gemelosData.length).replace('{s}', totalSurf);
 }
 
@@ -1046,6 +1096,52 @@ window.addEventListener('pagehide', () => window.clearTimeout(nextShootingStarTi
     const days = Math.max(0, Math.floor((Date.now() - target) / (1000*60*60*24)));
     document.getElementById('m-days').textContent = days;
   } catch {}
+})();
+
+// Nav móvil (hamburguesa) + scroll-spy
+(() => {
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('primary-nav');
+  const backdrop = document.getElementById('nav-backdrop');
+  if (toggle && nav) {
+    const setOpen = (open) => {
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      nav.classList.toggle('open', open);
+      if (backdrop) backdrop.classList.toggle('open', open);
+      document.body.classList.toggle('nav-open-lock', open);
+    };
+    toggle.addEventListener('click', () => setOpen(!nav.classList.contains('open')));
+    if (backdrop) backdrop.addEventListener('click', () => setOpen(false));
+    nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+  }
+
+  // Scroll-spy: resalta en el nav la sección visible (basado en scroll, sin IO)
+  const spyLinks = Array.from(document.querySelectorAll('nav a.nav-link'));
+  const sections = [];
+  spyLinks.forEach(a => {
+    const href = a.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      const el = document.querySelector(href);
+      if (el) sections.push({ el, link: a });
+    }
+  });
+  // Ordena por posición real en el documento (el nav no está en orden físico)
+  sections.sort((a, b) =>
+    (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+  if (sections.length) {
+    const syncSpy = () => {
+      const mid = window.scrollY + window.innerHeight * 0.35;
+      let current = null;
+      for (const s of sections) {
+        if (s.el.getBoundingClientRect().top + window.scrollY <= mid) current = s.link;
+      }
+      spyLinks.forEach(l => l.classList.toggle('active', l === current));
+    };
+    window.addEventListener('scroll', syncSpy, { passive: true });
+    window.addEventListener('resize', syncSpy, { passive: true });
+    syncSpy();
+  }
 })();
 </script>
 
