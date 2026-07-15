@@ -406,7 +406,7 @@ function openItem(id){
   $('pTitle').textContent=it.title;$('pLore').textContent=it.lore;$('pLayer').textContent=it.layer;
   $('pChips').innerHTML=it.chips.map(c=>`<span class="chip">${c}</span>`).join('');
   const cta=$('pCta');cta.textContent=it.cta;
-  cta.onclick=()=>{ if(id==='jorEl'){closePanel();openHolo();} else {cta.textContent='✓ Activado en la sala';setTimeout(()=>cta.textContent=it.cta,1600);} };
+  cta.onclick=()=>{ if(id==='jorEl'){closePanel();openHolo();} else if(id==='console'){location.href='/Xsuperman/';} else {cta.textContent='✓ Activado en la sala';setTimeout(()=>cta.textContent=it.cta,1600);} };
   $('panel').classList.add('open');
 }
 function closePanel(){$('panel').classList.remove('open');}
