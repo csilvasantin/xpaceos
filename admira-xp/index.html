@@ -801,6 +801,11 @@
   .quad-right a,.quad-right button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
   /* al abrir Opciones, ocultar el badge de tienda que ocupa esa esquina (z-index máximo) */
   body.quad-left-open #xtancoIdBadge{opacity:0 !important;pointer-events:none}
+  /* cabecera de sección dentro de un panel quad */
+  .quad-menu .qm-head{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--xp-gold);padding:2px 6px 8px;border-bottom:1px solid rgba(120,243,255,.14);margin-bottom:4px}
+  .quad-right #advCondToggle.is-on{border-color:var(--xp-mint) !important;color:var(--xp-mint) !important;background:rgba(125,255,181,.10)}
+  /* Condicional movido al menú Avanzado: el chip flotante ya no se muestra */
+  #xpl-chip{display:none !important}
   .quad-bottom{left:50%;bottom:12px;transform:translate(-50%,calc(100% + 16px));min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
   .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
   .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
@@ -813,7 +818,9 @@
   <span class="qm-version" id="quadOptVersion"></span>
 </nav>
 <nav class="quad-menu quad-right is-collapsed" aria-label="Menú avanzado">
-  <span class="qm-hint">Menú avanzado · por definir</span>
+  <span class="qm-head">Condicional</span>
+  <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
+  <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional">✎ Panel de control</a>
 </nav>
 <script>
 (function(){
@@ -836,6 +843,7 @@
       panel.classList.toggle('is-collapsed', !willOpen);
       sync();
       sizeSideColumns();
+      updateCondLabel();
     });
     sync();
   });
@@ -856,6 +864,21 @@
   window.addEventListener('resize', sizeSideColumns);
   var saveOpt = document.querySelector('[data-xp-opt="save"]');
   if(saveOpt) saveOpt.addEventListener('click', function(){ var b=document.getElementById('btnSave'); if(b) b.click(); });
+  // Condicional movido al menú Avanzado: refleja estado (localStorage) y togglea reusando el chip oculto
+  function updateCondLabel(){
+    var adv=document.getElementById('advCondToggle'); if(!adv) return;
+    var isOn=false; try{ isOn=localStorage.getItem('xpl_gemelo_on')==='1'; }catch(e){}
+    adv.textContent=(isOn?'◉ Condicional · ON':'○ Condicional · OFF');
+    adv.classList.toggle('is-on', isOn);
+  }
+  var advCond=document.getElementById('advCondToggle');
+  if(advCond) advCond.addEventListener('click', function(){
+    var chip=document.getElementById('xpl-chip');
+    if(chip){ chip.click(); }
+    else if(typeof window.__xtExec==='function'){ window.__xtExec('/condicional toggle'); }
+    setTimeout(updateCondLabel, 80);
+  });
+  updateCondLabel();
   // ⌘ Experto → muestra/oculta el menú inferior (docks Telegram + Equipo/Clientes + selector)
   var exp = document.getElementById('pfExpert');
   if(exp) exp.addEventListener('click', function(){
