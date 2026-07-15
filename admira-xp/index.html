@@ -806,6 +806,8 @@
   .quad-right #advCondToggle.is-on{border-color:var(--xp-mint) !important;color:var(--xp-mint) !important;background:rgba(125,255,181,.10)}
   /* Condicional movido al menú Avanzado: el chip flotante ya no se muestra */
   #xpl-chip{display:none !important}
+  /* Barra limpia: sin SCREEN/QUIT (van a Opciones) ni mensaje de foco (Inspección/Optimiza/…) */
+  #topBar #btnConnectScreen,#topBar #btnQuit,#topBar #bbStatus,#topBar #bbStatus + .sep{display:none !important}
   .quad-bottom{left:50%;bottom:12px;transform:translate(-50%,calc(100% + 16px));min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
   .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
   .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
@@ -814,7 +816,9 @@
 </style>
 <nav class="quad-menu quad-left is-collapsed" aria-label="Opciones">
   <button type="button" data-xp-opt="save">💾 Guardar</button>
+  <button type="button" data-xp-opt="screen">📺 Pantalla</button>
   <a href="help.html" target="_blank" rel="noopener">❔ Ayuda</a>
+  <button type="button" data-xp-opt="quit">⏻ Salir</button>
   <span class="qm-version" id="quadOptVersion"></span>
 </nav>
 <nav class="quad-menu quad-right is-collapsed" aria-label="Menú avanzado">
@@ -864,6 +868,11 @@
   window.addEventListener('resize', sizeSideColumns);
   var saveOpt = document.querySelector('[data-xp-opt="save"]');
   if(saveOpt) saveOpt.addEventListener('click', function(){ var b=document.getElementById('btnSave'); if(b) b.click(); });
+  // Pantalla y Salir movidos desde la barra al menú Opciones (reusan los botones ocultos)
+  var screenOpt = document.querySelector('[data-xp-opt="screen"]');
+  if(screenOpt) screenOpt.addEventListener('click', function(){ var b=document.getElementById('btnConnectScreen'); if(b) b.click(); });
+  var quitOpt = document.querySelector('[data-xp-opt="quit"]');
+  if(quitOpt) quitOpt.addEventListener('click', function(){ var b=document.getElementById('btnQuit'); if(b) b.click(); });
   // Condicional movido al menú Avanzado: refleja estado (localStorage) y togglea reusando el chip oculto
   function updateCondLabel(){
     var adv=document.getElementById('advCondToggle'); if(!adv) return;
@@ -22631,16 +22640,17 @@ function drawHUD(){
   const bc=prog>=1?P.green:prog>=0.7?'#ccaa44':'#88aa55';
   r(580,10,80,6,'#1a1208');r(580,10,(80*prog)|0,6,bc);rx(580,10,80,6,'#4a3820',1);
   tx((G.yearRevenue|0).toLocaleString()+'/'+(target).toLocaleString()+'€',580,24,'#c0b898',7);
-  // Rush / Inspect badge (far right of top bar)
-  if(G.rush.active){
-    const f=Math.sin(tt*.08)>.0;
-    r(650,2,120,24,f?'#5a3000':'#4a2800');rx(650,2,120,24,'#ffaa44',2);
-    tx('⚡ HORA PUNTA ⚡',710,18,'#ffcc44',10,'center');
-  }
-  if(G.inspect.active&&G.inspect.timer>100){
-    r(600,2,120,24,'#4a0010');rx(600,2,120,24,'#ff6688',2);
-    tx('🔍 INSPECCIÓN',660,18,'#ff8899',10,'center');
-  }
+  // Rush / Inspect badge (far right of top bar) — ocultados a petición (barra limpia).
+  // Los eventos (rush/inspect) siguen activos; solo se quita el aviso visual.
+  // if(G.rush.active){
+  //   const f=Math.sin(tt*.08)>.0;
+  //   r(650,2,120,24,f?'#5a3000':'#4a2800');rx(650,2,120,24,'#ffaa44',2);
+  //   tx('⚡ HORA PUNTA ⚡',710,18,'#ffcc44',10,'center');
+  // }
+  // if(G.inspect.active&&G.inspect.timer>100){
+  //   r(600,2,120,24,'#4a0010');rx(600,2,120,24,'#ff6688',2);
+  //   tx('🔍 INSPECCIÓN',660,18,'#ff8899',10,'center');
+  // }
   // Hidden Codex button: tiny rivet on the far right of the HUD bar
   const codexX=W-9,codexY=4;
   cx.globalAlpha=0.28;
