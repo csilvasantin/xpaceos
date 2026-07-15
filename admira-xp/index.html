@@ -774,7 +774,7 @@
   <div class="spacer"></div>
   <div id="pfToggles" class="pf-toggles" role="group" aria-label="Modos: opciones, avanzado, experto">
     <button type="button" class="quad-icon" data-quad-toggle="left" aria-label="Desplegar barra de opciones" aria-expanded="false" title="Opciones">☰</button>
-    <button type="button" class="quad-icon" data-quad-toggle="right" aria-label="Desplegar menú avanzado" aria-expanded="false" title="Menú avanzado">▤</button>
+    <button type="button" class="quad-icon" id="pfAdvanced" aria-label="Menú avanzado — mostrar u ocultar el menú inferior" aria-pressed="false" title="Menú avanzado · mostrar/ocultar menú inferior">▤</button>
     <button type="button" class="quad-icon" data-quad-toggle="bottom" aria-label="Desplegar modo experto" aria-expanded="false" title="Modo experto">⌘</button>
   </div>
   <button class="btn-save" id="btnConnectScreen" title="Conectar una pantalla física (QR): el escaparate del gemelo se refleja en vivo" style="margin-right:8px" onclick="window.open('conectar.html?screen=escaparate','_blank','noopener')">📺 Pantalla</button>
@@ -798,13 +798,12 @@
   .quad-bottom{left:50%;bottom:12px;transform:translate(-50%,calc(100% + 16px));min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
   .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
   .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
+  /* ▤ Avanzado: mostrar/ocultar el menú inferior (docks) */
+  body.xp-docks-hidden #telegramDock,body.xp-docks-hidden #characterDock,body.xp-docks-hidden #dockSplitHandle,body.xp-docks-hidden #eraVerticalDock{display:none !important}
 </style>
 <nav class="quad-menu quad-left is-collapsed" aria-label="Opciones">
   <button type="button" data-xp-opt="save">💾 Guardar</button>
   <a href="help.html" target="_blank" rel="noopener">❔ Ayuda</a>
-</nav>
-<nav class="quad-menu quad-right is-collapsed" aria-label="Menú avanzado">
-  <span class="qm-hint">por definir</span>
 </nav>
 <nav class="quad-menu quad-bottom is-collapsed" aria-label="Modo experto">
   <span class="qm-hint">Modo experto · por definir</span>
@@ -834,6 +833,13 @@
   });
   var saveOpt = document.querySelector('[data-xp-opt="save"]');
   if(saveOpt) saveOpt.addEventListener('click', function(){ var b=document.getElementById('btnSave'); if(b) b.click(); });
+  // ▤ Avanzado → muestra/oculta el menú inferior (docks Telegram + Equipo/Clientes + selector)
+  var adv = document.getElementById('pfAdvanced');
+  if(adv) adv.addEventListener('click', function(){
+    var hidden = document.body.classList.toggle('xp-docks-hidden');
+    adv.classList.toggle('is-active', hidden);
+    adv.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+  });
 })();
 </script>
 <audio id="bgMusic" loop preload="auto"><source src="music/titi.mp3" type="audio/mpeg"></audio>
