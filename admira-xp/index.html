@@ -795,7 +795,8 @@
   .quad-left{top:38px;left:0;bottom:0;width:280px;z-index:200;display:flex;flex-direction:column;gap:6px;padding:16px 12px;border-radius:0 14px 14px 0;overflow-y:auto;transform:translateX(-100%);pointer-events:none;transition:transform .22s ease}
   .quad-left:not(.is-collapsed){transform:translateX(0);pointer-events:auto}
   .quad-left a,.quad-left button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
-  .quad-left .qm-version{margin-top:auto;padding-top:12px;text-align:center;color:var(--xp-muted);font-size:10px;letter-spacing:.08em;opacity:.75}
+  .quad-left .qm-version{margin-top:auto;padding-top:12px;text-align:center;color:var(--xp-muted);font-size:10px;letter-spacing:.08em;opacity:.75;cursor:pointer;transition:color .15s,opacity .15s}
+  .quad-left .qm-version:hover{color:var(--xp-cyan);opacity:1}
   /* Acordeones Música / Vídeo dentro de Opciones */
   .quad-left .qm-acc{display:flex;flex-direction:column}
   .quad-left .qm-acc-head{position:relative;padding-right:28px}
@@ -830,10 +831,6 @@
   body.xp-docks-hidden #telegramDock,body.xp-docks-hidden #characterDock,body.xp-docks-hidden #dockSplitHandle,body.xp-docks-hidden #eraVerticalDock{display:none !important}
 </style>
 <nav class="quad-menu quad-left is-collapsed" aria-label="Opciones">
-  <button type="button" data-xp-opt="save">💾 Guardar</button>
-  <button type="button" data-xp-opt="screen">📺 Pantalla</button>
-  <a href="help.html" target="_blank" rel="noopener">❔ Ayuda</a>
-  <button type="button" data-xp-opt="quit">⏻ Salir</button>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>♪ Música</button>
     <div class="qm-acc-body">
@@ -852,7 +849,7 @@
       <button type="button" data-xp-do="dsMute" title="Audio de las pantallas on/off">🔈 Audio DS</button>
     </div>
   </div>
-  <span class="qm-version" id="quadOptVersion"></span>
+  <span class="qm-version" id="quadOptVersion" role="button" tabindex="0" title="Ayuda · funcionalidades"></span>
 </nav>
 <nav class="quad-menu quad-right is-collapsed" aria-label="Menú avanzado">
   <span class="qm-head">Condicional</span>
@@ -913,7 +910,7 @@
     if(right){ var rw=rect?Math.round(vw-rect.right):0; right.style.width=Math.max(220,rw)+'px'; }
     // versión al fondo del panel Opciones (se lee al abrir: XTANCO_APP ya está cargado)
     var ver=document.getElementById('quadOptVersion');
-    if(ver && !ver.textContent){ try{ ver.textContent=(window.XTANCO_APP&&window.XTANCO_APP.version)||''; }catch(e){} }
+    if(ver && !ver.textContent){ try{ ver.textContent='❔ '+((window.XTANCO_APP&&window.XTANCO_APP.version)||''); }catch(e){} }
   }
   window.addEventListener('resize', sizeSideColumns);
   var saveOpt = document.querySelector('[data-xp-opt="save"]');
@@ -943,6 +940,13 @@
       var acc=h.closest('[data-acc]'); if(acc) acc.classList.toggle('open');
     });
   });
+  // La Ayuda se abre al pulsar la versión (pie del menú Opciones)
+  var quadVerEl=document.getElementById('quadOptVersion');
+  if(quadVerEl){
+    var _openHelp=function(){ window.open('help.html','_blank','noopener'); };
+    quadVerEl.addEventListener('click', _openHelp);
+    quadVerEl.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); _openHelp(); } });
+  }
   var advCond=document.getElementById('advCondToggle');
   if(advCond) advCond.addEventListener('click', function(){
     var chip=document.getElementById('xpl-chip');
