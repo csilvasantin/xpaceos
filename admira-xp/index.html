@@ -22573,6 +22573,11 @@ function drawFloats(){
 
 // ── DRAW HUD ──────────────────────────────────────────────────
 function drawHUD(){
+  // Sub-barra del HUD (dinero · contadores · música · selector DS · ingresos) —
+  // OCULTA a petición para dar más espacio al Xpacio. Se dibuja sobre la sala, así
+  // que al no pintarla queda visible la escena de detrás.
+  const SHOW_SUBBAR=false;
+  if(SHOW_SUBBAR){
   // Compact top bar (GDS style: "Y1 M8 W4 · $226.0K")
   const hh=28;
   r(0,0,W,hh,'#2a1e10');
@@ -22640,6 +22645,7 @@ function drawHUD(){
   const bc=prog>=1?P.green:prog>=0.7?'#ccaa44':'#88aa55';
   r(580,10,80,6,'#1a1208');r(580,10,(80*prog)|0,6,bc);rx(580,10,80,6,'#4a3820',1);
   tx((G.yearRevenue|0).toLocaleString()+'/'+(target).toLocaleString()+'€',580,24,'#c0b898',7);
+  } // fin if(SHOW_SUBBAR) — sub-barra oculta
   // Rush / Inspect badge (far right of top bar) — ocultados a petición (barra limpia).
   // Los eventos (rush/inspect) siguen activos; solo se quita el aviso visual.
   // if(G.rush.active){
