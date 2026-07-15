@@ -750,8 +750,9 @@
   <a class="splash-nav-link" id="splashContactBtn" href="#contact" data-admira-contact title="Contacto · Contact">Contacto</a>
 </nav>
 <div id="topBar">
-  <span id="bbClock" style="color:#ffdd66;font-size:12px;font-weight:bold">09:00</span>
-  <span id="bbDate" style="color:#b0a888;font-size:9px">22/03/2026</span>
+  <button type="button" class="quad-icon" id="pfOptions" data-quad-toggle="left" aria-label="Opciones" aria-expanded="false" title="Opciones">☰</button>
+  <span id="bbClock" style="display:none;color:#ffdd66;font-size:12px;font-weight:bold">09:00</span>
+  <span id="bbDate" style="display:none;color:#b0a888;font-size:9px">22/03/2026</span>
   <div class="sep"></div>
   <button class="btn-save" id="btnSave">💾</button>
   <div class="sep"></div>
@@ -772,8 +773,7 @@
   <div class="comp-box" style="border-color:#2266aa"><span class="comp-name">PM</span><span class="comp-pct" id="compPM">0%</span></div>
   <div class="comp-box" style="border-color:#333399"><span class="comp-name">BAT</span><span class="comp-pct" id="compBAT">0%</span></div>
   <div class="spacer"></div>
-  <div id="pfToggles" class="pf-toggles" role="group" aria-label="Modos: opciones, avanzado, experto">
-    <button type="button" class="quad-icon" data-quad-toggle="left" aria-label="Desplegar barra de opciones" aria-expanded="false" title="Opciones">☰</button>
+  <div id="pfToggles" class="pf-toggles" role="group" aria-label="Modos: avanzado, experto">
     <button type="button" class="quad-icon" data-quad-toggle="right" aria-label="Desplegar menú avanzado" aria-expanded="false" title="Menú avanzado">▤</button>
     <button type="button" class="quad-icon" id="pfExpert" aria-label="Modo experto — mostrar u ocultar el menú inferior" aria-pressed="false" title="Modo experto · mostrar/ocultar menú inferior">⌘</button>
   </div>
@@ -790,11 +790,16 @@
   .quad-menu a,.quad-menu button{color:inherit;text-decoration:none;font:inherit;border:1px solid transparent;background:transparent;cursor:pointer}
   .quad-menu a:hover,.quad-menu button:hover{border-color:var(--xp-cyan);color:var(--xp-cyan);background:rgba(120,243,255,.1)}
   .quad-menu .qm-hint{color:var(--xp-muted);font-size:9px;letter-spacing:.1em;text-align:center;opacity:.8}
-  .quad-left,.quad-right{top:56px;bottom:20px;width:58px;display:grid;align-content:center;justify-items:stretch;gap:8px;padding:12px 6px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
-  .quad-left{left:10px;transform:translateX(calc(-100% - 16px))}
-  .quad-right{right:10px;transform:translateX(calc(100% + 16px))}
-  .quad-left:not(.is-collapsed),.quad-right:not(.is-collapsed){transform:translateX(0);opacity:1}
-  .quad-left a,.quad-left button,.quad-right a,.quad-right button{min-height:80px;display:flex;align-items:center;justify-content:center;gap:8px;writing-mode:vertical-rl;text-orientation:mixed;padding:8px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-radius:8px}
+  /* Panel Avanzado (▤) — pestaña vertical estrecha que entra desde la derecha */
+  .quad-right{top:56px;bottom:20px;right:10px;width:58px;display:grid;align-content:center;justify-items:stretch;gap:8px;padding:12px 6px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85;transform:translateX(calc(100% + 16px))}
+  .quad-right:not(.is-collapsed){transform:translateX(0);opacity:1}
+  .quad-right a,.quad-right button{min-height:80px;display:flex;align-items:center;justify-content:center;gap:8px;writing-mode:vertical-rl;text-orientation:mixed;padding:8px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-radius:8px}
+  /* Panel Opciones (☰) — se despliega hacia abajo desde arriba-izquierda (donde estaba el reloj) */
+  .quad-left{top:40px;left:6px;width:300px;max-height:calc(100vh - 54px);z-index:200;display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;overflow-y:auto;transform:translateY(-14px) scaleY(.96);transform-origin:top;opacity:0;pointer-events:none;transition:transform .18s ease,opacity .18s ease}
+  .quad-left:not(.is-collapsed){transform:translateY(0) scaleY(1);opacity:1;pointer-events:auto}
+  .quad-left a,.quad-left button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
+  /* al abrir Opciones, ocultar el badge de tienda que ocupa esa esquina (z-index máximo) */
+  body.quad-left-open #xtancoIdBadge{opacity:0 !important;pointer-events:none}
   .quad-bottom{left:50%;bottom:12px;transform:translate(-50%,calc(100% + 16px));min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;transition:transform .18s ease,opacity .18s ease;opacity:.85}
   .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
   .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
