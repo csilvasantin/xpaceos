@@ -1720,12 +1720,22 @@ function resizeCanvas(){
   const inGameplay=isGameplayUiState(currentState);
   const composeStart=inGameplay&&!telegramDockHidden&&telegramComposeStart;
   gameplayDockHeight=clampGameplayDockHeight(gameplayDockHeight,vh,barH);
-  const docksForcedHidden=document.body.classList.contains('xp-docks-hidden');
+  // Ambos docks (izq telegram + der equipo/clientes) ocultos → no reservar altura de dock.
+  const leftHidden=document.body.classList.contains('xp-left-hidden');
+  const rightHidden=document.body.classList.contains('xp-right-hidden');
+  const docksForcedHidden=leftHidden&&rightHidden;
   let dockH=(inGameplay&&!telegramDockHidden&&!docksForcedHidden)?gameplayDockHeight:0;
   const availH=vh-barH-dockH;
   const ratio=W/H;
+  // Sin menús ni docks abiertos → COVER: el gemelo llena la pantalla, sin barras negras.
+  // Con algún menú/dock → CONTAIN: cabe entero y las columnas rellenan el letterbox.
+  const anyColOpen=document.body.classList.contains('quad-left-open')||document.body.classList.contains('quad-right-open');
+  const fillMode=docksForcedHidden&&!anyColOpen;
   let cw,ch;
-  if(vw/availH > ratio){ ch=availH; cw=Math.floor(ch*ratio); }
+  if(fillMode){
+    if(vw/availH > ratio){ cw=vw; ch=Math.floor(cw/ratio); }   // llena ancho, recorta alto
+    else { ch=availH; cw=Math.floor(ch*ratio); }               // llena alto, recorta ancho
+  } else if(vw/availH > ratio){ ch=availH; cw=Math.floor(ch*ratio); }
   else { cw=vw; ch=Math.floor(cw/ratio); }
   if(inGameplay&&!telegramDockHidden&&!docksForcedHidden){
     const spareH=Math.max(0,vh-barH-dockH-ch);
@@ -1736,6 +1746,8 @@ function resizeCanvas(){
   cv.style.width=cw+'px';
   cv.style.height=ch+'px';
   cv.style.marginLeft=Math.max(0,Math.floor((vw-cw)/2))+'px';
+  // Cover: si el gemelo es más alto que el hueco, centrar el recorte vertical.
+  cv.style.marginTop=(fillMode&&ch>availH)?Math.round(-(ch-availH)/2)+'px':'';
   const canvasRect=cv.getBoundingClientRect();
   const dockLeft=inGameplay?0:Math.max(0,Math.round(canvasRect.left));
   const dockWidth=inGameplay?vw:Math.max(0,Math.round(canvasRect.width));
