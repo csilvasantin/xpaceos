@@ -1740,13 +1740,23 @@ function resizeCanvas(){
   const dockRenderH=(inGameplay&&!telegramDockHidden&&!docksForcedHidden)?gameplayDockHeight:0;
   const availH=vh-barH-dockH;
   const ratio=W/H;
-  const fillMode=true;   // cover siempre
+  // Cover SOLO si el recorte es pequeño; si no, contain. El cover incondicional llenaba la
+  // pantalla pero en proporciones que no son la del Xpacio (ventanas estrechas, monitores
+  // verticales) se comía zonas ENTERAS: se veía una esquina y el resto quedaba fuera.
+  // Con este tope se conserva la intención (sin bandas cuando la proporción acompaña) sin
+  // llegar a perder nada: en cuanto el recorte pasa del tope, el Xpacio entra completo.
+  const MAX_RECORTE=0.06;   // 6% del lado como mucho
   let cw,ch;
-  if(fillMode){
-    if(vw/availH > ratio){ cw=vw; ch=Math.floor(cw/ratio); }   // llena ancho, recorta alto
-    else { ch=availH; cw=Math.floor(ch*ratio); }               // llena alto, recorta ancho
-  } else if(vw/availH > ratio){ ch=availH; cw=Math.floor(ch*ratio); }
-  else { cw=vw; ch=Math.floor(cw/ratio); }
+  if(vw/availH > ratio){
+    const coverH=Math.floor(vw/ratio);                       // llena ancho → recorta alto
+    if(availH>0 && (coverH-availH)/coverH <= MAX_RECORTE){ cw=vw; ch=coverH; }
+    else { ch=availH; cw=Math.floor(ch*ratio); }             // contain
+  } else {
+    const coverW=Math.floor(availH*ratio);                   // llena alto → recorta ancho
+    if(coverW>0 && (coverW-vw)/coverW <= MAX_RECORTE){ ch=availH; cw=coverW; }
+    else { cw=vw; ch=Math.floor(cw/ratio); }                 // contain
+  }
+  const fillMode=(ch>availH);   // ¿hemos recortado en vertical?
   if(inGameplay&&!telegramDockHidden&&!docksForcedHidden){
     const spareH=Math.max(0,vh-barH-dockH-ch);
     if(spareH>2){
@@ -1755,7 +1765,10 @@ function resizeCanvas(){
   }
   cv.style.width=cw+'px';
   cv.style.height=ch+'px';
-  cv.style.marginLeft=Math.max(0,Math.floor((vw-cw)/2))+'px';
+  // Sin Math.max(0,…): cuando el Xpacio es más ancho que el hueco, el margen ha de ser
+  // NEGATIVO para repartir el recorte a los dos lados. Con el tope a 0 se anclaba a la
+  // izquierda y se perdía TODO por la derecha.
+  cv.style.marginLeft=Math.floor((vw-cw)/2)+'px';
   // Cover: si el gemelo es más alto que el hueco, centrar el recorte vertical.
   // Cover: recortar sobre todo por ABAJO (queda bajo el dock) y conservar el escenario de arriba.
   cv.style.marginTop=(fillMode&&ch>availH)?Math.round(-(ch-availH)*0.28)+'px':'';
