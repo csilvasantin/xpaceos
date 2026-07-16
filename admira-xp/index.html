@@ -670,6 +670,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<!-- Orbitron: tipografía tecnológica de la cuadrática (misma que admira.live/status) -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 <!-- ── Modal Guardar como Plantilla (sustituye prompt() nativo) ── -->
@@ -811,8 +813,10 @@
   .quad-right a,.quad-right button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
   /* Badge de tienda "Xtanco inicial · xtore-inicial": mensaje flotante fuera de la barra → oculto */
   #xtancoIdBadge{display:none !important}
+  /* Tipografía tecnológica de la cuadrática: Orbitron (como admira.live/status) */
+  .quad-menu, .quad-menu button, .quad-menu a, .quad-menu .qm-title, .quad-menu .qm-head, .quad-menu .qm-acc-head, .quad-bottom, .quad-bottom button, .quad-bottom a{font-family:'Orbitron','Press Start 2P',monospace}
   /* título del panel (Equipo Silicio / Equipo Carbono) */
-  .quad-menu .qm-title{flex:0 0 auto;font:800 14px/1.2 monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--xp-cyan);text-align:center;padding:2px 6px 12px;margin-bottom:8px;border-bottom:1px solid rgba(120,243,255,.30);text-shadow:0 0 12px rgba(120,243,255,.35)}
+  .quad-menu .qm-title{flex:0 0 auto;font:800 14px/1.2 'Orbitron',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--xp-cyan);text-align:center;padding:2px 6px 12px;margin-bottom:8px;border-bottom:1px solid rgba(120,243,255,.30);text-shadow:0 0 12px rgba(120,243,255,.35)}
   /* cabecera de sección dentro de un panel quad */
   .quad-menu .qm-head{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--xp-gold);padding:2px 6px 8px;border-bottom:1px solid rgba(120,243,255,.14);margin-bottom:4px}
   .quad-right #advCondToggle.is-on{border-color:var(--xp-mint) !important;color:var(--xp-mint) !important;background:rgba(125,255,181,.10)}
@@ -836,7 +840,10 @@
   <div class="qm-title">Equipo Silicio</div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>📢 Megafonía</button>
-    <div class="qm-acc-body"><span class="qm-hint">· por definir ·</span></div>
+    <div class="qm-acc-body">
+      <button type="button" data-xp-do="mega" title="Redactar y lanzar un aviso por voz">📢 Lanzar aviso</button>
+      <button type="button" data-xp-do="megaStop" title="Detener el aviso en curso">⏹ Detener</button>
+    </div>
   </div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>♪ Hilo Musical</button>
@@ -849,7 +856,9 @@
   </div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>🖼 Imagen</button>
-    <div class="qm-acc-body"><span class="qm-hint">· por definir ·</span></div>
+    <div class="qm-acc-body">
+      <button type="button" data-xp-do="imgGen" title="Generar una imagen con PixerIA y mostrarla en pantalla">✨ Generar imagen (PixerIA)</button>
+    </div>
   </div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>📺 Video</button>
@@ -862,11 +871,19 @@
   </div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>🤖 Avatar</button>
-    <div class="qm-acc-body"><span class="qm-hint">· por definir ·</span></div>
+    <div class="qm-acc-body">
+      <button type="button" data-xp-do="avatarShow" title="Mostrar el panel del presentador (MetaHuman)">👤 Mostrar presentador</button>
+      <button type="button" data-xp-do="avatarHide" title="Ocultar el panel del presentador">✕ Ocultar</button>
+    </div>
   </div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>🔢 Contador</button>
-    <div class="qm-acc-body"><span class="qm-hint">· por definir ·</span></div>
+    <div class="qm-acc-body">
+      <button type="button" data-xp-do="aforoReal" title="Aforo objetivo por cámara Hikvision (ambiente)">📷 Aforo real (cámara)</button>
+      <button type="button" data-xp-do="aforoExact" title="Espejo 1:1 estricto: la tienda = exactamente la cámara">🎯 Aforo exacto (1:1)</button>
+      <button type="button" data-xp-do="aforoFake" title="Clientes en modo aleatorio del juego">🎲 Aforo del juego</button>
+      <button type="button" data-xp-do="aforoStatus" title="Ver el estado actual del aforo">ℹ Estado</button>
+    </div>
   </div>
   <span class="qm-version" id="quadOptVersion" role="button" tabindex="0" title="Ayuda · funcionalidades"></span>
 </nav>
@@ -10147,6 +10164,16 @@ function doAction(id){
   if(id==='setDurUp'){shopTimeSettings.dayDurationSec=Math.min(600,shopTimeSettings.dayDurationSec+30);return;}
   if(id==='musicToggle'){toggleMusic();return;}
   if(id==='sfxToggle'){G.sfxVolume=G.sfxVolume>0?0:0.7;return;}
+  // ── Cuadrática · Opciones (Equipo Silicio): acciones de los acordeones ──
+  if(id==='mega'){var _t=prompt(lang==='es'?'Texto del aviso de megafonía:':'Announcement text:');if(_t&&_t.trim())speakAnnouncementBrowser(_t.trim());return;}
+  if(id==='megaStop'){try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}return;}
+  if(id==='imgGen'){var _d=prompt(lang==='es'?'Describe la imagen a generar (PixerIA):':'Describe the image to generate (PixerIA):');if(_d&&_d.trim())admiraCreaImagen(_d.trim());return;}
+  if(id==='avatarShow'){openMetahumanPanel();return;}
+  if(id==='avatarHide'){closeMetahumanPanel();return;}
+  if(id==='aforoReal'){try{xtAPI.command('/aforo real');}catch(e){}return;}
+  if(id==='aforoExact'){try{xtAPI.command('/aforo exacto');}catch(e){}return;}
+  if(id==='aforoFake'){try{xtAPI.command('/aforo fake');}catch(e){}return;}
+  if(id==='aforoStatus'){try{xtAPI.command('/aforo');}catch(e){}return;}
   if(id.startsWith('visitor_')){
     visitorType=parseInt(id.slice(8));
     const labels=lang==='es'?['VIP','Frecuente','Casual','Desconocido']:['VIP','Regular','Casual','Unknown'];
