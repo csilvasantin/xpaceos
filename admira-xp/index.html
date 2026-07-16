@@ -1724,13 +1724,13 @@ function resizeCanvas(){
   const leftHidden=document.body.classList.contains('xp-left-hidden');
   const rightHidden=document.body.classList.contains('xp-right-hidden');
   const docksForcedHidden=leftHidden&&rightHidden;
-  let dockH=(inGameplay&&!telegramDockHidden&&!docksForcedHidden)?gameplayDockHeight:0;
+  // El Xpacio SIEMPRE a tamaño completo (cover). Los docks/paneles (Opciones/Avanzado/Experto)
+  // flotan POR ENCIMA (position:fixed, z-index alto) y nunca encogen el gemelo → no reservamos
+  // altura de dock y no usamos contain. La zona principal es siempre lo más importante y grande.
+  let dockH=0;
   const availH=vh-barH-dockH;
   const ratio=W/H;
-  // Sin menús ni docks abiertos → COVER: el gemelo llena la pantalla, sin barras negras.
-  // Con algún menú/dock → CONTAIN: cabe entero y las columnas rellenan el letterbox.
-  const anyColOpen=document.body.classList.contains('quad-left-open')||document.body.classList.contains('quad-right-open');
-  const fillMode=docksForcedHidden&&!anyColOpen;
+  const fillMode=true;   // cover siempre
   let cw,ch;
   if(fillMode){
     if(vw/availH > ratio){ cw=vw; ch=Math.floor(cw/ratio); }   // llena ancho, recorta alto
