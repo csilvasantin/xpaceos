@@ -834,7 +834,9 @@
   .quad-bottom:not(.is-collapsed){transform:translate(-50%,0);opacity:1}
   .quad-bottom a,.quad-bottom button{padding:8px 12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
   /* ⌘ Experto: mostrar/ocultar el menú inferior (docks) */
-  body.xp-docks-hidden #telegramDock,body.xp-docks-hidden #characterDock,body.xp-docks-hidden #dockSplitHandle,body.xp-docks-hidden #eraVerticalDock{display:none !important}
+  /* Experto ⌘ = dock IZQUIERDO (Telegram + tiles + Condicional).  Avanzado ▤ = dock DERECHO (Equipo/Clientes). */
+  body.xp-left-hidden #telegramDock,body.xp-left-hidden #dockSplitHandle,body.xp-left-hidden #eraVerticalDock{display:none !important}
+  body.xp-right-hidden #characterDock{display:none !important}
 </style>
 <nav class="quad-menu quad-left is-collapsed" aria-label="Equipo Silicio">
   <div class="qm-title">Equipo Silicio</div>
@@ -889,9 +891,8 @@
 </nav>
 <nav class="quad-menu quad-right is-collapsed" aria-label="Equipo Carbono">
   <div class="qm-title">Equipo Carbono</div>
-  <span class="qm-head">Condicional</span>
-  <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
-  <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional">✎ Panel de control</a>
+  <span class="qm-head">Equipo · Clientes</span>
+  <span class="qm-hint" style="display:block;padding:8px 6px;line-height:1.5">El panel de <b>EQUIPO / CLIENTES</b> y sus actores (Ladrón, Guardia Civil, Opinador, Unitree, Sponsor…) aparece abajo al abrir Avanzado ▾</span>
 </nav>
 <script>
 (function(){
@@ -929,9 +930,12 @@
       document.querySelectorAll('.quad-menu').forEach(function(p){ if(p!==panel) p.classList.add('is-collapsed'); });
       toggles.forEach(function(b){ if(b!==btn){ b.classList.remove('is-active'); b.setAttribute('aria-expanded','false'); document.body.classList.remove('quad-'+b.dataset.quadToggle+'-open'); } });
       panel.classList.toggle('is-collapsed', !willOpen);
+      // Avanzado ▤ (columna derecha) revela también el dock EQUIPO/CLIENTES (characterDock).
+      if(name==='right'){ document.body.classList.toggle('xp-right-hidden', !willOpen); }
       sync();
       sizeSideColumns();
       updateCondLabel();
+      if(typeof resizeCanvas==='function'){ try{ resizeCanvas(); }catch(e){} } else { window.dispatchEvent(new Event('resize')); }
     });
     sync();
   });
@@ -995,15 +999,16 @@
   // ⌘ Experto → muestra/oculta el menú inferior (docks Telegram + Equipo/Clientes + selector)
   var exp = document.getElementById('pfExpert');
   if(exp) exp.addEventListener('click', function(){
-    var hidden = document.body.classList.toggle('xp-docks-hidden');
-    exp.classList.toggle('is-active', !hidden);            // activo = menú inferior VISIBLE
+    var hidden = document.body.classList.toggle('xp-left-hidden');   // Experto = dock IZQUIERDO (Telegram+tiles+Condicional)
+    exp.classList.toggle('is-active', !hidden);            // activo = dock izquierdo VISIBLE
     exp.setAttribute('aria-pressed', !hidden ? 'true' : 'false');
     // el Xpacio debe crecer/encoger según haya menú: recalcular el canvas
     if(typeof resizeCanvas === 'function') { try{ resizeCanvas(); }catch(e){} }
     else { window.dispatchEvent(new Event('resize')); }
   });
-  // Por defecto el menú inferior (docks) está OCULTO → el Xpacio ocupa el máximo; ⌘ Experto lo revela.
-  document.body.classList.add('xp-docks-hidden');
+  // Por defecto ambos docks OCULTOS → el Xpacio ocupa el máximo; ⌘ Experto revela el izquierdo, ▤ Avanzado el derecho.
+  document.body.classList.add('xp-left-hidden');
+  document.body.classList.add('xp-right-hidden');
 })();
 </script>
 <audio id="bgMusic" loop preload="auto"><source src="music/titi.mp3" type="audio/mpeg"></audio>
@@ -1130,6 +1135,8 @@
       <button type="button" class="primary" id="telegramSendBtn">Send</button>
       <button type="button" id="telegramHelpBtn">/help</button>
       <button type="button" id="telegramHideBtn">Hide</button>
+      <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
+      <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional" style="align-self:center;font-size:11px;opacity:.85">✎ Panel</a>
     </div>
     <div id="telegramLastResponse" class="tg-last-response" hidden aria-live="polite"></div>
     <div class="tg-quick-actions" id="telegramQuickActions" aria-label="Acciones rápidas de escena"></div>
