@@ -52,6 +52,8 @@
 .controls{right:18px;bottom:18px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .controls button{color:var(--ink);background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:11px;cursor:pointer}
 .controls button:hover,.controls button.on{border-color:var(--ice);color:var(--ice);background:rgba(143,214,255,.09)}
+.controls .fr{text-decoration:none;color:var(--green);background:var(--panel);backdrop-filter:blur(12px);border:1px solid rgba(77,255,158,.45);border-radius:9px;padding:8px 11px;font-size:11px}
+.controls .fr:hover{background:rgba(77,255,158,.1)}
 .detail{top:0;right:0;width:340px;height:100%;z-index:8;padding:18px;background:rgba(4,11,21,.97);backdrop-filter:blur(16px);border-left:1px solid var(--line);transform:translateX(102%);transition:transform .24s;display:flex;flex-direction:column;gap:13px;overflow:auto}
 .detail.open{transform:none}
 .close{align-self:flex-end;border:0;background:none;color:var(--mut);cursor:pointer;font-size:18px}
@@ -108,6 +110,7 @@
   <button id="rush">◉ Hora punta</button>
   <button id="labels" class="on">⌖ Etiquetas</button>
   <button id="reset">⌂ Isométrica</button>
+  <a id="fotorreal" class="fr" href="#" target="_blank" rel="noopener" hidden>🛰️ Gemelo fotorreal ↗</a>
 </div>
 
 <aside class="hud detail" id="detail">
@@ -489,6 +492,12 @@ function aplicarSucursal(loc){
     ?`<span class="chip cat">CATÁLOGO · ${conCatalogo} superficies</span><span class="chip sim">AFORO SIMULADO</span><span class="chip">14 × 9 m</span>`
     :`<span class="chip sim">SIN CATÁLOGO</span><span class="chip">14 × 9 m</span>`;
   document.getElementById("mSrc").textContent=loc?"CATÁLOGO+SIM":"SIMULADO";
+  /* Sucursales con gemelo FOTORREAL (globo 3D de Google + Street View con la pantalla
+     integrada en su fachada real). Solo las que están calibradas: el enlace no aparece
+     donde no hay nada medido. */
+  const FOTORREAL={"caixabank-0012-carrer-de-pau-claris":"https://admira.tv/adcelerate/demo/best-caixa/?loc=caixabank-0012-carrer-de-pau-claris"};
+  const fr=document.getElementById("fotorreal");
+  if(fr){ const u=loc&&FOTORREAL[loc.id]; fr.hidden=!u; if(u)fr.href=u; }
   /* El inventario dice de dónde sale cada soporte, no solo qué es. */
   ITEMS.forEach(it=>{
     const r=document.querySelector(`.irow[data-id="${it.id}"]`);
