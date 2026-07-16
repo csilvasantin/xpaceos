@@ -1728,6 +1728,9 @@ function resizeCanvas(){
   // flotan POR ENCIMA (position:fixed, z-index alto) y nunca encogen el gemelo → no reservamos
   // altura de dock y no usamos contain. La zona principal es siempre lo más importante y grande.
   let dockH=0;
+  // Altura real de los docks (overlay): independiente de dockH (que es 0 para que el canvas
+  // no reserve espacio). Así el Xpacio queda full-size y los docks conservan su altura visible.
+  const dockRenderH=(inGameplay&&!telegramDockHidden&&!docksForcedHidden)?gameplayDockHeight:0;
   const availH=vh-barH-dockH;
   const ratio=W/H;
   const fillMode=true;   // cover siempre
@@ -1775,7 +1778,7 @@ function resizeCanvas(){
     if(dockShown && composeStart) dock.style.display='';
     if(!composeStart) dock.style.display='';
     dock.style.left=dockLeft+'px';
-    if(inGameplay&&!telegramDockHidden) dock.style.height=dockH+'px';
+    if(inGameplay&&!telegramDockHidden) dock.style.height=dockRenderH+'px';
     dock.style.top='auto';
     dock.style.bottom='0px';
   }
@@ -1787,7 +1790,7 @@ function resizeCanvas(){
       } else if(onlyChar){
         characterDock.style.width=dockWidth+'px';
         characterDock.style.left=dockLeft+'px';
-        characterDock.style.height=dockH+'px';
+        characterDock.style.height=dockRenderH+'px';
         characterDock.style.top='auto';
         characterDock.style.bottom='0px';
         characterDock.style.display='';
@@ -1796,7 +1799,7 @@ function resizeCanvas(){
         const rightLeft=dockLeft+leftWidth+handleW;
         characterDock.style.width=Math.max(0,dockWidth-leftWidth-handleW)+'px';
         characterDock.style.left=rightLeft+'px';
-        characterDock.style.height=dockH+'px';
+        characterDock.style.height=dockRenderH+'px';
         characterDock.style.top='auto';
         characterDock.style.bottom='0px';
         characterDock.style.display='';
@@ -1807,7 +1810,7 @@ function resizeCanvas(){
       if(inGameplay&&telegramDockHidden) characterDock.style.height=gameplayDockHeight+'px';
       else characterDock.style.removeProperty('height');
       characterDock.style.removeProperty('top');
-      characterDock.style.bottom=(inGameplay&&!telegramDockHidden?dockH:0)+'px';
+      characterDock.style.bottom=(inGameplay&&!telegramDockHidden?dockRenderH:0)+'px';
       characterDock.style.display='';
     }
   }
@@ -1817,14 +1820,14 @@ function resizeCanvas(){
       const leftWidth=Math.max(0,Math.floor(dockWidth*splitR - handleW/2));
       splitHandle.style.left=(dockLeft+leftWidth)+'px';
       splitHandle.style.width=handleW+'px';
-      splitHandle.style.height=dockH+'px';
+      splitHandle.style.height=dockRenderH+'px';
       splitHandle.style.bottom='0px';
       splitHandle.classList.add('show');
     } else if(composeStart){
       // En modo solo-uno, dejar el handle pegado al borde para poder arrastrarlo de vuelta.
       splitHandle.style.left=(onlyChar?(dockLeft+2):(dockLeft+dockWidth-handleW-2))+'px';
       splitHandle.style.width=handleW+'px';
-      splitHandle.style.height=dockH+'px';
+      splitHandle.style.height=dockRenderH+'px';
       splitHandle.style.bottom='0px';
       splitHandle.classList.add('show');
     } else {
