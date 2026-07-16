@@ -196,7 +196,7 @@
     .char-avatar{position:relative;width:12px;height:16px;flex:0 0 12px}
     .char-avatar i{position:absolute;display:block}
     .tg-pane{min-width:0;flex:1;display:flex;flex-direction:column;border:1px solid rgba(120,243,255,.32);border-radius:10px;background:rgba(6,19,29,.96);overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
-    .tg-head{height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;background:linear-gradient(90deg,#0c2a35,#0f2230);color:#8defff;font-size:9px;font-weight:bold;text-transform:uppercase;letter-spacing:.08em}
+    .tg-head{height:18px;flex:0 0 18px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;background:linear-gradient(90deg,#0c2a35,#0f2230);color:#8defff;font-size:9px;font-weight:bold;text-transform:uppercase;letter-spacing:.08em}
     .tg-status{color:#9ec7d0;font-size:8px;font-weight:normal;text-transform:none}
     #telegramComposer{flex:1;width:100%;resize:none;border:none;outline:none;background:radial-gradient(circle at 10% 0,rgba(120,243,255,.07),transparent 36%),#02080d;color:#e6fbff;padding:10px;font-family:monospace;font-size:12px;line-height:1.35}
     #telegramComposer::placeholder{color:#57747c}
@@ -280,7 +280,7 @@
 .tg-cli-row .tg-actions{flex:0 0 auto;border-top:0;background:transparent;min-height:0;padding:0;align-items:center;flex-wrap:nowrap}
 .tg-pane.send.typing .tg-cli-row .tg-actions{display:none}
 .tg-pane.send.typing #telegramComposer{max-height:120px;height:auto}
-.tg-quick-actions{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;padding:5px;background:#05131c;border-top:1px solid #14323c}
+.tg-quick-actions{margin-top:auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;padding:4px 5px 2px;background:#05131c;border-top:1px solid #14323c}
     .tg-quick-btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:36px;padding:5px 7px;border:1px solid #24505d;border-radius:8px;background:linear-gradient(180deg,#0c2630,#071720);color:#dff8ff;font-family:monospace;font-size:9px;line-height:1.1;cursor:pointer;text-align:left}
     .tg-quick-btn strong{font-size:9px}
     .tg-quick-btn span{font-size:7px;color:#94c2cf}
@@ -1468,7 +1468,7 @@ let gameplayDockHeight=(()=>{
     const saved=Number(localStorage.getItem(DOCK_HEIGHT_KEY)||0);
     if(saved>0) return saved;
   }catch(e){}
-  return 124;
+  return 110;
 })();
 let clientColumnWidths=(()=>{
   try{
@@ -1711,7 +1711,7 @@ function syncGameplayChrome(){
 }
 
 function clampGameplayDockHeight(value,viewportH=window.innerHeight,barH=0){
-  const minH=window.innerWidth<=700?150:118;
+  const minH=window.innerWidth<=700?138:104;
   const maxH=Math.min(560,Math.max(minH,viewportH-barH-260));
   return Math.max(minH,Math.min(maxH,Math.round(value||minH)));
 }
@@ -1757,7 +1757,8 @@ function resizeCanvas(){
   cv.style.height=ch+'px';
   cv.style.marginLeft=Math.max(0,Math.floor((vw-cw)/2))+'px';
   // Cover: si el gemelo es más alto que el hueco, centrar el recorte vertical.
-  cv.style.marginTop=(fillMode&&ch>availH)?Math.round(-(ch-availH)/2)+'px':'';
+  // Cover: recortar sobre todo por ABAJO (queda bajo el dock) y conservar el escenario de arriba.
+  cv.style.marginTop=(fillMode&&ch>availH)?Math.round(-(ch-availH)*0.28)+'px':'';
   const canvasRect=cv.getBoundingClientRect();
   const dockLeft=inGameplay?0:Math.max(0,Math.round(canvasRect.left));
   const dockWidth=inGameplay?vw:Math.max(0,Math.round(canvasRect.width));
