@@ -1451,7 +1451,7 @@ let dockSplitRatio=parseFloat(localStorage.getItem('xtanco_dock_split')||'0.5');
 if(!Number.isFinite(dockSplitRatio)) dockSplitRatio=0.5;
 let characterDockFocus='clients';
 let telegramComposeStart=true;
-const DOCK_HEIGHT_KEY='admira_xp_dock_height';
+const DOCK_HEIGHT_KEY='admira_xp_dock_height_v2';
 const CLIENT_COLS_KEY='admira_xp_client_cols';
 const CLIENT_COL_DEFAULTS=[44,72,150,78,56,50,80];
 const TEAM_COL_DEFAULTS=[58,110,160,78,68];
@@ -1461,7 +1461,7 @@ let gameplayDockHeight=(()=>{
     const saved=Number(localStorage.getItem(DOCK_HEIGHT_KEY)||0);
     if(saved>0) return saved;
   }catch(e){}
-  return 228;
+  return 150;
 })();
 let clientColumnWidths=(()=>{
   try{
@@ -1704,7 +1704,7 @@ function syncGameplayChrome(){
 }
 
 function clampGameplayDockHeight(value,viewportH=window.innerHeight,barH=0){
-  const minH=window.innerWidth<=700?208:168;
+  const minH=window.innerWidth<=700?168:146;
   const maxH=Math.min(560,Math.max(minH,viewportH-barH-260));
   return Math.max(minH,Math.min(maxH,Math.round(value||minH)));
 }
