@@ -275,7 +275,12 @@
     .tg-actions{min-height:32px;display:flex;flex-wrap:wrap;gap:6px;padding:5px 6px;background:#071720;border-top:1px solid rgba(120,243,255,.16)}
     .tg-actions button{border:1px solid #2a7585;border-radius:999px;background:#0c2a35;color:#bff7ff;font-family:monospace;font-size:10px;font-weight:bold;padding:2px 10px;cursor:pointer}
     .tg-actions button.primary{background:linear-gradient(180deg,#1e7d8d,#11515f);color:#ffffff;border-color:#75ecff}
-    .tg-quick-actions{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;padding:5px;background:#05131c;border-top:1px solid #14323c}
+    .tg-cli-row{display:flex;align-items:flex-end;gap:8px;padding:5px 6px}
+.tg-cli-row #telegramComposer{flex:1;width:auto;height:28px;min-height:28px;max-height:28px;padding:5px 9px;line-height:1.35;transition:max-height .15s ease}
+.tg-cli-row .tg-actions{flex:0 0 auto;border-top:0;background:transparent;min-height:0;padding:0;align-items:center;flex-wrap:nowrap}
+.tg-pane.send.typing .tg-cli-row .tg-actions{display:none}
+.tg-pane.send.typing #telegramComposer{max-height:120px;height:auto}
+.tg-quick-actions{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;padding:5px;background:#05131c;border-top:1px solid #14323c}
     .tg-quick-btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:36px;padding:5px 7px;border:1px solid #24505d;border-radius:8px;background:linear-gradient(180deg,#0c2630,#071720);color:#dff8ff;font-family:monospace;font-size:9px;line-height:1.1;cursor:pointer;text-align:left}
     .tg-quick-btn strong{font-size:9px}
     .tg-quick-btn span{font-size:7px;color:#94c2cf}
@@ -1130,13 +1135,15 @@
     <div class="tg-head"><span>Store control from Telegram / WhatsApp</span><a class="tg-site-link" id="dockSiteLink" href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener" title="Abrir OmniPublicity — modulo programatico del Xpace OS">↗ SITE <span class="tg-site-ver" id="dockSiteVer">v—</span></a><span class="tg-status" id="telegramSendStatus" style="display:none">AdmiraXPBot</span></div>
     <div id="telegramHelpPanel" aria-label="Comandos disponibles"></div>
     <div id="telegramSignagePanel" aria-label="Playlist Digital Signage"></div>
-    <textarea id="telegramComposer" placeholder="Write to @AdmiraXPBot... Enter sends, Shift+Enter newline"></textarea>
-    <div class="tg-actions">
-      <button type="button" class="primary" id="telegramSendBtn">Send</button>
-      <button type="button" id="telegramHelpBtn">/help</button>
-      <button type="button" id="telegramHideBtn">Hide</button>
-      <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
-      <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional" style="align-self:center;font-size:11px;opacity:.85">✎ Panel</a>
+    <div class="tg-cli-row">
+      <textarea id="telegramComposer" placeholder="Write to @AdmiraXPBot... Enter sends, Shift+Enter newline"></textarea>
+      <div class="tg-actions">
+        <button type="button" class="primary" id="telegramSendBtn">Send</button>
+        <button type="button" id="telegramHelpBtn">/help</button>
+        <button type="button" id="telegramHideBtn">Hide</button>
+        <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
+        <a href="xpl/" target="_blank" rel="noopener" title="Panel de control del Condicional" style="align-self:center;font-size:11px;opacity:.85">✎ Panel</a>
+      </div>
     </div>
     <div id="telegramLastResponse" class="tg-last-response" hidden aria-live="polite"></div>
     <div class="tg-quick-actions" id="telegramQuickActions" aria-label="Acciones rápidas de escena"></div>
@@ -1461,7 +1468,7 @@ let gameplayDockHeight=(()=>{
     const saved=Number(localStorage.getItem(DOCK_HEIGHT_KEY)||0);
     if(saved>0) return saved;
   }catch(e){}
-  return 150;
+  return 124;
 })();
 let clientColumnWidths=(()=>{
   try{
@@ -1704,7 +1711,7 @@ function syncGameplayChrome(){
 }
 
 function clampGameplayDockHeight(value,viewportH=window.innerHeight,barH=0){
-  const minH=window.innerWidth<=700?168:146;
+  const minH=window.innerWidth<=700?150:118;
   const maxH=Math.min(560,Math.max(minH,viewportH-barH-260));
   return Math.max(minH,Math.min(maxH,Math.round(value||minH)));
 }
@@ -31249,12 +31256,24 @@ window.xtAPI = (function(){
   setTelegramFocusMode(false,false);
   renderQuickActionButtons();
   if(composer){
+    var _cliPane=composer.closest('.tg-pane.send');
+    // CLI compacto: en reposo 1 línea con los botones a la derecha; al escribir, los botones
+    // se ocultan (.typing) y el CLI crece — se gana espacio vertical.
+    var _cliSync=function(){
+      var typing=composer.value.length>0;
+      if(_cliPane) _cliPane.classList.toggle('typing', typing);
+      if(typing){ composer.style.height='auto'; composer.style.height=Math.min(120,composer.scrollHeight)+'px'; }
+      else { composer.style.height=''; }
+    };
     composer.addEventListener('keydown',e=>{
       if(e.key==='Enter'&&!e.shiftKey){
         e.preventDefault();
         sendComposerText(composer.value);
+        setTimeout(_cliSync,0);
       }
     });
+    composer.addEventListener('input',_cliSync);
+    composer.addEventListener('blur',function(){ if(!composer.value.length&&_cliPane) _cliPane.classList.remove('typing'); });
   }
 
   setInterval(pollTelegramCommands,2500);
