@@ -495,7 +495,7 @@ function aplicarSucursal(loc){
   /* Sucursales con gemelo FOTORREAL (globo 3D de Google + Street View con la pantalla
      integrada en su fachada real). Solo las que están calibradas: el enlace no aparece
      donde no hay nada medido. */
-  const FOTORREAL={"caixabank-0012-carrer-de-pau-claris":"https://admira.tv/adcelerate/demo/best-caixa/?loc=caixabank-0012-carrer-de-pau-claris"};
+  const FOTORREAL={"caixabank-0019-avinguda-diagonal-lateral-muntanya":"https://admira.tv/adcelerate/demo/best-caixa/?loc=caixabank-0019-avinguda-diagonal-lateral-muntanya","caixabank-0012-carrer-de-pau-claris":"https://admira.tv/adcelerate/demo/best-caixa/?loc=caixabank-0012-carrer-de-pau-claris"};
   const fr=document.getElementById("fotorreal");
   if(fr){ const u=loc&&FOTORREAL[loc.id]; fr.hidden=!u; if(u)fr.href=u; }
   /* El inventario dice de dónde sale cada soporte, no solo qué es. */
