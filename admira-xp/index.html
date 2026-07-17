@@ -21839,7 +21839,7 @@ function drawCustomFurni(e){
     tx(rec&&rec.error?'✕':'…',p.x,p.y-h/2,'#9fe7ff',8,'center');
     cx.restore();
   }
-  if(e.label){ tx(e.label,p.x,topY-4,'#bfe9f2',6,'center'); }
+  if(e.label){ tx(e.label,p.x,topY-4,'#bfe9f2',8,'center'); } /* 🍞 claridad canvas #1: nameplate mueble 6→8px (revertir: 8→6) */
 }
 // Coloca un mueble 'custom' (imagen importada) en el Xpacio. Reusa la
 // búsqueda de hueco libre de addCreatorFurniture.
