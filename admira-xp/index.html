@@ -19985,25 +19985,78 @@ window.setAvatar3dAudio=setAvatar3dAudio;
 window.openMetahumanPanel=openMetahumanPanel;
 window.closeMetahumanPanel=closeMetahumanPanel;
 
+/* 🍞 estética canvas #2 (kiosko de turno · rediseño Fable) — revertir con tag canvas-claridad-1-nameplates.
+   Claves: tabW=44,tabH=34 (antes 22×18); poleH=46 (antes 34); TURNO 8px, número 15px. */
 function drawIsoTurnKiosk(col,row){
   const kp=toIso(col,row);
-  drawIsoShadow(kp.x,kp.y+5,12,5);
+  drawIsoShadow(kp.x,kp.y+5,14,6);
+
+  // ── Base: peana metálica + plinto de acento (misma huella 0.64×0.64) ──
   drawIsoBlock(col+0.18,row+0.18,0.64,0.64,7,'#6e7076','#494c52','#5b5f66',null);
+  drawIsoBlock(col+0.30,row+0.30,0.40,0.40,3,'#3b4450','#23282e','#2e343b',null);
+
   const baseCenter=toIso(col+0.5,row+0.5);
-  const poleCX=baseCenter.x, poleCY=baseCenter.y-7;
-  const poleH=34;
-  r(poleCX-2,poleCY-poleH,4,poleH,'#5d6670');
-  r(poleCX-1,poleCY-poleH,1,poleH,'#8fa1b2');
-  const tabW=22, tabH=18;
+  const poleCX=baseCenter.x, poleCY=baseCenter.y-10;   // -10: peana 7 + plinto 3
+
+  // ── Poste (más alto para acomodar la tablet grande) ──
+  const poleH=46;                                      // antes 34
+  r(poleCX-2,poleCY-poleH,5,poleH,'#5d6670');
+  r(poleCX-2,poleCY-poleH,1,poleH,'#8fa1b2');          // filo iluminado
+  r(poleCX+2,poleCY-poleH,1,poleH,'#494c52');          // filo en sombra
+  r(poleCX-3,poleCY-5,7,2,'#d9a83f');                  // collarín dorado en la base
+  r(poleCX-3,poleCY-5,7,1,'#f3dc9e');
+
+  // ── Tablet: tabW=44, tabH=34 (antes 22×18) ──
+  const tabW=44, tabH=34;
   const tabX=poleCX-tabW/2, tabY=poleCY-poleH-tabH+2;
-  r(tabX-1,tabY-1,tabW+2,tabH+2,'#191d22');
+
+  // Marco doble: caja oscura + filo claro + píxel de luz en esquinas
+  r(tabX-2,tabY-2,tabW+4,tabH+4,'#191d22');
+  rx(tabX-1,tabY-1,tabW+2,tabH+2,'#8fa1b2',1);
+  r(tabX-2,tabY-2,1,1,'#e9f3ff');
+  r(tabX+tabW+1,tabY-2,1,1,'#e9f3ff');
+  r(tabX-2,tabY+tabH+1,1,1,'#e9f3ff');
+  r(tabX+tabW+1,tabY+tabH+1,1,1,'#e9f3ff');
+
+  // Bisel claro + pantalla LED oscura
   r(tabX,tabY,tabW,tabH,'#e9f3ff');
-  r(tabX+2,tabY+2,tabW-4,8,'#0c2433');
-  tx('TURNO',tabX+tabW/2,tabY+8,'#8defff',6,'center');
-  tx(String(currentTurnNumber()).padStart(3,'0'),tabX+tabW/2,tabY+16,'#d9a83f',8,'center');
-  BTNS['turnKioskCall']={x:tabX-3,y:tabY-3,w:tabW+6,h:tabH+8};
-  r(tabX+5,tabY+tabH+1,12,3,'#d7b45b');
-  tx('ticket',tabX+tabW/2,tabY+tabH+11,'#f3dc9e',5,'center');
+  r(tabX,tabY+tabH-1,tabW,1,'#b9c6d4');                // sombra inferior del bisel
+  const sx=tabX+3, sy=tabY+3, sw=tabW-6, sh=tabH-11;   // pantalla 38×23
+  r(sx,sy,sw,sh,'#0c2433');
+  r(sx,sy,sw,1,'#123a4d');                             // brillo superior del cristal
+
+  // Rótulo "TURNO" en cian (8px ≈ 24px de ancho, holgado en 38)
+  tx('TURNO',poleCX+1,sy+10,'#062028',8,'center');     // sombra 1px
+  tx('TURNO',poleCX,sy+9,'#8defff',8,'center');
+  r(sx+2,sy+3,2,2,'#d9a83f');                          // pips "ahora atendiendo"
+  r(sx+sw-4,sy+3,2,2,'#d9a83f');
+  r(sx+2,sy+12,sw-4,1,'#123a4d');                      // separador
+
+  // Número grande en ámbar (15px ≈ 27px de ancho, cabe en 38)
+  const num=String(currentTurnNumber()).padStart(3,'0');
+  tx(num,poleCX+1,sy+sh+3,'#3a2c10',15,'center');      // sombra 1px
+  tx(num,poleCX,sy+sh+2,'#d9a83f',15,'center');
+
+  // Barrita dorada "ahora atendiendo" en el bisel inferior
+  r(tabX+4,tabY+tabH-4,tabW-8,2,'#d9a83f');
+  r(tabX+4,tabY+tabH-4,10,1,'#f3dc9e');
+
+  // ── Dispensador de tickets en el poste ──
+  const boxW=18, boxH=9, bx=poleCX-boxW/2, by=tabY+tabH+7;
+  r(bx-1,by-1,boxW+2,boxH+2,'#191d22');
+  r(bx,by,boxW,boxH,'#5d6670');
+  r(bx,by,boxW,1,'#8fa1b2');
+  r(bx+3,by+3,boxW-6,2,'#191d22');                     // ranura
+  r(bx+6,by+5,6,3,'#f3dc9e');                          // ticket asomando
+  r(bx+6,by+7,6,1,'#d9a83f');
+
+  // Etiqueta TICKET legible (7px) sobre placa oscura
+  r(poleCX-15,by+boxH+2,30,9,'#191d22');
+  rx(poleCX-15,by+boxH+2,30,9,'#0c2433',1);
+  tx('TICKET',poleCX,by+boxH+9,'#f3dc9e',7,'center');
+
+  // Hitbox: cubre tablet + dispensador
+  BTNS['turnKioskCall']={x:tabX-3,y:tabY-3,w:tabW+6,h:(by+boxH+1)-(tabY-3)};
 }
 
 // Helper: find tablet position from layout for vote floats
