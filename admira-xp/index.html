@@ -19329,6 +19329,42 @@ function _mhWallCapTick(){
   el.style.left=Math.round(b.x)+'px'; el.style.top=Math.round(b.y+8)+'px'; el.style.display='block';
 }
 setInterval(function(){ try{ _mhWallCapTick(); }catch(_){} }, 120);
+// ── Icono de vista de la pared: cara ↔ cuerpo entero ──────────────────────────
+// Controla el encuadre del MetaHuman de la pared (pawn de Unreal) enviando un
+// postMessage al iframe del player, que inyecta la tecla 1/2/3 (CamHead/Med/Full).
+// El botón aparece solo cuando Keanu está en la pared.
+window.__mhWallView = window.__mhWallView || 'head';
+function mhWallCam(view){
+  const el=document.getElementById('wallAvatar');
+  if(!el||!el.contentWindow) return;
+  try{ el.contentWindow.postMessage({mhcam:view}, '*'); }catch(e){}
+  window.__mhWallView=view;
+  const b=document.getElementById('mhWallCamBtn');
+  if(b){ b.textContent=(view==='full')?'👤':'🧍'; b.title=(view==='full')?'Ver cara':'Ver cuerpo entero'; }
+}
+window.mhWallCam=mhWallCam;
+function _mhWallCamBtnEl(){
+  let b=document.getElementById('mhWallCamBtn');
+  if(!b){
+    b=document.createElement('button'); b.id='mhWallCamBtn'; b.type='button';
+    b.style.cssText='position:fixed;z-index:34;right:18px;bottom:18px;width:46px;height:46px;'
+      +'border-radius:50%;border:1px solid rgba(120,243,255,.6);'
+      +'background:linear-gradient(180deg,rgba(8,16,28,.95),rgba(3,8,18,.97));color:#dff8ff;'
+      +'font-size:22px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.5);display:none;'
+      +'align-items:center;justify-content:center;padding:0;line-height:1';
+    b.textContent='🧍'; b.title='Ver cuerpo entero';
+    b.addEventListener('click',function(){ mhWallCam(window.__mhWallView==='full'?'head':'full'); });
+    document.body.appendChild(b);
+  }
+  return b;
+}
+function _mhWallCamTick(){
+  const b=_mhWallCamBtnEl();
+  let on=false; try{ on=(typeof metahumanWallOn==='function')&&metahumanWallOn(); }catch(_){}
+  b.style.display = on?'flex':'none';
+  if(!on && window.__mhWallView!=='head'){ window.__mhWallView='head'; b.textContent='🧍'; b.title='Ver cuerpo entero'; }
+}
+setInterval(function(){ try{ _mhWallCamTick(); }catch(_){} }, 300);
 function openMetahumanPanel(){
   const els=_mhEls(); if(!els.panel) return;
   els.panel.classList.add('show');
