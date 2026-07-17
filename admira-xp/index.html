@@ -21251,77 +21251,98 @@ function drawWallClock(){
 // ── TFT SCREEN 42" on left wall (Altadis digital signage) ────
 // ── ISOMETRIC FURNITURE ──────────────────────────────────────
 
+/* 🍞 estética canvas #5 (mostrador+caja+monitor · rediseño Fable) — revertir con tag canvas-claridad-3-loteria-shop.
+   Claves: caja 26×22 LCD 8px; monitor 34×26 etiqueta 8px/línea 7px/alerta 7-9px; placa rol 7px. Fix precedencia moneyTxt. */
 function drawIsoCounter(col,row){
-  // ── PACK: Counter + Cash Register + Monitor ──
-  // Counter base: 1 tile wide, 2 deep, 16px tall
+  // ── PACK: Counter + Cash Register + Monitor (rediseño legible) ──
+  // MEDIDAS CLAVE (para revertir):
+  //  · Caja registradora: 26px ancho × 22px alto (antes 16×10) — LCD dinero a 8px (antes 5px)
+  //  · Monitor: 34px ancho × 26px alto (antes 22×18) — etiqueta 8px, línea 7px, alerta 7-9px (antes 4-5px)
+  //  · Etiqueta de rol: 7px sobre placa dorada (antes 6px sin placa)
+  // Huella en suelo y anclas SIN CAMBIOS: block 1x2x16, p=(+0.5,+1), cr=(+0.3,+0.3), mo=(+0.7,+1.5)
+
+  // Counter base: 1 tile wide, 2 deep, 16px tall (igual que antes)
   drawIsoBlock(col,row,1,2,16,P.furnitureLight,P.furnitureDark,P.furniture,null);
   const p=toIso(col+0.5,row+1);
   const frontLeft=toIso(col,row);
   const frontRight=toIso(col+1,row);
+  // Franja dorada del frente (conservada tal cual)
   const stripeY=Math.round((frontLeft.y+frontRight.y)/2)-4;
   cx.strokeStyle='#d9b56a';cx.lineWidth=1.5;
   cx.beginPath();cx.moveTo(frontLeft.x+3,stripeY);cx.lineTo(frontRight.x-3,stripeY);cx.stroke();
   cx.strokeStyle='#5a3e22';cx.lineWidth=1;
   cx.beginPath();cx.moveTo(frontLeft.x+2,stripeY+3);cx.lineTo(frontRight.x-2,stripeY+3);cx.stroke();
+  // Listón de madera del canto superior (conservado)
   r(p.x-9,p.y-10,18,3,'#5e4528');
   r(p.x-8,p.y-11,16,1,'#d6b883');
 
-  // Products on counter surface
+  // Products on counter surface (conservados)
   for(let i=0;i<Math.min(3,G.prods.length);i++){
     const pp=toIso(col+0.2,row+0.3+i*0.6);
     r(pp.x-2,pp.y-20,5,6,G.prods[i].color);
     r(pp.x-2,pp.y-20,5,1,'#ffffff44');
   }
 
-  // ── Cash Register (on counter, left side) ──
+  // ── Cash Register 26×22 (base en cr.y-16 = superficie; crece hacia arriba) ──
   const cr=toIso(col+0.3,row+0.3);
-  // Register body
-  r(cr.x-8,cr.y-26,16,10,'#ddd8c8');
-  rx(cr.x-8,cr.y-26,16,10,'#aaa090',1);
-  r(cr.x-8,cr.y-26,16,2,'#eee8d8');
-  // LCD screen
-  r(cr.x-6,cr.y-24,10,5,'#1a3a1a');
-  const moneyTxt=G.money|0>9999?'€'+((G.money/1000|0))+'K':'€'+(G.money|0);
-  tx(moneyTxt,cr.x-5,cr.y-20,'#55cc55',5);
-  // Buttons
-  r(cr.x+5,cr.y-23,3,3,'#888');
-  r(cr.x+5,cr.y-19,3,3,'#cc4444');
-  // Cash drawer
-  r(cr.x-7,cr.y-16,14,2,'#c8c0a8');
-  r(cr.x-1,cr.y-15,3,1,'#888');
+  r(cr.x-13,cr.y-38,26,22,'#ddd8c8');           // cuerpo crema
+  r(cr.x-13,cr.y-38,26,2,'#eee8d8');            // bisel superior claro
+  r(cr.x+11,cr.y-38,2,22,'#c4bca8');            // sombra lateral derecha
+  rx(cr.x-13,cr.y-38,26,22,'#aaa090',1);        // contorno
+  // LCD verde 24×12 — dinero a 8px (5 chars ≈ 24px, cabe justo)
+  r(cr.x-12,cr.y-35,24,12,'#14351c');
+  r(cr.x-12,cr.y-35,24,1,'#1d4a2a');            // brillo superior del cristal
+  rx(cr.x-12,cr.y-35,24,12,'#0a1a0d',1);
+  const moneyTxt=(G.money|0)>9999?'€'+((G.money/1000|0))+'K':'€'+(G.money|0); // fix precedencia |0
+  tx(moneyTxt,cr.x,cr.y-29,'#55cc55',8,'center'); // ≥8px ✔
+  // Teclas 5×3 con bisel + tecla roja (conservadas, más definidas)
+  r(cr.x-12,cr.y-22,5,3,'#c8c0a8');r(cr.x-12,cr.y-22,5,1,'#eee8d8');
+  r(cr.x-6,cr.y-22,5,3,'#c8c0a8'); r(cr.x-6,cr.y-22,5,1,'#eee8d8');
+  r(cr.x,cr.y-22,5,3,'#c8c0a8');   r(cr.x,cr.y-22,5,1,'#eee8d8');
+  r(cr.x+7,cr.y-22,5,3,'#cc4444'); r(cr.x+7,cr.y-22,5,1,'#e06060');
+  // Cajón 24×3 con bisel claro + sombra + tirador (conservado)
+  r(cr.x-12,cr.y-19,24,3,'#cfc7ae');
+  r(cr.x-12,cr.y-19,24,1,'#eee8d8');
+  r(cr.x-12,cr.y-17,24,1,'#8a8070');
+  r(cr.x-2,cr.y-18,4,1,'#777777');
 
-  // ── PC Monitor (on counter, right side) ──
+  // ── PC Monitor 34×26 (pantalla interior 30×23; crece hacia arriba) ──
   const mo=toIso(col+0.7,row+1.5);
-  // Stand
-  r(mo.x-5,mo.y-14,10,3,'#555');
-  r(mo.x-1,mo.y-17,3,4,'#666');
-  // Monitor frame
-  r(mo.x-11,mo.y-34,22,18,'#2a2a2a');
-  rx(mo.x-11,mo.y-34,22,18,'#1a1a1a',1);
-  // Screen — changes color on alert
+  r(mo.x-7,mo.y-14,14,3,'#3a3f46');             // peana
+  r(mo.x-7,mo.y-14,14,1,'#5a626c');             // brillo peana
+  r(mo.x-2,mo.y-19,4,6,'#4a5058');              // mástil
+  r(mo.x-17,mo.y-44,34,26,'#191d22');           // marco exterior
+  r(mo.x-17,mo.y-44,34,1,'#78f3ff33');          // filo cian superior (paleta neón)
+  rx(mo.x-16,mo.y-43,32,24,'#3a4148',1);        // marco interior (doble marco)
+  rx(mo.x-17,mo.y-44,34,26,'#0c0e11',1);
   if(monitorAlert.active){
-    const flash=Math.sin(monitorAlert.timer*0.15)>0;
-    r(mo.x-9,mo.y-32,18,14,flash?monitorAlert.color:'#3a0808');
-    tx(monitorAlert.msg,mo.x,mo.y-24,'#ffffff',5,'center');
-    // Pulsing border
-    rx(mo.x-9,mo.y-32,18,14,monitorAlert.color,1.5);
+    const flash=Math.sin(monitorAlert.timer*0.15)>0;   // determinista via timer
+    r(mo.x-15,mo.y-42,30,23,flash?monitorAlert.color:'#3a0808');
+    tx('⚠',mo.x,mo.y-37,'#ffffff',7,'center');         // icono en su propio hueco
+    // Tamaño de alerta 7-9px según longitud (28px útiles; ≥7px ✔)
+    const asz=Math.max(7,Math.min(9,Math.floor(28/(0.6*Math.max(1,monitorAlert.msg.length)))));
+    tx(monitorAlert.msg,mo.x,mo.y-26,'#ffffff',asz,'center');
+    rx(mo.x-15,mo.y-42,30,23,monitorAlert.color,1.5);
   } else {
-    // Monitor shows visitor type info
     const vtCols=['#3a2a08','#0a2a18','#0a1a2a','#1a1410'];
     const vtIcons=['⭐','🔁','👤','❓'];
     const vtLabels=lang==='es'?['VIP','FIEL','CASUAL','NUEVO']:['VIP','LOYAL','CASUAL','NEW'];
     const vtLines=lang==='es'?['Habanos','Tabaco','Lotería','Hola!']:['Cigars','Tobacco','Lottery','Hello!'];
     const vtGlow=['#ffd700','#44cc88','#6699cc','#aa8866'];
-    r(mo.x-9,mo.y-32,18,14,vtCols[visitorType]);
-    tx(vtIcons[visitorType],mo.x-6,mo.y-24,vtGlow[visitorType],4);
-    tx(vtLabels[visitorType],mo.x+1,mo.y-24,vtGlow[visitorType],4);
-    tx(vtLines[visitorType],mo.x,mo.y-19,'#cccccc',4,'center');
+    r(mo.x-15,mo.y-42,30,23,vtCols[visitorType]);
+    r(mo.x-15,mo.y-42,30,1,'#ffffff11');               // scanline sutil
+    tx(vtIcons[visitorType],mo.x,mo.y-38,vtGlow[visitorType],6,'center'); // icono arriba, sin solape
+    tx(vtLabels[visitorType],mo.x,mo.y-31,vtGlow[visitorType],8,'center'); // etiqueta ≥8px ✔ (CASUAL≈29px<30)
+    tx(vtLines[visitorType],mo.x,mo.y-23,'#cfd8dc',7,'center');            // línea ≥7px ✔ (Lotería≈29px<30)
   }
-  // Power LED
-  r(mo.x+7,mo.y-17,2,2,monitorAlert.active?'#cc2222':'#44cc44');
+  r(mo.x+8,mo.y-17,3,3,monitorAlert.active?'#cc2222':'#44cc44'); // LED power (conservado)
 
-  // Label
-  tx(T().staffLabel[0],p.x,p.y-28,'#5a4a30',6,'center');
+  // ── Placa de rol: texto 7px sobre placa oscura con borde dorado ──
+  const lbl=T().staffLabel[0];
+  const lw=Math.ceil(lbl.length*0.6*7)+8;       // ancho placa = texto + 8px margen
+  r(p.x-(lw>>1),p.y-35,lw,11,'#14171c');
+  rx(p.x-(lw>>1),p.y-35,lw,11,'#d9a83f',1);
+  tx(lbl,p.x,p.y-30,'#ffd977',7,'center');      // ≥7px ✔
 }
 
 // ── CASH REGISTER (sits on top of counter) ───────────────────
