@@ -32951,5 +32951,47 @@ window.xtAPI = (function(){
     isOpen:function(){ return !!(root&&root.classList.contains('on')); } };
 })();
 </script>
+<!-- ════════ HUD claridad v1 (2026-07-17) — legibilidad y jerarquía de la barra superior ════════
+     Bloque autocontenido y reversible: solo mejora la lectura del #topBar (tipografía, jerarquía,
+     acento de marca en Competencia y color de Sat por umbral). No toca la lógica del juego. -->
+<style id="hudClarityStyle">
+  /* Respira: un poco más de aire entre grupos */
+  #topBar{gap:9px;padding:0 10px}
+  /* KPIs: label legible (7→8px) + valor más grande y con cifras tabulares (no bailan al cambiar) */
+  #topBar .stat{gap:1px;justify-content:center}
+  #topBar .stat-label{font-size:8px;letter-spacing:.1em;color:var(--xp-muted)}
+  #topBar .stat-val{font-size:13px;font-weight:700;line-height:1.05;color:#f4fbff;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  /* KPI héroe: Beneficio un punto mayor (el color +/− lo pone el juego en línea) */
+  #topBar #bbProfit{font-size:14px}
+  /* Separadores: menos ruido — más finos y tenues */
+  #topBar .sep{height:18px;opacity:.5}
+  /* Aforo real: punto de estado un pelín mayor */
+  #topBar #bbCamDot{width:7px;height:7px}
+  /* Competencia: cajas legibles (6→8px) con acento de color de marca arriba y tamaño consistente */
+  #topBar .comp-box{padding:3px 8px;min-width:52px;border-top-width:3px;border-radius:8px;gap:1px}
+  #topBar .comp-name{font-size:8px;letter-spacing:.06em;color:#a8c6cf}
+  #topBar .comp-pct{font-size:12px;font-weight:700;color:#f4fbff;font-variant-numeric:tabular-nums}
+  /* Sat coloreado por umbral (lo aplica hudClarityScript) */
+  #topBar #bbSat.sat-low{color:var(--xp-danger)!important}
+  #topBar #bbSat.sat-mid{color:var(--xp-gold)!important}
+  #topBar #bbSat.sat-high{color:var(--xp-mint)!important}
+</style>
+<script id="hudClarityScript">
+(function(){
+  var sat=document.getElementById('bbSat');
+  if(!sat) return;
+  function paintSat(){
+    var n=parseInt((sat.textContent||'').replace(/[^0-9-]/g,''),10);
+    sat.classList.remove('sat-low','sat-mid','sat-high');
+    if(isNaN(n)) return;
+    sat.classList.add(n<40?'sat-low':(n<70?'sat-mid':'sat-high'));
+  }
+  try{
+    var mo=new MutationObserver(paintSat);
+    mo.observe(sat,{childList:true,characterData:true,subtree:true});
+  }catch(e){}
+  paintSat();
+})();
+</script>
 </body>
 </html>
