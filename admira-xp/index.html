@@ -19291,6 +19291,10 @@ function mhSayToFace(text){
 // bajo la pantalla TFT (se posiciona cada frame en positionWallAvatar). Screen-
 // aligned a propósito (legible), no deformado con la perspectiva de la pared.
 window.__mhWallCap = window.__mhWallCap || { text:'', until:0 };
+// centro del borde inferior de la pared, cacheado por positionWallAvatar cada frame
+// fresco → el subtítulo se posiciona desde aquí en su PROPIO ticker (independiente
+// de la frescura del quad y de que el bucle de render se pause en el await de Grok).
+window.__mhWallBottom = window.__mhWallBottom || null;
 function _mhWallCapEl(){
   let el=document.getElementById('mhWallCaption');
   if(!el){
@@ -19311,19 +19315,20 @@ function mhWallSay(text){
   const t=String(text||'').trim(); if(!t) return;
   const cap=window.__mhWallCap;
   cap.text=t.length>220?(t.slice(0,217)+'…'):t;
-  cap.until=Date.now()+Math.min(9000,Math.max(2600,t.length*45));
+  // duración acorde al habla del avatar (≈ longitud de la respuesta), 4–10 s
+  cap.until=Date.now()+Math.min(10000,Math.max(4000,t.length*55));
   _mhWallCapEl().textContent=cap.text;
 }
-function _mhPositionWallCaption(bl,br){
+// Ticker propio del subtítulo: se muestra si la pared tiene a Neo, hay texto vigente
+// y conocemos el borde inferior de la pared. No depende del frame de render.
+function _mhWallCapTick(){
   const el=document.getElementById('mhWallCaption'); if(!el) return;
-  const cap=window.__mhWallCap;
-  if(!cap.text || Date.now()>cap.until){ if(el.style.display!=='none') el.style.display='none'; return; }
-  const bx=(bl.x+br.x)/2, by=Math.max(bl.y,br.y);   // centro del borde inferior de la pared
-  el.style.left=Math.round(bx)+'px';
-  el.style.top=Math.round(by+8)+'px';
-  el.style.display='block';
+  const cap=window.__mhWallCap, b=window.__mhWallBottom;
+  let wallLive=false; try{ wallLive=(typeof metahumanWallOn==='function')&&metahumanWallOn(); }catch(_){}
+  if(!wallLive || !cap.text || Date.now()>cap.until || !b){ if(el.style.display!=='none') el.style.display='none'; return; }
+  el.style.left=Math.round(b.x)+'px'; el.style.top=Math.round(b.y+8)+'px'; el.style.display='block';
 }
-function _mhHideWallCaption(){ const el=document.getElementById('mhWallCaption'); if(el&&el.style.display!=='none') el.style.display='none'; }
+setInterval(function(){ try{ _mhWallCapTick(); }catch(_){} }, 120);
 function openMetahumanPanel(){
   const els=_mhEls(); if(!els.panel) return;
   els.panel.classList.add('show');
@@ -19645,7 +19650,7 @@ function positionWallAvatar(){
   const el=document.getElementById('wallAvatar'); if(!el) return;
   const q=window.__tftQuad;
   const fresh=!!q && (typeof tt==='undefined' || (typeof window.__tftQuadFrame==='number' && (tt-window.__tftQuadFrame)<=2));
-  if(!(avatar3dWall && fresh)){ if(el.style.display!=='none'){ el.style.display='none'; el.src='about:blank'; } try{ _mhHideWallCaption(); }catch(_){} return; }
+  if(!(avatar3dWall && fresh)){ if(el.style.display!=='none'){ el.style.display='none'; el.src='about:blank'; } return; }
   try{
     // La pantalla de la pared larga es un PARALELOGRAMO inclinado (perspectiva de
     // la pared), no un rectángulo. Mapeamos el iframe al paralelogramo con un
@@ -19666,8 +19671,9 @@ function positionWallAvatar(){
     const wantMark=avatar3dWallSrc?'mh':'web';
     if(el.dataset.avmark!==wantMark || !el.src || el.src==='about:blank'){ el.src=wallAvatarUrl(); el.dataset.avmark=wantMark; }
     el.style.display='block';
-    // subtítulo de Neo anclado al borde inferior de la pared (br = tr + bl − tl)
-    try{ _mhPositionWallCaption(bl, {x:tr.x+bl.x-tl.x, y:tr.y+bl.y-tl.y}); }catch(_){}
+    // cache del centro del borde inferior de la pared para el subtítulo de Neo
+    // (br = tr + bl − tl); el ticker _mhWallCapTick lo consume.
+    try{ const brx=tr.x+bl.x-tl.x, bry=tr.y+bl.y-tl.y; window.__mhWallBottom={x:(bl.x+brx)/2, y:Math.max(bl.y,bry)}; }catch(_){}
   }catch(e){}
 }
 // /avatar3d ds on|off — muestra/oculta el avatar en la pantalla de la pared larga.
