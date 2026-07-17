@@ -21390,12 +21390,13 @@ function drawIsoShelves(col,row){
     pg.addColorStop(0,woodHi);pg.addColorStop(1,woodLo);
     cx.fillStyle=pg;cx.fillRect(x,top,3,bot-top);
   }
-  // ── Header sign with bevel ──
-  r(left,top-6,right-left,8,'#efe2c2');
-  r(left,top-6,right-left,2,'#fff6df');
-  r(left,top+1,right-left,1,'#bfa06a');
-  rx(left,top-6,right-left,8,'#8f6d42',1);
-  tx('SHOP',p.x,top,'#7a5532',5,'center');
+  // ── Header sign with bevel — 🍞 estética canvas #4: SHOP 5→8px, placa más alta (revertir: top-11/h12/8px → top-6/h8/5px) ──
+  r(left,top-11,right-left,12,'#efe2c2');       // placa cartel (crece hacia arriba)
+  r(left,top-11,right-left,2,'#fff6df');        // filo superior iluminado
+  r(left,top-1,right-left,1,'#bfa06a');         // línea de sombra inferior
+  rx(left,top-11,right-left,12,'#8f6d42',1);    // marco
+  r(left,top-11,1,1,'#fff6df'); r(right-1,top-11,1,1,'#fff6df'); // luces de esquina
+  tx('SHOP',p.x,top-3,'#6b4a2a',8,'center');    // rótulo legible, centrado en la placa
   // ── Shelves (boards) + products, bottom → top ──
   const levels=[12,24,36,48];
   for(let lv=0;lv<levels.length;lv++){
@@ -21428,25 +21429,56 @@ function drawIsoShelves(col,row){
   tx(T().staffLabel[1],p.x,top-9,'#5a4a30',6,'center');
 }
 
+/* 🍞 estética canvas #3 (mostrador LOTERÍAS · rediseño Fable) — revertir con tag canvas-claridad-2-turnokiosk.
+   Claves: pantalla 44×20 dígitos 12px; cartel 50×12 "LOTERIAS" 7px; rol movido bajo la mesa. */
 function drawIsoLottery(col,row){
-  // Lottery desk: wooden with golden trim
+  // ===== Mostrador de LOTERÍAS — madera + oro, monitor LED verde =====
+  // Huella: 2×1, alto 22 (SIN cambios). Monitor crece hacia arriba.
+  // Medidas clave: carcasa monitor 50×26 | pantalla 44×20 | dígitos 12px
+  //                placa rótulo 50×12   | "LOTERIAS" 7px  | rol 7px (bajo la mesa)
   drawIsoBlock(col,row,2,1,22,P.lottT,P.lott,P.furniture,null);
-  // Monitor on desk
   const p=toIso(col+1,row+0.5);
-  r(p.x-18,p.y-17,36,4,'#4b3a18');
-  r(p.x-16,p.y-16,32,2,'#d8bd58');
-  r(p.x-17,p.y-43,34,7,'#f5e8aa');
-  rx(p.x-17,p.y-43,34,7,'#91752d',1);
-  tx('LOTERIAS',p.x,p.y-38,'#735615',5,'center');
-  // Monitor body
-  r(p.x-14,p.y-34,28,14,'#333333');rx(p.x-14,p.y-34,28,14,'#222',1);
-  // Screen
-  r(p.x-12,p.y-32,24,10,'#112200');
-  const digs=String(Math.floor(tt/7)%99999).padStart(5,'0');
-  tx(digs,p.x,p.y-24,'#88cc00',8,'center');
-  // Monitor stand
-  r(p.x-3,p.y-20,6,3,'#444');
-  tx(T().staffLabel[2],p.x,p.y-40,'#8a7a40',7,'center');
+
+  // --- Peana sobre la mesa con reborde dorado brillante (36 ancho) ---
+  r(p.x-18,p.y-17,36,5,'#4b3a18');          // base madera oscura
+  r(p.x-17,p.y-16,34,2,'#d9a83f');          // filo de oro
+  r(p.x-17,p.y-16,12,1,'#f5e8aa');          // destello del filo (brillo)
+
+  // --- Pie del monitor (une peana y carcasa) ---
+  r(p.x-5,p.y-29,10,12,'#333333');
+  r(p.x-4,p.y-29,2,12,'#444444');           // arista iluminada del pie
+
+  // --- Carcasa del monitor: marco doble (50×26, tope ~50px sobre mesa) ---
+  r(p.x-25,p.y-55,50,26,'#191d22');         // carcasa exterior oscura
+  rx(p.x-25,p.y-55,50,26,'#4b3a18',1);      // ribete madera/oro exterior
+  r(p.x-23,p.y-53,46,22,'#333333');         // bisel interior
+
+  // --- Pantalla LED (44×20) con 5 dígitos GRANDES a 12px ---
+  r(p.x-22,p.y-52,44,20,'#112200');
+  const digs=String(Math.floor(tt/7)%100000).padStart(5,'0'); // animado con tt
+  tx(digs,p.x,p.y-36,'#88cc00',12,'center'); // 5·0.6·12≈36px, cabe en 44
+  // Scanlines sutiles tipo CRT (sobre los dígitos)
+  r(p.x-22,p.y-49,44,1,'rgba(0,0,0,0.25)');
+  r(p.x-22,p.y-44,44,1,'rgba(0,0,0,0.25)');
+  r(p.x-22,p.y-39,44,1,'rgba(0,0,0,0.25)');
+  // Reflejo suave en la esquina superior de la pantalla
+  r(p.x-21,p.y-51,10,1,'#1c3a00');
+
+  // --- Placa-cartel dorada "LOTERIAS" (50×12, texto 7px) ---
+  r(p.x-25,p.y-69,50,12,'#4b3a18');         // marco madera oscura
+  rx(p.x-25,p.y-69,50,12,'#d9a83f',1);      // ribete oro
+  r(p.x-23,p.y-67,46,9,'#f5e8aa');          // cara iluminada
+  r(p.x-23,p.y-67,46,2,'#f3dc9e');          // bisel superior claro
+  tx('LOTERIAS',p.x,p.y-60,'#735615',7,'center'); // 8·0.6·7≈34px, cabe en 46
+  // Bombillos de marquesina en los extremos de la placa
+  r(p.x-24,p.y-65,2,2,'#f5e8aa');
+  r(p.x+22,p.y-65,2,2,'#f5e8aa');
+  // Estrella/bombillo dorado coronando el cartel (detalle con encanto)
+  r(p.x-2,p.y-72,4,3,'#d9a83f');
+  r(p.x-1,p.y-71,2,1,'#f5e8aa');
+
+  // --- Etiqueta de rol (7px) DEBAJO de la mesa: no choca con el rótulo ---
+  tx(T().staffLabel[2],p.x,p.y+9,'#d8bd58',7,'center');
 }
 
 function drawIsoManager(col,row){
