@@ -33286,6 +33286,28 @@ window.xtAPI = (function(){
   #screenInfoPop .si-hint{font:10px/1.5 monospace;color:#80a0a9}
   #screenInfoPop .si-close{position:absolute;top:6px;right:9px;cursor:pointer;color:#80a0a9;font:bold 13px monospace}
   #screenInfoPop .si-close:hover{color:var(--xp-cyan,#78f3ff)}
+  /* Marco DOOH premium para las dos pantallas grandes (DOM). Con box-shadow en
+     capas para no alterar el tamaño/posición (respeta la perspectiva del muro). */
+  #videoMonitor, #videoMonitor2{
+    border:0 !important; border-radius:4px !important;
+    box-shadow:
+      0 0 0 2px #0a0d12,                       /* bisel interior oscuro */
+      0 0 0 4px #2b3038,                        /* marco metálico */
+      0 0 0 5px #12151a,                        /* filo exterior */
+      inset 0 1px 0 rgba(255,255,255,.16),      /* brillo superior del cristal */
+      inset 0 -3px 6px rgba(0,0,0,.55),         /* sombra inferior interior */
+      0 5px 20px rgba(0,0,0,.45),               /* sombra proyectada */
+      0 0 16px rgba(120,243,255,.10) !important;/* leve glow cian DOOH */
+  }
+  /* Piloto "● LIVE" (tally) por pantalla */
+  #screenInfoLayer .si-live{position:absolute;pointer-events:none;transform:translate(0,-50%);
+    display:flex;align-items:center;gap:4px;padding:1px 6px 1px 5px;border-radius:999px;
+    background:rgba(3,10,16,.82);border:1px solid rgba(255,60,60,.5);
+    font:bold 8px/1 'Orbitron',monospace;letter-spacing:.12em;color:#ff6b6b;
+    box-shadow:0 0 8px rgba(0,0,0,.5)}
+  #screenInfoLayer .si-live .si-live-dot{width:5px;height:5px;border-radius:50%;background:#ff3b3b;
+    box-shadow:0 0 6px #ff3b3b;animation:siLivePulse 1.4s ease-in-out infinite}
+  @keyframes siLivePulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 <script id="screenInfoScript">
 (function(){
@@ -33304,12 +33326,15 @@ window.xtAPI = (function(){
   document.body.appendChild(pop);
   pop.querySelector('.si-close').onclick=function(){pop.classList.remove('show');};
   pop.querySelector('.si-tag').onclick=function(){ try{navigator.clipboard.writeText(this.textContent);}catch(e){} };
-  var badges={};
+  var badges={}, lives={};
   SCREENS.forEach(function(s){
     var b=document.createElement('button'); b.className='si-badge'; b.textContent='i';
     b.title='Info · '+s.tag;
     b.onclick=function(ev){ ev.stopPropagation(); openPop(s,b); };
     layer.appendChild(b); badges[s.id]=b;
+    var lv=document.createElement('div'); lv.className='si-live';
+    lv.innerHTML='<span class="si-live-dot"></span>LIVE';
+    layer.appendChild(lv); lives[s.id]=lv;
   });
   function openPop(s,b){
     pop.querySelector('.si-name').textContent='📺 '+s.label;
@@ -33327,19 +33352,21 @@ window.xtAPI = (function(){
   function place(){
     var q2c=window.__dsQuadCvToClient, QUADS=window.__DS_SURFACE_QUADS;
     SCREENS.forEach(function(s){
-      var b=badges[s.id], x=null, y=null;
+      var b=badges[s.id], lv=lives[s.id];
+      var tr=null, tl=null;                    // esquinas sup. derecha (i) y sup. izquierda (LIVE)
       if(s.kind==='dom'){
         var mon=document.getElementById(s.anchor);
         if(mon && getComputedStyle(mon).display!=='none'){
           var r=mon.getBoundingClientRect();
-          if(r.width>=6 && r.height>=6){ x=r.right-10; y=r.top+10; } // esquina sup. derecha
+          if(r.width>=6 && r.height>=6){ tr={x:r.right-10,y:r.top+10}; tl={x:r.left+11,y:r.top+11}; }
         }
       } else if(s.kind==='quad' && q2c && QUADS && QUADS[s.id]){
         var c=q2c(QUADS[s.id]); // [TL, TR, BR, BL] en px de viewport
-        if(c && c[1]){ x=c[1].x-9; y=c[1].y+9; }                     // junto a la esquina TR
+        if(c && c[1] && c[0]){ tr={x:c[1].x-9,y:c[1].y+9}; tl={x:c[0].x+7,y:c[0].y+9}; }
       }
-      if(x==null){ b.style.display='none'; return; }
-      b.style.display='grid'; b.style.left=x+'px'; b.style.top=y+'px';
+      if(!tr){ b.style.display='none'; lv.style.display='none'; return; }
+      b.style.display='grid'; b.style.left=tr.x+'px'; b.style.top=tr.y+'px';
+      lv.style.display='flex'; lv.style.left=tl.x+'px'; lv.style.top=tl.y+'px';
     });
     requestAnimationFrame(place);
   }
