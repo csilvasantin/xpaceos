@@ -19271,12 +19271,59 @@ window.MH_SAY_URL = window.MH_SAY_URL || 'https://omnipublicity-api.csilvasantin
 window.MH_ROOM = window.MH_ROOM || 'xtanco';
 function mhSayToFace(text){
   try{
-    if(!window.MH_FACE_ENABLED) return;            // sólo si la cara está activa
+    // La respuesta se locuta en la cara viva si HAY alguna: la de la PARED LARGA
+    // (Keanu grande) o la carita del panel. Antes solo miraba MH_FACE_ENABLED (el
+    // flag de la carita del panel) → con la pared encendida y la carita apagada
+    // (modo pared-limpia), preguntar NO hacía hablar a la pared. Ese era el hueco
+    // del "pulido 2" de la integración: ask en el panel → habla la pared.
+    let wallLive=false; try{ wallLive=(typeof metahumanWallOn==='function')&&metahumanWallOn(); }catch(_){}
+    if(!wallLive && !window.MH_FACE_ENABLED) return;
     const t=String(text||'').trim(); if(!t) return;
     fetch(window.MH_SAY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({room:window.MH_ROOM,text:t})}).catch(()=>{});
+    // Subtítulo anclado a la pared para quien la MIRA (el que pregunta ya lee la
+    // respuesta en el panel; el resto de la sala, no).
+    if(wallLive){ try{ mhWallSay(t); }catch(_){} }
   }catch(e){}
 }
+// ── Subtítulo del MetaHuman sobre la PARED LARGA ──────────────────────────────
+// Cuando Neo contesta en la pared, mostramos la respuesta como subtítulo anclado
+// bajo la pantalla TFT (se posiciona cada frame en positionWallAvatar). Screen-
+// aligned a propósito (legible), no deformado con la perspectiva de la pared.
+window.__mhWallCap = window.__mhWallCap || { text:'', until:0 };
+function _mhWallCapEl(){
+  let el=document.getElementById('mhWallCaption');
+  if(!el){
+    el=document.createElement('div');
+    el.id='mhWallCaption';
+    el.style.cssText='position:fixed;z-index:33;display:none;pointer-events:none;'
+      +'max-width:520px;padding:8px 14px;border-radius:10px;'
+      +'background:linear-gradient(180deg,rgba(6,14,26,.92),rgba(3,8,18,.95));'
+      +'border:1px solid rgba(120,243,255,.55);box-shadow:0 10px 26px rgba(0,0,0,.5);'
+      +'color:#dff8ff;font-family:monospace;font-size:15px;line-height:1.35;'
+      +'text-align:center;letter-spacing:.01em;transform:translate(-50%,0);'
+      +'text-shadow:0 1px 2px rgba(0,0,0,.6)';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function mhWallSay(text){
+  const t=String(text||'').trim(); if(!t) return;
+  const cap=window.__mhWallCap;
+  cap.text=t.length>220?(t.slice(0,217)+'…'):t;
+  cap.until=Date.now()+Math.min(9000,Math.max(2600,t.length*45));
+  _mhWallCapEl().textContent=cap.text;
+}
+function _mhPositionWallCaption(bl,br){
+  const el=document.getElementById('mhWallCaption'); if(!el) return;
+  const cap=window.__mhWallCap;
+  if(!cap.text || Date.now()>cap.until){ if(el.style.display!=='none') el.style.display='none'; return; }
+  const bx=(bl.x+br.x)/2, by=Math.max(bl.y,br.y);   // centro del borde inferior de la pared
+  el.style.left=Math.round(bx)+'px';
+  el.style.top=Math.round(by+8)+'px';
+  el.style.display='block';
+}
+function _mhHideWallCaption(){ const el=document.getElementById('mhWallCaption'); if(el&&el.style.display!=='none') el.style.display='none'; }
 function openMetahumanPanel(){
   const els=_mhEls(); if(!els.panel) return;
   els.panel.classList.add('show');
@@ -19598,7 +19645,7 @@ function positionWallAvatar(){
   const el=document.getElementById('wallAvatar'); if(!el) return;
   const q=window.__tftQuad;
   const fresh=!!q && (typeof tt==='undefined' || (typeof window.__tftQuadFrame==='number' && (tt-window.__tftQuadFrame)<=2));
-  if(!(avatar3dWall && fresh)){ if(el.style.display!=='none'){ el.style.display='none'; el.src='about:blank'; } return; }
+  if(!(avatar3dWall && fresh)){ if(el.style.display!=='none'){ el.style.display='none'; el.src='about:blank'; } try{ _mhHideWallCaption(); }catch(_){} return; }
   try{
     // La pantalla de la pared larga es un PARALELOGRAMO inclinado (perspectiva de
     // la pared), no un rectángulo. Mapeamos el iframe al paralelogramo con un
@@ -19619,6 +19666,8 @@ function positionWallAvatar(){
     const wantMark=avatar3dWallSrc?'mh':'web';
     if(el.dataset.avmark!==wantMark || !el.src || el.src==='about:blank'){ el.src=wallAvatarUrl(); el.dataset.avmark=wantMark; }
     el.style.display='block';
+    // subtítulo de Neo anclado al borde inferior de la pared (br = tr + bl − tl)
+    try{ _mhPositionWallCaption(bl, {x:tr.x+bl.x-tl.x, y:tr.y+bl.y-tl.y}); }catch(_){}
   }catch(e){}
 }
 // /avatar3d ds on|off — muestra/oculta el avatar en la pantalla de la pared larga.
