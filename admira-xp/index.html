@@ -2374,6 +2374,29 @@ function dsPinSurface(surfaceId,name){
   if(typeof dsApplyAudioForPins==='function') dsApplyAudioForPins();
   return true;
 }
+// Pin de una superficie desde una URL remota (feed de señalización direccionable
+// por tag, Fase 2). Igual que dsPinSurface pero sin depender de VIDEO_FILES: usa
+// la URL directa del asset. Los pines remotos NO se persisten (los redirige el
+// poller cada ciclo desde /signage/feed). Expuesto para signageFeedScript.
+function dsPinSurfaceFromUrl(surfaceId,kind,url,name){
+  if(!dsSurfaceById(surfaceId)||!url) return false;
+  if(kind!=='image'&&kind!=='video') return false;
+  const m=dsEnsureSurfaceMedia(surfaceId);
+  m.ready=false; m.kind=kind; m.name=name||url;
+  if(kind==='image'){
+    if(m.video.src){ try{ m.video.pause(); }catch(e){} m.video.removeAttribute('src'); m.video.load&&m.video.load(); }
+    m.img.src=url;
+  } else {
+    m.img.removeAttribute('src');
+    m.video.src=url; m.video.volume=0.7;
+    try{ m.video.load&&m.video.load(); }catch(e){}
+    try{ m.video.play().catch(()=>{}); }catch(e){}
+  }
+  DS_PIN[surfaceId]={name:name||url,kind,remote:true};
+  if(typeof dsApplyAudioForPins==='function') dsApplyAudioForPins();
+  return true;
+}
+try{ window.__dsPinSurfaceFromUrl=dsPinSurfaceFromUrl; }catch(e){}
 // Master mute global: cuando esta activo, silencia bgMusic, dsVideoEl, todos los
 // m.video pineados y los iframes de AdmiraTube. Se controla con /audio mute.
 let dsMasterMute=false;
@@ -33321,6 +33344,45 @@ window.xtAPI = (function(){
     requestAnimationFrame(place);
   }
   requestAnimationFrame(place);
+})();
+</script>
+<!-- ════════ Pantallas · feed direccionable v1 (2026-07-17) — señalización por tag (Fase 2) ════════
+     Poller que sondea pixer-worker /signage/feed?screen=<tag> por cada pantalla y, si hay contenido
+     DIRIGIDO a ese tag (target === tag), lo emite en esa pantalla (reusa el pin remoto del gemelo).
+     Flujo: en admira.studio se hace push del contenido con target = el tag de la pantalla (el que
+     muestra el botón "i"). Broadcast (sin target) se ignora aquí para no pisar la rotación por defecto.
+     Bloque autocontenido y reversible. NO toca el pipeline de rotación existente. -->
+<script id="signageFeedScript">
+(function(){
+  var BASE='https://pixer-eleven.csilvasantin.workers.dev';
+  var SCREENS=[
+    {id:'ds1',tag:'XT-GRACIA-P1'},{id:'ds2',tag:'XT-GRACIA-P2'},
+    {id:'escaparate',tag:'XT-GRACIA-ESC'},{id:'metahuman',tag:'XT-GRACIA-MH'}
+  ];
+  var lastId={};
+  function applyOne(s){
+    return fetch(BASE+'/signage/feed?screen='+encodeURIComponent(s.tag)+'&limit=12',{cache:'no-store'})
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(d){
+        if(!d) return;
+        var items=(d.items)||[];
+        // El más reciente dirigido EXACTAMENTE a este tag (ignora broadcast).
+        var it=null; for(var i=0;i<items.length;i++){ if(items[i].target===s.tag){ it=items[i]; break; } }
+        if(!it){ return; }                         // nada asignado a esta pantalla
+        if(lastId[s.id]===it.id) return;           // ya aplicado
+        var kind=it.kind==='video'?'video':(it.kind==='image'?'image':null);
+        if(!kind||!it.url) return;                 // texto/audio: fuera de alcance de esta fase
+        if(window.__dsPinSurfaceFromUrl && window.__dsPinSurfaceFromUrl(s.id,kind,it.url,it.title||it.id)){
+          lastId[s.id]=it.id;
+          try{ if(typeof window.showEv==='function') window.showEv('📺 '+s.tag+' ← '+(it.title||'contenido')+' (admira.studio)','#7dffb5'); }catch(e){}
+        }
+      })
+      .catch(function(){});
+  }
+  function poll(){ SCREENS.forEach(applyOne); }
+  // Primer sondeo a los 4s (deja arrancar el juego), luego cada 20s.
+  setTimeout(function(){ poll(); setInterval(poll,20000); },4000);
+  window.__pollSignage=poll;
 })();
 </script>
 </body>
