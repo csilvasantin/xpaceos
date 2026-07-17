@@ -18859,71 +18859,104 @@ function drawGlassDoor(){
 }
 
 // ── SATISFACTION TABLET — floor-standing kiosk (editable furniture) ──
+/* 🍞 estética canvas #7 (atril TABLET de votos · rediseño Fable) — revertir con tag canvas-claridad-6-manager.
+   Claves: tablet 20×16→38×28; caras activa 13px/inactiva 10px; "VOTA" 5→8px; cabecera "QUÉ TAL" 7px. Misma huella + lógica. */
 function drawIsoTabletKiosk(col,row){
   const kp=toIso(col,row);
 
-  // ── PEDESTAL / ATRIL ──
+  // ── PEDESTAL / ATRIL ── (misma huella: sombra y base intactas)
   const bw2=0.72, bd2=0.72, baseH=6;
   const shadowP=toIso(col+0.5,row+0.5);
   cx.save();
   cx.globalAlpha=0.16;
   cx.fillStyle='#000';
   cx.beginPath();
-  cx.ellipse(shadowP.x,shadowP.y+4,18,7,0,0,Math.PI*2);
+  cx.ellipse(shadowP.x,shadowP.y+4,20,8,0,0,Math.PI*2);
   cx.fill();
   cx.restore();
   drawIsoBlock(col+0.14,row+0.14,bw2,bd2,baseH,'#62666b','#41454a','#53585e',null);
-  // Center of base top face
   const baseCenter=toIso(col+0.5,row+0.5);
   const poleCX=baseCenter.x, poleCY=baseCenter.y-baseH;
-  // Pole centered on base
-  const poleH=32;
+
+  // Poste (crece hacia arriba) + cuello cian
+  const poleH=36;                                  // altura poste (antes 32)
   r(poleCX-2,poleCY-poleH,4,poleH,'#666666');
-  r(poleCX-1,poleCY-poleH,1,poleH,'#888888');
+  r(poleCX-1,poleCY-poleH,1,poleH,'#909090');
+  r(poleCX-3,poleCY-6,6,2,'#3a3f47');              // anillo inferior
+  r(poleCX-3,poleCY-poleH+1,6,2,'#78f3ff');        // cuello cian bajo la tablet
+  cx.globalAlpha=0.35;
+  r(poleCX-4,poleCY-poleH+1,8,2,'#78f3ff');        // halo del cuello
+  cx.globalAlpha=1;
 
   // ── TABLET SCREEN ──
-  const tabW=20, tabH=16;
-  const tabX=poleCX-tabW/2, tabY=poleCY-poleH-tabH+2;
-
-  r(tabX-1,tabY-1,tabW+2,tabH+2,'#1a1a22');
+  // Medidas clave: tabW=38, tabH=28 (antes 20x16). Cara activa 13px,
+  // inactivas 10px, cabecera 7px, "VOTA" 8px. Cabecera 9px + caras 13px + barra 6px = 28.
+  const tabW=38, tabH=28;
+  const tabX=poleCX-tabW/2, tabY=poleCY-poleH-tabH+4;
   const screenOn=tabletVote.timer>0;
-  r(tabX,tabY,tabW,tabH,screenOn?'#e8e8f0':'#2a2a30');
+
+  // Carcasa doble: caja oscura + bisel + pantalla
+  r(tabX-2,tabY-2,tabW+4,tabH+4,'#1a1a22');        // carcasa
+  r(tabX-1,tabY-1,tabW+2,tabH+2,'#3a3f47');        // bisel
+  r(tabX,tabY,tabW,tabH,screenOn?'#eef0f6':'#22242c'); // pantalla
+  if(screenOn){                                    // glow cian del marco activo
+    cx.globalAlpha=0.5;
+    rx(tabX-2,tabY-2,tabW+4,tabH+4,'#78f3ff',1);
+    cx.globalAlpha=1;
+  }
 
   if(screenOn){
+    // Cabecera "QUÉ TAL" (7px, franja oscura de 9px)
+    const headH=9;
+    r(tabX,tabY,tabW,headH,'#10141c');
+    tx('QUÉ TAL',tabX+tabW/2,tabY+7,'#78f3ff',7,'center');
+
+    // 3 caras (celda ~12.6px de ancho, zona de 13px de alto)
     const faces=['😊','😐','😡'];
     const faceCols=['#44aa44','#ccaa00','#cc3333'];
-    const faceW=tabW/3;
+    const faceW=tabW/3, fY=tabY+headH, fH=13;
     for(let i=0;i<3;i++){
       const fx=tabX+i*faceW;
       const isActive=tabletVote.face===i;
       if(isActive){
-        r(fx,tabY,faceW,tabH,faceCols[i]+'44');
-        cx.globalAlpha=0.4+0.4*Math.sin(tt*0.3);
-        r(fx,tabY,faceW,tabH,faceCols[i]+'66');
+        r(fx,fY,faceW,fH,faceCols[i]+'44');
+        cx.globalAlpha=0.4+0.4*Math.sin(tt*0.3);   // parpadeo original
+        r(fx,fY,faceW,fH,faceCols[i]+'66');
         cx.globalAlpha=1;
+        rx(fx+0.5,fY+0.5,faceW-1,fH-1,faceCols[i],1); // glow/marco de la activa
+      } else if(i<2){
+        r(fx+faceW-0.5,fY+2,1,fH-4,'#c8ccd6');     // separador entre celdas
       }
-      const fSize=isActive?8:6;
+      const fSize=isActive?13:10;                  // caras: activa 13px / inactiva 10px
       cx.font=fSize+'px serif';cx.textAlign='center';
-      cx.globalAlpha=isActive?1:0.6;
-      cx.fillText(faces[i],fx+faceW/2,tabY+tabH/2+3);
+      cx.globalAlpha=isActive?1:0.55;
+      cx.fillText(faces[i],fx+faceW/2,fY+fH/2+(isActive?5:4));
       cx.globalAlpha=1;
     }
+
+    // Barra de reseñas con marco (proporcional al nuevo ancho)
+    const barX=tabX+3, barW=tabW-6, barY=tabY+tabH-5, barH=3;
+    rx(barX-1,barY-1,barW+2,barH+2,'#10141c',1);
+    r(barX,barY,barW,barH,'#2a2e36');
     if(G&&G.reviews){
       const total=G.reviews.positive+G.reviews.negative;
       if(total>0){
         const pct=G.reviews.positive/total;
-        r(tabX+1,tabY+tabH-2,Math.round((tabW-2)*pct),2,'#44aa4488');
-        r(tabX+1+Math.round((tabW-2)*pct),tabY+tabH-2,Math.round((tabW-2)*(1-pct)),2,'#cc333388');
+        const pw=Math.round(barW*pct);
+        r(barX,barY,pw,barH,'#44aa44');
+        r(barX+pw,barY,barW-pw,barH,'#cc3333');
+        r(barX,barY,pw,1,'#66cc66');               // brillo superior del tramo verde
       }
     }
   } else {
-    cx.globalAlpha=0.3;
-    cx.font='5px monospace';cx.textAlign='center';
-    cx.fillStyle='#888';
-    cx.fillText('VOTA',tabX+tabW/2,tabY+tabH/2+2);
+    // Pantalla en reposo: "VOTA" a 8px con pulso suave + LED cian
+    cx.globalAlpha=0.35+0.15*Math.sin(tt*0.05);
+    tx('VOTA',tabX+tabW/2,tabY+tabH/2+3,'#9aa4b2',8,'center');
     cx.globalAlpha=1;
+    r(tabX+tabW/2-1,tabY+tabH-4,2,2,'#78f3ff');    // LED de espera
   }
   cx.textAlign='left';
+  cx.globalAlpha=1;
 
   if(tabletVote.timer>0) tabletVote.timer--;
 }
@@ -21502,31 +21535,59 @@ function drawIsoLottery(col,row){
   tx(T().staffLabel[2],p.x,p.y+9,'#d8bd58',7,'center');
 }
 
+/* 🍞 estética canvas #6 (mesa MANAGER/OFFICE · rediseño Fable) — revertir con tag canvas-claridad-4-mostrador.
+   Claves: pantalla portátil 30×23; OFFICE 5→8px, año/semana 5→7px; placa rol dorada encima; misma huella. */
 function drawIsoManager(col,row){
-  // Manager desk: green/wood
+  // Manager desk: green/wood (misma huella 2x1, alto 20)
   drawIsoBlock(col,row,2,1,20,P.deskT,P.desk,'#5a7a4a',null);
-  // Laptop on desk
-  const p=toIso(col+1,row+0.5);
-  r(p.x-18,p.y-16,36,4,'#45623b');
-  r(p.x-17,p.y-17,34,1,'#b7d58a');
-  r(p.x-14,p.y-39,28,7,'#d7ebbb');
-  rx(p.x-14,p.y-39,28,7,'#587148',1);
-  tx('OFFICE',p.x,p.y-34,'#47623e',5,'center');
-  // Laptop base
-  r(p.x-10,p.y-24,20,6,'#aaaaaa');
-  // Laptop screen
-  r(p.x-9,p.y-34,18,11,'#333');
-  r(p.x-7,p.y-32,14,7,'#1a3050');
-  tx(T().yearLbl+G.year+'/'+T().weekLbl+G.week,p.x,p.y-27,'#88bbdd',5,'center');
-  // Week progress bar
-  r(p.x-6,p.y-25,12,2,'#0a1828');
-  r(p.x-6,p.y-25,(12*G.weekTimer/CFG.WEEK_TICKS)|0,2,'#55aadd');
-  // Office chair
+  const p=toIso(col+1,row+0.5); // ancla portátil (NO mover)
+
+  // --- Vade/alfombrilla del escritorio: 38x5 con filo claro ---
+  r(p.x-19,p.y-16,38,5,'#45623b');
+  r(p.x-18,p.y-17,36,1,'#b7d58a');
+
+  // --- Base del portátil (teclado): 26x6, bisel claro arriba + sombra abajo ---
+  r(p.x-13,p.y-26,26,6,'#aaaaaa');
+  r(p.x-13,p.y-27,26,1,'#d7ebbb');   // filo superior (bisel)
+  r(p.x-13,p.y-20,26,1,'#587148');   // sombra inferior
+  r(p.x-11,p.y-25,22,2,'#777777');   // hilera de teclas
+  r(p.x-11,p.y-22,22,1,'#8a8a8a');   // 2a hilera tenue
+
+  // --- Tapa/pantalla: carcasa 34x27 (tope duro de ancho 34), spans y-53..y-26 ---
+  r(p.x-17,p.y-53,34,27,'#333');
+  r(p.x-17,p.y-54,34,1,'#b7d58a');   // bisel superior de la tapa
+  rx(p.x-17,p.y-53,34,27,'#587148',1);
+  // Pantalla azul interior: 30x23 (y-51..y-28)
+  r(p.x-15,p.y-51,30,23,'#1a3050');
+  // Cabecera oscura con rotulo OFFICE a 8px (>=8px)
+  r(p.x-15,p.y-51,30,9,'#0a1828');
+  tx('OFFICE',p.x,p.y-43,'#d7ebbb',8,'center');   // OFFICE 8px
+  r(p.x-15,p.y-42,30,1,'#d9a83f');   // separador dorado
+  // AÑO/SEMANA a 7px (>=7px), p.ej. "A3/S12"
+  tx(T().yearLbl+G.year+'/'+T().weekLbl+G.week,p.x,p.y-33,'#88bbdd',7,'center');
+  // Barra de progreso de semana: marco dorado 24x4, pista 22x2 + relleno proporcional
+  rx(p.x-12,p.y-32,24,4,'#d9a83f',1);
+  r(p.x-11,p.y-31,22,2,'#0a1828');
+  r(p.x-11,p.y-31,(22*G.weekTimer/CFG.WEEK_TICKS)|0,2,'#55aadd');
+  // Logo dorado en el bisel inferior de la pantalla
+  r(p.x-1,p.y-28,2,2,'#d9a83f');
+
+  // --- Placa del rol: encima de todo, sin solapar (texto 7px, ancho dinamico) ---
+  const lbl=T().staffLabel[3];
+  const pw=Math.max(40,(lbl.length*4.2+8)|0);     // placa: ancho = chars*4.2 + 8 de margen
+  r(p.x-1,p.y-55,2,3,'#d9a83f');                   // poste dorado placa->tapa
+  r(p.x-(pw>>1),p.y-66,pw,11,'#1c2b18');           // placa oscura 11 de alto (y-66..y-55)
+  rx(p.x-(pw>>1),p.y-66,pw,11,'#d9a83f',1);        // borde dorado
+  tx(lbl,p.x,p.y-58,'#d9a83f',7,'center');         // rol 7px en oro
+
+  // --- Silla de oficina (ancla NO movida) ---
   const cp=toIso(col+1,row+1.2);
-  r(cp.x-5,cp.y-20,10,14,'#3a3a5a');r(cp.x-4,cp.y-24,8,6,'#4a4a6a');
-  // Chair wheels
-  r(cp.x-4,cp.y-6,2,2,'#333');r(cp.x+2,cp.y-6,2,2,'#333');
-  tx(T().staffLabel[3],p.x,p.y-38,'#4a6a40',7,'center');
+  r(cp.x-5,cp.y-21,10,15,'#3a3a5a');   // respaldo
+  r(cp.x-4,cp.y-25,8,5,'#4a4a6a');     // reposacabezas
+  r(cp.x-4,cp.y-26,8,1,'#6a6a8a');     // filo claro (bisel)
+  r(cp.x-4,cp.y-13,8,1,'#d9a83f');     // costura dorada sutil
+  r(cp.x-1,cp.y-8,2,3,'#333');         // columna
+  r(cp.x-4,cp.y-6,2,2,'#333');r(cp.x+2,cp.y-6,2,2,'#333'); // ruedas
 }
 
 function drawIsoDoor(col,row){
