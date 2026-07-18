@@ -33667,11 +33667,15 @@ window.xtAPI = (function(){
   /* CLI aún más limpio: fuera la barra superior del dock (título + versión "SITE v…");
      el rótulo "CONTROL DE LA STORE" pasa al inicio de la propia caja de texto. */
   #telegramDock.compose-start .tg-pane.send .tg-head{display:none !important}
+  /* Alinear rótulo e input por la BASELINE del texto (evita que "/info" salga por
+     encima del rótulo cuando el textarea crece al escribir). */
+  #telegramDock.compose-start .tg-cli-row{align-items:baseline}
   #telegramDock.compose-start .tg-cli-row::before{
     content:'CONTROL DE LA STORE';
-    align-self:center;flex:0 0 auto;white-space:nowrap;
-    color:var(--xp-cyan,#78f3ff);font:bold 10px/1 monospace;letter-spacing:.12em;
+    align-self:baseline;flex:0 0 auto;white-space:nowrap;
+    color:var(--xp-cyan,#78f3ff);font:bold 10px/1.35 monospace;letter-spacing:.12em;
     padding-right:9px;margin-right:2px;border-right:1px solid rgba(120,243,255,.28)}
+  #telegramDock.compose-start .tg-cli-row .tg-actions{align-self:center}
   /* Modo AVANZADO (▤) = los 8 iconos ocupan el panel derecho, en lugar del texto
      EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
      ancho = margen, con su animación de despliegue). */
