@@ -902,8 +902,8 @@
   </div>
   <span class="qm-version" id="quadOptVersion" role="button" tabindex="0" title="Ayuda · funcionalidades"></span>
 </nav>
-<nav class="quad-menu quad-right is-collapsed" aria-label="Equipo Carbono">
-  <div class="qm-title">Equipo Carbono</div>
+<nav class="quad-menu quad-right is-collapsed" aria-label="Opciones Avanzadas">
+  <div class="qm-title">Opciones Avanzadas</div>
   <span class="qm-head">Equipo · Clientes</span>
   <span class="qm-hint" style="display:block;padding:8px 6px;line-height:1.5">El panel de <b>EQUIPO / CLIENTES</b> y sus actores (Ladrón, Guardia Civil, Opinador, Unitree, Sponsor…) aparece abajo al abrir Avanzado ▾</span>
 </nav>
@@ -33768,14 +33768,22 @@ window.xtAPI = (function(){
   /* Modo AVANZADO (▤) = los 8 iconos ocupan el panel derecho, en lugar del texto
      EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
      ancho = margen, con su animación de despliegue). */
-  .quad-right .qm-title, .quad-right .qm-head, .quad-right .qm-hint{display:none !important}
-  /* El panel Avanzado ahora cubre solo la franja negra → padding e iconos compactos */
-  .quad-right{padding:12px 4px !important}
-  #advQuickIcons{display:flex;flex-direction:column;gap:7px;margin-top:2px}
-  #advQuickIcons .tg-quick-btn{width:100%;min-height:40px;flex:0 0 auto;padding:5px 2px;gap:1px;
-    align-items:center;justify-content:center;text-align:center;overflow:visible}
-  #advQuickIcons .tg-quick-btn strong{font-size:8px;text-align:center;line-height:1.2;white-space:normal;overflow-wrap:anywhere;max-width:100%;letter-spacing:0}
-  #advQuickIcons .tg-quick-btn span{font-size:7px;text-align:center;line-height:1.1;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+  /* Título "OPCIONES AVANZADAS" visible (como "Equipo Silicio" pero a la DERECHA);
+     ocultamos solo qm-head/qm-hint. (Carlos, r34) */
+  .quad-right .qm-head, .quad-right .qm-hint{display:none !important}
+  .quad-right .qm-title{font-size:9px !important;letter-spacing:.06em !important;padding:1px 4px 8px !important;line-height:1.2;text-align:right !important}
+  /* El panel Avanzado cubre la franja negra → padding compacto */
+  .quad-right{padding:10px 3px !important}
+  #advQuickIcons{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+  /* Ítems del Avanzado con la MISMA tipografía y colores que Opciones, alineados a la
+     DERECHA (Orbitron, fondo transparente, acento cian al hover). */
+  #advQuickIcons .tg-quick-btn{width:100%;min-height:0;flex:0 0 auto;padding:7px 7px;gap:1px;
+    align-items:flex-end;justify-content:center;text-align:right;overflow:visible;
+    background:transparent !important;border:1px solid transparent !important;border-radius:7px;
+    color:var(--xp-ink) !important;font-family:'Orbitron','Press Start 2P',monospace}
+  #advQuickIcons .tg-quick-btn:hover{border-color:var(--xp-cyan) !important;color:var(--xp-cyan) !important;background:rgba(120,243,255,.1) !important}
+  #advQuickIcons .tg-quick-btn strong{font-size:9px !important;font-weight:800;text-align:right;line-height:1.15;white-space:normal;overflow-wrap:break-word;word-break:normal;max-width:100%;letter-spacing:0}
+  #advQuickIcons .tg-quick-btn span{font-size:8px !important;text-align:right;line-height:1.1;white-space:normal;overflow-wrap:break-word;max-width:100%;color:var(--xp-muted)}
   /* El ojo "La pantalla te ve" ya NO flota sobre el Xpacio: ahora vive en el panel
      Avanzado (▤). Ocultamos el FAB flotante (!important gana al display:flex inline). */
   #percibeFab{display:none !important}
