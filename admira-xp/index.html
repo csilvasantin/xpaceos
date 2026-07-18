@@ -1147,8 +1147,7 @@
       <div class="tg-actions">
         <button type="button" class="primary" id="telegramSendBtn">Send</button>
         <button type="button" id="telegramHelpBtn">/help</button>
-        <button type="button" id="telegramHideBtn">Hide</button>
-        <button type="button" id="advCondToggle" title="Contenidos condicionados · on/off">○ Condicional · OFF</button>
+        <button type="button" id="telegramHideBtn" title="Mostrar/ocultar la respuesta del CLI (mitad derecha)">Hide</button>
       </div>
     </div>
     <div id="telegramLastResponse" class="tg-last-response" hidden aria-live="polite"></div>
@@ -31072,12 +31071,17 @@ window.xtAPI = (function(){
   // última elección del usuario en localStorage. Clave _v2: la v1 se auto-
   // persistía a '1' en el primer arranque (default oculto) → se ignora para que
   // el nuevo default mostrado llegue a todos sin tener que pulsar "Mostrar".
-  let quickActionsHidden=(()=>{ try{ const v=localStorage.getItem('xtanco_quickactions_hidden_v2'); return v===null?false:v==='1'; }catch(e){ return false; } })();
+  // El botón Ocultar/Mostrar controla la RESPUESTA del CLI (mitad derecha del dock
+  // experto). Oculta por DEFECTO → el input ocupa todo el ancho; "Mostrar" enseña el
+  // feedback, "Ocultar" lo esconde. (Antes ocultaba los tiles, que ya no salen en el dock.)
+  let quickActionsHidden=(()=>{ try{ const v=localStorage.getItem('xtanco_cli_out_hidden_v3'); return v===null?true:v==='1'; }catch(e){ return true; } })();
   function setQuickActionsHidden(active){
     quickActionsHidden=!!active;
     if(quickActionsEl) quickActionsEl.style.display=quickActionsHidden?'none':'';
+    var _dock=document.getElementById('telegramDock');
+    if(_dock) _dock.classList.toggle('cli-out-hidden', quickActionsHidden);   // oculta la mitad derecha
     if(hideBtn) hideBtn.textContent=quickActionsHidden?(lang==='es'?'Mostrar':'Show'):(lang==='es'?'Ocultar':'Hide');
-    try{ localStorage.setItem('xtanco_quickactions_hidden_v2', quickActionsHidden?'1':'0'); }catch(e){}
+    try{ localStorage.setItem('xtanco_cli_out_hidden_v3', quickActionsHidden?'1':'0'); }catch(e){}
   }
   // Exponer estado para que la función i18n pueda reflejarlo al cambiar idioma
   window.isQuickActionsHidden=()=>quickActionsHidden;
@@ -33726,6 +33730,10 @@ window.xtAPI = (function(){
   #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open) #telegramLastResponse{display:block !important;flex:1 1 50%;min-width:0;
     max-height:none;margin:0;border:0;border-left:1px solid rgba(120,243,255,.22);
     padding:6px 12px;overflow:auto;align-self:stretch}
+  /* Feedback del CLI oculto (botón Ocultar/Mostrar): la mitad derecha desaparece y el
+     input ocupa todo el ancho → máximo espacio para escribir. Oculto por defecto. */
+  #telegramDock.compose-start.cli-out-hidden .tg-pane.send:not(.help-open):not(.signage-open) #telegramLastResponse{display:none !important}
+  #telegramDock.compose-start.cli-out-hidden .tg-pane.send:not(.help-open):not(.signage-open) .tg-cli-row{flex:1 1 100% !important}
   /* Modo AVANZADO (▤) = los 8 iconos ocupan el panel derecho, en lugar del texto
      EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
      ancho = margen, con su animación de despliegue). */
