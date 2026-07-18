@@ -27707,10 +27707,14 @@ window.xtAPI = (function(){
         if(typeof XCAL!=='undefined' && XCAL.open){ XCAL.open(); return {ok:true,message:'📅 Calendario abierto: pulsa un día para ver entradas, actividad y el DVR del día.'}; }
         return {ok:false,message:'Calendario no disponible'};
       }
-      // /xpl — abre el editor del Condicional (panel xpl/). Antes era el enlace "✎ Panel".
-      if(['xpl','condeditor','editorcondicional','panelcondicional','xplpanel'].includes(cmd)){
-        try{ window.open('xpl/','_blank','noopener'); }catch(e){}
-        return {ok:true,message:'✎ Editor del Condicional abierto en una pestaña nueva (xpl/). Ahí defines las reglas condicionadas de los contenidos.'};
+      // /xpl — alterna el Condicional (contenidos condicionados) ON/OFF: 1ª vez ON,
+      // 2ª OFF. Sin argumentos on|off para no duplicar. Usa XPLGemelo.setOn (síncrono).
+      if(['xpl','xpltoggle','condtoggle'].includes(cmd)){
+        var _xplWasOn=false; try{ _xplWasOn=localStorage.getItem('xpl_gemelo_on')==='1'; }catch(e){}
+        var _xplNowOn=!_xplWasOn;
+        try{ if(window.XPLGemelo&&window.XPLGemelo.setOn) window.XPLGemelo.setOn(_xplNowOn);
+             else { var _c=document.getElementById('xpl-chip'); if(_c) _c.click(); } }catch(e){}
+        return {ok:true,message:_xplNowOn?'◉ Condicional ON — se aplican los contenidos condicionados. (/xpl otra vez = OFF)':'○ Condicional OFF — contenidos normales. (/xpl otra vez = ON)'};
       }
 
       return {ok:false,message:'Comando no reconocido: '+raw};
@@ -29487,7 +29491,7 @@ window.xtAPI = (function(){
       {title:'Tiempo y ambiente',items:['/reloj 14:30','/reloj 14 30','/time am','/time pm','/time night','/weather normal','/weather rain','/weather sun','/lamp','/lamp auto','/hue','/hue auto']},
       {title:'Pantalla y directo',items:['/livecam','/mocap','/pixeria','/AdmiraLive texto','/comunicar texto','/comunicar texto --grok','/comunicar texto --elevenlabs','/AdmiraTube URL 2 audio','/say texto','/targetPublicity aforo','/targetPublicity genero','/targetPublicity off','/generovideo','/generovideo off','/impactos','/impactos cpm 12','/impactos tft','/impactos reset','/impactos off','/audienciaIN 8','/audienciaOUT 4']},
       {title:'Digital Signage (vídeos)',items:['/ds on','/ds off','/ds next','/ds previous','/ds audio on','/ds audio off','/info','/info on','/info off']},
-      {title:'Condicional (reglas de contenido)',items:['/xpl']},
+      {title:'Condicional (contenidos condicionados)',items:['/xpl (1ª vez ON · 2ª OFF)']},
       {title:'Escena en vivo',items:['/dj','/ladron','/guardiacivil','/opinador','/robot','/sponsor','/socio','/door open','/door close','/door auto','/subasta','/subasta off']},
       {title:'Notificaciones al personal',items:['/personal socio','/personal dashboard','/socios listado','/heatmap','/heatmap reset','/sponsor recurrente 120 10']},
       {title:'Atmósfera',items:['/ambiente','/ambiente vol 50','/voces']},
@@ -30056,12 +30060,15 @@ window.xtAPI = (function(){
           ? 'ℹ️ Botones "i" de las pantallas VISIBLES — pulsa uno para ver su ficha (tag, sonido…). «/info off» para ocultarlos.'
           : 'ℹ️ Botones "i" ocultos. Escribe «/info» para volver a mostrarlos.';
       }
-      // /xpl — abre el editor del Condicional (panel /admira-xp/xpl/). Antes era el
-      // enlace "✎ Panel" de la barra; ahora es un comando del modo experto.
-      if(['xpl','condeditor','editorcondicional','panelcondicional','xplpanel'].includes(cmd)){
-        try{ window.open('xpl/','_blank','noopener'); }catch(e){}
-        if(typeof showEv==='function') showEv('✎ Editor del Condicional','#c9a3ff');
-        return '✎ Editor del Condicional abierto en una pestaña nueva (xpl/). Ahí defines las reglas condicionadas de los contenidos.';
+      // /xpl — alterna el Condicional ON/OFF (1ª vez ON, 2ª OFF). Sin args on|off para
+      // no duplicar. Usa XPLGemelo.setOn (síncrono; persiste xpl_gemelo_on).
+      if(['xpl','xpltoggle','condtoggle'].includes(cmd)){
+        var _xplWasOn=false; try{ _xplWasOn=localStorage.getItem('xpl_gemelo_on')==='1'; }catch(e){}
+        var _xplNowOn=!_xplWasOn;
+        try{ if(window.XPLGemelo&&window.XPLGemelo.setOn) window.XPLGemelo.setOn(_xplNowOn);
+             else { var _xc=document.getElementById('xpl-chip'); if(_xc) _xc.click(); } }catch(e){}
+        if(typeof showEv==='function') showEv(_xplNowOn?'◉ Condicional ON':'○ Condicional OFF', _xplNowOn?'#7dffb5':'#80a0a9');
+        return _xplNowOn?'◉ Condicional ON — se aplican los contenidos condicionados. (/xpl otra vez = OFF)':'○ Condicional OFF — contenidos normales. (/xpl otra vez = ON)';
       }
       if(['debug','diag','dump','debugger','diagnostico','diagnóstico'].includes(cmd)) return debugDump();
       if(['nuevomiembro','nuevomember','altamiembro','miembro','newmember','addmember','team-add'].includes(cmd)) return await addTeamMember(arg);
