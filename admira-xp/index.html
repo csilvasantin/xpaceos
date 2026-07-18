@@ -33719,12 +33719,24 @@ window.xtAPI = (function(){
     align-items:center;justify-content:center;text-align:center;overflow:visible}
   #advQuickIcons .tg-quick-btn strong{font-size:8px;text-align:center;line-height:1.2;white-space:normal;overflow-wrap:anywhere;max-width:100%;letter-spacing:0}
   #advQuickIcons .tg-quick-btn span{font-size:7px;text-align:center;line-height:1.1;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+  /* El ojo "La pantalla te ve" ya NO flota sobre el Xpacio: ahora vive en el panel
+     Avanzado (▤). Ocultamos el FAB flotante (!important gana al display:flex inline). */
+  #percibeFab{display:none !important}
 </style>
 <script id="quickLaunchScript">
 (function(){
   var src=document.getElementById('telegramQuickActions'); if(!src) return;
   var panel=document.querySelector('.quad-right'); if(!panel) return;   // panel Avanzado (derecha)
   var host=document.createElement('div'); host.id='advQuickIcons'; panel.appendChild(host);
+  // Botón del ojo "La pantalla te ve" — vive en el panel Avanzado (▤), ya NO flota
+  // sobre el Xpacio (el #percibeFab queda oculto por CSS). Toggle del overlay.
+  function makePercibe(){
+    var e=document.createElement('button'); e.type='button'; e.className='tg-quick-btn'; e.id='advPercibeBtn';
+    e.title='La pantalla te ve (Shift+V)';
+    e.innerHTML='<strong>👁</strong><span>La pantalla te ve</span>';
+    e.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); try{ if(window.__PERCIBE) window.__PERCIBE.toggle(); }catch(_){}} );
+    return e;
+  }
   function mirror(){
     var btns=[].slice.call(src.querySelectorAll('.tg-quick-btn'));
     host.innerHTML='';
@@ -33733,6 +33745,7 @@ window.xtAPI = (function(){
       c.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); try{ b.click(); }catch(e){} });
       host.appendChild(c);
     });
+    host.appendChild(makePercibe());   // el ojo, al final de la lanzadera Avanzada
   }
   try{ var mo=new MutationObserver(mirror); mo.observe(src,{childList:true,subtree:true,characterData:true}); }catch(e){}
   mirror();
