@@ -30006,6 +30006,19 @@ window.xtAPI = (function(){
         if(/^\d+$/.test(sub)){ TP.open(parseInt(sub,10)); return '▸ Presentación: slide '+sub; }
         TP.open(0); return '🎞️ Presentación abierta';
       }
+      // /info [on|off] — muestra u oculta los botones "i" (fichas) en las esquinas de las pantallas.
+      if(['info','fichas','badges','ficha'].includes(cmd)){
+        const sub=(arg||'').toLowerCase().trim();
+        let on;
+        if(['on','1','si','sí','mostrar','show','ver'].includes(sub)) on=true;
+        else if(['off','0','no','ocultar','hide','quitar'].includes(sub)) on=false;
+        else on = (typeof window.__infoBadgesShown==='function') ? !window.__infoBadgesShown() : true;   // toggle
+        const now = (typeof window.__setInfoBadges==='function') ? window.__setInfoBadges(on) : on;
+        if(typeof showEv==='function') showEv(now?'ℹ️ Fichas de pantalla ON':'ℹ️ Fichas de pantalla OFF', now?'#78f3ff':'#80a0a9');
+        return now
+          ? 'ℹ️ Botones "i" de las pantallas VISIBLES — pulsa uno para ver su ficha (tag, sonido…). «/info off» para ocultarlos.'
+          : 'ℹ️ Botones "i" ocultos. Escribe «/info» para volver a mostrarlos.';
+      }
       if(['debug','diag','dump','debugger','diagnostico','diagnóstico'].includes(cmd)) return debugDump();
       if(['nuevomiembro','nuevomember','altamiembro','miembro','newmember','addmember','team-add'].includes(cmd)) return await addTeamMember(arg);
       if(['echarmiembro','echar','bajamiembro','despedir','firemember','removemember','team-remove'].includes(cmd)) return await removeTeamMember(arg);
@@ -33313,8 +33326,10 @@ window.xtAPI = (function(){
   #screenInfoLayer{position:fixed;inset:0;pointer-events:none;z-index:7}
   #screenInfoLayer .si-badge{position:absolute;pointer-events:auto;width:17px;height:17px;border-radius:50%;
     background:rgba(3,10,16,.9);border:1px solid var(--xp-cyan,#78f3ff);color:var(--xp-cyan,#78f3ff);
-    font:italic bold 12px/1 Georgia,serif;display:grid;place-items:center;cursor:pointer;
+    font:italic bold 12px/1 Georgia,serif;display:none;place-items:center;cursor:pointer;
     box-shadow:0 0 8px rgba(120,243,255,.55);transform:translate(-50%,-50%)}
+  /* Las "i" ocultas por defecto; solo visibles con /info (clase show-badges en la capa) */
+  #screenInfoLayer.show-badges .si-badge:not(.off){display:grid}
   #screenInfoLayer .si-badge:hover{background:var(--xp-cyan,#78f3ff);color:#03151a}
   #screenInfoPop{position:fixed;z-index:8;display:none;min-width:210px;max-width:290px;padding:12px 14px;border-radius:10px;
     background:rgba(3,10,16,.96);border:1px solid rgba(120,243,255,.5);color:#dff8ff;font-family:'Orbitron',monospace;
@@ -33371,7 +33386,7 @@ window.xtAPI = (function(){
   document.body.appendChild(pop);
   pop.querySelector('.si-close').onclick=function(){pop.classList.remove('show');};
   pop.querySelector('.si-tag').onclick=function(){ try{navigator.clipboard.writeText(this.textContent);}catch(e){} };
-  var badges={}, lives={};
+  var badges={}, lives={};   // las "i" ocultas por defecto (CSS); se muestran con /info (clase show-badges)
   SCREENS.forEach(function(s){
     var b=document.createElement('button'); b.className='si-badge'; b.textContent='i';
     b.title='Info · '+s.tag;
@@ -33381,6 +33396,9 @@ window.xtAPI = (function(){
     lv.innerHTML='<span class="si-live-dot"></span>LIVE';
     layer.appendChild(lv); lives[s.id]=lv;
   });
+  // Mostrar/ocultar las fichas "i" de las pantallas (comando CLI /info). Por defecto ocultas.
+  window.__setInfoBadges=function(on){ layer.classList.toggle('show-badges', !!on); if(!on){ try{ pop.classList.remove('show'); }catch(e){} } return layer.classList.contains('show-badges'); };
+  window.__infoBadgesShown=function(){ return layer.classList.contains('show-badges'); };
   function openPop(s,b){
     pop.querySelector('.si-name').textContent='📺 '+s.label;
     pop.querySelector('.si-tag').textContent=s.tag;
@@ -33424,8 +33442,8 @@ window.xtAPI = (function(){
         var c=q2c(QUADS[s.id]); // [TL, TR, BR, BL] en px de viewport
         if(c && c[1] && c[0]){ tr={x:c[1].x-9,y:c[1].y+9}; tl={x:c[0].x+7,y:c[0].y+9}; }
       }
-      if(!tr){ b.style.display='none'; lv.style.display='none'; return; }
-      b.style.display='grid'; b.style.left=tr.x+'px'; b.style.top=tr.y+'px';
+      if(!tr){ b.classList.add('off'); lv.style.display='none'; return; }   // pantalla no disponible → oculta
+      b.classList.remove('off'); b.style.left=tr.x+'px'; b.style.top=tr.y+'px';   // posición; visibilidad la lleva la clase CSS (/info)
       lv.style.display='flex'; lv.style.left=tl.x+'px'; lv.style.top=tl.y+'px';
     });
     requestAnimationFrame(place);
