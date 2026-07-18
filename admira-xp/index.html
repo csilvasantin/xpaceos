@@ -31081,7 +31081,9 @@ window.xtAPI = (function(){
   // El botón Ocultar/Mostrar controla la RESPUESTA del CLI (mitad derecha del dock
   // experto). Oculta por DEFECTO → el input ocupa todo el ancho; "Mostrar" enseña el
   // feedback, "Ocultar" lo esconde. (Antes ocultaba los tiles, que ya no salen en el dock.)
-  let quickActionsHidden=(()=>{ try{ const v=localStorage.getItem('xtanco_cli_out_hidden_v3'); return v===null?true:v==='1'; }catch(e){ return true; } })();
+  // Arranca SIEMPRE oculto (default). Se auto-muestra al llegar una respuesta de comando
+  // (showLastResponse) y se puede ocultar con el botón. No persiste: cada carga = oculto.
+  let quickActionsHidden=true;
   function setQuickActionsHidden(active){
     quickActionsHidden=!!active;
     if(quickActionsEl) quickActionsEl.style.display=quickActionsHidden?'none':'';
@@ -31163,6 +31165,9 @@ window.xtAPI = (function(){
     const body=document.createElement('div'); body.textContent=clean;
     el.appendChild(tag); el.appendChild(ts); el.appendChild(body);
     el.scrollTop=0;
+    // Feedback importante: al llegar una respuesta se AUTO-MUESTRA la mitad derecha
+    // (aunque estuviera oculta). El usuario la vuelve a ocultar con el botón.
+    try{ if(quickActionsHidden) setQuickActionsHidden(false); }catch(e){}
     clearTimeout(showLastResponse._t);
     showLastResponse._t=setTimeout(()=>{ try{ el.classList.remove('fresh'); }catch(e){} },3500);
   }
