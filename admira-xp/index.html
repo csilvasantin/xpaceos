@@ -33696,14 +33696,18 @@ window.xtAPI = (function(){
   function syncLaunch(){
     try{
       var dock=document.getElementById('telegramDock'), c=document.getElementById('c');
-      var on=!!(dock && dock.classList.contains('compose-start'));
+      // Solo cuando el modo experto está ABIERTO: dock en compose-start Y no oculto
+      // (⌘ pfExpert togglea body.xp-left-hidden; por defecto oculto → lanzadera oculta).
+      var on=!!(dock && dock.classList.contains('compose-start') && !document.body.classList.contains('xp-left-hidden'));
       document.body.classList.toggle('xp-launch-side', on);
       if(on && c && dock){
         var r=c.getBoundingClientRect(), dr=dock.getBoundingClientRect();
+        var tb=document.getElementById('topBar');
+        var topY=(tb && getComputedStyle(tb).display!=='none') ? Math.round(tb.getBoundingClientRect().bottom)+6 : 42; // NO pisar la barra superior
         var lw=Math.max(44,Math.round(r.left)), rw=Math.max(44,Math.round(window.innerWidth-r.right));
-        var top=42, bottom=Math.round(window.innerHeight-dr.top)+6;
-        L.style.width=lw+'px'; L.style.left='0'; L.style.top=top+'px'; L.style.bottom=bottom+'px';
-        R.style.width=rw+'px'; R.style.right='0'; R.style.top=top+'px'; R.style.bottom=bottom+'px';
+        var bottom=Math.round(window.innerHeight-dr.top)+6;
+        L.style.width=lw+'px'; L.style.left='0'; L.style.top=topY+'px'; L.style.bottom=bottom+'px';
+        R.style.width=rw+'px'; R.style.right='0'; R.style.top=topY+'px'; R.style.bottom=bottom+'px';
       }
     }catch(e){}
   }
