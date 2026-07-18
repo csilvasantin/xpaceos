@@ -2396,6 +2396,9 @@ function dsPinSurfaceFromUrl(surfaceId,kind,url,name){
   if(typeof dsApplyAudioForPins==='function') dsApplyAudioForPins();
   return true;
 }
+// Expuesto para el emisor del canal admira.tv (admiraTvChannelScript): los paneles
+// DOOH emiten la parrilla de admira.tv por su tag reutilizando el pin remoto.
+try{ window.__dsPinSurfaceFromUrl=dsPinSurfaceFromUrl; }catch(e){}
 try{ window.__dsPinSurfaceFromUrl=dsPinSurfaceFromUrl; }catch(e){}
 // Master mute global: cuando esta activo, silencia bgMusic, dsVideoEl, todos los
 // m.video pineados y los iframes de AdmiraTube. Se controla con /audio mute.
@@ -33410,6 +33413,66 @@ window.xtAPI = (function(){
   // Primer sondeo a los 4s (deja arrancar el juego), luego cada 20s.
   setTimeout(function(){ poll(); setInterval(poll,20000); },4000);
   window.__pollSignage=poll;
+})();
+</script>
+<!-- ════════ Canal admira.tv por tag v1 (2026-07-18) — XpaceOS ↔ admira.tv (opción A) ════════
+     Los paneles DOOH del gemelo emiten la PARRILLA de admira.tv por su tag: cada uno sondea
+     api.admira.store/grid/day?screen=<tag> (mismo motor que la puerta CanalKiosk) y emite esa
+     parrilla vía dsPinSurfaceFromUrl (pin remoto, no persistente). Si el tag no tiene parrilla
+     propia, cae al canal de la casa (sim-gracia-kiosko) para que siempre se vea el canal.
+     Slice 1: las 2 pantallas grandes (ds1/ds2). Autocontenido y reversible. -->
+<script id="admiraTvChannelScript">
+(function(){
+  if(window.__ADMIRATV_CHANNEL) return; window.__ADMIRATV_CHANNEL='1';
+  var GRID='https://api.admira.store/grid/day?screen=';
+  var STOCK='https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev/stock/index.json';
+  var HOUSE='sim-gracia-kiosko';   // canal de la casa (fallback si el tag no tiene parrilla)
+  var PANELS=[                     // surfaceId → tag (screen slug). Slice 1: pantallas grandes.
+    {id:'ds1', tag:'xt-gracia-p1', phase:0},
+    {id:'ds2', tag:'xt-gracia-p2', phase:1},
+  ];
+  var thumbs={}, st={};
+  PANELS.forEach(function(p){ st[p.id]={items:[],period:10000,curIdx:-1,src:''}; });
+  function buildItems(gd){
+    var period=10000; try{ var ss=gd&&gd.config&&gd.config.slotSeconds; if(ss>0) period=ss*1000; }catch(e){}
+    var bands=(gd&&gd.bands)||[]; var band=bands.find(function(b){return b.isNow;})||bands[0];
+    var seen={};
+    var items=(((band&&band.slots)||[]).filter(function(s){
+      if(!((s.kind==='own'||s.kind==='paid')&&s.creative&&s.creative.url)) return false;
+      if(s.bookingId){ if(seen[s.bookingId]) return false; seen[s.bookingId]=1; }
+      return true;
+    })).map(function(s){
+      return { url:String(s.creative.url).replace(/^https:\/\/www\.admira\.tv\//,'https://admira.tv/'),
+        type:(s.creative.type==='video'?'video':'image'),
+        title:s.title||(s.creative&&s.creative.name)||'Canal admira.tv' };
+    });
+    return {items:items,period:period};
+  }
+  function fetchGrid(slug){ return fetch(GRID+encodeURIComponent(slug),{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return null;}); }
+  function loadPanel(p){
+    return fetchGrid(p.tag).then(function(gd){
+      var b=buildItems(gd||{});
+      if(b.items.length){ st[p.id].items=b.items; st[p.id].period=b.period; st[p.id].src='tag'; st[p.id].curIdx=-1; return; }
+      return fetchGrid(HOUSE).then(function(gh){ var f=buildItems(gh||{}); st[p.id].items=f.items; st[p.id].period=f.period; st[p.id].src='house'; st[p.id].curIdx=-1; });
+    });
+  }
+  function loadAll(){
+    fetch(STOCK,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+      (j.items||[]).forEach(function(x){ if(x&&x.id&&x.thumbnail) thumbs[x.id]=x.thumbnail; });
+    }).catch(function(){}).then(function(){ PANELS.forEach(loadPanel); });
+  }
+  function tick(){
+    var pin=window.__dsPinSurfaceFromUrl; if(typeof pin!=='function') return;
+    PANELS.forEach(function(p){
+      var s=st[p.id]; if(!s.items.length) return;
+      var idx=(Math.floor(Date.now()/s.period)+p.phase)%s.items.length;
+      if(idx===s.curIdx) return; s.curIdx=idx;
+      var it=s.items[idx];
+      try{ pin(p.id, it.type, it.url, it.title); }catch(e){}
+    });
+  }
+  try{ window.__admiraTvChannelState=st; }catch(e){}
+  loadAll(); setInterval(loadAll,60000); setInterval(tick,500);
 })();
 </script>
 </body>
