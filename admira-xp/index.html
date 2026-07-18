@@ -11932,11 +11932,26 @@ function mupiCamOpenGallery(){
   let p=mupiCamGalleryEl();
   if(!p){
     p=document.createElement('div'); p.id='mupiCamPanel';
-    p.style.cssText='position:fixed;top:72px;left:16px;z-index:2147482000;width:250px;max-height:72vh;display:flex;flex-direction:column;background:rgba(6,16,10,.94);border:1px solid #5fb0ff;border-radius:10px;color:#dbeaff;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;box-shadow:0 0 22px rgba(95,176,255,.25);overflow:hidden';
+    // Anonimizador pegado a la banda negra izquierda (como el menú Opciones) para no
+    // pisar el Xpacio (Carlos, r31). El ancho se adapta al letterbox tras crearlo.
+    p.style.cssText='position:fixed;top:38px;left:0;bottom:8px;z-index:2147482000;width:110px;display:flex;flex-direction:column;background:rgba(6,16,10,.94);border:1px solid #5fb0ff;border-radius:0 10px 10px 0;color:#dbeaff;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;box-shadow:0 0 22px rgba(95,176,255,.25);overflow:hidden';
     p.innerHTML='<div id="mcHdr" style="display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-bottom:1px dashed #2f6a8a;letter-spacing:.06em;cursor:move;user-select:none;touch-action:none"><b>📷 CÁMARA MUPI</b><span style="display:flex;gap:6px;align-items:center"><span id="mcCam" title="alternar cámara exterior (calle) / interior (tienda)" style="cursor:pointer;font-size:9px;border:1px solid #7dff9e;color:#7dff9e;border-radius:5px;padding:1px 6px">🌐 Exterior</span><span id="mcMode" title="alternar humano IA / NPC pixelado" style="cursor:pointer;font-size:9px;border:1px solid #5fb0ff;border-radius:5px;padding:1px 6px">🧑 humano</span><span id="mcClose" style="cursor:pointer;color:#999;padding:0 4px">×</span></span></div>'+
       '<div id="mcSub" style="padding:4px 9px;font-size:9px;opacity:.7;border-bottom:1px solid rgba(95,176,255,.15)">🚶 <b>0</b> viandantes · foto + hora al pasar</div>'+
       '<div id="mcBody" style="padding:8px 9px;overflow:auto"></div>';
     document.body.appendChild(p);
+    // Ajusta el ancho a la banda negra izquierda (letterbox del canvas), como el menú
+    // Opciones. No se aplica si el usuario ya movió/redimensionó el panel (geom guardada).
+    p.__fitLetterbox=function(){
+      try{
+        var geom=JSON.parse(localStorage.getItem('xtanco_panels_geom_v1')||'{}');
+        if(geom && geom.mupiCamPanel) return;                 // el usuario lo colocó a mano
+        var cvx=document.getElementById('c');
+        var lb=cvx?Math.round(cvx.getBoundingClientRect().left):96;
+        p.style.width=Math.max(88,lb)+'px';
+      }catch(e){}
+    };
+    p.__fitLetterbox();
+    window.addEventListener('resize', function(){ if(document.getElementById('mupiCamPanel')===p) p.__fitLetterbox(); });
     p.querySelector('#mcClose').onclick=()=>mupiCamCloseGallery();
     // Pulsar el rótulo «📷 CÁMARA MUPI» → puerta al Anonimizador de PixerIA
     // (Carlos, 14-jul-2026): Aceptar abre pixeria.com/anonimizador para crear
@@ -33428,12 +33443,14 @@ window.xtAPI = (function(){
       0 5px 20px rgba(0,0,0,.45),               /* sombra proyectada */
       0 0 16px rgba(120,243,255,.10) !important;/* leve glow cian DOOH */
   }
-  /* Piloto "● LIVE" (tally) por pantalla */
+  /* Piloto "● LIVE" (tally) por pantalla — OCULTO por defecto; solo visible con /info
+     (igual que las "i"), para dejar la interfaz limpia (Carlos, r31). */
   #screenInfoLayer .si-live{position:absolute;pointer-events:none;transform:translate(0,-50%);
-    display:flex;align-items:center;gap:4px;padding:1px 6px 1px 5px;border-radius:999px;
+    display:none;align-items:center;gap:4px;padding:1px 6px 1px 5px;border-radius:999px;
     background:rgba(3,10,16,.82);border:1px solid rgba(255,60,60,.5);
     font:bold 8px/1 'Orbitron',monospace;letter-spacing:.12em;color:#ff6b6b;
     box-shadow:0 0 8px rgba(0,0,0,.5)}
+  #screenInfoLayer.show-badges .si-live{display:flex}
   #screenInfoLayer .si-live .si-live-dot{width:5px;height:5px;border-radius:50%;background:#ff3b3b;
     box-shadow:0 0 6px #ff3b3b;animation:siLivePulse 1.4s ease-in-out infinite}
   @keyframes siLivePulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -33513,7 +33530,9 @@ window.xtAPI = (function(){
       }
       if(!tr){ b.classList.add('off'); lv.style.display='none'; return; }   // pantalla no disponible → oculta
       b.classList.remove('off'); b.style.left=tr.x+'px'; b.style.top=tr.y+'px';   // posición; visibilidad la lleva la clase CSS (/info)
-      lv.style.display='flex'; lv.style.left=tl.x+'px'; lv.style.top=tl.y+'px';
+      // El piloto LIVE solo se ve en modo /info (igual que las "i"), para limpiar la interfaz.
+      lv.style.display = layer.classList.contains('show-badges') ? 'flex' : 'none';
+      lv.style.left=tl.x+'px'; lv.style.top=tl.y+'px';
     });
     requestAnimationFrame(place);
   }
