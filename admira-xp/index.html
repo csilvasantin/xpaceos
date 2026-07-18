@@ -2436,10 +2436,29 @@ function dsApplyAudioForPins(){
 // Toggle de audio por pantalla (ficha "i"). Desmutear una silencia las demás
 // (fuente única). Devuelve el nuevo estado. Expuesto para screenInfoScript.
 function dsSurfaceAudioOn(id){ return !!DS_AUDIO_ON[id]; }
+// Ducking del hilo musical: cuando una pantalla tiene su audio activo, el hilo
+// musical del Xpacio baja (no se solapa); al volver todas a silencio, se restaura.
+const DS_MUSIC_DUCK={active:false,prevVol:null,level:0.06};
+function dsApplyMusicDuck(){
+  try{
+    if(typeof bgMusic==='undefined'||!bgMusic) return;
+    const anyOn=Object.keys(DS_AUDIO_ON).length>0;
+    if(anyOn && !DS_MUSIC_DUCK.active){
+      DS_MUSIC_DUCK.active=true;
+      DS_MUSIC_DUCK.prevVol=bgMusic.volume;
+      bgMusic.volume=Math.min(bgMusic.volume,DS_MUSIC_DUCK.level);  // baja el hilo musical
+    } else if(!anyOn && DS_MUSIC_DUCK.active){
+      DS_MUSIC_DUCK.active=false;
+      if(DS_MUSIC_DUCK.prevVol!=null) bgMusic.volume=DS_MUSIC_DUCK.prevVol;  // restaura
+      DS_MUSIC_DUCK.prevVol=null;
+    }
+  }catch(e){}
+}
 function dsSetSurfaceAudio(id,on){
   if(on){ for(const k in DS_AUDIO_ON) delete DS_AUDIO_ON[k]; DS_AUDIO_ON[id]=true; }
   else { delete DS_AUDIO_ON[id]; }
   try{ dsApplyAudioForPins(); }catch(e){}
+  try{ dsApplyMusicDuck(); }catch(e){}   // hilo musical: duck al activar, restaura al silenciar
   // Al activar audio de una pantalla, intenta reanudar su reproducción (gesto de usuario).
   try{ const m=DS_SURFACE_MEDIA[id]; if(on && m && m.video && m.video.src) m.video.play().catch(()=>{}); }catch(e){}
   return !!DS_AUDIO_ON[id];
