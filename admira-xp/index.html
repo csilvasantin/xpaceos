@@ -33718,7 +33718,16 @@ window.xtAPI = (function(){
       }
     }catch(e){}
   }
-  setInterval(fitDock, 150); fitDock();
+  setInterval(fitDock, 120); fitDock();
+  // Aplicar YA al abrir el experto: en cuanto cambia la clase del dock (compose-start),
+  // fitDock corre como microtask (antes del pintado) → no se ve el dock alto un instante.
+  try{
+    var dockEl=document.getElementById('telegramDock');
+    if(dockEl){
+      var dmo=new MutationObserver(function(){ fitDock(); requestAnimationFrame(fitDock); });
+      dmo.observe(dockEl,{attributes:true,attributeFilter:['class']});
+    }
+  }catch(e){}
 })();
 </script>
 </body>
