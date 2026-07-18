@@ -817,9 +817,13 @@
   /* Indicador de acordeón: puntito arriba a la derecha (no roba ancho como el ▸ lateral) */
   .quad-left .qm-acc-head::after{content:'▾';position:absolute;right:3px;top:3px;font-size:8px;color:var(--xp-muted);transition:transform .15s ease}
   .quad-left .qm-acc.open .qm-acc-head::after{transform:rotate(180deg);color:var(--xp-cyan)}
-  .quad-left .qm-acc-body{display:none;flex-direction:column;gap:3px;padding:2px 0 3px;margin:1px 0;border-top:1px solid rgba(120,243,255,.14)}
+  .quad-left .qm-acc-body{display:none;flex-direction:column;gap:2px;padding:3px 0 4px;margin:1px 0;border-top:1px solid rgba(120,243,255,.16)}
   .quad-left .qm-acc.open .qm-acc-body{display:flex}
-  .quad-left .qm-acc-body button{padding:6px 2px;font-size:8px;line-height:1.1;color:var(--xp-muted)}
+  /* Subopciones legibles: mayor tamaño y contraste, ancho completo, fondo sutil para
+     distinguirlas de las cabeceras, cian al pasar (Carlos, r35). */
+  .quad-left .qm-acc-body button{padding:6px 8px;font-size:9px !important;line-height:1.25;color:#cdeef6;
+    align-items:flex-start;text-align:left;border-radius:6px;background:rgba(120,243,255,.06);font-weight:600}
+  .quad-left .qm-acc-body button:hover{background:rgba(120,243,255,.18);color:var(--xp-cyan)}
   /* Panel Avanzado (▤) — columna derecha a altura completa; desliza de der→izq */
   .quad-right{top:38px;right:0;bottom:var(--xp-dock-clear,0px);width:280px;z-index:200;display:flex;flex-direction:column;gap:6px;padding:16px 12px;border-radius:14px 0 0 14px;overflow-y:auto;transform:translateX(100%);pointer-events:none;transition:transform .22s ease}
   .quad-right:not(.is-collapsed){transform:translateX(0);pointer-events:auto}
@@ -851,8 +855,8 @@
   body.xp-left-hidden #telegramDock,body.xp-left-hidden #dockSplitHandle,body.xp-left-hidden #eraVerticalDock{display:none !important}
   body.xp-right-hidden #characterDock{display:none !important}
 </style>
-<nav class="quad-menu quad-left is-collapsed" aria-label="Equipo Silicio">
-  <div class="qm-title">Equipo Silicio</div>
+<nav class="quad-menu quad-left is-collapsed" aria-label="Opciones">
+  <div class="qm-title">Opciones</div>
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>📢 Megafonía</button>
     <div class="qm-acc-body">
@@ -33783,7 +33787,8 @@ window.xtAPI = (function(){
     color:var(--xp-ink) !important;font-family:'Orbitron','Press Start 2P',monospace}
   #advQuickIcons .tg-quick-btn:hover{border-color:var(--xp-cyan) !important;color:var(--xp-cyan) !important;background:rgba(120,243,255,.1) !important}
   #advQuickIcons .tg-quick-btn strong{font-size:9px !important;font-weight:800;text-align:right;line-height:1.15;white-space:normal;overflow-wrap:break-word;word-break:normal;max-width:100%;letter-spacing:0}
-  #advQuickIcons .tg-quick-btn span{font-size:8px !important;text-align:right;line-height:1.1;white-space:normal;overflow-wrap:break-word;max-width:100%;color:var(--xp-muted)}
+  #advQuickIcons .tg-quick-btn span{font-size:8px !important;text-align:right;line-height:1.15;white-space:normal;overflow-wrap:break-word;max-width:100%;color:#9fc4cf}
+  #advQuickIcons .tg-quick-btn:hover span{color:var(--xp-cyan)}
   /* El ojo "La pantalla te ve" ya NO flota sobre el Xpacio: ahora vive en el panel
      Avanzado (▤). Ocultamos el FAB flotante (!important gana al display:flex inline). */
   #percibeFab{display:none !important}
