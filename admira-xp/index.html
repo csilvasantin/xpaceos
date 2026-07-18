@@ -2403,6 +2403,10 @@ try{ window.__dsPinSurfaceFromUrl=dsPinSurfaceFromUrl; }catch(e){}
 // Master mute global: cuando esta activo, silencia bgMusic, dsVideoEl, todos los
 // m.video pineados y los iframes de AdmiraTube. Se controla con /audio mute.
 let dsMasterMute=false;
+// Audio por pantalla (toggle en la ficha "i"): por defecto TODAS las pantallas
+// silenciadas; solo suena el hilo musical del Xpacio (bgMusic) si está activo.
+// Desmutear es EXCLUSIVO: solo una pantalla suena a la vez (evita cacofonía).
+const DS_AUDIO_ON=Object.create(null);   // surfaceId -> true si su fuente suena
 function dsAnyVideoPinActive(){
   if(typeof DS_PIN!=='object') return false;
   for(const sid in DS_PIN){
@@ -2417,7 +2421,9 @@ function dsApplyAudioForPins(){
     const m=DS_SURFACE_MEDIA[id];
     if(!m||!m.video) continue;
     const pinned=DS_PIN[id]&&DS_PIN[id].kind==='video';
-    try{ m.video.muted=dsMasterMute || !pinned; }catch(e){}
+    // Por defecto SILENCIO: solo suena si esta pantalla tiene el audio activado
+    // en su ficha "i" (DS_AUDIO_ON), está pineada a vídeo y no hay master mute.
+    try{ m.video.muted=dsMasterMute || !pinned || !DS_AUDIO_ON[id]; }catch(e){}
   }
   // Si hay algun pin de video, la rotacion global cede el audio al pinado.
   // Master mute fuerza dsVideoEl muted independientemente.
@@ -2427,6 +2433,18 @@ function dsApplyAudioForPins(){
     else if(typeof applyDSAudioRouting==='function') applyDSAudioRouting();
   }catch(e){}
 }
+// Toggle de audio por pantalla (ficha "i"). Desmutear una silencia las demás
+// (fuente única). Devuelve el nuevo estado. Expuesto para screenInfoScript.
+function dsSurfaceAudioOn(id){ return !!DS_AUDIO_ON[id]; }
+function dsSetSurfaceAudio(id,on){
+  if(on){ for(const k in DS_AUDIO_ON) delete DS_AUDIO_ON[k]; DS_AUDIO_ON[id]=true; }
+  else { delete DS_AUDIO_ON[id]; }
+  try{ dsApplyAudioForPins(); }catch(e){}
+  // Al activar audio de una pantalla, intenta reanudar su reproducción (gesto de usuario).
+  try{ const m=DS_SURFACE_MEDIA[id]; if(on && m && m.video && m.video.src) m.video.play().catch(()=>{}); }catch(e){}
+  return !!DS_AUDIO_ON[id];
+}
+try{ window.__dsSetSurfaceAudio=dsSetSurfaceAudio; window.__dsSurfaceAudioOn=dsSurfaceAudioOn; }catch(e){}
 // Guarda los valores previos para restaurar al desactivar el master mute.
 let _dsMutePrev={sfxVolume:null,bgMusicPaused:false,ambientEnabled:null,custVoicesEnabled:null};
 function setMasterMute(on){
@@ -33286,6 +33304,11 @@ window.xtAPI = (function(){
   #screenInfoPop .si-name{font:800 12px/1.3 'Orbitron',monospace;color:var(--xp-cyan,#78f3ff);letter-spacing:.05em;margin-bottom:7px;padding-right:16px}
   #screenInfoPop .si-tag{font:bold 15px monospace;color:var(--xp-gold,#f7c95d);letter-spacing:.08em;background:rgba(247,201,93,.1);
     border:1px dashed rgba(247,201,93,.5);border-radius:6px;padding:5px 9px;display:inline-block;margin-bottom:9px;user-select:all;cursor:copy}
+  #screenInfoPop .si-audio{display:flex;align-items:center;gap:7px;width:100%;margin:0 0 9px;padding:7px 10px;border-radius:8px;cursor:pointer;
+    background:rgba(120,243,255,.07);border:1px solid rgba(120,243,255,.3);color:var(--xp-cyan,#78f3ff);
+    font:bold 11px 'Orbitron',monospace;letter-spacing:.04em;text-align:left;transition:background .15s,border-color .15s}
+  #screenInfoPop .si-audio:hover{background:rgba(120,243,255,.14);border-color:var(--xp-cyan,#78f3ff)}
+  #screenInfoPop .si-audio.on{background:rgba(125,255,181,.12);border-color:var(--xp-mint,#7dffb5);color:var(--xp-mint,#7dffb5)}
   #screenInfoPop .si-hint{font:10px/1.5 monospace;color:#80a0a9}
   #screenInfoPop .si-close{position:absolute;top:6px;right:9px;cursor:pointer;color:#80a0a9;font:bold 13px monospace}
   #screenInfoPop .si-close:hover{color:var(--xp-cyan,#78f3ff)}
@@ -33325,7 +33348,7 @@ window.xtAPI = (function(){
   ];
   var layer=document.createElement('div'); layer.id='screenInfoLayer'; document.body.appendChild(layer);
   var pop=document.createElement('div'); pop.id='screenInfoPop';
-  pop.innerHTML='<div class="si-close">✕</div><div class="si-name"></div><div class="si-tag" title="Clic para copiar"></div><div class="si-hint"></div>';
+  pop.innerHTML='<div class="si-close">✕</div><div class="si-name"></div><div class="si-tag" title="Clic para copiar"></div><button class="si-audio" type="button"></button><div class="si-hint"></div>';
   document.body.appendChild(pop);
   pop.querySelector('.si-close').onclick=function(){pop.classList.remove('show');};
   pop.querySelector('.si-tag').onclick=function(){ try{navigator.clipboard.writeText(this.textContent);}catch(e){} };
@@ -33343,6 +33366,21 @@ window.xtAPI = (function(){
     pop.querySelector('.si-name').textContent='📺 '+s.label;
     pop.querySelector('.si-tag').textContent=s.tag;
     pop.querySelector('.si-hint').innerHTML='Tag único de esta pantalla. Asigna este tag a un contenido en <b style="color:#dff8ff">admira.studio</b> y se emitirá aquí.';
+    // Toggle de sonido de la fuente de esta pantalla (por defecto silenciada;
+    // desmutear una silencia las demás). El hilo musical va aparte.
+    var ab=pop.querySelector('.si-audio');
+    function renderAudio(){
+      var on=(typeof window.__dsSurfaceAudioOn==='function')&&window.__dsSurfaceAudioOn(s.id);
+      ab.classList.toggle('on',!!on);
+      ab.textContent=on?'🔊 Sonido: ACTIVO':'🔇 Sonido: silenciado';
+    }
+    ab.onclick=function(ev){
+      ev.stopPropagation();
+      var cur=(typeof window.__dsSurfaceAudioOn==='function')&&window.__dsSurfaceAudioOn(s.id);
+      if(typeof window.__dsSetSurfaceAudio==='function') window.__dsSetSurfaceAudio(s.id,!cur);
+      renderAudio();
+    };
+    renderAudio();
     var r=b.getBoundingClientRect();
     pop.style.left=Math.max(8,Math.min(window.innerWidth-298,r.left-8))+'px';
     pop.style.top=(r.bottom+8)+'px';
