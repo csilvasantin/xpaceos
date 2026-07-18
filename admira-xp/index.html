@@ -938,9 +938,8 @@
     }
     btn.addEventListener('click', function(){
       var willOpen = panel.classList.contains('is-collapsed');
-      // cierra los otros paneles del trío
-      document.querySelectorAll('.quad-menu').forEach(function(p){ if(p!==panel) p.classList.add('is-collapsed'); });
-      toggles.forEach(function(b){ if(b!==btn){ b.classList.remove('is-active'); b.setAttribute('aria-expanded','false'); document.body.classList.remove('quad-'+b.dataset.quadToggle+'-open'); } });
+      // Paneles INDEPENDIENTES (Carlos, r29): Opciones ☰, Avanzado ▤ y Experto ⌘ pueden
+      // estar abiertos a la vez. Ya no se cierran entre sí; cada botón gestiona SOLO el suyo.
       panel.classList.toggle('is-collapsed', !willOpen);
       // Avanzado ▤ (columna derecha) revela también el dock EQUIPO/CLIENTES (characterDock).
       if(name==='right'){ document.body.classList.toggle('xp-right-hidden', !willOpen); }
