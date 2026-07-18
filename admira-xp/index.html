@@ -33689,6 +33689,25 @@ window.xtAPI = (function(){
   }
   try{ var mo=new MutationObserver(mirror); mo.observe(src,{childList:true,subtree:true,characterData:true}); }catch(e){}
   mirror();
+  // CLI compacto: en modo experto (compose-start, ya sin tiles) el dock se ajusta a
+  // su contenido (header + caja + respuesta), eliminando el espacio negro sobrante
+  // entre la caja de escritura y el resultado.
+  function fitDock(){
+    try{
+      var dock=document.getElementById('telegramDock');
+      if(!dock || !dock.classList.contains('compose-start')) return;
+      var send=dock.querySelector('.tg-pane.send'); if(!send) return;
+      var kids=[].filter.call(send.children,function(el){ return getComputedStyle(el).display!=='none'; });
+      if(!kids.length) return;
+      var top=dock.getBoundingClientRect().top;
+      var lastBottom=kids[kids.length-1].getBoundingClientRect().bottom;
+      var h=Math.ceil(lastBottom-top)+3;                    // contenido + colchón mínimo
+      if(h>40 && Math.abs(dock.getBoundingClientRect().height-h)>2){
+        dock.style.height=h+'px';                            // ajusta el dock al contenido
+      }
+    }catch(e){}
+  }
+  setInterval(fitDock, 150); fitDock();
 })();
 </script>
 </body>
