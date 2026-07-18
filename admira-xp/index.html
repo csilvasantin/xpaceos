@@ -33859,5 +33859,98 @@ window.xtAPI = (function(){
   }catch(e){}
 })();
 </script>
+<!-- ════════ Paneles movibles + redimensionables + posición recordada (Carlos, r30) ════════
+     Módulo autónomo: a cada panel flotante le añade un grip de MOVER (✥, arriba-izq) y otro
+     de REDIMENSIONAR (◢, abajo-der), y recuerda su geometría (left/top/width/height) en
+     localStorage. Al reaparecer, se restaura en la última posición/tamaño que se dejó. -->
+<style id="panMoveStyle">
+  .xp-pan-grip{position:absolute;z-index:2147483600;display:flex;align-items:center;justify-content:center;
+    color:#78f3ff;background:rgba(4,12,18,.82);border:1px solid rgba(120,243,255,.5);
+    user-select:none;touch-action:none;opacity:.55;transition:opacity .12s,background .12s}
+  .xp-pan-grip:hover{opacity:1;background:rgba(120,243,255,.22)}
+  .xp-pan-move{top:2px;left:2px;width:17px;height:17px;border-radius:5px;font-size:11px;line-height:1;cursor:move}
+  .xp-pan-rez{right:1px;bottom:1px;width:15px;height:15px;border-radius:3px;font-size:9px;line-height:1;cursor:nwse-resize}
+  .xp-pan-host{opacity:.9}
+</style>
+<script id="panMoveScript">
+(function(){
+  var LS='xtanco_panels_geom_v1';
+  var GEOM=(function(){ try{ return JSON.parse(localStorage.getItem(LS)||'{}')||{}; }catch(e){ return {}; } })();
+  function save(){ try{ localStorage.setItem(LS, JSON.stringify(GEOM)); }catch(e){} }
+  function clamp(v,mn,mx){ return Math.max(mn,Math.min(mx,v)); }
+  // Paneles flotantes objetivo (estáticos y creados dinámicamente).
+  var TARGETS=['dvrPanel','metahumanPanel','robotGrokPanel','mupiCamPanel','xcalPanel',
+               'admiraSubastaPanel','impactsHud','npcEditor','custCard'];
+  function isVisible(el){ var cs=getComputedStyle(el); return cs.display!=='none' && cs.visibility!=='hidden' && el.getBoundingClientRect().width>1; }
+
+  function attach(el){
+    if(!el || el.__panMovable) return; el.__panMovable=true;
+    el.classList.add('xp-pan-host');
+    var key=el.id;
+    // Si el panel YA tiene una cabecera arrastrable propia (cursor:move), no añadimos el
+    // grip de mover (evita solaparlo con el título); solo el de redimensionar.
+    var ownHeader=el.querySelector('[style*="cursor:move"],[style*="cursor: move"]');
+    var mv=null;
+    if(!ownHeader){
+      mv=document.createElement('div'); mv.className='xp-pan-grip xp-pan-move'; mv.title='Arrastra para mover'; mv.textContent='✥';
+      el.appendChild(mv);
+    }
+    var rz=document.createElement('div'); rz.className='xp-pan-grip xp-pan-rez'; rz.title='Arrastra para redimensionar'; rz.textContent='◢';
+    el.appendChild(rz);
+
+    function toAbs(){
+      var b=el.getBoundingClientRect();
+      el.style.transform='none'; el.style.right='auto'; el.style.bottom='auto';
+      el.style.left=Math.round(b.left)+'px'; el.style.top=Math.round(b.top)+'px';
+    }
+    function persist(){
+      var b=el.getBoundingClientRect();
+      GEOM[key]={l:Math.round(b.left),t:Math.round(b.top),w:Math.round(b.width),h:Math.round(b.height)};
+      save();
+    }
+    el.__panRestore=function(){
+      var g=GEOM[key]; if(!g) return;
+      el.style.transform='none'; el.style.right='auto'; el.style.bottom='auto';
+      if(g.l!=null) el.style.left=clamp(g.l,0,window.innerWidth-40)+'px';
+      if(g.t!=null) el.style.top=clamp(g.t,0,window.innerHeight-28)+'px';
+      if(g.w)  el.style.width=g.w+'px';
+      if(g.h){ el.style.height=g.h+'px'; el.style.maxHeight='none'; }
+    };
+    // MOVER (solo si añadimos el grip; los que tienen cabecera propia usan su header)
+    if(mv){
+      var d=null;
+      mv.addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); toAbs(); var b=el.getBoundingClientRect(); d={x:e.clientX,y:e.clientY,l:b.left,t:b.top}; try{ mv.setPointerCapture(e.pointerId); }catch(_){} });
+      mv.addEventListener('pointermove',function(e){ if(!d) return; el.style.left=clamp(d.l+(e.clientX-d.x),0,window.innerWidth-40)+'px'; el.style.top=clamp(d.t+(e.clientY-d.y),0,window.innerHeight-28)+'px'; });
+      mv.addEventListener('pointerup',function(e){ if(!d) return; d=null; persist(); });
+    }
+    // REDIMENSIONAR
+    var r=null;
+    rz.addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); toAbs(); var b=el.getBoundingClientRect(); r={x:e.clientX,y:e.clientY,w:b.width,h:b.height}; try{ rz.setPointerCapture(e.pointerId); }catch(_){} });
+    rz.addEventListener('pointermove',function(e){ if(!r) return; el.style.width=Math.max(150,r.w+(e.clientX-r.x))+'px'; el.style.height=Math.max(64,r.h+(e.clientY-r.y))+'px'; el.style.maxHeight='none'; el.style.maxWidth='none'; });
+    rz.addEventListener('pointerup',function(e){ if(!r) return; r=null; persist(); });
+    // Capturar también arrastres por cabecera propia del panel (impactos/subasta ya la tienen)
+    el.addEventListener('pointerup',function(){ if(el.__panMovedFlag){ el.__panMovedFlag=false; setTimeout(persist,12); } });
+    el.addEventListener('pointermove',function(e){ if(e.buttons) el.__panMovedFlag=true; });
+
+    // restaurar al enganchar (si ya es visible) y observar reapariciones
+    if(isVisible(el)) el.__panRestore();
+    try{
+      var wasVis=isVisible(el);
+      var mo=new MutationObserver(function(){
+        var v=isVisible(el);
+        if(v && !wasVis){ el.__panRestore(); requestAnimationFrame(el.__panRestore); }
+        wasVis=v;
+      });
+      mo.observe(el,{attributes:true,attributeFilter:['style','class','hidden']});
+    }catch(_){}
+  }
+
+  function scan(){ TARGETS.forEach(function(id){ var el=document.getElementById(id); if(el) attach(el); }); }
+  scan();
+  // paneles dinámicos: reintenta cuando el DOM cambia + red de seguridad por intervalo
+  try{ new MutationObserver(function(){ scan(); }).observe(document.body,{childList:true}); }catch(_){}
+  setInterval(scan, 1500);
+})();
+</script>
 </body>
 </html>
