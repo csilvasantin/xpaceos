@@ -131,10 +131,9 @@
        drag fuerte hasta el extremo oculta uno de los dos paneles. */
     #dockSplitHandle{display:none;position:fixed;bottom:0;width:14px;z-index:31;cursor:ew-resize;align-items:center;justify-content:center;touch-action:none}
     #dockSplitHandle.show{display:flex}
-    /* Grip INVISIBLE por defecto (sin "mancha" cian); solo aparece al pasar por encima
-       o arrastrar. La zona de resize (14px) sigue activa. (Carlos, r32) */
-    #dockSplitHandle .grip{width:4px;height:64px;border-radius:2px;background:rgba(120,243,255,.42);box-shadow:0 0 12px rgba(120,243,255,.22);opacity:0;transition:opacity .15s,background .12s}
-    #dockSplitHandle:hover .grip,#dockSplitHandle.is-dragging .grip{opacity:1;background:#78f3ff}
+    /* Grip SIEMPRE invisible (Carlos, r33): sin "mancha" cian ni siquiera al hover.
+       La zona de resize (14px, ew-resize) sigue activa. */
+    #dockSplitHandle .grip{display:none !important}
     #dockSplitHandle.near-snap .grip{background:#ffd866;box-shadow:0 0 18px rgba(255,216,102,.5)}
     #characterDock.show{display:flex}
     #characterDock.compose-start{display:flex;height:228px}
@@ -805,12 +804,12 @@
   /* Panel Opciones (☰) — columna izquierda a altura completa; desliza de izq→der y llena el espacio negro */
   .quad-left{top:38px;left:0;bottom:var(--xp-dock-clear,0px);width:96px;z-index:200;display:flex;flex-direction:column;gap:4px;padding:10px 3px;border-radius:0 12px 12px 0;overflow-y:auto;transform:translateX(-100%);pointer-events:none;transition:transform .22s ease}
   .quad-left:not(.is-collapsed){transform:translateX(0);pointer-events:auto}
-  /* Opciones estrecho: cubre SOLO la banda negra (letterbox). Ítems icono-céntricos,
-     centrados y con etiqueta pequeña que envuelve (como el panel Avanzado). */
-  .quad-left a,.quad-left button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:7px 2px;font-size:9px;line-height:1.15;letter-spacing:0;text-transform:none;border-radius:7px;white-space:normal;text-align:center;overflow-wrap:anywhere}
-  /* Título compacto para la banda estrecha: fuente menor, envuelve, poco interletra */
-  .quad-left .qm-title{font-size:9px !important;letter-spacing:.06em !important;padding:1px 2px 8px !important;line-height:1.2}
-  .quad-left .qm-version{margin-top:auto;padding-top:10px;text-align:center;color:var(--xp-muted);font-size:8px;letter-spacing:.04em;opacity:.75;cursor:pointer;transition:color .15s,opacity .15s;overflow-wrap:anywhere}
+  /* Opciones: cubre la banda negra (letterbox). Ítems alineados a la IZQUIERDA
+     (Carlos, r33): etiqueta pequeña que envuelve, texto pegado al borde izquierdo. */
+  .quad-left a,.quad-left button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:7px 7px;font-size:9px;line-height:1.15;letter-spacing:0;text-transform:none;border-radius:7px;white-space:normal;text-align:left;overflow-wrap:break-word;word-break:normal}
+  /* Título compacto, también a la izquierda */
+  .quad-left .qm-title{font-size:9px !important;letter-spacing:.06em !important;padding:1px 4px 8px !important;line-height:1.2;text-align:left !important}
+  .quad-left .qm-version{margin-top:auto;padding:10px 4px 0;text-align:left;color:var(--xp-muted);font-size:8px;letter-spacing:.04em;opacity:.75;cursor:pointer;transition:color .15s,opacity .15s;overflow-wrap:anywhere}
   .quad-left .qm-version:hover{color:var(--xp-cyan);opacity:1}
   /* Acordeones Música / Vídeo dentro de Opciones */
   .quad-left .qm-acc{display:flex;flex-direction:column}
