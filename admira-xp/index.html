@@ -33427,9 +33427,15 @@ window.xtAPI = (function(){
   var GRID='https://api.admira.store/grid/day?screen=';
   var STOCK='https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev/stock/index.json';
   var HOUSE='sim-gracia-kiosko';   // canal de la casa (fallback si el tag no tiene parrilla)
-  var PANELS=[                     // surfaceId → tag (screen slug). Slice 1: pantallas grandes.
-    {id:'ds1', tag:'xt-gracia-p1', phase:0},
-    {id:'ds2', tag:'xt-gracia-p2', phase:1},
+  // surfaceId → tag (screen slug). fallback=true → si el tag no tiene parrilla,
+  // emite el canal de la casa. Las pantallas grandes (ds1/ds2) sí; el escaparate
+  // (publi exterior segmentada) y el metahuman (cara AI) NO: solo emiten canal si
+  // su tag tiene parrilla propia reservada, para no pisar su contenido especial.
+  var PANELS=[
+    {id:'ds1',        tag:'xt-gracia-p1',  phase:0, fallback:true },
+    {id:'ds2',        tag:'xt-gracia-p2',  phase:1, fallback:true },
+    {id:'escaparate', tag:'xt-gracia-esc', phase:2, fallback:false},
+    {id:'metahuman',  tag:'xt-gracia-mh',  phase:3, fallback:false},
   ];
   var thumbs={}, st={};
   PANELS.forEach(function(p){ st[p.id]={items:[],period:10000,curIdx:-1,src:''}; });
@@ -33453,6 +33459,7 @@ window.xtAPI = (function(){
     return fetchGrid(p.tag).then(function(gd){
       var b=buildItems(gd||{});
       if(b.items.length){ st[p.id].items=b.items; st[p.id].period=b.period; st[p.id].src='tag'; st[p.id].curIdx=-1; return; }
+      if(!p.fallback){ st[p.id].items=[]; st[p.id].src='none'; st[p.id].curIdx=-1; return; } // sin parrilla propia → deja su contenido especial
       return fetchGrid(HOUSE).then(function(gh){ var f=buildItems(gh||{}); st[p.id].items=f.items; st[p.id].period=f.period; st[p.id].src='house'; st[p.id].curIdx=-1; });
     });
   }
