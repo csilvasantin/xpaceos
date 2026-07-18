@@ -33539,5 +33539,91 @@ window.xtAPI = (function(){
   loadAll(); setInterval(loadAll,60000); setInterval(tick,500);
 })();
 </script>
+<!-- ════════ Progreso de descarga por pantalla v1 (2026-07-18) ════════
+     Cuando a una pantalla se le asigna contenido NUEVO, un anillo verde alrededor
+     de la pantalla muestra el progreso de descarga REAL (fetch con lector de bytes):
+     mitad inferior=25% · vertical derecha=50% · mitad superior=75% · vertical
+     izquierda=100% (descarga completa). Envuelve __dsPinSurfaceFromUrl (no toca el
+     core), cachea el blob por URL (repeticiones instantáneas) y solo se muestra si
+     la descarga tarda >200ms. Autocontenido y reversible. -->
+<style id="dlProgressStyle">
+  #dlProgressLayer{position:fixed;inset:0;pointer-events:none;z-index:6;overflow:visible}
+  #dlProgressLayer path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+  #dlProgressLayer .dlp-track{stroke:rgba(0,0,0,.4);stroke-width:4;opacity:.45}
+  #dlProgressLayer .dlp-fill{stroke:#35e06a;stroke-width:3;opacity:.95;filter:drop-shadow(0 0 3px rgba(53,224,106,.9))}
+</style>
+<script id="dlProgressScript">
+(function(){
+  if(window.__DL_PROGRESS) return; window.__DL_PROGRESS='1';
+  var orig=window.__dsPinSurfaceFromUrl;
+  var SURF=['ds1','ds2','escaparate','metahuman'];
+  var prog={}; SURF.forEach(function(id){ prog[id]={pct:0,active:false,t:null}; });
+  var blobCache={};
+  var NS='http://www.w3.org/2000/svg';
+  var svg=document.createElementNS(NS,'svg'); svg.id='dlProgressLayer';
+  svg.setAttribute('width','100%'); svg.setAttribute('height','100%');
+  document.body.appendChild(svg);
+  var fills={}, tracks={};
+  SURF.forEach(function(id){
+    var tr=document.createElementNS(NS,'path'); tr.setAttribute('class','dlp-track'); tr.style.display='none'; svg.appendChild(tr); tracks[id]=tr;
+    var f=document.createElementNS(NS,'path'); f.setAttribute('class','dlp-fill'); f.style.display='none'; svg.appendChild(f); fills[id]=f;
+  });
+  function corners(id){
+    if(id==='ds1'||id==='ds2'){
+      var el=document.getElementById(id==='ds1'?'videoMonitor':'videoMonitor2');
+      if(!el||getComputedStyle(el).display==='none') return null;
+      var r=el.getBoundingClientRect(); if(r.width<6||r.height<6) return null;
+      return [{x:r.left,y:r.top},{x:r.right,y:r.top},{x:r.right,y:r.bottom},{x:r.left,y:r.bottom}]; // TL,TR,BR,BL
+    }
+    var q2c=window.__dsQuadCvToClient, Q=window.__DS_SURFACE_QUADS;
+    if(q2c&&Q&&Q[id]){ var c=q2c(Q[id]); if(c&&c.length===4) return c; }
+    return null;
+  }
+  function pathD(c){ // revela BL→BR(abajo)→TR(derecha)→TL(arriba)→BL(izquierda)
+    var TL=c[0],TR=c[1],BR=c[2],BL=c[3];
+    return 'M'+BL.x+','+BL.y+' L'+BR.x+','+BR.y+' L'+TR.x+','+TR.y+' L'+TL.x+','+TL.y+' L'+BL.x+','+BL.y;
+  }
+  function frame(){
+    SURF.forEach(function(id){
+      var st=prog[id], f=fills[id], tr=tracks[id];
+      if(!st.active){ f.style.display='none'; tr.style.display='none'; return; }
+      var c=corners(id);
+      if(!c){ f.style.display='none'; tr.style.display='none'; return; }
+      var d=pathD(c);
+      tr.setAttribute('d',d); tr.style.display='';
+      f.setAttribute('d',d); f.style.display='';
+      var L=f.getTotalLength()||1;
+      f.style.strokeDasharray=L; f.style.strokeDashoffset=L*(1-st.pct/100);
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  function start(id){ prog[id].pct=0; clearTimeout(prog[id].t); prog[id].t=setTimeout(function(){ prog[id].active=true; },200); } // solo si tarda >200ms
+  function set(id,pct){ prog[id].pct=Math.max(0,Math.min(100,pct)); }
+  function done(id){ clearTimeout(prog[id].t); if(prog[id].active){ prog[id].pct=100; setTimeout(function(){ prog[id].active=false; },420); } else { prog[id].active=false; } }
+  function pinWithProgress(surfaceId, kind, url, name){
+    try{
+      if(SURF.indexOf(surfaceId)<0 || typeof orig!=='function') return orig&&orig(surfaceId,kind,url,name);
+      if(blobCache[url]) return orig(surfaceId,kind,blobCache[url],name);              // ya descargado
+      if(!window.fetch || !url || String(url).indexOf('blob:')===0) return orig(surfaceId,kind,url,name);
+      start(surfaceId);
+      fetch(url).then(function(resp){
+        if(!resp.ok||!resp.body) throw 0;
+        var total=+(resp.headers.get('content-length')||0);
+        var reader=resp.body.getReader(), chunks=[], loaded=0;
+        function pump(){ return reader.read().then(function(r){
+          if(r.done){ var burl=URL.createObjectURL(new Blob(chunks)); blobCache[url]=burl; set(surfaceId,100); done(surfaceId); orig(surfaceId,kind,burl,name); return; }
+          chunks.push(r.value); loaded+=r.value.length; if(total>0) set(surfaceId, loaded/total*100);
+          return pump();
+        }); }
+        return pump();
+      }).catch(function(){ clearTimeout(prog[surfaceId].t); prog[surfaceId].active=false; orig(surfaceId,kind,url,name); });
+      return true;
+    }catch(e){ return orig&&orig(surfaceId,kind,url,name); }
+  }
+  window.__dsPinSurfaceFromUrl = pinWithProgress;
+  try{ window.__dlProgress={prog:prog,set:set,start:start,done:done}; }catch(e){}
+})();
+</script>
 </body>
 </html>
