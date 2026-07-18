@@ -801,21 +801,21 @@
   .quad-menu a:hover,.quad-menu button:hover{border-color:var(--xp-cyan);color:var(--xp-cyan);background:rgba(120,243,255,.1)}
   .quad-menu .qm-hint{color:var(--xp-muted);font-size:9px;letter-spacing:.1em;text-align:center;opacity:.8}
   /* Panel Opciones (☰) — columna izquierda a altura completa; desliza de izq→der y llena el espacio negro */
-  .quad-left{top:38px;left:0;bottom:0;width:280px;z-index:200;display:flex;flex-direction:column;gap:6px;padding:16px 12px;border-radius:0 14px 14px 0;overflow-y:auto;transform:translateX(-100%);pointer-events:none;transition:transform .22s ease}
+  .quad-left{top:38px;left:0;bottom:var(--xp-dock-clear,0px);width:200px;z-index:200;display:flex;flex-direction:column;gap:5px;padding:14px 9px;border-radius:0 14px 14px 0;overflow-y:auto;transform:translateX(-100%);pointer-events:none;transition:transform .22s ease}
   .quad-left:not(.is-collapsed){transform:translateX(0);pointer-events:auto}
-  .quad-left a,.quad-left button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
+  .quad-left a,.quad-left button{display:flex;align-items:center;gap:8px;justify-content:flex-start;padding:9px 10px;font-size:11px;letter-spacing:.01em;text-transform:none;border-radius:8px;white-space:nowrap}
   .quad-left .qm-version{margin-top:auto;padding-top:12px;text-align:center;color:var(--xp-muted);font-size:10px;letter-spacing:.08em;opacity:.75;cursor:pointer;transition:color .15s,opacity .15s}
   .quad-left .qm-version:hover{color:var(--xp-cyan);opacity:1}
   /* Acordeones Música / Vídeo dentro de Opciones */
   .quad-left .qm-acc{display:flex;flex-direction:column}
-  .quad-left .qm-acc-head{position:relative;padding-right:28px}
-  .quad-left .qm-acc-head::after{content:'▸';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--xp-muted);transition:transform .15s ease}
+  .quad-left .qm-acc-head{position:relative;padding-right:20px}
+  .quad-left .qm-acc-head::after{content:'▸';position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--xp-muted);transition:transform .15s ease}
   .quad-left .qm-acc.open .qm-acc-head::after{transform:translateY(-50%) rotate(90deg);color:var(--xp-cyan)}
   .quad-left .qm-acc-body{display:none;flex-direction:column;gap:4px;padding-left:12px;margin:2px 0 2px;border-left:1px solid rgba(120,243,255,.14)}
   .quad-left .qm-acc.open .qm-acc-body{display:flex}
   .quad-left .qm-acc-body button{padding:9px 12px;font-size:12px}
   /* Panel Avanzado (▤) — columna derecha a altura completa; desliza de der→izq */
-  .quad-right{top:38px;right:0;bottom:0;width:280px;z-index:200;display:flex;flex-direction:column;gap:6px;padding:16px 12px;border-radius:14px 0 0 14px;overflow-y:auto;transform:translateX(100%);pointer-events:none;transition:transform .22s ease}
+  .quad-right{top:38px;right:0;bottom:var(--xp-dock-clear,0px);width:280px;z-index:200;display:flex;flex-direction:column;gap:6px;padding:16px 12px;border-radius:14px 0 0 14px;overflow-y:auto;transform:translateX(100%);pointer-events:none;transition:transform .22s ease}
   .quad-right:not(.is-collapsed){transform:translateX(0);pointer-events:auto}
   .quad-right a,.quad-right button{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;font-size:13px;letter-spacing:.03em;text-transform:none;border-radius:8px}
   /* Badge de tienda "Xtanco inicial · xtore-inicial": mensaje flotante fuera de la barra → oculto */
@@ -954,7 +954,7 @@
     var vw=window.innerWidth;
     var left=document.querySelector('.quad-left');
     var right=document.querySelector('.quad-right');
-    if(left){ var lw=rect?Math.round(rect.left):0; left.style.width=Math.max(220,lw)+'px'; }
+    if(left){ var lw=rect?Math.round(rect.left):0; left.style.width=Math.max(176,lw)+'px'; }  /* Opciones: más estrecha (antes 220) */
     if(right){ var rw=rect?Math.round(vw-rect.right):0; right.style.width=Math.max(72,rw)+'px'; }  /* Avanzado: solo la franja negra derecha (no 220) */
     // versión al fondo del panel Opciones (se lee al abrir: XTANCO_APP ya está cargado)
     var ver=document.getElementById('quadOptVersion');
@@ -33733,7 +33733,22 @@ window.xtAPI = (function(){
       }
     }catch(e){}
   }
-  setInterval(function(){ fitDock(); fitPlaceholder(); }, 120); fitDock();
+  // Los paneles laterales (Opciones ☰ / Avanzado ▤) llegan a bottom:0 y taparían el
+  // dock inferior del modo experto. Publicamos la altura del dock VISIBLE en la var
+  // --xp-dock-clear para que ambos paneles paren justo encima (sin pisarlo).
+  function syncDockClear(){
+    try{
+      var dock=document.getElementById('telegramDock');
+      // OJO: #telegramDock es position:fixed → offsetParent es null aunque sea visible.
+      // Nos fiamos de display/visibility + altura real del rect.
+      var cs=dock? getComputedStyle(dock):null;
+      var vis=dock && cs && cs.display!=='none' && cs.visibility!=='hidden' && dock.getBoundingClientRect().height>1;
+      var h=vis? Math.round(dock.getBoundingClientRect().height):0;
+      document.documentElement.style.setProperty('--xp-dock-clear', (h?h+6:0)+'px');
+    }catch(e){}
+  }
+  setInterval(function(){ fitDock(); fitPlaceholder(); syncDockClear(); }, 120); fitDock(); syncDockClear();
+  window.addEventListener('resize', syncDockClear);
   // Placeholder compacto: en la fila input|output el textarea es estrecho (~50% del
   // ancho) y el hint largo se recorta feo. En modo experto usamos una pista corta;
   // fuera del experto se respeta el placeholder original (localizado ES/EN).
