@@ -1803,7 +1803,20 @@ function resizeCanvas(){
     if(dockShown && composeStart) dock.style.display='';
     if(!composeStart) dock.style.display='';
     dock.style.left=dockLeft+'px';
-    if(inGameplay&&!telegramDockHidden) dock.style.height=dockRenderH+'px';
+    if(inGameplay&&!telegramDockHidden){
+      var sendPane=dock.querySelector('.tg-pane.send');
+      var panelOpen=sendPane&&(sendPane.classList.contains('help-open')||sendPane.classList.contains('signage-open'));
+      if(composeStart&&!panelOpen){
+        // Modo experto (fila input|output SIN panel): la altura la decide fitDock según
+        // el CONTENIDO (~44px), NUNCA gameplayDockHeight. Así el dock queda compacto y el
+        // Xpacio recupera toda la banda inferior (antes el dock se estiraba a la altura
+        // arrastrada y tapaba media pantalla). Fallback bajo si aún no tiene altura.
+        if(!dock.style.height||parseInt(dock.style.height,10)>72) dock.style.height='44px';
+      } else {
+        // Dock normal, o con panel /help /signage abierto → altura completa para leerlo.
+        dock.style.height=dockRenderH+'px';
+      }
+    }
     dock.style.top='auto';
     dock.style.bottom='0px';
   }
