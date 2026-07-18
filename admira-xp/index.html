@@ -131,8 +131,10 @@
        drag fuerte hasta el extremo oculta uno de los dos paneles. */
     #dockSplitHandle{display:none;position:fixed;bottom:0;width:14px;z-index:31;cursor:ew-resize;align-items:center;justify-content:center;touch-action:none}
     #dockSplitHandle.show{display:flex}
-    #dockSplitHandle .grip{width:4px;height:64px;border-radius:2px;background:rgba(120,243,255,.42);box-shadow:0 0 12px rgba(120,243,255,.22);transition:background .12s}
-    #dockSplitHandle:hover .grip,#dockSplitHandle.is-dragging .grip{background:#78f3ff}
+    /* Grip INVISIBLE por defecto (sin "mancha" cian); solo aparece al pasar por encima
+       o arrastrar. La zona de resize (14px) sigue activa. (Carlos, r32) */
+    #dockSplitHandle .grip{width:4px;height:64px;border-radius:2px;background:rgba(120,243,255,.42);box-shadow:0 0 12px rgba(120,243,255,.22);opacity:0;transition:opacity .15s,background .12s}
+    #dockSplitHandle:hover .grip,#dockSplitHandle.is-dragging .grip{opacity:1;background:#78f3ff}
     #dockSplitHandle.near-snap .grip{background:#ffd866;box-shadow:0 0 18px rgba(255,216,102,.5)}
     #characterDock.show{display:flex}
     #characterDock.compose-start{display:flex;height:228px}
