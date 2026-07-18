@@ -31671,6 +31671,15 @@ window.xtAPI = (function(){
     // CLI compacto: en reposo 1 línea con los botones a la derecha; al escribir, los botones
     // se ocultan (.typing) y el CLI crece — se gana espacio vertical.
     var _cliSync=function(){
+      var dock=document.getElementById('telegramDock');
+      // Modo experto (dock compacto input|output): el CLI NO crece ni oculta los botones
+      // al escribir → se queda SIEMPRE como al desplegarlo (Carlos, r25). El grow sólo
+      // aplica al dock completo (no experto).
+      if(dock && dock.classList.contains('compose-start')){
+        if(_cliPane) _cliPane.classList.remove('typing');
+        composer.style.height='';
+        return;
+      }
       var typing=composer.value.length>0;
       if(_cliPane) _cliPane.classList.toggle('typing', typing);
       if(typing){ composer.style.height='auto'; composer.style.height=Math.min(120,composer.scrollHeight)+'px'; }
@@ -33706,6 +33715,10 @@ window.xtAPI = (function(){
     color:var(--xp-cyan,#78f3ff);font:bold 10px/1.35 monospace;letter-spacing:.12em;
     padding-right:9px;margin-right:2px;border-right:1px solid rgba(120,243,255,.28)}
   #telegramDock.compose-start .tg-cli-row .tg-actions{align-self:center}
+  /* Experto: el textarea NUNCA crece al escribir (ni con .typing) → dock estable como
+     al desplegarlo. Los botones tampoco se ocultan. */
+  #telegramDock.compose-start .tg-cli-row #telegramComposer{height:28px !important;max-height:28px !important}
+  #telegramDock.compose-start .tg-pane.send.typing .tg-cli-row .tg-actions{display:flex !important}
   /* Una sola fila: INPUT (mitad izquierda) | OUTPUT (mitad derecha) → dock aún más
      estrecho. El input baja a la izquierda y la respuesta va a la otra mitad. */
   #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open){flex-direction:row;align-items:stretch;gap:0}
