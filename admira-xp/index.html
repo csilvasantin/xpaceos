@@ -280,7 +280,9 @@
 .tg-cli-row .tg-actions{flex:0 0 auto;border-top:0;background:transparent;min-height:0;padding:0;align-items:center;flex-wrap:nowrap}
 .tg-pane.send.typing .tg-cli-row .tg-actions{display:none}
 .tg-pane.send.typing #telegramComposer{max-height:120px;height:auto}
-.tg-quick-actions{margin-top:auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;padding:4px 5px 2px;background:#05131c;border-top:1px solid #14323c}
+/* Tiles del dock Experto pegados a la explicación del CLI (sin margin-top:auto que
+   los empujaba al fondo dejando hueco) — mejora UX: botones a la altura de la respuesta. */
+.tg-quick-actions{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;padding:4px 5px 2px;background:#05131c;border-top:1px solid #14323c}
     .tg-quick-btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:36px;padding:5px 7px;border:1px solid #24505d;border-radius:8px;background:linear-gradient(180deg,#0c2630,#071720);color:#dff8ff;font-family:monospace;font-size:9px;line-height:1.1;cursor:pointer;text-align:left}
     .tg-quick-btn strong{font-size:9px}
     .tg-quick-btn span{font-size:7px;color:#94c2cf}
