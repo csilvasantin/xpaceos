@@ -970,6 +970,27 @@
     if(ver && !ver.textContent){ try{ ver.textContent='❔ '+((window.XTANCO_APP&&window.XTANCO_APP.version)||''); }catch(e){} }
   }
   window.addEventListener('resize', sizeSideColumns);
+  // El letterbox también cambia cuando el CANVAS se re-dimensiona sin resize de ventana
+  // (dock, aforo, cover↔contain…), y resizeCanvas no re-ajustaba los paneles → se
+  // quedaban estrechos y dejaban banda negra. Observamos el tamaño del canvas y
+  // re-ajustamos al último pixel (Carlos, r36).
+  try{
+    var _cvObs=document.getElementById('c');
+    if(_cvObs && window.ResizeObserver){
+      var _ro=new ResizeObserver(function(){ try{ sizeSideColumns(); }catch(e){} });
+      _ro.observe(_cvObs);
+    }
+  }catch(e){}
+  // Red de seguridad ligera por si el observer no dispara (algún navegador): re-ajusta
+  // cada 800ms solo si hay desajuste real entre panel y letterbox.
+  setInterval(function(){
+    try{
+      var cv=document.getElementById('c'); if(!cv) return;
+      var lw=Math.round(cv.getBoundingClientRect().left);
+      var lp=document.querySelector('.quad-left');
+      if(lp && Math.abs(parseInt(lp.style.width||'0',10)-Math.max(60,lw))>2) sizeSideColumns();
+    }catch(e){}
+  }, 800);
   var saveOpt = document.querySelector('[data-xp-opt="save"]');
   if(saveOpt) saveOpt.addEventListener('click', function(){ var b=document.getElementById('btnSave'); if(b) b.click(); });
   // Pantalla y Salir movidos desde la barra al menú Opciones (reusan los botones ocultos)
