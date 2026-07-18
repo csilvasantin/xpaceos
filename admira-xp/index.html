@@ -33676,6 +33676,13 @@ window.xtAPI = (function(){
     color:var(--xp-cyan,#78f3ff);font:bold 10px/1.35 monospace;letter-spacing:.12em;
     padding-right:9px;margin-right:2px;border-right:1px solid rgba(120,243,255,.28)}
   #telegramDock.compose-start .tg-cli-row .tg-actions{align-self:center}
+  /* Una sola fila: INPUT (mitad izquierda) | OUTPUT (mitad derecha) → dock aún más
+     estrecho. El input baja a la izquierda y la respuesta va a la otra mitad. */
+  #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open){flex-direction:row;align-items:stretch;gap:0}
+  #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open) .tg-cli-row{flex:1 1 50%;min-width:0}
+  #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open) #telegramLastResponse{display:block !important;flex:1 1 50%;min-width:0;
+    max-height:none;margin:0;border:0;border-left:1px solid rgba(120,243,255,.22);
+    padding:6px 12px;overflow:auto;align-self:stretch}
   /* Modo AVANZADO (▤) = los 8 iconos ocupan el panel derecho, en lugar del texto
      EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
      ancho = margen, con su animación de despliegue). */
@@ -33711,24 +33718,52 @@ window.xtAPI = (function(){
     try{
       var dock=document.getElementById('telegramDock');
       if(!dock || !dock.classList.contains('compose-start')) return;
-      var send=dock.querySelector('.tg-pane.send'); if(!send) return;
-      var kids=[].filter.call(send.children,function(el){ return getComputedStyle(el).display!=='none'; });
-      if(!kids.length) return;
-      var top=dock.getBoundingClientRect().top;
-      var lastBottom=kids[kids.length-1].getBoundingClientRect().bottom;
-      var h=Math.ceil(lastBottom-top)+3;                    // contenido + colchón mínimo
-      if(h>40 && Math.abs(dock.getBoundingClientRect().height-h)>2){
-        dock.style.height=h+'px';                            // ajusta el dock al contenido
+      var top=dock.getBoundingClientRect().top, h=0;
+      var help=document.getElementById('telegramHelpPanel');
+      var sig=document.getElementById('telegramSignagePanel');
+      var ta=document.getElementById('telegramComposer');
+      // Con help/signage abiertos, el dock se ajusta a ese panel; si no, a la fila
+      // input|output → su altura la marca el textarea (que NO se estira), y el output
+      // (mitad derecha) se estira a juego.
+      if(help && getComputedStyle(help).display!=='none'){ h=Math.ceil(help.getBoundingClientRect().bottom-top)+4; }
+      else if(sig && getComputedStyle(sig).display!=='none'){ h=Math.ceil(sig.getBoundingClientRect().bottom-top)+4; }
+      else if(ta && ta.getBoundingClientRect().height){ h=Math.ceil(ta.getBoundingClientRect().height)+16; }
+      if(h>28 && Math.abs(dock.getBoundingClientRect().height-h)>2){
+        dock.style.height=h+'px';                            // ajusta el dock al contenido real
       }
     }catch(e){}
   }
-  setInterval(fitDock, 120); fitDock();
+  setInterval(function(){ fitDock(); fitPlaceholder(); }, 120); fitDock();
+  // Placeholder compacto: en la fila input|output el textarea es estrecho (~50% del
+  // ancho) y el hint largo se recorta feo. En modo experto usamos una pista corta;
+  // fuera del experto se respeta el placeholder original (localizado ES/EN).
+  function fitPlaceholder(){
+    try{
+      var dock=document.getElementById('telegramDock');
+      var ta=document.getElementById('telegramComposer');
+      if(!dock||!ta) return;
+      if(dock.classList.contains('compose-start')){
+        if(!ta.hasAttribute('data-ph-orig')){
+          ta.setAttribute('data-ph-orig', ta.placeholder||'');
+        }
+        // Idioma robusto: el botón Enviar/Send lo fija la MISMA función de i18n que el
+        // placeholder original, así que es la señal fiable (window.lang es de módulo y
+        // documentElement.lang no rastrea el idioma del juego).
+        var sb=document.getElementById('telegramSendBtn');
+        var isEs=sb? /enviar/i.test(sb.textContent||'') : (typeof window.lang!=='undefined'? window.lang : (document.documentElement.lang||'es'))!=='en';
+        ta.placeholder=isEs?'Comando…':'Command…';
+      }else if(ta.hasAttribute('data-ph-orig')){
+        ta.placeholder=ta.getAttribute('data-ph-orig');
+      }
+    }catch(e){}
+  }
+  fitPlaceholder();
   // Aplicar YA al abrir el experto: en cuanto cambia la clase del dock (compose-start),
   // fitDock corre como microtask (antes del pintado) → no se ve el dock alto un instante.
   try{
     var dockEl=document.getElementById('telegramDock');
     if(dockEl){
-      var dmo=new MutationObserver(function(){ fitDock(); requestAnimationFrame(fitDock); });
+      var dmo=new MutationObserver(function(){ fitDock(); fitPlaceholder(); requestAnimationFrame(fitDock); });
       dmo.observe(dockEl,{attributes:true,attributeFilter:['class']});
     }
   }catch(e){}
