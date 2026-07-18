@@ -33655,63 +33655,40 @@ window.xtAPI = (function(){
 })();
 </script>
 <!-- ════════ Lanzadera lateral en modo experto v1 (2026-07-18) ════════
-     Modo experto: el dock inferior queda SOLO para el CLI, y los 8 tiles
-     (Signage/AdmiraLive/…/Audiencia) se espejan en dos columnas verticales en las
-     franjas negras laterales (4 izquierda + 4 derecha), ajustadas al margen del
-     canvas. Los originales siguen en #telegramQuickActions (ocultos) → el render y
-     el click no cambian; cada botón lateral reenvía el click al original.
+     Modo EXPERTO (⌘): el dock inferior queda SOLO para el CLI (tiles ocultos).
+     Modo AVANZADO (▤): los 8 iconos (Signage/…/Audiencia) se espejan en el panel
+     derecho .quad-right, empezando bajo la barra superior, en lugar del texto
+     EQUIPO CARBONO. Los originales siguen en #telegramQuickActions (ocultos) → el
+     render y el click no cambian; cada icono reenvía el click al original.
      Bloque autocontenido y reversible. -->
 <style id="quickLaunchStyle">
-  #telegramDock .tg-quick-actions{display:none !important}   /* dock = solo CLI */
-  #quickLaunchLeft,#quickLaunchRight{position:fixed;z-index:29;display:none;flex-direction:column;
-    gap:6px;justify-content:center;align-items:stretch;padding:4px 3px;pointer-events:none}
-  body.xp-launch-side #quickLaunchLeft, body.xp-launch-side #quickLaunchRight{display:flex}
-  #quickLaunchLeft .tg-quick-btn,#quickLaunchRight .tg-quick-btn{pointer-events:auto;width:100%;
-    flex:0 0 auto;min-height:46px;align-items:center;justify-content:center;text-align:center;
-    padding:5px 3px;gap:2px;overflow:hidden}
-  #quickLaunchLeft .tg-quick-btn strong,#quickLaunchRight .tg-quick-btn strong{font-size:9px;text-align:center;line-height:1.15}
-  #quickLaunchLeft .tg-quick-btn span,#quickLaunchRight .tg-quick-btn span{font-size:7px;text-align:center;line-height:1.1}
+  /* Modo EXPERTO (⌘) = solo CLI: los tiles no se muestran en el dock inferior. */
+  #telegramDock .tg-quick-actions{display:none !important}
+  /* Modo AVANZADO (▤) = los 8 iconos ocupan el panel derecho, en lugar del texto
+     EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
+     ancho = margen, con su animación de despliegue). */
+  .quad-right .qm-title, .quad-right .qm-head, .quad-right .qm-hint{display:none !important}
+  #advQuickIcons{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+  #advQuickIcons .tg-quick-btn{width:100%;min-height:50px;flex:0 0 auto;padding:9px 12px;align-items:flex-start;justify-content:center}
+  #advQuickIcons .tg-quick-btn strong{font-size:12px}
+  #advQuickIcons .tg-quick-btn span{font-size:9px}
 </style>
 <script id="quickLaunchScript">
 (function(){
   var src=document.getElementById('telegramQuickActions'); if(!src) return;
-  var L=document.createElement('div'); L.id='quickLaunchLeft';
-  var R=document.createElement('div'); R.id='quickLaunchRight';
-  document.body.appendChild(L); document.body.appendChild(R);
+  var panel=document.querySelector('.quad-right'); if(!panel) return;   // panel Avanzado (derecha)
+  var host=document.createElement('div'); host.id='advQuickIcons'; panel.appendChild(host);
   function mirror(){
     var btns=[].slice.call(src.querySelectorAll('.tg-quick-btn'));
-    if(!btns.length){ L.innerHTML=''; R.innerHTML=''; return; }
-    var half=Math.ceil(btns.length/2);
-    L.innerHTML=''; R.innerHTML='';
-    btns.forEach(function(b,i){
+    host.innerHTML='';
+    btns.forEach(function(b){
       var c=b.cloneNode(true);
       c.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); try{ b.click(); }catch(e){} });
-      (i<half?L:R).appendChild(c);
+      host.appendChild(c);
     });
   }
   try{ var mo=new MutationObserver(mirror); mo.observe(src,{childList:true,subtree:true,characterData:true}); }catch(e){}
   mirror();
-  // Visibilidad + posición: solo en modo experto (compose-start); columnas ajustadas
-  // al margen negro real del canvas, entre el topBar y el dock.
-  function syncLaunch(){
-    try{
-      var dock=document.getElementById('telegramDock'), c=document.getElementById('c');
-      // Solo cuando el modo experto está ABIERTO: dock en compose-start Y no oculto
-      // (⌘ pfExpert togglea body.xp-left-hidden; por defecto oculto → lanzadera oculta).
-      var on=!!(dock && dock.classList.contains('compose-start') && !document.body.classList.contains('xp-left-hidden'));
-      document.body.classList.toggle('xp-launch-side', on);
-      if(on && c && dock){
-        var r=c.getBoundingClientRect(), dr=dock.getBoundingClientRect();
-        var tb=document.getElementById('topBar');
-        var topY=(tb && getComputedStyle(tb).display!=='none') ? Math.round(tb.getBoundingClientRect().bottom)+6 : 42; // NO pisar la barra superior
-        var lw=Math.max(44,Math.round(r.left)), rw=Math.max(44,Math.round(window.innerWidth-r.right));
-        var bottom=Math.round(window.innerHeight-dr.top)+6;
-        L.style.width=lw+'px'; L.style.left='0'; L.style.top=topY+'px'; L.style.bottom=bottom+'px';
-        R.style.width=rw+'px'; R.style.right='0'; R.style.top=topY+'px'; R.style.bottom=bottom+'px';
-      }
-    }catch(e){}
-  }
-  setInterval(syncLaunch, 200); syncLaunch();
 })();
 </script>
 </body>
