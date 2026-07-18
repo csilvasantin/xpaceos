@@ -33472,63 +33472,59 @@ window.xtAPI = (function(){
   window.__pollSignage=poll;
 })();
 </script>
-<!-- ════════ Canal admira.tv por tag v1 (2026-07-18) — XpaceOS ↔ admira.tv (opción A) ════════
-     Los paneles DOOH del gemelo emiten la PARRILLA de admira.tv por su tag: cada uno sondea
-     api.admira.store/grid/day?screen=<tag> (mismo motor que la puerta CanalKiosk) y emite esa
-     parrilla vía dsPinSurfaceFromUrl (pin remoto, no persistente). Si el tag no tiene parrilla
-     propia, cae al canal de la casa (sim-gracia-kiosko) para que siempre se vea el canal.
-     Slice 1: las 2 pantallas grandes (ds1/ds2). Autocontenido y reversible. -->
+<!-- ════════ Canal admira.tv por tag v2 (2026-07-18) — señalización DIRECCIONABLE ════════
+     Cada pantalla DOOH emite SOLO los contenidos del Stock cuyo tag/hashtag contenga
+     su tag (p.ej. XT-GRACIA-P1): se filtra item.tags[] y el hashtag en item.comment.
+     SIN parrilla de la casa, SIN fallback: si ningún contenido lleva su tag, la
+     pantalla NO emite (deja su contenido por defecto). Emite vía dsPinSurfaceFromUrl.
+     Autocontenido y reversible. -->
 <script id="admiraTvChannelScript">
 (function(){
-  if(window.__ADMIRATV_CHANNEL) return; window.__ADMIRATV_CHANNEL='1';
-  var GRID='https://api.admira.store/grid/day?screen=';
+  if(window.__ADMIRATV_CHANNEL) return; window.__ADMIRATV_CHANNEL='2';
   var STOCK='https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev/stock/index.json';
-  var HOUSE='sim-gracia-kiosko';   // canal de la casa (fallback si el tag no tiene parrilla)
-  // surfaceId → tag (screen slug). fallback=true → si el tag no tiene parrilla,
-  // emite el canal de la casa. Las pantallas grandes (ds1/ds2) sí; el escaparate
-  // (publi exterior segmentada) y el metahuman (cara AI) NO: solo emiten canal si
-  // su tag tiene parrilla propia reservada, para no pisar su contenido especial.
+  // surfaceId → tag de la pantalla (en minúsculas). Cada pantalla emite únicamente
+  // el contenido del Stock etiquetado con SU tag. Nada de fallback.
   var PANELS=[
-    {id:'ds1',        tag:'xt-gracia-p1',  phase:0, fallback:true },
-    {id:'ds2',        tag:'xt-gracia-p2',  phase:1, fallback:true },
-    {id:'escaparate', tag:'xt-gracia-esc', phase:2, fallback:false},
-    {id:'metahuman',  tag:'xt-gracia-mh',  phase:3, fallback:false},
+    {id:'ds1',        tag:'xt-gracia-p1',  phase:0},
+    {id:'ds2',        tag:'xt-gracia-p2',  phase:1},
+    {id:'escaparate', tag:'xt-gracia-esc', phase:2},
+    {id:'metahuman',  tag:'xt-gracia-mh',  phase:3},
   ];
-  var thumbs={}, st={};
-  PANELS.forEach(function(p){ st[p.id]={items:[],period:10000,curIdx:-1,src:''}; });
-  function buildItems(gd){
-    var period=10000; try{ var ss=gd&&gd.config&&gd.config.slotSeconds; if(ss>0) period=ss*1000; }catch(e){}
-    var bands=(gd&&gd.bands)||[]; var band=bands.find(function(b){return b.isNow;})||bands[0];
-    var seen={};
-    var items=(((band&&band.slots)||[]).filter(function(s){
-      if(!((s.kind==='own'||s.kind==='paid')&&s.creative&&s.creative.url)) return false;
-      if(s.bookingId){ if(seen[s.bookingId]) return false; seen[s.bookingId]=1; }
-      return true;
-    })).map(function(s){
-      return { url:String(s.creative.url).replace(/^https:\/\/www\.admira\.tv\//,'https://admira.tv/'),
-        type:(s.creative.type==='video'?'video':'image'),
-        title:s.title||(s.creative&&s.creative.name)||'Canal admira.tv' };
-    });
-    return {items:items,period:period};
+  var st={}; PANELS.forEach(function(p){ st[p.id]={items:[],period:10000,curIdx:-1}; });
+  // ¿el contenido lleva el tag de esta pantalla? busca en tags[] y en el hashtag del comment.
+  function hasTag(x,tag){
+    var t=tag.toLowerCase();
+    var tags=(x.tags||[]).map(function(s){return String(s).toLowerCase();});
+    if(tags.indexOf(t)>=0) return true;
+    if(String(x.comment||'').toLowerCase().indexOf(t)>=0) return true;
+    return false;
   }
-  function fetchGrid(slug){ return fetch(GRID+encodeURIComponent(slug),{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return null;}); }
-  function loadPanel(p){
-    return fetchGrid(p.tag).then(function(gd){
-      var b=buildItems(gd||{});
-      if(b.items.length){ st[p.id].items=b.items; st[p.id].period=b.period; st[p.id].src='tag'; st[p.id].curIdx=-1; return; }
-      if(!p.fallback){ st[p.id].items=[]; st[p.id].src='none'; st[p.id].curIdx=-1; return; } // sin parrilla propia → deja su contenido especial
-      return fetchGrid(HOUSE).then(function(gh){ var f=buildItems(gh||{}); st[p.id].items=f.items; st[p.id].period=f.period; st[p.id].src='house'; st[p.id].curIdx=-1; });
-    });
+  // Solo se emiten en pantalla imagen/vídeo (audio/música/locución no).
+  function kindOf(x){
+    var ty=String(x.type||'').toLowerCase();
+    if(ty==='video'||ty==='animation') return 'video';
+    if(ty==='image'||ty==='digital-twin'||ty==='twin-npc') return 'image';
+    return null;
   }
   function loadAll(){
     fetch(STOCK,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
-      (j.items||[]).forEach(function(x){ if(x&&x.id&&x.thumbnail) thumbs[x.id]=x.thumbnail; });
-    }).catch(function(){}).then(function(){ PANELS.forEach(loadPanel); });
+      var items=(j&&j.items)||[];
+      PANELS.forEach(function(p){
+        var list=[];
+        items.forEach(function(x){
+          if(!x||!x.url||!hasTag(x,p.tag)) return;
+          var k=kindOf(x); if(!k) return;
+          list.push({url:x.url, type:k, title:x.title||x.comment||'Contenido'});
+        });
+        st[p.id].items=list;
+        if(st[p.id].curIdx>=list.length) st[p.id].curIdx=-1;
+      });
+    }).catch(function(){});
   }
   function tick(){
     var pin=window.__dsPinSurfaceFromUrl; if(typeof pin!=='function') return;
     PANELS.forEach(function(p){
-      var s=st[p.id]; if(!s.items.length) return;
+      var s=st[p.id]; if(!s.items.length) return;   // sin contenido con su tag → NO emite
       var idx=(Math.floor(Date.now()/s.period)+p.phase)%s.items.length;
       if(idx===s.curIdx) return; s.curIdx=idx;
       var it=s.items[idx];
@@ -33536,7 +33532,7 @@ window.xtAPI = (function(){
     });
   }
   try{ window.__admiraTvChannelState=st; }catch(e){}
-  loadAll(); setInterval(loadAll,60000); setInterval(tick,500);
+  loadAll(); setInterval(loadAll,60000); setInterval(tick,1000);
 })();
 </script>
 <!-- ════════ Progreso de descarga por pantalla v1 (2026-07-18) ════════
