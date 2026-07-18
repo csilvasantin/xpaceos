@@ -1456,8 +1456,11 @@ let amigaPage0TodoLoaded=false;
 let telegramDockHidden=false;
 // Reparto horizontal del bottom area entre telegramDock (izq) y characterDock (der).
 // 0..1: 0 = solo characterDock visible, 1 = solo telegramDock, 0.5 = mitad y mitad.
-let dockSplitRatio=parseFloat(localStorage.getItem('xtanco_dock_split')||'0.5');
-if(!Number.isFinite(dockSplitRatio)) dockSplitRatio=0.5;
+// Por defecto 1 = el menú experto (telegramDock) sale a TODO EL ANCHO (punta a punta);
+// sigue siendo resizable (arrastra el separador para traer el dock de Equipo/Clientes).
+// Clave v2 para ignorar valores viejos (0.5) guardados antes de este cambio.
+let dockSplitRatio=parseFloat(localStorage.getItem('xtanco_dock_split_v2')||'1');
+if(!Number.isFinite(dockSplitRatio)) dockSplitRatio=1;
 let characterDockFocus='clients';
 let telegramComposeStart=true;
 const DOCK_HEIGHT_KEY='admira_xp_dock_height_v2';
@@ -1936,7 +1939,7 @@ function setupDockSplitHandle(){
     // Snap a 0 o 1 si esta cerca del extremo, o vuelve a 0.5 si rebaja del snap.
     if(dockSplitRatio<=0.05) dockSplitRatio=0;
     else if(dockSplitRatio>=0.95) dockSplitRatio=1;
-    try{localStorage.setItem('xtanco_dock_split',String(dockSplitRatio));}catch(err){}
+    try{localStorage.setItem('xtanco_dock_split_v2',String(dockSplitRatio));}catch(err){}
     resizeCanvas();
     drag=null;
     document.removeEventListener('pointermove',move);
@@ -1968,7 +1971,7 @@ function setupDockSplitHandle(){
   handle.addEventListener('dblclick',e=>{
     e.preventDefault();
     dockSplitRatio=0.5;
-    try{localStorage.setItem('xtanco_dock_split',String(dockSplitRatio));}catch(err){}
+    try{localStorage.setItem('xtanco_dock_split_v2',String(dockSplitRatio));}catch(err){}
     resizeCanvas();
   });
 }
@@ -3206,7 +3209,15 @@ let _escNowSig='';
 function escaparateNowItem(){
   const pin=(DS_PIN&&typeof DS_PIN==='object')?DS_PIN['escaparate']:null;
   let name,kind;
-  if(pin){ name=pin.name; kind=pin.kind; }
+  if(pin){
+    name=pin.name; kind=pin.kind;
+    // Pin remoto (canal por tag / feed): la URL está en DS_SURFACE_MEDIA, no en VIDEO_FILES.
+    if(pin.remote){
+      const m=DS_SURFACE_MEDIA&&DS_SURFACE_MEDIA['escaparate'];
+      const src=m?(kind==='image'?(m.img&&m.img.src):(m.video&&m.video.src)):null;
+      return src?{kind,name,src}:{kind:'idle',name:name||'',src:null};
+    }
+  }
   else {
     // Sin pin, el escaparate refleja la rotación global. Si la rotación no está
     // reproduciendo (menú, tienda cerrada, modo slides) → idle.
@@ -18509,8 +18520,10 @@ function drawEscaparate(){
 
   // PUBLI EXTERIOR SEGMENTADA POR GÉNERO: si acaba de pasar un viandante por
   // delante, el escaparate muestra perfume de su género unos segundos.
+  // OJO: cede ante un contenido asignado por TAG (DS_PIN.escaparate) — el
+  // contenido con el tag de la pantalla manda sobre el PLV/kiosko por defecto.
   const __plv = plvShowSeg();   // PLV reactivo/pin (ideas #1/#3): viandante, pin o aforo
-  if(__plv){
+  if(__plv && !DS_PIN.escaparate){
     cx.save();
     cx.beginPath();
     cx.moveTo(iTL.x,iTL.y); cx.lineTo(iTR.x,iTR.y); cx.lineTo(iBR.x,iBR.y); cx.lineTo(iBL.x,iBL.y);
