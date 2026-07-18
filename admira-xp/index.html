@@ -955,7 +955,7 @@
     var left=document.querySelector('.quad-left');
     var right=document.querySelector('.quad-right');
     if(left){ var lw=rect?Math.round(rect.left):0; left.style.width=Math.max(220,lw)+'px'; }
-    if(right){ var rw=rect?Math.round(vw-rect.right):0; right.style.width=Math.max(220,rw)+'px'; }
+    if(right){ var rw=rect?Math.round(vw-rect.right):0; right.style.width=Math.max(72,rw)+'px'; }  /* Avanzado: solo la franja negra derecha (no 220) */
     // versión al fondo del panel Opciones (se lee al abrir: XTANCO_APP ya está cargado)
     var ver=document.getElementById('quadOptVersion');
     if(ver && !ver.textContent){ try{ ver.textContent='❔ '+((window.XTANCO_APP&&window.XTANCO_APP.version)||''); }catch(e){} }
@@ -33676,10 +33676,13 @@ window.xtAPI = (function(){
      EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
      ancho = margen, con su animación de despliegue). */
   .quad-right .qm-title, .quad-right .qm-head, .quad-right .qm-hint{display:none !important}
-  #advQuickIcons{display:flex;flex-direction:column;gap:8px;margin-top:2px}
-  #advQuickIcons .tg-quick-btn{width:100%;min-height:50px;flex:0 0 auto;padding:9px 12px;align-items:flex-start;justify-content:center}
-  #advQuickIcons .tg-quick-btn strong{font-size:12px}
-  #advQuickIcons .tg-quick-btn span{font-size:9px}
+  /* El panel Avanzado ahora cubre solo la franja negra → padding e iconos compactos */
+  .quad-right{padding:12px 4px !important}
+  #advQuickIcons{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+  #advQuickIcons .tg-quick-btn{width:100%;min-height:40px;flex:0 0 auto;padding:5px 2px;gap:1px;
+    align-items:center;justify-content:center;text-align:center;overflow:visible}
+  #advQuickIcons .tg-quick-btn strong{font-size:8px;text-align:center;line-height:1.2;white-space:normal;overflow-wrap:anywhere;max-width:100%;letter-spacing:0}
+  #advQuickIcons .tg-quick-btn span{font-size:7px;text-align:center;line-height:1.1;white-space:normal;overflow-wrap:anywhere;max-width:100%}
 </style>
 <script id="quickLaunchScript">
 (function(){
