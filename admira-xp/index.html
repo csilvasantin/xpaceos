@@ -33326,8 +33326,14 @@ window.xtAPI = (function(){
      Bloque autocontenido y reversible: solo mejora la lectura del #topBar (tipografía, jerarquía,
      acento de marca en Competencia y color de Sat por umbral). No toca la lógica del juego. -->
 <style id="hudClarityStyle">
-  /* Respira: un poco más de aire entre grupos */
-  #topBar{gap:9px;padding:0 10px}
+  /* Respira: un poco más de aire entre grupos.
+     ALTURA (Carlos, 2026-07-21): este bloque agrandó los chips de Competencia
+     (6→8px, 10→12px, borde superior 3px) pero la barra seguía clavada en 36px,
+     así que Altadis/JTI/PM/BAT desbordaban y se cortaban por arriba. La barra
+     baja a 46px para que TODO quede dentro de la navegación. */
+  #topBar{gap:9px;padding:0 10px;height:46px}
+  /* nada de la barra se recorta ni se sale */
+  #topBar > *{flex-shrink:0}
   /* KPIs: label legible (7→8px) + valor más grande y con cifras tabulares (no bailan al cambiar) */
   #topBar .stat{gap:1px;justify-content:center}
   #topBar .stat-label{font-size:8px;letter-spacing:.1em;color:var(--xp-muted)}
