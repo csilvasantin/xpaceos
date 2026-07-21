@@ -1202,22 +1202,42 @@ window.addEventListener('pagehide', () => window.clearTimeout(nextShootingStarTi
 
 
 <script>
-/* DEMO VIVA: la sección sólo aparece si la flota está emitiendo de verdad.
-   Sin señal fresca (<10 min) no se pinta — jamás un marco muerto en la web. */
+/* DEMO VIVA: se muestra si el CANAL QUE SE EMBEBE tiene programación en antena, y el
+   rótulo dice la verdad sobre cuántas pantallas físicas emiten ahora.
+
+   Por qué cambió (Neo, 21-jul-2026): la versión anterior decidía mirando cuatro pantallas
+   FÍSICAS (dgx-spark, rosa, plata, crema) que **no son lo que muestra el iframe** — el
+   iframe embebe `xpaceos-web`. Con la flota apagada, la demo quedaba oculta aunque el
+   canal estuviera emitiendo perfectamente: medido hoy, `xpaceos-web` tenía un vídeo en
+   antena y la sección seguía invisible para todos los visitantes.
+
+   Se mide `item`, NO `lastSeen`. `item` es la programación real del canal; `lastSeen` se
+   actualiza cada vez que ALGUIEN abre el canal — incluida esta misma página — así que
+   usarlo aquí sería circular: la web se daría por viva sólo porque alguien la está mirando.
+
+   Sigue sin haber marco muerto: si no hay programación, no se pinta. Y el rótulo nunca
+   finge pantallas que no existen. */
 (function(){
   var fig=document.getElementById('liveDemo'), tag=document.getElementById('liveTag');
   if(!fig||!tag) return;
+  var CANAL='xpaceos-web';                                   // el que embebe el iframe
   var SCREENS=['dgx-spark','macbookairrosa','macbookairplata','macbookaircrema'];
-  function ping(s){
-    return fetch('https://api.admira.store/signage/now?screen='+encodeURIComponent(s)+'&_t='+Date.now(),
-                 {cache:'no-store'}).then(function(r){return r.json();})
-      .then(function(d){ return (d&&d.lastSeen&&(Date.now()-d.lastSeen)<600000)?1:0; }).catch(function(){return 0;});
+  var API='https://api.admira.store/signage/now?screen=';
+  function now(s){
+    return fetch(API+encodeURIComponent(s)+'&_t='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.json();}).catch(function(){return null;});
   }
   function refresh(){
-    Promise.all(SCREENS.map(ping)).then(function(v){
-      var n=v.reduce(function(a,b){return a+b;},0);
-      fig.hidden = n===0;
-      tag.textContent = 'LIVE · '+n+' screen'+(n>1?'s':'')+' emitting';
+    Promise.all([now(CANAL)].concat(SCREENS.map(now))).then(function(res){
+      var canal=res[0], enAntena=!!(canal&&canal.item);
+      // Pantallas FÍSICAS con reproducción fresca (<10 min). Aquí lastSeen sí vale: son
+      // equipos ajenos a esta web, nadie los toca por visitarla.
+      var n=res.slice(1).reduce(function(a,d){
+        return a+((d&&d.lastSeen&&(Date.now()-d.lastSeen)<600000)?1:0);
+      },0);
+      fig.hidden=!enAntena;
+      tag.textContent = n>0 ? ('LIVE · '+n+' screen'+(n>1?'s':'')+' emitting')
+                            : 'LIVE · channel on air';
     });
   }
   refresh(); setInterval(refresh, 60000);
