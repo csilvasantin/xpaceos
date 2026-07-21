@@ -295,6 +295,23 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     .booth-grid{grid-template-columns:1fr}
     .hw{grid-template-columns:1fr}
   }
+
+  /* ── DEMO VIVA en el hero: el canal real por encima de la imagen de respaldo ── */
+  .hero-visual.is-live .hero-live{position:absolute;inset:0;width:100%;height:100%;border:0;
+    display:block;opacity:0;transition:opacity .6s ease;z-index:1;background:#02080d}
+  .hero-visual.is-live.live-on .hero-live{opacity:1}
+  .hero-visual.is-live.live-on img{opacity:.25}
+  .hero-visual .live-tag{position:absolute;top:14px;left:14px;z-index:3;display:none;
+    align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
+    border:1px solid rgba(255,80,80,.55);background:rgba(2,8,13,.72);backdrop-filter:blur(10px);
+    color:#ffd9d9;font-family:monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+  .hero-visual.live-on .live-tag{display:inline-flex}
+  .hero-visual .live-tag i{width:7px;height:7px;border-radius:50%;background:#ff4d4d;
+    box-shadow:0 0 8px #ff4d4d;animation:livePulse 1.5s infinite}
+  @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){.hero-visual.is-live .hero-live{display:none}
+    .hero-visual .live-tag i{animation:none}}
+  @media (max-width:760px){.hero-visual.is-live .hero-live{position:relative;min-height:230px}}
 </style>
 </head>
 <body id="top">
@@ -343,8 +360,18 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         <a class="cta secondary" href="#capas" data-i18n="hero.howCta">How it works</a>
       </div>
     </div>
-    <figure class="hero-visual" aria-label="XpaceOS retail robotics preview">
+    <!-- DEMO VIVA (Carlos, 2026-07-21): la página decía «we did not bring a slide
+         deck, we brought the system running» pero enseñaba un JPG. Ahora el hero
+         ES el canal emitiendo de verdad (admira.tv), filtrado por el tag `good`
+         para que lo que se vea esté curado. Si el canal no carga, se queda la
+         imagen de siempre debajo — la web nunca se rompe por la demo. -->
+    <figure class="hero-visual is-live" aria-label="XpaceOS channel running live">
       <img src="/assets/xpaceos-robots.jpg" alt="Robots connected through the XpaceOS retail operating system">
+      <iframe class="hero-live" title="XpaceOS live channel"
+              src="https://admira.tv/canal?screen=xpaceos-web&tag=good&embed=mupi&chrome=0&shot=0"
+              loading="eager" referrerpolicy="no-referrer"
+              sandbox="allow-scripts allow-same-origin"></iframe>
+      <span class="live-tag" id="liveTag"><i></i>LIVE</span>
     </figure>
   </div>
 </div>
@@ -1173,5 +1200,31 @@ window.addEventListener('pagehide', () => window.clearTimeout(nextShootingStarTi
 })();
 </script>
 
+
+<script>
+/* DEMO VIVA del hero: sólo se muestra el canal si de verdad está emitiendo.
+   Consulta la flota; si hay señal fresca, enciende el iframe y rotula cuántas
+   pantallas emiten ahora. Si no hay señal (o falla la red), la página se queda
+   con la imagen estática — nunca enseña un marco vacío. */
+(function(){
+  var fig=document.querySelector('.hero-visual.is-live'), tag=document.getElementById('liveTag');
+  if(!fig||!tag) return;
+  var SCREENS=['dgx-spark','macbookairrosa','macbookairplata','macbookaircrema'];
+  function ping(s){
+    return fetch('https://api.admira.store/signage/now?screen='+encodeURIComponent(s)+'&_t='+Date.now(),
+                 {cache:'no-store'}).then(function(r){return r.json();})
+      .then(function(d){ return (d&&d.lastSeen&&(Date.now()-d.lastSeen)<600000)?1:0; }).catch(function(){return 0;});
+  }
+  function refresh(){
+    Promise.all(SCREENS.map(ping)).then(function(v){
+      var n=v.reduce(function(a,b){return a+b;},0);
+      if(n>0){ fig.classList.add('live-on');
+        tag.innerHTML='<i></i>LIVE · '+n+' screen'+(n>1?'s':'')+' emitting now'; }
+      else fig.classList.remove('live-on');
+    });
+  }
+  refresh(); setInterval(refresh, 60000);
+})();
+</script>
 </body>
 </html>
