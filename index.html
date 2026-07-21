@@ -300,7 +300,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .hero-visual.is-live .hero-live{position:absolute;inset:0;width:100%;height:100%;border:0;
     display:block;opacity:0;transition:opacity .6s ease;z-index:1;background:#02080d}
   .hero-visual.is-live.live-on .hero-live{opacity:1}
-  .hero-visual.is-live.live-on img{opacity:.25}
+  .hero-visual.is-live.live-on img{opacity:0}
   .hero-visual .live-tag{position:absolute;top:14px;left:14px;z-index:3;display:none;
     align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
     border:1px solid rgba(255,80,80,.55);background:rgba(2,8,13,.72);backdrop-filter:blur(10px);
@@ -311,7 +311,6 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}
   @media (prefers-reduced-motion:reduce){.hero-visual.is-live .hero-live{display:none}
     .hero-visual .live-tag i{animation:none}}
-  @media (max-width:760px){.hero-visual.is-live .hero-live{position:relative;min-height:230px}}
 </style>
 </head>
 <body id="top">
