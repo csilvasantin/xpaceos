@@ -135,6 +135,9 @@
   .emission-mode[data-emission="portrait"],.emission-mode[data-emission="landscape"]{font-size:9px;letter-spacing:0}
   .emission-mode:hover{border-color:rgba(120,243,255,.62);color:var(--ink)}
   .emission-mode.active{border-color:rgba(255,216,107,.78);background:rgba(255,216,107,.12);color:var(--gold)}
+  .ds-autonomy{margin:10px 0 0;border:1px solid rgba(121,255,178,.28);border-radius:8px;background:rgba(121,255,178,.06);padding:9px 10px;color:var(--mut);font:10px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .ds-autonomy b{color:var(--green);letter-spacing:.06em;text-transform:uppercase}
+  .ds-autonomy kbd{color:var(--ink);font:inherit;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:1px 5px;background:rgba(0,0,0,.25)}
   @media (max-width:560px){.emission-modes{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .timeline{display:grid;gap:10px}
   .event{display:grid;grid-template-columns:72px 1fr;gap:12px;padding-top:10px;border-top:1px solid var(--line)}
@@ -225,6 +228,7 @@
             <button class="emission-mode" type="button" data-emission="portrait">Portrait</button>
             <button class="emission-mode" type="button" data-emission="landscape">Landscape</button>
           </div>
+          <p class="ds-autonomy"><b>DS autónomo</b> · La máquina sigue emitiendo y se recupera sola hasta un kill-switch remoto autorizado o la salida local del player con <kbd>Escape</kbd>. Cambiar, pausar o silenciar contenido no mata el proceso DS.</p>
           <form class="cli-form" id="admira-cli" autocomplete="off">
             <span class="cli-prompt">adtv&gt;</span>
             <input id="admira-cli-input" type="text" placeholder="/tag robots · /medio video · /slot tarde · /reload" spellcheck="false" aria-label="Admira.tv CLI command">
