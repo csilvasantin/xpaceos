@@ -670,6 +670,34 @@
   </style>
   <!-- Idioma por defecto inglés; respeta la elección guardada antes de cargar el panel de contacto -->
   <script>try{document.documentElement.lang=localStorage.getItem('xtanco_lang')==='es'?'es':'en';}catch(e){document.documentElement.lang='en';}</script>
+  <!-- GUARDIA DE RED (01-08-2026) — ningún fetch del gemelo puede colgarse para siempre.
+       El kiosko sondea cada 1-2,5 s contra backends que flaquean de verdad: *.workers.dev
+       falla a ratos desde el navegador (bloqueo intermitente de los ISP de aquí) y el Funnel
+       del Mac Mini tarda entre 7 y 25 s. De los 59 fetch del fichero solo 3 llevaban plazo:
+       una petición colgada no lanza error, así que los 925 catch no la ven, y con el sondeo
+       repitiendo cada 2,5 s se apilan peticiones muertas durante días de kiosko desatendido.
+       Esto pone plazo por defecto a quien no lo trae; quien ya se controla con su propio
+       signal pasa intacto. Las rutas que TARDAN de verdad (generar imagen, subir media,
+       doblaje) llevan plazo largo para no cortarlas a mitad. -->
+  <script>(function(){
+    if (!window.fetch || window.__xpGuardia) return;
+    var nativo = window.fetch.bind(window);
+    var LENTAS = [/\/image\/edit/, /\/signage\/media\//, /\/da(\/|$|\?)/, /dubbing/, /upload/, /\/say\b/];
+    var PLAZO_NORMAL = 20000, PLAZO_LARGO = 180000;
+    window.fetch = function(entrada, opciones){
+      try{
+        if (opciones && opciones.signal) return nativo(entrada, opciones);
+        var url = (typeof entrada === 'string') ? entrada : ((entrada && entrada.url) || '');
+        var ms = LENTAS.some(function(r){ return r.test(url); }) ? PLAZO_LARGO : PLAZO_NORMAL;
+        var ctrl = new AbortController();
+        var t = setTimeout(function(){ ctrl.abort(); }, ms);
+        var o = {}; for (var k in (opciones||{})) o[k] = opciones[k];
+        o.signal = ctrl.signal;
+        return nativo(entrada, o).finally(function(){ clearTimeout(t); });
+      }catch(e){ return nativo(entrada, opciones); }
+    };
+    window.__xpGuardia = { plazo: PLAZO_NORMAL, plazoLargo: PLAZO_LARGO };
+  })();</script>
   <!-- Contacto del grupo Admira: mismo componente y datos que admira.app / admiranext.com / admira.studio -->
   <link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/tokens.css">
   <link rel="stylesheet" href="https://csilvasantin.github.io/admira-design/contact-panel.css">
