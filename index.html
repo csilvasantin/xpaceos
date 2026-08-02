@@ -10,6 +10,7 @@
 <link rel="dns-prefetch" href="https://api.admira.store">
 <link rel="dns-prefetch" href="https://admira.tv">
 <link rel="dns-prefetch" href="https://pixer-eleven.csilvasantin.workers.dev">
+<link rel="dns-prefetch" href="https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev">
 <title>XpaceOS — The operating system for physical retail · Shown live at Shoptalk Europe 2026</title>
 <meta name="description" content="XpaceOS by ADmiraNeXT turns every store and every booth into an intelligent advertising medium. Three integrated layers — PixerIA (AI creation), Admira XP (digital twin) and OmniPublicity (RTB marketplace) — running on Lenovo edge + Nvidia GPU. Shown live at Shoptalk Europe, Fira Barcelona, June 9-11, 2026.">
 <meta property="og:title" content="XpaceOS — Shown live at Shoptalk Europe 2026">
@@ -187,6 +188,21 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .gm-chip{font-family:monospace;font-size:10px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:2px 7px;display:inline-flex;gap:4px;align-items:center;letter-spacing:.03em}
   .gm-chip.live{color:var(--good);border-color:rgba(136,255,170,.35)}
   .gm-foot{margin-top:16px;font-size:13px;color:var(--mut);max-width:760px}
+
+  /* Live studio library (same public R2 index that pixeria.com/stock reads) */
+  .px-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+  .px-card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .12s,transform .12s;color:inherit}
+  .px-card:hover{border-color:var(--brand);transform:translateY(-2px);text-decoration:none}
+  .px-thumb{position:relative;aspect-ratio:16/9;background:#0b1016 center/cover no-repeat;display:flex;align-items:center;justify-content:center;gap:9px;border-bottom:1px solid var(--line);overflow:hidden}
+  .px-ico{font-size:24px;opacity:.62}
+  /* Sin miniatura (la mayoría del vídeo generado no la trae): el hueco se
+     resuelve con el mismo idioma visual que las capas — el número, grande. */
+  .px-num{font-family:monospace;font-size:34px;font-weight:800;color:rgba(120,243,255,.16);letter-spacing:-.02em}
+  .px-kind{position:absolute;left:7px;top:7px;font-family:monospace;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--bg);background:var(--brand);border-radius:3px;padding:2px 6px;font-weight:700}
+  .px-body{padding:11px 12px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .px-body .nm{font-size:13px;line-height:1.35;color:var(--ink);font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .px-body .mt{font-family:monospace;font-size:10px;color:var(--accent);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .px-body .wh{font-family:monospace;font-size:10px;color:var(--mut);margin-top:auto;padding-top:4px}
   .gm-foot b{color:var(--brand)}
   .gm-state{font-family:monospace;font-size:12px;color:var(--mut);padding:18px 0;grid-column:1/-1}
   .gm-state.err{color:var(--warn)}
@@ -627,9 +643,20 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       </div>
       <p data-i18n="pixer.outro">Each asset is delivered with a descriptive title and auto-generated cover, ready to push to the Digital Twin feed with one click.</p>
       <div class="links">
-        <a href="https://csilvasantin.github.io/pixer-ai-content/" target="_blank" rel="noopener">↗ PixerIA live</a>
+        <a href="https://www.pixeria.com/" target="_blank" rel="noopener">↗ PixerIA live · pixeria.com</a>
+        <a href="https://www.pixeria.com/stock" target="_blank" rel="noopener" data-i18n="pixer.stockLink">↗ the whole studio library</a>
         <a href="#xp" data-i18n="pixer.next">↓ next: Admira XP</a>
       </div>
+    </div>
+
+    <div class="gm-live" id="pixstock">
+      <div class="gm-head">
+        <span class="gm-badge"><span class="gm-dot"></span><span data-i18n="pixstock.badge">Fresh out of the studio</span></span>
+        <span class="gm-count" id="px-count"></span>
+      </div>
+      <p class="gm-sub" data-i18n="pixstock.sub">Not a mockup. This is the real PixerIA library, read live from the same shared index that pixeria.com publishes to and the Digital Twin plays from.</p>
+      <div class="px-grid" id="px-grid"><div class="gm-state" data-i18n="pixstock.loading">Loading the studio library…</div></div>
+      <p class="gm-foot" data-i18n-html="pixstock.foot">One shared dataset: create it in <b>admira.studio</b> → it lands here and in the Digital Twin playlist. No export, no hand-off, no separate integration.</p>
     </div>
   </div>
 </section>
@@ -724,13 +751,13 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   <div class="wrap">
     <a class="footer-logo" href="#top" aria-label="XpaceOS"><img src="/assets/xpaceos-logo-transparent.png" alt="XpaceOS"></a>
     <span>© 2026 ADmiraNeXT · XpaceOS</span>
-    <a href="https://csilvasantin.github.io/pixer-ai-content/" target="_blank" rel="noopener">PixerIA</a>
+    <a href="https://www.pixeria.com/" target="_blank" rel="noopener">PixerIA</a>
     <a href="/admira-xp/" data-demo-gate>Admira XP</a>
     <a href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener">OmniPublicity</a>
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
     <a href="/ayuda/">Método Xpacios</a>
     <a href="/backoffice/" rel="nofollow">Club</a>
-    <span class="sig">XPACEOS · v.2026.07.22</span>
+    <span class="sig">XPACEOS · v.2026.08.02</span>
   </div>
 </footer>
 
@@ -828,7 +855,20 @@ const I18N = {
     'pixer.feat4': '<b>IMAGEN 4 · FLUX · GROK</b>static image 1024-2K',
     'pixer.feat5': '<b>VEO 3</b>720p video with native audio',
     'pixer.outro': 'Each asset is delivered with a descriptive title and auto-generated cover, ready to push to the Digital Twin feed with one click.',
+    'pixer.stockLink': '↗ the whole studio library',
     'pixer.next': '↓ next: Admira XP',
+    'pixstock.badge': 'Fresh out of the studio',
+    'pixstock.sub': 'Not a mockup. This is the real PixerIA library, read live from the same shared index that pixeria.com publishes to and the Digital Twin plays from.',
+    'pixstock.foot': 'One shared dataset: create it in <b>admira.studio</b> → it lands here and in the Digital Twin playlist. No export, no hand-off, no separate integration.',
+    'pixstock.loading': 'Loading the studio library…',
+    'pixstock.error': 'Studio library unreachable right now — the pieces are still there.',
+    'pixstock.empty': 'The library is empty right now.',
+    'pixstock.count': '{n} pieces in the library · {t} today · {e} engines',
+    'pixstock.today': 'today',
+    'pixstock.now': 'just now',
+    'pixstock.min': '{n} min ago',
+    'pixstock.hour': '{n} h ago',
+    'pixstock.day': '{n} d ago',
     'xp.title': '<span class="num">05</span>Admira XP · Distribution layer',
     'xp.deepTitle': 'Digital signage on top of a Digital Twin of the physical space',
     'xp.who': 'The simulator is the first demo, but also the production control tool.',
@@ -964,7 +1004,20 @@ const I18N = {
     'pixer.feat4': '<b>IMAGEN 4 · FLUX · GROK</b>imagen estática 1024-2K',
     'pixer.feat5': '<b>VEO 3</b>video 720p con audio nativo',
     'pixer.outro': 'Cada activo sale con título descriptivo y carátula generada automáticamente, listo para enviarse al flujo del Gemelo Digital con un clic.',
+    'pixer.stockLink': '↗ toda la biblioteca del estudio',
     'pixer.next': '↓ siguiente: Admira XP',
+    'pixstock.badge': 'Recién salido del estudio',
+    'pixstock.sub': 'No es una maqueta. Es la biblioteca real de PixerIA, leída en vivo del mismo índice compartido donde publica pixeria.com y del que se sirve el Gemelo Digital.',
+    'pixstock.foot': 'Un solo dato compartido: créalo en <b>admira.studio</b> → aparece aquí y en la lista de reproducción del Gemelo Digital. Sin exportar, sin traspasos, sin integración aparte.',
+    'pixstock.loading': 'Cargando la biblioteca del estudio…',
+    'pixstock.error': 'La biblioteca del estudio no responde ahora mismo — las piezas siguen ahí.',
+    'pixstock.empty': 'La biblioteca está vacía ahora mismo.',
+    'pixstock.count': '{n} piezas en la biblioteca · {t} hoy · {e} motores',
+    'pixstock.today': 'hoy',
+    'pixstock.now': 'ahora mismo',
+    'pixstock.min': 'hace {n} min',
+    'pixstock.hour': 'hace {n} h',
+    'pixstock.day': 'hace {n} d',
     'xp.title': '<span class="num">05</span>Admira XP · Capa de distribución',
     'xp.deepTitle': 'Cartelería digital sobre un Gemelo Digital del espacio físico',
     'xp.who': 'El simulador es la primera demo, pero también la herramienta de control en producción.',
@@ -1035,6 +1088,7 @@ function applyLanguage(lang) {
   try { localStorage.setItem('xpaceosLang', lang); } catch {}
   try { window.dispatchEvent(new CustomEvent('admira:languagechange', { detail: { lang } })); } catch {}
   if (typeof renderGemelos === 'function') renderGemelos();
+  if (typeof renderPixStock === 'function') renderPixStock();
 }
 
 // El formulario de contacto de la home es ahora el MISMO modal de lead del
@@ -1114,6 +1168,108 @@ async function loadGemelos() {
 }
 renderGemelos();
 loadGemelos();
+
+// ─── Live studio library · PixerIA / admira.studio ──────────────────
+// El puente real entre las capas 04 (crear) y 05 (distribuir): lo que se
+// crea en pixeria.com aterriza en este índice público de R2, y de ahí lo
+// leen tanto la galería pixeria.com/stock como la parrilla del gemelo.
+// Se lee el índice de R2 (no el worker) A PROPÓSITO: los ISP de aquí
+// bloquean a ratos *.workers.dev, y r2.dev no. Carga perezosa — son
+// ~290 KB y no deben pesar en la primera pintada de la home.
+const PIXSTOCK_INDEX = 'https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev/stock/index.json';
+const PIXSTOCK_MAX = 8;                       // tarjetas pintadas
+const PIXSTOCK_THUMB_MAX = 3000000;           // 3 MB: por encima, la imagen no se usa de miniatura (pesa más que la página)
+const PIXSTOCK_KINDS = { video:'🎬', image:'🖼', audio:'🔊', music:'🎵', locucion:'🎙' };
+let pixStockData = null;                      // null = cargando · 'error' · {…}
+
+function pxWhen(iso, d) {
+  const t = Date.parse(iso || '');
+  if (!Number.isFinite(t)) return '';
+  const min = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (min < 2) return d['pixstock.now'];
+  if (min < 60) return (d['pixstock.min'] || '{n} min').replace('{n}', min);
+  const h = Math.round(min / 60);
+  if (h < 24) return (d['pixstock.hour'] || '{n} h').replace('{n}', h);
+  return (d['pixstock.day'] || '{n} d').replace('{n}', Math.round(h / 24));
+}
+
+function renderPixStock() {
+  const grid = document.getElementById('px-grid');
+  if (!grid) return;
+  const countEl = document.getElementById('px-count');
+  const d = gmDict();
+  if (countEl) countEl.textContent = '';
+  if (pixStockData === null) { grid.innerHTML = `<div class="gm-state">${d['pixstock.loading']}</div>`; return; }
+  if (pixStockData === 'error') { grid.innerHTML = `<div class="gm-state err">${d['pixstock.error']}</div>`; return; }
+  const items = pixStockData.items || [];
+  if (!items.length) { grid.innerHTML = `<div class="gm-state">${d['pixstock.empty']}</div>`; return; }
+  grid.innerHTML = items.slice(0, PIXSTOCK_MAX).map(it => {
+    const kind = String(it.type || '');
+    const ico = PIXSTOCK_KINDS[kind] || '▫';
+    const isImg = kind === 'image' && Number(it.size || 0) < PIXSTOCK_THUMB_MAX;
+    const thumb = it.thumbnail || (isImg ? it.url : '');
+    const title = it.title || `#${gmEsc(it.num || '')} · ${gmEsc(kind)}`;
+    const style = thumb ? ` style="background-image:url('${gmEsc(thumb).replace(/'/g, '%27')}')"` : '';
+    const hole = thumb ? '' : `<span class="px-ico">${ico}</span><span class="px-num">#${gmEsc(it.num || '')}</span>`;
+    return `<a class="px-card" href="https://www.pixeria.com/stock" target="_blank" rel="noopener">
+      <div class="px-thumb"${style}><span class="px-kind">${gmEsc(kind)}</span>${hole}</div>
+      <div class="px-body">
+        <div class="nm">${gmEsc(title)}</div>
+        <div class="mt">${gmEsc(it.motor || '—')}</div>
+        <div class="wh">${pxWhen(it.createdAt, d)}</div>
+      </div>
+    </a>`;
+  }).join('');
+  if (countEl) {
+    countEl.textContent = (d['pixstock.count'] || '')
+      .replace('{n}', pixStockData.total)
+      .replace('{t}', pixStockData.today)
+      .replace('{e}', pixStockData.engines);
+  }
+}
+
+async function loadPixStock() {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 9000);
+    const r = await fetch(PIXSTOCK_INDEX, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('http ' + r.status);
+    const json = await r.json();
+    const all = (Array.isArray(json) ? json : (json.items || []))
+      .filter(it => it && PIXSTOCK_KINDS[it.type]);           // solo contenido creativo (fuera mobiliario/NPC/enlaces del gemelo)
+    all.sort((a, b) => Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0));
+    const dayAgo = Date.now() - 864e5;
+    pixStockData = {
+      items: all,
+      total: all.length,
+      today: all.filter(it => Date.parse(it.createdAt || 0) > dayAgo).length,
+      engines: new Set(all.map(it => it.motor).filter(Boolean)).size,
+    };
+  } catch (e) {
+    pixStockData = 'error';
+  }
+  renderPixStock();
+}
+
+renderPixStock();
+// Carga perezosa CON RED DE SEGURIDAD: el observador dispara al acercarse la
+// sección, pero hay contextos (pestaña en segundo plano, documento sin pintar)
+// donde nunca llega a disparar y la tira se quedaba en "Cargando…" para
+// siempre. El plazo de 6 s —ya pasada la primera pintada— garantiza el dato.
+(() => {
+  const host = document.getElementById('pixstock');
+  if (!host) return;
+  let started = false;
+  const start = () => { if (started) return; started = true; loadPixStock(); };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) { io.disconnect(); start(); }
+    }, { rootMargin: '400px' });
+    io.observe(host);
+  }
+  setTimeout(start, 6000);
+})();
 
 document.getElementById('lang-toggle')?.addEventListener('click', event => {
   applyLanguage(event.currentTarget.dataset.langTarget || (document.documentElement.lang === 'en' ? 'es' : 'en'));
