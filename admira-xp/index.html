@@ -19798,7 +19798,11 @@ function admiraTvUrl(space){
   // shot=0: el tótem del gemelo NO sube fotogramas a /signage/shot (no es una
   // pantalla física). muted=1: la sala ya tiene su propia música.
   // 'all' (o vacío) = sin filtro, el canal entero.
-  return 'https://admira.tv/canal.html?clean=1&screen='+encodeURIComponent(TOTEM_SCREEN_ID)+'&shot=0&muted=1'
+  // fresh=180 + refresh=20: NOVEDAD AL AIRE — lo que se acaba de crear en
+  // pixeria.com/tiktok toma el Mupi en exclusiva 3 minutos (en bucle) y luego
+  // se incorpora al loop, que sigue por la siguiente pieza. El refresco baja a
+  // 20 s para que la novedad entre pronto (con 30 s tardaba media vuelta más).
+  return 'https://admira.tv/canal.html?clean=1&screen='+encodeURIComponent(TOTEM_SCREEN_ID)+'&shot=0&muted=1&fresh=180&refresh=20'
     +((tag&&tag!=='all')?('&tag='+encodeURIComponent(tag)):'');
 }
 const ADMIRATV_URL=admiraTvUrl();
