@@ -19884,7 +19884,7 @@ function setAdmiraTvCommand(arg){
 // Motor: el mismo que usa el compositor de pixeria.com/tiktok — POST /xai/video
 // (grok-imagine-video, 9:16) → polling → POST /stock/publish.
 const PIXER_API='https://pixer-eleven.csilvasantin.workers.dev';
-const TIKTOK={ on:false, t0:0, phase:'', log:[], asset:null, tick:0, watch:0, sim:false, done:false, estMs:150000, run:0 };
+const TIKTOK={ on:false, t0:0, phase:'', log:[], asset:null, tick:0, watch:0, sim:false, done:false, estMs:150000, run:0, pend:null, auto:false };
 function tiktokEl(){
   let p=document.getElementById('tiktokPanel');
   if(!p){
@@ -19908,7 +19908,9 @@ function tiktokEl(){
   return p;
 }
 function tiktokRender(){
-  const p=tiktokEl(); if(!TIKTOK.on && !TIKTOK.done){ p.style.display='none'; return; }
+  // Ojo: el panel también se queda VISIBLE cuando hay una idea esperando el OK
+  // (TIKTOK.pend) — si no, la pregunta «¿rodamos?» se escondía sola.
+  const p=tiktokEl(); if(!TIKTOK.on && !TIKTOK.done && !TIKTOK.pend){ p.style.display='none'; return; }
   p.style.display='block';
   const secs=Math.max(0,Math.round((Date.now()-TIKTOK.t0)/1000));
   const mm=Math.floor(secs/60), ss=String(secs%60).padStart(2,'0');
@@ -19930,16 +19932,61 @@ function tiktokSay(phase,line,col){
   try{ if(typeof G!=='undefined'&&G) G.tiktokLed=TIKTOK.on?(TIKTOK.phase||''):''; }catch(_){}
   tiktokRender();
 }
-// Prompt del spot a partir del punto activo + el tema que escriba Carlos.
-function tiktokPrompt(tema){
+// ── El titular se DESARROLLA como en el compositor ──────────────────────────
+// En pixeria.com/tiktok escribes un titular y «Desarrollar idea» lo convierte en
+// la campaña entera (idea · detalle · marca · objetivo · público) antes de rodar;
+// sin titular, «Crear idea» la inventa desde cero. /tiktok hace lo MISMO: lo que
+// escribas detrás del comando ES el titular.
+// OJO — por qué no llamamos al director creativo del compositor: su API
+// (/presentaciones/api/ad-idea) es same-origin y va detrás de la verja privada
+// del perímetro; desde el Xtanco (otro dominio, sin sesión) devuelve 401. Así
+// que desarrollamos con el cerebro SIN clave del worker (/idea) pidiéndole
+// exactamente los mismos campos del formulario. Si Carlos quiere el mismo
+// director creativo, hay que abrir una ruta servidor-a-servidor con clave.
+const TIKTOK_OBJETIVOS='conseguir contactos | vender | dar a conocer | visitar la tienda';
+function tiktokDirectorPrompt(titular){
+  const t=String(titular||'').trim();
   const c=(typeof window!=='undefined'&&window.STORE_CFG)?window.STORE_CFG:{};
-  const sitio=c.name||c.label||'un estanco Admira de barrio';
-  const t=String(tema||'').trim();
-  return 'Anuncio vertical 9:16 estilo TikTok para '+sitio+'. '
-    +(t?('Tema: '+t+'. '):'Tema: la tienda de barrio que ya es digital. ')
-    +'Plano corto y dinámico, luz cálida de tarde, cámara en mano, gente real entrando y saliendo, '
-    +'pantallas encendidas dentro del local. Sin texto sobreimpreso, sin logos inventados, sin marcas reales. '
-    +'Ritmo de 15 segundos, corte final limpio.';
+  const sitio=c.name||c.label||'';
+  return 'Actúas como director creativo de Pixeria. '
+    +(t?('A partir de este TITULAR de anuncio, desarrolla la campaña completa respetándolo.\nTITULAR: '+t)
+       :('Inventa una campaña completa desde cero para un anuncio vertical'+(sitio?(' de '+sitio):'')+'.'))
+    +'\n\nDevuelve SOLO un JSON válido, sin markdown ni texto alrededor, con estas claves exactas:\n'
+    +'{"idea":"titular final, máx 120 caracteres","detail":"la oferta, el porqué, la prueba y qué debe verse, máx 600 caracteres",'
+    +'"brand":"marca o negocio","objective":"uno de: '+TIKTOK_OBJETIVOS+'","audience":"para quién es, máx 90 caracteres",'
+    +'"guion":"guion visual de 15 segundos para vídeo vertical 9:16, plano a plano, sin texto sobreimpreso ni marcas reales, máx 700 caracteres"}';
+}
+function tiktokParseCampaign(txt){
+  const s=String(txt||'');
+  const a=s.indexOf('{'), b=s.lastIndexOf('}');
+  if(a<0||b<=a) return null;
+  try{ const o=JSON.parse(s.slice(a,b+1)); return (o&&typeof o==='object')?o:null; }catch(_){ return null; }
+}
+// El modelo :free razona antes de responder y a veces devuelve prosa (o se queda
+// sin presupuesto y contesta vacío) → probado en vivo: 2 de cada 3 salen a la
+// primera. Reintentamos un par de veces antes de rendirnos, avisando en el panel.
+async function tiktokDevelopIdea(titular,onRetry){
+  let last='';
+  for(let intento=1;intento<=3;intento++){
+    if(intento>1 && onRetry) onRetry(intento);
+    const r=await fetch(PIXER_API+'/idea',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[{role:'user',content:tiktokDirectorPrompt(titular)}]})});
+    if(!r.ok){ last='idea '+r.status; continue; }
+    const d=await r.json();
+    const camp=tiktokParseCampaign(d&&d.reply);
+    if(camp&&camp.guion) return camp;
+    last='el director creativo no devolvió campaña';
+  }
+  throw new Error(last||'sin respuesta');
+}
+// El guion desarrollado, vestido para el motor de vídeo.
+function tiktokPrompt(camp){
+  return 'Anuncio vertical 9:16 estilo TikTok. '
+    +(camp.brand?('Marca: '+camp.brand+'. '):'')
+    +(camp.idea?('Titular: '+camp.idea+'. '):'')
+    +'Guion: '+camp.guion+' '
+    +'Plano corto y dinámico, cámara en mano, luz cuidada. '
+    +'Sin texto sobreimpreso, sin logos inventados, sin marcas reales. Ritmo de 15 segundos, corte final limpio.';
 }
 async function tiktokFinishWatch(runId){
   // Vigila el Mupi: la pieza está en el catálogo, el tótem la coge por su cuenta
@@ -19965,28 +20012,71 @@ async function tiktokFinishWatch(runId){
   tiktokSay('⚠️ En catálogo, aún no en antena','El Mupi la cogerá en la próxima vuelta (o /admiratv tiktok para forzar).','#ffd23f');
   return false;
 }
-async function runTiktokCampaign(tema,sim){
+async function runTiktokCampaign(titular,sim){
   const runId=++TIKTOK.run;   // testigo de esta tirada (corta vigilantes viejos)
   TIKTOK.on=true; TIKTOK.done=false; TIKTOK.sim=!!sim; TIKTOK.t0=Date.now(); TIKTOK.log=[]; TIKTOK.asset=null;
   clearInterval(TIKTOK.tick); TIKTOK.tick=setInterval(tiktokRender,1000);
-  const prompt=tiktokPrompt(tema);
-  const titulo='TikTok · '+(String(tema||'').trim()||'campaña del Xtanco')+' · 15s';
-  tiktokSay('Escribiendo el guion','Tema: <b>'+(String(tema||'').trim()||'la tienda de barrio que ya es digital')+'</b>');
+  const tit=String(titular||'').trim();
   try{
+    // ── 1) El titular se convierte en campaña (como «Desarrollar idea») ──
+    tiktokSay(tit?'Desarrollando el titular':'Inventando la idea desde cero',
+      tit?('Titular: <b>'+tit+'</b>'):'Sin titular: campaña completa desde cero');
+    let camp;
+    try{ camp=await tiktokDevelopIdea(tit,(n)=>tiktokSay('','· el director se ha atascado, intento '+n+'/3')); }
+    catch(e){
+      // El director creativo no responde: NO dejamos a Carlos sin anuncio —
+      // se rueda con el titular tal cual y se dice claramente en el panel.
+      tiktokSay('⚠️ Sin director creativo','No pude desarrollar la idea ('+String((e&&e.message)||e).slice(0,60)+'). Ruedo con tu titular tal cual.','#ffd23f');
+      camp={ idea:tit||'Campaña del Xtanco', detail:'', brand:'', objective:'dar a conocer', audience:'',
+             guion:tit||'La tienda de barrio que ya es digital, en plano corto y con ritmo.' };
+    }
+    if(TIKTOK.run!==runId) return;
+    tiktokSay('💡 Idea lista',
+      '<b>'+String(camp.idea||tit).slice(0,90)+'</b>'
+      +(camp.brand?('<br>· marca: '+String(camp.brand).slice(0,50)):'')
+      +(camp.objective?('<br>· objetivo: '+String(camp.objective).slice(0,40)):'')
+      +(camp.audience?('<br>· público: '+String(camp.audience).slice(0,60)):''), '#7dff9e');
+    const prompt=tiktokPrompt(camp);
+    const titulo='TikTok · '+String(camp.idea||tit||'campaña del Xtanco').slice(0,80)+' · 15s';
+    // ── PARADA ANTES DE GASTAR ──────────────────────────────────────────────
+    // Desarrollar la idea es gratis; rodar NO. El compositor pregunta antes de
+    // cada generación de pago y aquí también: se enseña la campaña y se espera
+    // el OK. `/tiktok ya <titular>` se salta la pregunta a propósito.
+    if(!sim && !TIKTOK.auto){
+      TIKTOK.pend={runId,prompt,titulo,camp,tit};
+      TIKTOK.on=false; clearInterval(TIKTOK.tick);
+      try{ if(typeof G!=='undefined'&&G) G.tiktokLed=''; }catch(_){}
+      tiktokSay('⏸ ¿Rodamos?','Rodar gasta créditos de xAI. <b>/tiktok ok</b> para rodar · <b>/tiktok no</b> para dejarlo.','#ffd23f');
+      tiktokRender();
+      return;
+    }
     let videoUrl=null;
     if(sim){
-      // SIMULACIÓN: mismas fases y mismos tiempos, sin gastar créditos. Sirve
-      // para probar el feedback (que es lo que importa) sin rodar de verdad.
+      // SIMULACIÓN: la IDEA es real (el desarrollo del titular no cuesta nada);
+      // lo único que se finge es el rodaje, que es lo que gasta créditos.
       TIKTOK.estMs=24000;
-      await new Promise(r=>setTimeout(r,3000)); tiktokSay('Enviando a Grok Imagine','9:16 · 15s · 720p (simulado)');
-      for(let i=1;i<=3;i++){ await new Promise(r=>setTimeout(r,5000)); tiktokSay('Rodando…','· plano '+i+'/3 (simulado)'); }
-      await new Promise(r=>setTimeout(r,3000));
-      videoUrl='SIMULACIÓN';
-      tiktokSay('🎞 Copia lista','Simulación: no se publica nada en el catálogo.','#7dff9e');
+      await new Promise(r=>setTimeout(r,2000)); tiktokSay('Enviando a Grok Imagine','9:16 · 15s · 720p (simulado)');
+      for(let i=1;i<=3;i++){ await new Promise(r=>setTimeout(r,5000)); if(TIKTOK.run!==runId) return; tiktokSay('Rodando…','· plano '+i+'/3 (simulado)'); }
+      tiktokSay('🎞 Copia lista','Simulación: la idea es real, el vídeo NO se ha rodado ni publicado.','#7dff9e');
       TIKTOK.done=true; TIKTOK.on=false; clearInterval(TIKTOK.tick); tiktokRender();
       try{ if(typeof G!=='undefined'&&G) G.tiktokLed=''; }catch(_){}
       return;
     }
+    await tiktokShoot({runId,prompt,titulo,camp,tit});
+  }catch(e){
+    TIKTOK.on=false; TIKTOK.done=true; clearInterval(TIKTOK.tick);
+    try{ if(typeof G!=='undefined'&&G) G.tiktokLed=''; }catch(_){}
+    tiktokSay('❌ Se cortó el rodaje',String((e&&e.message)||e).slice(0,160),'#ff6b6b');
+  }
+}
+// La parte que CUESTA: rodar en Grok Imagine y publicar. Vive aparte para poder
+// dispararla desde el OK (/tiktok ok) sin repetir el desarrollo de la idea.
+async function tiktokShoot(p){
+  const {runId,prompt,titulo,camp,tit}=p;
+  TIKTOK.on=true; TIKTOK.done=false; TIKTOK.pend=null;
+  clearInterval(TIKTOK.tick); TIKTOK.tick=setInterval(tiktokRender,1000);
+  let videoUrl=null;
+  try{
     tiktokSay('Enviando a Grok Imagine','9:16 · 15s · 720p');
     const r=await fetch(PIXER_API+'/xai/video',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({prompt,duration:15,aspect_ratio:'9:16',resolution:'720p'})});
@@ -20012,8 +20102,14 @@ async function runTiktokCampaign(tema,sim){
     tiktokSay('🎞 Copia lista','Publicando en el catálogo de Pixeria…','#7dff9e');
     const pub=await fetch(PIXER_API+'/stock/publish',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ type:'video', motor:'grok-imagine-video', prompt, title:titulo,
-        comment:'Campaña de TikTok lanzada con /tiktok desde el Xtanco ('+(TOTEM_SCREEN_ID)+')',
-        tags:['tiktok','vertical','campaña','xtanco'], quality:'best', category:'atraer',
+        comment:'Campaña de TikTok lanzada con /tiktok desde el Xtanco ('+TOTEM_SCREEN_ID+').'
+          +(tit?('\nTitular pedido: '+tit):'\nSin titular: idea desde cero.')
+          +(camp.detail?('\nDetalle: '+String(camp.detail).slice(0,400)):'')
+          +(camp.brand?('\nMarca: '+camp.brand):'')
+          +(camp.objective?('\nObjetivo: '+camp.objective):'')
+          +(camp.audience?('\nPúblico: '+camp.audience):''),
+        tags:['tiktok','vertical','campaña','xtanco'].concat(camp.objective?[String(camp.objective).toLowerCase()]:[]),
+        quality:'best', category:'atraer',
         costEst:'xAI · grok-imagine-video 15s', sourceUrl:videoUrl, mime:'video/mp4' })});
     if(!pub.ok) throw new Error('stock '+pub.status+': '+(await pub.text()).slice(0,140));
     const data=await pub.json();
@@ -20031,17 +20127,34 @@ async function runTiktokCampaign(tema,sim){
 function setTiktokCommand(arg){
   const a=String(arg||'').trim();
   const isEsL=(typeof lang==='undefined'||lang!=='en');
-  if(a.toLowerCase()==='cerrar'||a.toLowerCase()==='close'){ const p=document.getElementById('tiktokPanel'); if(p) p.style.display='none'; return '🎬 Panel de rodaje cerrado.'; }
+  const low=a.toLowerCase();
+  if(low==='cerrar'||low==='close'){ const p=document.getElementById('tiktokPanel'); if(p) p.style.display='none'; return '🎬 Panel de rodaje cerrado.'; }
+  // Respuesta a la pregunta de «¿rodamos?» (rodar es lo único que cuesta).
+  if(low==='ok'||low==='si'||low==='sí'||low==='rodar'||low==='yes'){
+    if(!TIKTOK.pend) return isEsL?'No hay ninguna idea esperando. Escribe /tiktok <titular>.':'Nothing waiting. Type /tiktok <headline>.';
+    const p=TIKTOK.pend; tiktokShoot(p);
+    return isEsL?('🎬 Rodando «'+String(p.titulo||'').slice(0,60)+'». Tarda 1-3 min; el panel lo va contando.'):'🎬 Shooting. 1-3 min.';
+  }
+  if(low==='no'||low==='cancelar'||low==='cancel'){
+    if(!TIKTOK.pend) return isEsL?'No hay nada pendiente.':'Nothing pending.';
+    TIKTOK.pend=null; tiktokSay('Descartada','Idea descartada, no se ha gastado nada.','#9a8fc8');
+    return isEsL?'🗑 Idea descartada. No se ha gastado ni un crédito.':'🗑 Discarded.';
+  }
   if(TIKTOK.on) return isEsL?('🎬 Ya hay un rodaje en marcha ('+TIKTOK.phase+'). Mira el panel de la derecha.'):'🎬 A shoot is already running.';
   const sim=/^(demo|simular|sim)\b/i.test(a);
-  const tema=sim?a.replace(/^(demo|simular|sim)\s*/i,''):a;
-  runTiktokCampaign(tema,sim);
+  // «ya» = desarrolla y rueda del tirón, sin preguntar (gasta créditos).
+  const auto=/^(ya|directo|sinpreguntar)\b/i.test(a);
+  const titular=a.replace(/^(demo|simular|sim|ya|directo|sinpreguntar)\s*/i,'').trim();
+  TIKTOK.auto=auto;
+  runTiktokCampaign(titular,sim);
   return isEsL
-    ? ('🎬 Rodando una campaña de TikTok en Pixeria'+(sim?' (SIMULACIÓN, no gasta créditos)':'')+'.\n'
-      +'Tema: '+(tema||'la tienda de barrio que ya es digital')+'\n'
+    ? ('🎬 Campaña de TikTok en Pixeria'+(sim?' (SIMULACIÓN: idea real, sin rodar)':'')+'.\n'
+      +(titular?('Titular: «'+titular+'» → lo desarrollo como en el compositor.')
+               :'Sin titular → idea completa desde cero, como el botón «Crear idea».')+'\n'
+      +(sim?'':(auto?'Rueda del tirón (gasta créditos).\n':'Te enseño la campaña y ESPERO tu OK antes de rodar (rodar es lo único que cuesta).\n'))
       +'Verás el avance en el panel de la derecha, en la cinta LED de la tienda y en los avisos.\n'
       +'Al acabar entra en el catálogo con tag «tiktok» y el Mupi la coge solo.')
-    : ('🎬 Shooting a TikTok campaign in Pixeria'+(sim?' (SIMULATION)':'')+'. Watch the panel on the right.');
+    : ('🎬 TikTok campaign in Pixeria'+(sim?' (SIMULATION)':'')+'. '+(titular?('Headline: "'+titular+'".'):'No headline → full idea from scratch.')+' Watch the panel on the right.');
 }
 // Monta el iframe del avatar 3D sobre la pantalla del tótem en la VISTA 2D del
 // gemelo (no solo en la pantalla física), usando el quad cacheado del tótem.
@@ -29816,7 +29929,7 @@ window.xtAPI = (function(){
       {title:'Pantalla y directo',items:['/livecam','/mocap','/pixeria','/AdmiraLive texto','/comunicar texto','/comunicar texto --grok','/comunicar texto --elevenlabs','/AdmiraTube URL 2 audio','/say texto','/targetPublicity aforo','/targetPublicity genero','/targetPublicity off','/generovideo','/generovideo off','/impactos','/impactos cpm 12','/impactos tft','/impactos reset','/impactos off','/audienciaIN 8','/audienciaOUT 4']},
       {title:'Digital Signage (vídeos)',items:['/ds on','/ds off','/ds next','/ds previous','/ds audio on','/ds audio off','/info','/info on','/info off']},
       {title:'Mupi del Xtanco (tótem vertical)',items:['/admiratv','/admiratv on','/admiratv off','/admiratv tiktok','/admiratv all']},
-      {title:'Campañas de TikTok (rodar en Pixeria)',items:['/tiktok','/tiktok <tema>','/tiktok demo','/tiktok cerrar']},
+      {title:'Campañas de TikTok (rodar en Pixeria)',items:['/tiktok <titular>','/tiktok pizzeria del barrio','/tiktok ok','/tiktok no','/tiktok ya <titular>','/tiktok demo <titular>','/tiktok cerrar']},
       {title:'Condicional (contenidos condicionados)',items:['/xpl (1ª vez ON · 2ª OFF)']},
       {title:'Escena en vivo',items:['/dj','/ladron','/guardiacivil','/opinador','/robot','/sponsor','/socio','/door open','/door close','/door auto','/subasta','/subasta off']},
       {title:'Notificaciones al personal',items:['/personal socio','/personal dashboard','/socios listado','/heatmap','/heatmap reset','/sponsor recurrente 120 10']},
