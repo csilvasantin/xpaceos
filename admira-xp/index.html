@@ -1192,7 +1192,7 @@
 <div id="telegramDock" aria-label="Telegram AdmiraXPBot">
   <div class="dock-resize-handle" data-dock-resize aria-hidden="true"></div>
   <div class="tg-pane send">
-    <div class="tg-head"><span>Store control from Telegram / WhatsApp</span><a class="tg-site-link" id="dockSiteLink" href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener" title="Abrir OmniPublicity — modulo programatico del Xpace OS">↗ SITE <span class="tg-site-ver" id="dockSiteVer">v—</span></a><span class="tg-status" id="telegramSendStatus" style="display:none">AdmiraXPBot</span></div>
+    <div class="tg-head"><span>Xtore control from Telegram / WhatsApp</span><a class="tg-site-link" id="dockSiteLink" href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener" title="Abrir OmniPublicity — modulo programatico del Xpace OS">↗ SITE <span class="tg-site-ver" id="dockSiteVer">v—</span></a><span class="tg-status" id="telegramSendStatus" style="display:none">AdmiraXPBot</span></div>
     <div id="telegramHelpPanel" aria-label="Comandos disponibles"></div>
     <div id="telegramSignagePanel" aria-label="Playlist Digital Signage"></div>
     <div class="tg-cli-row">
@@ -24232,7 +24232,7 @@ function syncDockLanguage(){
     :(isEs?'Clientes':'Customers');
 
   const tgHeads=document.querySelectorAll('#telegramDock .tg-head > span:first-child');
-  if(tgHeads[0]) tgHeads[0].textContent=isEs?'Control de la Store desde Telegram / WhatsApp':'Store control from Telegram / WhatsApp';
+  if(tgHeads[0]) tgHeads[0].textContent=isEs?'Control Xtore desde Telegram / WhatsApp':'Xtore control from Telegram / WhatsApp';
   if(tgHeads[1]) tgHeads[1].textContent=isEs?'Conversacion':'Conversation';
   const composer=document.getElementById('telegramComposer');
   if(composer) composer.placeholder=isEs?'Escribe para @AdmiraXPBot... Enter envia, Shift+Enter salto':'Write to @AdmiraXPBot... Enter sends, Shift+Enter newline';
@@ -29969,7 +29969,7 @@ window.xtAPI = (function(){
 
   function commandHelp(){
     showHelpPanel();
-    return 'Ayuda abierta en la ventana de Control de la Store. Pulsa un comando para prepararlo.';
+    return 'Ayuda abierta en la ventana de Control Xtore. Pulsa un comando para prepararlo.';
   }
 
   // /debug — volcado de diagnóstico: estado del runtime, Xpacio activo, DVR y
@@ -34173,13 +34173,13 @@ window.xtAPI = (function(){
   /* Modo EXPERTO (⌘) = solo CLI: los tiles no se muestran en el dock inferior. */
   #telegramDock .tg-quick-actions{display:none !important}
   /* CLI aún más limpio: fuera la barra superior del dock (título + versión "SITE v…");
-     el rótulo "CONTROL DE LA STORE" pasa al inicio de la propia caja de texto. */
+     el rótulo "CONTROL XTORE" pasa al inicio de la propia caja de texto. */
   #telegramDock.compose-start .tg-pane.send .tg-head{display:none !important}
   /* Alinear rótulo e input por la BASELINE del texto (evita que "/info" salga por
      encima del rótulo cuando el textarea crece al escribir). */
   #telegramDock.compose-start .tg-cli-row{align-items:baseline}
   #telegramDock.compose-start .tg-cli-row::before{
-    content:'CONTROL DE LA STORE';
+    content:'CONTROL XTORE';
     align-self:baseline;flex:0 0 auto;white-space:nowrap;
     color:var(--xp-cyan,#78f3ff);font:bold 10px/1.35 monospace;letter-spacing:.12em;
     padding-right:9px;margin-right:2px;border-right:1px solid rgba(120,243,255,.28)}
