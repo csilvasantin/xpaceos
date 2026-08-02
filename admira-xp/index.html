@@ -1199,7 +1199,10 @@
       <textarea id="telegramComposer" placeholder="Write to @AdmiraXPBot... Enter sends, Shift+Enter newline"></textarea>
       <div class="tg-actions">
         <button type="button" class="primary" id="telegramSendBtn">Send</button>
-        <button type="button" id="telegramHelpBtn">/help</button>
+        <!-- El botón /help se quitó de la barra (2-ago-2026, Carlos: «eliminar
+             /help para tener más espacio»). El comando SIGUE existiendo: se
+             escribe /help en el compositor, y la ayuda completa vive en
+             xpaceos.com/help. El panel se cierra con su propia ✕. -->
         <button type="button" id="telegramHideBtn" title="Mostrar/ocultar la respuesta del CLI (mitad derecha)">Hide</button>
       </div>
     </div>
@@ -28385,7 +28388,7 @@ window.xtAPI = (function(){
   const helpPanel=document.getElementById('telegramHelpPanel');
   const sendPane=document.querySelector('#telegramDock .tg-pane.send');
   const sendBtn=document.getElementById('telegramSendBtn');
-  const helpBtn=document.getElementById('telegramHelpBtn');
+  // (telegramHelpBtn ya no existe: el /help salió de la barra para ganar espacio)
   const hideBtn=document.getElementById('telegramHideBtn');
   const signageBtn=document.getElementById('telegramSignageBtn');
   const signagePanel=document.getElementById('telegramSignagePanel');
@@ -29947,7 +29950,10 @@ window.xtAPI = (function(){
   function showHelpPanel(){
     if(!helpPanel||!sendPane) return;
     const sections=helpSections();
-    helpPanel.innerHTML='<div class="tg-help-top"><strong>Comandos de control</strong></div>'
+    // La ✕ vive DENTRO del panel: al quitar el botón /help de la barra, era la
+    // única forma de cerrarlo y la ayuda se quedaba abierta para siempre.
+    helpPanel.innerHTML='<div class="tg-help-top"><strong>Comandos de control</strong>'
+      +'<button type="button" class="tg-help-close" data-help-close title="Cerrar la ayuda">✕</button></div>'
       +'<div class="tg-help-grid">'
       +sections.map((section,si)=>'<div class="tg-help-section"><h4>'+(si+1)+'. '+section.title+'</h4>'
         +section.items.map((cmd,ci)=>'<button type="button" class="tg-help-cmd" data-help-cmd="'+cmd.replace(/"/g,'&quot;')+'"><span class="tg-help-num">'+(si+1)+'.'+(ci+1)+'</span> '+cmd+'</button>').join('')
@@ -31672,11 +31678,8 @@ window.xtAPI = (function(){
   // Helper: pequeño chime tipo Super Mario al pulsar botones de la barra
   function marioBeep(){try{if(typeof SFX!=='undefined'&&SFX.marioCoin)SFX.marioCoin();}catch(e){}}
   bindDockButton(sendBtn,()=>{marioBeep();sendComposerText(composer&&composer.value);});
-  bindDockButton(helpBtn,()=>{
-    marioBeep();
-    if(sendPane&&sendPane.classList.contains('help-open')) hideHelpPanel();
-    else commandHelp();
-  });
+  // (sin bindDockButton para /help: el botón ya no está en la barra — se escribe
+  //  /help en el compositor y el panel se cierra con su propia ✕)
   bindDockButton(hideBtn,()=>{marioBeep();setQuickActionsHidden(!quickActionsHidden);});
   setQuickActionsHidden(quickActionsHidden); // aplica el estado inicial (oculto por defecto)
   bindDockButton(signageBtn,()=>{marioBeep();toggleSignagePanel();});
