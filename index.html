@@ -774,9 +774,9 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     <h2 data-i18n-html="metrics.title"><span class="num">08</span>Pilot status</h2>
     <p class="lede" data-i18n="metrics.lede">Live metrics from the Xtanco simulator running in production and the Shoptalk EU setup. If the workers are asleep, the numbers show "—".</p>
     <div class="nums">
-      <div class="n"><div class="v live" id="m-screens">—</div><div class="l" data-i18n="metrics.screens">active signage screens</div></div>
-      <div class="n"><div class="v" id="m-feed">—</div><div class="l" data-i18n="metrics.feed">recent items in Pixer Feed</div></div>
-      <div class="n"><div class="v" id="m-credits">—</div><div class="l" data-i18n="metrics.credits">available Suno credits</div></div>
+      <div class="n"><div class="v live" id="m-screens">—</div><div class="l" data-i18n="metrics.screens">signage players online</div></div>
+      <div class="n"><div class="v" id="m-feed">—</div><div class="l" data-i18n="metrics.feed">dispatches to the twin · 24 h</div></div>
+      <div class="n"><div class="v" id="m-engines">—</div><div class="l" data-i18n="metrics.engines">AI engines in the library</div></div>
       <div class="n"><div class="v" id="m-days">—</div><div class="l" data-i18n="metrics.days">days since Shoptalk EU 2026</div></div>
     </div>
   </div>
@@ -792,7 +792,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
     <a href="/ayuda/">Método Xpacios</a>
     <a href="/backoffice/" rel="nofollow">Club</a>
-    <span class="sig">XPACEOS · v.2026.08.02.r3</span>
+    <span class="sig">XPACEOS · v.2026.08.02.r4</span>
   </div>
 </footer>
 
@@ -958,10 +958,10 @@ const I18N = {
     'stack.suno': 'Native Node · Clerk auth cookie · Tailscale Funnel /suno',
     'stack.tube': 'Native Node · yt-dlp + ffmpeg · Funnel /admira/tube',
     'metrics.title': '<span class="num">08</span>Pilot status',
-    'metrics.lede': 'Live metrics from the Xtanco simulator running in production and the Shoptalk EU setup. If the workers are asleep, the numbers show "—".',
-    'metrics.screens': 'active signage screens',
-    'metrics.feed': 'recent items in Pixer Feed',
-    'metrics.credits': 'available Suno credits',
+    'metrics.lede': 'Live metrics from the Xtanco pilot in production and the shared library. Each number comes from the same source the rest of this page reads; if a source does not answer, its number stays "—" instead of guessing.',
+    'metrics.screens': 'signage players online',
+    'metrics.feed': 'dispatches to the twin · 24 h',
+    'metrics.engines': 'AI engines in the library',
     'metrics.days': 'days since Shoptalk EU 2026'
   },
   es: {
@@ -1123,10 +1123,10 @@ const I18N = {
     'stack.suno': 'Node nativo · cookie de auth Clerk · Tailscale Funnel /suno',
     'stack.tube': 'Node nativo · yt-dlp + ffmpeg · Funnel /admira/tube',
     'metrics.title': '<span class="num">08</span>Estado del piloto',
-    'metrics.lede': 'Métricas en vivo del simulador Xtanco corriendo en producción y del montaje de Shoptalk EU. Si los servicios están dormidos, los números muestran "—".',
-    'metrics.screens': 'pantallas de cartelería digital activas',
-    'metrics.feed': 'elementos recientes en Pixer Feed',
-    'metrics.credits': 'créditos Suno disponibles',
+    'metrics.lede': 'Métricas en vivo del piloto Xtanco en producción y de la biblioteca compartida. Cada número sale de la misma fuente que lee el resto de esta página; si una fuente no responde, su número se queda en "—" en vez de inventarse.',
+    'metrics.screens': 'reproductores de cartelería en línea',
+    'metrics.feed': 'despachos al gemelo · 24 h',
+    'metrics.engines': 'motores de IA en la biblioteca',
     'metrics.days': 'días desde Shoptalk EU 2026'
   }
 };
@@ -1321,6 +1321,12 @@ async function loadPixStock() {
   }
   renderPixStock();
   renderPulses();
+  // Métrica honesta: los créditos de Suno eran un "—" perpetuo (el navegador
+  // de Suno duerme a propósito y el endpoint responde con
+  // access-control-allow-origin: null, así que el navegador jamás podría
+  // leerlo). Ese hueco lo ocupa un dato del mismo índice compartido.
+  const mEng = document.getElementById('m-engines');
+  if (mEng && pixStockData && pixStockData !== 'error') mEng.textContent = pixStockData.engines;
 }
 
 // ─── Registro de despacho al Gemelo Digital ─────────────────────────
@@ -1357,7 +1363,8 @@ async function loadDespacho() {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
-    const r = await fetch('https://pixer-eleven.csilvasantin.workers.dev/signage/feed?limit=200', { signal: ctrl.signal, cache: 'no-store' });
+    // El worker capa a 50 por dentro (Math.min(50, limit)) pidas lo que pidas.
+    const r = await fetch('https://pixer-eleven.csilvasantin.workers.dev/signage/feed?limit=50', { signal: ctrl.signal, cache: 'no-store' });
     clearTimeout(t);
     if (!r.ok) throw new Error('http ' + r.status);
     const items = (await r.json()).items || [];
@@ -1377,6 +1384,14 @@ async function loadDespacho() {
       });
     }
     despachoData = { rows: [...seen.values()], total: items.length };
+    // Métrica honesta: antes se pintaba items.length, que con el tope de 50
+    // del worker era SIEMPRE 50 — el límite disfrazado de dato. Ahora son los
+    // despachos de las últimas 24 h, y si los 50 que caben entran todos en
+    // esa ventana, el número lleva "+": no sabemos cuántos más hubo.
+    const dayAgo = Date.now() - 864e5;
+    const last24 = items.filter(it => (it.ts || 0) > dayAgo).length;
+    const mFeed = document.getElementById('m-feed');
+    if (mFeed) mFeed.textContent = (items.length >= 50 && last24 === items.length) ? '50+' : last24;
   } catch (e) {
     despachoData = 'error';
   }
@@ -1437,6 +1452,13 @@ async function loadOnAir() {
     if (!r.ok) throw new Error('http ' + r.status);
     const j = await r.json();
     const live = (j.screens || []).filter(s => s.online && s.showing_id);
+    // Métrica honesta: el propio hero de esta web se registra como pantalla
+    // (screen=xpaceos-web), así que contarla sería contar visitantes y
+    // llamarlos "reproductores de cartelería". Fuera. Si no queda ninguno,
+    // el número es 0 — que es la verdad, no un guion.
+    const players = live.filter(s => s.screen !== 'xpaceos-web');
+    const mScreens = document.getElementById('m-screens');
+    if (mScreens) mScreens.textContent = players.length;
     const canal = live.find(s => s.role === 'canal') || live[0];
     let title = '';
     if (canal) {
@@ -1537,34 +1559,12 @@ function scheduleShootingStar() {
 scheduleShootingStar();
 window.addEventListener('pagehide', () => window.clearTimeout(nextShootingStarTimer));
 
-// Métricas live — silently fail si los workers están dormidos.
-(async () => {
-  const PIXER = 'https://pixer-eleven.csilvasantin.workers.dev';
-  const SUNO  = 'https://macmini.tail48b61c.ts.net/suno';
-
-  // Pantallas + feed
-  try {
-    const sc = await fetch(PIXER + '/signage/screens').then(r => r.json());
-    if (sc && Array.isArray(sc.screens)) {
-      const online = sc.screens.filter(s => s.status === 'online' || (Date.now() - (s.last_heartbeat || 0) < 60000)).length;
-      document.getElementById('m-screens').textContent = online || sc.screens.length;
-    }
-  } catch {}
-  try {
-    const f = await fetch(PIXER + '/signage/feed?limit=50').then(r => r.json());
-    if (f && Array.isArray(f.items)) {
-      document.getElementById('m-feed').textContent = f.items.length;
-    }
-  } catch {}
-
-  // Créditos Suno
-  try {
-    const h = await fetch(SUNO + '/healthz').then(r => r.json());
-    if (h && h.ok && typeof h.total_credits_left === 'number') {
-      document.getElementById('m-credits').textContent = h.total_credits_left.toLocaleString('es');
-    }
-  } catch {}
-
+// Métricas live — pantallas, despachos y motores los rellenan loadOnAir(),
+// loadDespacho() y loadPixStock(): son las MISMAS fuentes que ya alimentan el
+// pulso de la suite, la tira del estudio y el registro de despacho. Antes este
+// bloque repetía esas dos peticiones (y una tercera a Suno, imposible de leer
+// desde el navegador por CORS). Aquí queda solo lo que no depende de nadie.
+(() => {
   // Días desde Shoptalk EU 2026 — cerró el 11 junio 2026
   try {
     const target = new Date('2026-06-11T18:00:00+02:00').getTime();
