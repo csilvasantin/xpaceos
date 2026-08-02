@@ -19870,6 +19870,179 @@ function setAdmiraTvCommand(arg){
     ? ('📺 Admira.tv ENCENDIDO en el Mupi del Xtanco · espacio «'+((!sp||sp==='all')?'todo el canal':sp)+'».')
     : '📺 Admira.tv APAGADO (el tótem vuelve a su estado anterior).';
 }
+// ── /tiktok: rodar una campaña de TikTok en Pixeria SIN espera muda ─────────
+// Carlos (2-ago-2026): «sobre todo necesito feedback de que se está haciendo en
+// el Xtanco, si no la espera será terrible». Un vídeo de Grok Imagine tarda
+// entre 1 y 3 minutos: sin señales, la sala parece colgada. Así que el rodaje se
+// CUENTA por todos los canales que la tienda ya tiene:
+//   · PANEL DE RODAJE fijo: fase, cronómetro, barra de avance y log de pasos.
+//   · CINTA LED de la tienda (G.tiktokLed) — se ve desde dentro del Xpacio.
+//   · avisos showEv en cada cambio de fase.
+//   · y el final lo canta el propio MUPI: la pieza entra en el catálogo con tag
+//     'tiktok' y el tótem la caza SOLO por la novedad al aire (fresh=180). El
+//     panel se queda vigilando /signage/now hasta verla EN ANTENA y lo anuncia.
+// Motor: el mismo que usa el compositor de pixeria.com/tiktok — POST /xai/video
+// (grok-imagine-video, 9:16) → polling → POST /stock/publish.
+const PIXER_API='https://pixer-eleven.csilvasantin.workers.dev';
+const TIKTOK={ on:false, t0:0, phase:'', log:[], asset:null, tick:0, watch:0, sim:false, done:false, estMs:150000, run:0 };
+function tiktokEl(){
+  let p=document.getElementById('tiktokPanel');
+  if(!p){
+    p=document.createElement('div'); p.id='tiktokPanel';
+    p.style.cssText='position:fixed;right:18px;top:96px;width:268px;z-index:9100;background:rgba(4,10,18,.94);'
+      +'border:1px solid #aa66ff;border-radius:10px;box-shadow:0 6px 28px rgba(170,102,255,.28);'
+      +'font:11px ui-monospace,Menlo,monospace;color:#dcd6ff;overflow:hidden;display:none';
+    p.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 9px;'
+      +'border-bottom:1px dashed #5a3a8a;letter-spacing:.06em"><b style="color:#c9a6ff">🎬 RODANDO TIKTOK</b>'
+      +'<span id="ttClose" style="cursor:pointer;color:#999;padding:0 4px">×</span></div>'
+      +'<div style="padding:8px 9px">'
+      +'<div id="ttPhase" style="color:#7dff9e;font-weight:700;margin-bottom:5px">—</div>'
+      +'<div style="height:6px;background:#1a1030;border-radius:4px;overflow:hidden;margin-bottom:5px">'
+      +'<div id="ttBar" style="height:100%;width:0;background:linear-gradient(90deg,#aa66ff,#7dff9e);transition:width .6s"></div></div>'
+      +'<div id="ttClock" style="color:#9a8fc8;margin-bottom:6px">0:00</div>'
+      +'<div id="ttLog" style="max-height:132px;overflow:auto;line-height:1.5;color:#b9b0dd"></div>'
+      +'</div>';
+    document.body.appendChild(p);
+    p.querySelector('#ttClose').onclick=()=>{ p.style.display='none'; };
+  }
+  return p;
+}
+function tiktokRender(){
+  const p=tiktokEl(); if(!TIKTOK.on && !TIKTOK.done){ p.style.display='none'; return; }
+  p.style.display='block';
+  const secs=Math.max(0,Math.round((Date.now()-TIKTOK.t0)/1000));
+  const mm=Math.floor(secs/60), ss=String(secs%60).padStart(2,'0');
+  const clk=p.querySelector('#ttClock'); if(clk) clk.textContent=mm+':'+ss+(TIKTOK.sim?'  · SIMULACIÓN':'');
+  const ph=p.querySelector('#ttPhase'); if(ph) ph.textContent=TIKTOK.phase||'—';
+  const bar=p.querySelector('#ttBar');
+  // Barra honesta: avanza sobre la estimación y se queda en 92% hasta que hay
+  // pieza de verdad — nunca finge un 100% que no ha pasado.
+  if(bar) bar.style.width=(TIKTOK.done?100:Math.min(92,Math.round((Date.now()-TIKTOK.t0)/TIKTOK.estMs*100)))+'%';
+  const lg=p.querySelector('#ttLog'); if(lg) lg.innerHTML=TIKTOK.log.slice(-12).join('<br>');
+}
+function tiktokSay(phase,line,col){
+  if(phase) TIKTOK.phase=phase;
+  if(line){
+    const secs=Math.max(0,Math.round((Date.now()-TIKTOK.t0)/1000));
+    TIKTOK.log.push('<span style="color:#6b5f9a">'+Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0')+'</span> '+line);
+  }
+  try{ if(phase && typeof showEv==='function') showEv('🎬 '+phase, col||'#aa66ff'); }catch(_){}
+  try{ if(typeof G!=='undefined'&&G) G.tiktokLed=TIKTOK.on?(TIKTOK.phase||''):''; }catch(_){}
+  tiktokRender();
+}
+// Prompt del spot a partir del punto activo + el tema que escriba Carlos.
+function tiktokPrompt(tema){
+  const c=(typeof window!=='undefined'&&window.STORE_CFG)?window.STORE_CFG:{};
+  const sitio=c.name||c.label||'un estanco Admira de barrio';
+  const t=String(tema||'').trim();
+  return 'Anuncio vertical 9:16 estilo TikTok para '+sitio+'. '
+    +(t?('Tema: '+t+'. '):'Tema: la tienda de barrio que ya es digital. ')
+    +'Plano corto y dinámico, luz cálida de tarde, cámara en mano, gente real entrando y saliendo, '
+    +'pantallas encendidas dentro del local. Sin texto sobreimpreso, sin logos inventados, sin marcas reales. '
+    +'Ritmo de 15 segundos, corte final limpio.';
+}
+async function tiktokFinishWatch(runId){
+  // Vigila el Mupi: la pieza está en el catálogo, el tótem la coge por su cuenta
+  // (novedad al aire). Cuando /signage/now la cante, lo decimos y cerramos.
+  // El testigo `runId` corta el vigilante si entretanto arranca OTRO rodaje —
+  // si no, el de la tirada vieja seguiría escribiendo en el log de la nueva.
+  const t0=Date.now();
+  while(Date.now()-t0<120000){
+    await new Promise(r=>setTimeout(r,6000));
+    if(TIKTOK.run!==runId) return false;
+    try{
+      const r=await fetch('https://api.admira.store/signage/now?screen='+encodeURIComponent(TOTEM_SCREEN_ID)+'&_='+Date.now(),{cache:'no-store'});
+      const d=await r.json();
+      const t=(d&&d.item&&d.item.title)||'';
+      if(t && TIKTOK.asset && TIKTOK.asset.title && t.indexOf(TIKTOK.asset.title)>=0){
+        tiktokSay('✅ YA EN EL MUPI','<b style="color:#7dff9e">El tótem la está emitiendo</b> · 3 min en exclusiva','#7dff9e');
+        try{ if(typeof twinArrivalBanner==='function') twinArrivalBanner('tu TikTok ya está en el Mupi'); }catch(_){}
+        return true;
+      }
+    }catch(_){}
+    tiktokSay('','· esperando a que el Mupi la coja…');
+  }
+  tiktokSay('⚠️ En catálogo, aún no en antena','El Mupi la cogerá en la próxima vuelta (o /admiratv tiktok para forzar).','#ffd23f');
+  return false;
+}
+async function runTiktokCampaign(tema,sim){
+  const runId=++TIKTOK.run;   // testigo de esta tirada (corta vigilantes viejos)
+  TIKTOK.on=true; TIKTOK.done=false; TIKTOK.sim=!!sim; TIKTOK.t0=Date.now(); TIKTOK.log=[]; TIKTOK.asset=null;
+  clearInterval(TIKTOK.tick); TIKTOK.tick=setInterval(tiktokRender,1000);
+  const prompt=tiktokPrompt(tema);
+  const titulo='TikTok · '+(String(tema||'').trim()||'campaña del Xtanco')+' · 15s';
+  tiktokSay('Escribiendo el guion','Tema: <b>'+(String(tema||'').trim()||'la tienda de barrio que ya es digital')+'</b>');
+  try{
+    let videoUrl=null;
+    if(sim){
+      // SIMULACIÓN: mismas fases y mismos tiempos, sin gastar créditos. Sirve
+      // para probar el feedback (que es lo que importa) sin rodar de verdad.
+      TIKTOK.estMs=24000;
+      await new Promise(r=>setTimeout(r,3000)); tiktokSay('Enviando a Grok Imagine','9:16 · 15s · 720p (simulado)');
+      for(let i=1;i<=3;i++){ await new Promise(r=>setTimeout(r,5000)); tiktokSay('Rodando…','· plano '+i+'/3 (simulado)'); }
+      await new Promise(r=>setTimeout(r,3000));
+      videoUrl='SIMULACIÓN';
+      tiktokSay('🎞 Copia lista','Simulación: no se publica nada en el catálogo.','#7dff9e');
+      TIKTOK.done=true; TIKTOK.on=false; clearInterval(TIKTOK.tick); tiktokRender();
+      try{ if(typeof G!=='undefined'&&G) G.tiktokLed=''; }catch(_){}
+      return;
+    }
+    tiktokSay('Enviando a Grok Imagine','9:16 · 15s · 720p');
+    const r=await fetch(PIXER_API+'/xai/video',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,duration:15,aspect_ratio:'9:16',resolution:'720p'})});
+    if(!r.ok) throw new Error('gen '+r.status+': '+(await r.text()).slice(0,140));
+    const start=await r.json();
+    const reqId=start.request_id||start.id;
+    if(!reqId) throw new Error('sin request_id: '+JSON.stringify(start).slice(0,140));
+    tiktokSay('Rodando en Grok Imagine','encargo <b>'+String(reqId).slice(0,12)+'…</b> · suele tardar 1-3 min');
+    let intento=0;
+    while(true){
+      await new Promise(res=>setTimeout(res,5000));
+      intento++;
+      const pr=await fetch(PIXER_API+'/xai/video/'+encodeURIComponent(reqId));
+      if(!pr.ok) throw new Error('poll '+pr.status);
+      const poll=await pr.json();
+      const st=poll.status||poll.state||'';
+      if(st==='done'||st==='completed'||st==='succeeded'){ videoUrl=(poll.video&&poll.video.url)||poll.url; break; }
+      if(st==='failed'||st==='expired'||st==='error') throw new Error('xAI '+st);
+      if(intento%3===0) tiktokSay('Rodando en Grok Imagine','· sigue en cámara ('+(st||'en curso')+')');
+      if(intento>60) throw new Error('timeout (>5 min)');
+    }
+    if(!videoUrl) throw new Error('el motor no devolvió vídeo');
+    tiktokSay('🎞 Copia lista','Publicando en el catálogo de Pixeria…','#7dff9e');
+    const pub=await fetch(PIXER_API+'/stock/publish',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ type:'video', motor:'grok-imagine-video', prompt, title:titulo,
+        comment:'Campaña de TikTok lanzada con /tiktok desde el Xtanco ('+(TOTEM_SCREEN_ID)+')',
+        tags:['tiktok','vertical','campaña','xtanco'], quality:'best', category:'atraer',
+        costEst:'xAI · grok-imagine-video 15s', sourceUrl:videoUrl, mime:'video/mp4' })});
+    if(!pub.ok) throw new Error('stock '+pub.status+': '+(await pub.text()).slice(0,140));
+    const data=await pub.json();
+    TIKTOK.asset={id:data.id,url:data.url,title:titulo};
+    TIKTOK.done=true; TIKTOK.on=false; clearInterval(TIKTOK.tick);
+    tiktokSay('✅ En el catálogo de Pixeria','<b>'+titulo+'</b> · el Mupi la cogerá sola en &lt;20 s','#7dff9e');
+    try{ if(typeof G!=='undefined'&&G) G.tiktokLed=''; }catch(_){}
+    tiktokFinishWatch(runId);
+  }catch(e){
+    TIKTOK.on=false; TIKTOK.done=true; clearInterval(TIKTOK.tick);
+    try{ if(typeof G!=='undefined'&&G) G.tiktokLed=''; }catch(_){}
+    tiktokSay('❌ Se cortó el rodaje',String((e&&e.message)||e).slice(0,160),'#ff6b6b');
+  }
+}
+function setTiktokCommand(arg){
+  const a=String(arg||'').trim();
+  const isEsL=(typeof lang==='undefined'||lang!=='en');
+  if(a.toLowerCase()==='cerrar'||a.toLowerCase()==='close'){ const p=document.getElementById('tiktokPanel'); if(p) p.style.display='none'; return '🎬 Panel de rodaje cerrado.'; }
+  if(TIKTOK.on) return isEsL?('🎬 Ya hay un rodaje en marcha ('+TIKTOK.phase+'). Mira el panel de la derecha.'):'🎬 A shoot is already running.';
+  const sim=/^(demo|simular|sim)\b/i.test(a);
+  const tema=sim?a.replace(/^(demo|simular|sim)\s*/i,''):a;
+  runTiktokCampaign(tema,sim);
+  return isEsL
+    ? ('🎬 Rodando una campaña de TikTok en Pixeria'+(sim?' (SIMULACIÓN, no gasta créditos)':'')+'.\n'
+      +'Tema: '+(tema||'la tienda de barrio que ya es digital')+'\n'
+      +'Verás el avance en el panel de la derecha, en la cinta LED de la tienda y en los avisos.\n'
+      +'Al acabar entra en el catálogo con tag «tiktok» y el Mupi la coge solo.')
+    : ('🎬 Shooting a TikTok campaign in Pixeria'+(sim?' (SIMULATION)':'')+'. Watch the panel on the right.');
+}
 // Monta el iframe del avatar 3D sobre la pantalla del tótem en la VISTA 2D del
 // gemelo (no solo en la pantalla física), usando el quad cacheado del tótem.
 function positionTotemAvatar(){
@@ -20361,6 +20534,11 @@ function _getLedParams(){
   const admiraLive=(G&&G.admiraLiveMsg)
     ? `  ◆  ADMIRA LIVE: ${G.admiraLiveMsg.toUpperCase()}  ◆  `
     : '';
+  // Rodaje de /tiktok en marcha: la cinta LED cuenta la fase, para que se vea
+  // desde DENTRO del Xpacio sin mirar el panel (Carlos: nada de espera muda).
+  const tiktokLed=(G&&G.tiktokLed)
+    ? `  🎬  RODANDO TIKTOK: ${String(G.tiktokLed).toUpperCase()}  🎬  `
+    : '';
   const currentVideoMsg=(dsMode==='video' && videoPlaying && !videoPaused)
     ? (VIDEO_LED_MESSAGES[VIDEO_LIST[dsVideoIdx]] || `  ◆  VISITAS: AHORA SUENA ${VIDEO_LIST[dsVideoIdx].toUpperCase()}  ◆  `)
     : '';
@@ -20370,7 +20548,7 @@ function _getLedParams(){
   // El nombre+dirección del punto van a la corona de LEDs vía AdmiraLive
   // (G.admiraLiveMsg, inicializado en initGame desde STORE_CFG) → ya entra en
   // el banner por la variable admiraLive de arriba; no duplicamos aquí.
-  const fullMsg=comunicado+admiraLive+currentVideoMsg+msgs.join('   ◆   ')+liveData;
+  const fullMsg=tiktokLed+comunicado+admiraLive+currentVideoMsg+msgs.join('   ◆   ')+liveData;
   cx.font='bold 12px monospace'; // 🍞 cinta LED: DEBE coincidir con la fuente de dibujo en _drawLedSegment (si cambias una, cambia la otra)
   const msgW=cx.measureText(fullMsg).width;
   return {fullMsg, msgW};
@@ -29638,6 +29816,7 @@ window.xtAPI = (function(){
       {title:'Pantalla y directo',items:['/livecam','/mocap','/pixeria','/AdmiraLive texto','/comunicar texto','/comunicar texto --grok','/comunicar texto --elevenlabs','/AdmiraTube URL 2 audio','/say texto','/targetPublicity aforo','/targetPublicity genero','/targetPublicity off','/generovideo','/generovideo off','/impactos','/impactos cpm 12','/impactos tft','/impactos reset','/impactos off','/audienciaIN 8','/audienciaOUT 4']},
       {title:'Digital Signage (vídeos)',items:['/ds on','/ds off','/ds next','/ds previous','/ds audio on','/ds audio off','/info','/info on','/info off']},
       {title:'Mupi del Xtanco (tótem vertical)',items:['/admiratv','/admiratv on','/admiratv off','/admiratv tiktok','/admiratv all']},
+      {title:'Campañas de TikTok (rodar en Pixeria)',items:['/tiktok','/tiktok <tema>','/tiktok demo','/tiktok cerrar']},
       {title:'Condicional (contenidos condicionados)',items:['/xpl (1ª vez ON · 2ª OFF)']},
       {title:'Escena en vivo',items:['/dj','/ladron','/guardiacivil','/opinador','/robot','/sponsor','/socio','/door open','/door close','/door auto','/subasta','/subasta off']},
       {title:'Notificaciones al personal',items:['/personal socio','/personal dashboard','/socios listado','/heatmap','/heatmap reset','/sponsor recurrente 120 10']},
@@ -30344,6 +30523,7 @@ window.xtAPI = (function(){
       if(cmd==='dj'||cmd==='djnovah'||cmd==='novah') return setDJCommand(arg);
       if(cmd==='pixeria'||cmd==='pixerfeed'||cmd==='pixer') return setPixerFeedCommand(arg);
       if(cmd==='admiratv'||cmd==='admira-tv'||cmd==='canaltv') return setAdmiraTvCommand(arg);
+      if(cmd==='tiktok'||cmd==='campanatiktok'||cmd==='campañatiktok') return setTiktokCommand(arg);
       if(cmd==='tarjetafidelidad'||cmd==='fidelidad'||cmd==='loyaltycard') return setLoyaltyCardCommand();
       if(cmd==='opinador'||cmd==='opinion'||cmd==='opinión') return setOpinadorCommand(arg);
       if(cmd==='robot'||cmd==='unitree'||cmd==='unitreebot'||cmd==='bot') return setUnitreeBotCommand(arg);
