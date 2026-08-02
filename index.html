@@ -195,6 +195,21 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .layer .pulse.off{color:var(--mut)}
   .layer .pulse.off .gm-dot{background:var(--mut);box-shadow:none;animation:none}
 
+  /* Dispatch log — qué recibe cada superficie del gemelo y si lo confirma */
+  .ds-rows{display:flex;flex-direction:column;gap:8px}
+  .ds-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+  .ds-row .sf{font-family:monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);min-width:132px;display:flex;align-items:center;gap:6px}
+  .ds-row .ti{flex:1;min-width:0;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ds-row .ti.idle{color:var(--mut);font-style:italic}
+  .ds-row .wh{font-family:monospace;font-size:10px;color:var(--mut);white-space:nowrap}
+  .ds-row .ak{font-family:monospace;font-size:10px;letter-spacing:.05em;border:1px solid var(--line);border-radius:4px;padding:2px 7px;white-space:nowrap;color:var(--mut)}
+  .ds-row .ak.ok{color:var(--good);border-color:rgba(136,255,170,.35)}
+  @media (max-width:640px){
+    .ds-row{flex-wrap:wrap;gap:7px}
+    .ds-row .sf{min-width:0}
+    .ds-row .ti{flex:1 1 100%;order:3;white-space:normal}
+  }
+
   /* Live studio library (same public R2 index that pixeria.com/stock reads) */
   .px-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
   .px-card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .12s,transform .12s;color:inherit}
@@ -693,6 +708,16 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       </div>
     </div>
 
+    <div class="gm-live" id="despacho">
+      <div class="gm-head">
+        <span class="gm-badge"><span class="gm-dot"></span><span data-i18n="ds.badge">Dispatch to the twin · live</span></span>
+        <span class="gm-count" id="ds-count"></span>
+      </div>
+      <p class="gm-sub" data-i18n="ds.sub">The other half of the chain. Every surface of the Digital Twin receives its piece and acknowledges it back — this is the real dispatch log, not a diagram.</p>
+      <div class="ds-rows" id="ds-rows"><div class="gm-state" data-i18n="ds.loading">Reading the dispatch log…</div></div>
+      <p class="gm-foot" data-i18n-html="ds.foot">Created in <b>admira.studio</b> → dispatched here → acknowledged by the surface. The same piece, the same id, end to end.</p>
+    </div>
+
     <div class="gm-live" id="gemelos">
       <div class="gm-head">
         <span class="gm-badge"><span class="gm-dot"></span><span data-i18n="gemelos.badge">Digital twins in production</span></span>
@@ -767,7 +792,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
     <a href="/ayuda/">Método Xpacios</a>
     <a href="/backoffice/" rel="nofollow">Club</a>
-    <span class="sig">XPACEOS · v.2026.08.02.r2</span>
+    <span class="sig">XPACEOS · v.2026.08.02.r3</span>
   </div>
 </footer>
 
@@ -865,6 +890,16 @@ const I18N = {
     'pixer.feat4': '<b>IMAGEN 4 · FLUX · GROK</b>static image 1024-2K',
     'pixer.feat5': '<b>VEO 3</b>720p video with native audio',
     'pixer.outro': 'Each asset is delivered with a descriptive title and auto-generated cover, ready to push to the Digital Twin feed with one click.',
+    'ds.badge': 'Dispatch to the twin · live',
+    'ds.sub': 'The other half of the chain. Every surface of the Digital Twin receives its piece and acknowledges it back — this is the real dispatch log, not a diagram.',
+    'ds.foot': 'Created in <b>admira.studio</b> → dispatched here → acknowledged by the surface. The same piece, the same id, end to end.',
+    'ds.loading': 'Reading the dispatch log…',
+    'ds.error': 'Dispatch log unreachable right now.',
+    'ds.empty': 'No dispatch on record yet.',
+    'ds.idle': 'standing by',
+    'ds.ack': '✓ played',
+    'ds.pending': '⏳ queued',
+    'ds.count': '{n} dispatches on record · {s} surfaces',
     'pulse.studio': '{n} pieces · {t} created today',
     'pulse.tv': 'on air: {title}',
     'pulse.tvIdle': 'channel standing by',
@@ -1020,6 +1055,16 @@ const I18N = {
     'pixer.feat4': '<b>IMAGEN 4 · FLUX · GROK</b>imagen estática 1024-2K',
     'pixer.feat5': '<b>VEO 3</b>video 720p con audio nativo',
     'pixer.outro': 'Cada activo sale con título descriptivo y carátula generada automáticamente, listo para enviarse al flujo del Gemelo Digital con un clic.',
+    'ds.badge': 'Despacho al gemelo · en vivo',
+    'ds.sub': 'La otra mitad de la cadena. Cada superficie del Gemelo Digital recibe su pieza y la confirma de vuelta — esto es el registro real de despacho, no un esquema.',
+    'ds.foot': 'Creado en <b>admira.studio</b> → despachado aquí → confirmado por la superficie. La misma pieza, el mismo id, de punta a punta.',
+    'ds.loading': 'Leyendo el registro de despacho…',
+    'ds.error': 'El registro de despacho no responde ahora mismo.',
+    'ds.empty': 'Todavía no hay ningún despacho registrado.',
+    'ds.idle': 'en espera',
+    'ds.ack': '✓ emitida',
+    'ds.pending': '⏳ en cola',
+    'ds.count': '{n} despachos registrados · {s} superficies',
     'pulse.studio': '{n} piezas · {t} creadas hoy',
     'pulse.tv': 'en antena: {title}',
     'pulse.tvIdle': 'canal a la espera',
@@ -1111,6 +1156,7 @@ function applyLanguage(lang) {
   try { window.dispatchEvent(new CustomEvent('admira:languagechange', { detail: { lang } })); } catch {}
   if (typeof renderGemelos === 'function') renderGemelos();
   if (typeof renderPixStock === 'function') renderPixStock();
+  if (typeof renderDespacho === 'function') renderDespacho();
   if (typeof renderPulses === 'function') renderPulses();
 }
 
@@ -1277,6 +1323,66 @@ async function loadPixStock() {
   renderPulses();
 }
 
+// ─── Registro de despacho al Gemelo Digital ─────────────────────────
+// La otra mitad de la cadena: qué pieza ha recibido cada superficie del
+// gemelo y si la ha confirmado (ack). Se agrupa por superficie y se queda
+// el último despacho de cada una — la lista cruda repite la misma pieza
+// decenas de veces porque la parrilla la reproduce en bucle.
+const DS_ICON = { pantalla:'📺', totem:'📺', escaparate:'🪟', mostrador:'🧾', vending:'🥤', pwa:'📱' };
+let despachoData = null; // null = cargando · 'error' · []
+
+function renderDespacho() {
+  const box = document.getElementById('ds-rows');
+  if (!box) return;
+  const countEl = document.getElementById('ds-count');
+  const d = gmDict();
+  if (countEl) countEl.textContent = '';
+  if (despachoData === null) { box.innerHTML = `<div class="gm-state">${d['ds.loading']}</div>`; return; }
+  if (despachoData === 'error') { box.innerHTML = `<div class="gm-state err">${d['ds.error']}</div>`; return; }
+  if (!despachoData.rows.length) { box.innerHTML = `<div class="gm-state">${d['ds.empty']}</div>`; return; }
+  box.innerHTML = despachoData.rows.map(r => `<div class="ds-row">
+    <span class="sf">${DS_ICON[r.surface] || '▫'} ${gmEsc(r.surface)}</span>
+    <span class="ti${r.idle ? ' idle' : ''}">${r.idle ? gmEsc(d['ds.idle']) : gmEsc(r.title)}</span>
+    <span class="wh">${pxWhen(r.iso, d)}</span>
+    ${r.idle ? '' : `<span class="ak${r.ack ? ' ok' : ''}">${r.ack ? d['ds.ack'] : d['ds.pending']}</span>`}
+  </div>`).join('');
+  if (countEl) {
+    countEl.textContent = (d['ds.count'] || '')
+      .replace('{n}', despachoData.total)
+      .replace('{s}', despachoData.rows.length);
+  }
+}
+
+async function loadDespacho() {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch('https://pixer-eleven.csilvasantin.workers.dev/signage/feed?limit=200', { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('http ' + r.status);
+    const items = (await r.json()).items || [];
+    const seen = new Map();
+    for (const it of items) {                       // el feed llega del más reciente al más antiguo
+      const raw = String(it.title || '');
+      const m = raw.match(/^\[scr:([^\]]+)\]\s*/);   // el destino viaja en el propio título
+      const surface = (m ? m[1] : (it.target || it.screen || '—')).toLowerCase();
+      if (seen.has(surface)) continue;
+      const title = raw.replace(/^\[scr:[^\]]+\]\s*/, '');
+      seen.set(surface, {
+        surface,
+        title,
+        idle: /^__idle__$/.test(title) || !title,
+        ack: !!it.acked_at,
+        iso: new Date(it.ts || 0).toISOString(),
+      });
+    }
+    despachoData = { rows: [...seen.values()], total: items.length };
+  } catch (e) {
+    despachoData = 'error';
+  }
+  renderDespacho();
+}
+
 // ─── Pulso vivo de las cuatro fichas de la suite ────────────────────
 // Cada producto de la cadena enseña su señal REAL, del mismo dato del que
 // ya vive el resto de la página: studio ← índice del estudio · tv ← qué
@@ -1357,8 +1463,9 @@ renderPixStock();
     if (started) return;
     started = true;
     loadPixStock().then(loadOnAir);
+    loadDespacho();
   };
-  const hosts = ['plataforma', 'pixstock'].map(id => document.getElementById(id)).filter(Boolean);
+  const hosts = ['plataforma', 'pixstock', 'despacho'].map(id => document.getElementById(id)).filter(Boolean);
   if ('IntersectionObserver' in window && hosts.length) {
     const io = new IntersectionObserver(entries => {
       if (entries.some(e => e.isIntersecting)) { io.disconnect(); start(); }
