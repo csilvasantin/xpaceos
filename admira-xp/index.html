@@ -9020,6 +9020,9 @@ function initGame(){
     const _ll=window.__loadStoreLayoutFromRepo||window.__loadDefaultXMLLayoutFromRepo;
     if(typeof _ll==='function') _ll({silent:true}).catch(()=>{});
   }catch(e){}
+  // El Mupi (tótem vertical) arranca SOLO con su espacio: TikTok de Pixeria.
+  // Ver applyTotemDefaultSpace() — no pisa nada que ya esté fijado a mano.
+  try{ if(typeof applyTotemDefaultSpace==='function') applyTotemDefaultSpace(); }catch(e){}
 }
 function quickStartLoteriasGame(){
   resetPreloadState();
@@ -11488,7 +11491,10 @@ function openDVRPanel(){
   // En DVR el avatar 3D (tótem/pared) habla y molesta → apagarlo. Recordamos su
   // estado para restaurarlo al salir del replay.
   try{
-    window.__dvrAvatarTotem=!!(typeof DS_PIN!=='undefined'&&DS_PIN&&DS_PIN.metahuman&&DS_PIN.metahuman.kind==='web');
+    // Guardamos el PIN entero, no un booleano: en el tótem puede haber el avatar
+    // o el Mupi (admira.tv · espacio TikTok) y al salir hay que devolver el mismo.
+    window.__dvrTotemPin=(typeof DS_PIN!=='undefined'&&DS_PIN&&DS_PIN.metahuman&&DS_PIN.metahuman.kind==='web')?DS_PIN.metahuman:null;
+    window.__dvrAvatarTotem=!!window.__dvrTotemPin;
     window.__dvrAvatarWall=!!(typeof avatar3dWall!=='undefined'&&avatar3dWall);
     if(typeof setAvatar3dTotem==='function') setAvatar3dTotem(false);
     if(typeof setAvatar3dWall==='function') setAvatar3dWall(false);
@@ -11499,11 +11505,13 @@ function closeDVRPanel(){
   exitReplay();
   const e=_dvrEls(); if(e.panel){ e.panel.classList.remove('show'); e.panel.setAttribute('aria-hidden','true'); }
   try{ if(typeof mupiCamCloseGallery==='function') mupiCamCloseGallery(); }catch(_){}
-  // Restaura el avatar 3D que apagamos al entrar en DVR.
+  // Restaura lo que apagamos al entrar en DVR: en el tótem, el pin exacto que
+  // había (avatar 3D o el Mupi con su espacio); en la pared, el avatar.
   try{
-    if(window.__dvrAvatarTotem && typeof setAvatar3dTotem==='function') setAvatar3dTotem(true);
+    if(window.__dvrTotemPin && typeof restoreTotemPin==='function') restoreTotemPin(window.__dvrTotemPin);
+    else if(window.__dvrAvatarTotem && typeof setAvatar3dTotem==='function') setAvatar3dTotem(true);
     if(window.__dvrAvatarWall && typeof setAvatar3dWall==='function') setAvatar3dWall(true);
-    window.__dvrAvatarTotem=false; window.__dvrAvatarWall=false;
+    window.__dvrTotemPin=null; window.__dvrAvatarTotem=false; window.__dvrAvatarWall=false;
   }catch(_){}
 }
 window.openDVRPanel=openDVRPanel; window.closeDVRPanel=closeDVRPanel;
@@ -11742,7 +11750,8 @@ const XCAL=(function(){
     if(typeof enterReplay==='function' && !enterReplay()) { REC.recording=REC._liveRecBackup; REC._liveRecBackup=null; return false; }
     REC.replay._fidx=0; REC.replay.idx=0; REC.replay.playing=true;
     // El avatar 3D no debe hablar durante el DVR (igual que en openDVRPanel).
-    try{ window.__dvrAvatarTotem=!!(typeof DS_PIN!=='undefined'&&DS_PIN&&DS_PIN.metahuman&&DS_PIN.metahuman.kind==='web');
+    try{ window.__dvrTotemPin=(typeof DS_PIN!=='undefined'&&DS_PIN&&DS_PIN.metahuman&&DS_PIN.metahuman.kind==='web')?DS_PIN.metahuman:null;
+      window.__dvrAvatarTotem=!!window.__dvrTotemPin;
       window.__dvrAvatarWall=!!(typeof avatar3dWall!=='undefined'&&avatar3dWall);
       if(typeof setAvatar3dTotem==='function') setAvatar3dTotem(false);
       if(typeof setAvatar3dWall==='function') setAvatar3dWall(false); }catch(_){}
@@ -19770,27 +19779,90 @@ function setAvatar3dTotem(on){
   try{ if(typeof positionTotemAvatar==='function') positionTotemAvatar(); }catch(_){}
   return true;
 }
-// ── /admiratv: reproduce admira.tv (canal de signage vertical) en el TÓTEM ──
-// Reutiliza el mismo pin web del tótem que el avatar (DS_PIN['metahuman']).
-// El canal en modo ?clean=1 deja solo el reproductor vertical (sin chrome).
-const ADMIRATV_URL='https://admira.tv/canal.html?clean=1';
+// ── EL MUPI DEL XTANCO: el tótem vertical y su ESPACIO por defecto ──────────
+// El tótem (superficie 'metahuman') es el Mupi del punto: 9:16, de pie en la
+// sala y espejado al canal 'totem' (Lenovo vertical) por emitTotemNow(). Emite
+// admira.tv en modo ?clean=1 (solo el reproductor vertical, sin chrome) usando
+// el MISMO pin web que el avatar 3D (DS_PIN['metahuman']).
+//
+// ESPACIO por defecto = TikTok. Las piezas que salen del compositor de Pixeria
+// (pixeria.com/tiktok) entran en el catálogo etiquetadas 'tiktok' (verticales
+// 9:16) y el canal las aísla con ?tag=. Además un ?tag= explícito FUERZA modo
+// local en el canal y queda blindado ante el gobierno remoto (canal r46/r47):
+// justo lo que queremos en el Mupi, que no se lo pise una orden de circuito.
+const TOTEM_SPACE_KEY='xtanco_totem_space';   // '' = el usuario lo apagó · '<tag>' = espacio
+const TOTEM_SPACE_DEFAULT='tiktok';           // espacio de fábrica del Mupi
+const TOTEM_SCREEN_ID='xtanco-totem';         // id de esta pantalla en la flota
+function admiraTvUrl(space){
+  const tag=String(space==null?TOTEM_SPACE_DEFAULT:space).trim().toLowerCase();
+  // shot=0: el tótem del gemelo NO sube fotogramas a /signage/shot (no es una
+  // pantalla física). muted=1: la sala ya tiene su propia música.
+  // 'all' (o vacío) = sin filtro, el canal entero.
+  return 'https://admira.tv/canal.html?clean=1&screen='+encodeURIComponent(TOTEM_SCREEN_ID)+'&shot=0&muted=1'
+    +((tag&&tag!=='all')?('&tag='+encodeURIComponent(tag)):'');
+}
+const ADMIRATV_URL=admiraTvUrl();
+function totemSpaceLabel(space){
+  const s=String(space==null?'':space).trim().toLowerCase();
+  return (!s||s==='all')?'Admira.tv':('Admira.tv · '+s);
+}
 function admiraTvOn(){ const p=(typeof DS_PIN==='object'&&DS_PIN)?DS_PIN['metahuman']:null; return !!(p&&p.kind==='web'&&p.src&&/admira\.tv/i.test(p.src)); }
+// Espacio elegido por el usuario. Sin clave guardada → el de fábrica (TikTok);
+// cadena vacía → lo apagó a mano y se respeta.
+function totemSavedSpace(){
+  try{ const v=localStorage.getItem(TOTEM_SPACE_KEY); return v==null?TOTEM_SPACE_DEFAULT:v; }catch(_){ return TOTEM_SPACE_DEFAULT; }
+}
+function totemPinAdmiraTv(space){
+  if(typeof DS_PIN!=='object'||DS_PIN===null) return false;
+  DS_PIN['metahuman']={kind:'web',name:totemSpaceLabel(space),src:admiraTvUrl(space)};
+  try{ if(typeof emitTotemNow==='function') emitTotemNow(true); }catch(_){}
+  try{ if(typeof positionTotemAvatar==='function') positionTotemAvatar(); }catch(_){}
+  return true;
+}
+// Arranque de la sala: si NADIE ha fijado nada en el tótem, el Mupi se enciende
+// solo con su espacio (TikTok de fábrica). Nunca pisa un pin existente.
+function applyTotemDefaultSpace(){
+  try{
+    if(typeof DS_PIN!=='object'||DS_PIN===null) return false;
+    if(DS_PIN['metahuman']) return false;        // ya hay algo puesto a mano
+    const sp=totemSavedSpace(); if(!sp) return false;   // apagado a propósito
+    return totemPinAdmiraTv(sp);
+  }catch(_){ return false; }
+}
+// Restaura tal cual un pin web del tótem (avatar, admira.tv/TikTok…) sin
+// suponer que lo que había era el avatar 3D.
+function restoreTotemPin(pin){
+  if(typeof DS_PIN!=='object'||DS_PIN===null) return false;
+  if(pin) DS_PIN['metahuman']=pin; else { try{ delete DS_PIN['metahuman']; }catch(_){ DS_PIN['metahuman']=null; } }
+  try{ if(typeof emitTotemNow==='function') emitTotemNow(true); }catch(_){}
+  try{ if(typeof positionTotemAvatar==='function') positionTotemAvatar(); }catch(_){}
+  return true;
+}
+// /admiratv [on|off] · /admiratv <espacio>  (p.ej. /admiratv tiktok · /admiratv all)
 function setAdmiraTvCommand(arg){
   const a=String(arg||'').trim().toLowerCase();
-  let want; if(a==='on'||a==='1'||a==='encender') want=true; else if(a==='off'||a==='0'||a==='apagar') want=false; else want=!admiraTvOn();
+  let want, space=null;
+  if(a==='on'||a==='1'||a==='encender') want=true;
+  else if(a==='off'||a==='0'||a==='apagar') want=false;
+  else if(a){ want=true; space=a; }                 // cualquier otra palabra = espacio/tag
+  else want=!admiraTvOn();
+  const sp=(space!=null)?space:(totemSavedSpace()||TOTEM_SPACE_DEFAULT);
   try{
     if(want){
       if(!admiraTvOn()) window.__admiratvPrevPin=(typeof DS_PIN==='object'&&DS_PIN)?(DS_PIN['metahuman']||null):null;
-      DS_PIN['metahuman']={kind:'web',name:'Admira.tv',src:ADMIRATV_URL};
+      totemPinAdmiraTv(sp);
+      try{ localStorage.setItem(TOTEM_SPACE_KEY,sp); }catch(_){}
     } else {
-      const prev=window.__admiratvPrevPin;
-      if(prev) DS_PIN['metahuman']=prev; else { try{ delete DS_PIN['metahuman']; }catch(_){ DS_PIN['metahuman']=null; } }
+      restoreTotemPin(window.__admiratvPrevPin||null);
       window.__admiratvPrevPin=null;
+      try{ localStorage.setItem(TOTEM_SPACE_KEY,''); }catch(_){}   // apagado explícito: se recuerda
     }
     if(typeof emitTotemNow==='function') emitTotemNow(true);
     if(typeof positionTotemAvatar==='function') positionTotemAvatar();
   }catch(e){ return '⚠️ admiratv: '+((e&&e.message)||e); }
-  return want ? '📺 Admira.tv ENCENDIDO en el tótem del Xpacio.' : '📺 Admira.tv APAGADO (el tótem vuelve a su estado anterior).';
+  return want
+    ? ('📺 Admira.tv ENCENDIDO en el Mupi del Xtanco · espacio «'+((!sp||sp==='all')?'todo el canal':sp)+'».')
+    : '📺 Admira.tv APAGADO (el tótem vuelve a su estado anterior).';
 }
 // Monta el iframe del avatar 3D sobre la pantalla del tótem en la VISTA 2D del
 // gemelo (no solo en la pantalla física), usando el quad cacheado del tótem.
@@ -29559,6 +29631,7 @@ window.xtAPI = (function(){
       {title:'Tiempo y ambiente',items:['/reloj 14:30','/reloj 14 30','/time am','/time pm','/time night','/weather normal','/weather rain','/weather sun','/lamp','/lamp auto','/hue','/hue auto']},
       {title:'Pantalla y directo',items:['/livecam','/mocap','/pixeria','/AdmiraLive texto','/comunicar texto','/comunicar texto --grok','/comunicar texto --elevenlabs','/AdmiraTube URL 2 audio','/say texto','/targetPublicity aforo','/targetPublicity genero','/targetPublicity off','/generovideo','/generovideo off','/impactos','/impactos cpm 12','/impactos tft','/impactos reset','/impactos off','/audienciaIN 8','/audienciaOUT 4']},
       {title:'Digital Signage (vídeos)',items:['/ds on','/ds off','/ds next','/ds previous','/ds audio on','/ds audio off','/info','/info on','/info off']},
+      {title:'Mupi del Xtanco (tótem vertical)',items:['/admiratv','/admiratv on','/admiratv off','/admiratv tiktok','/admiratv all']},
       {title:'Condicional (contenidos condicionados)',items:['/xpl (1ª vez ON · 2ª OFF)']},
       {title:'Escena en vivo',items:['/dj','/ladron','/guardiacivil','/opinador','/robot','/sponsor','/socio','/door open','/door close','/door auto','/subasta','/subasta off']},
       {title:'Notificaciones al personal',items:['/personal socio','/personal dashboard','/socios listado','/heatmap','/heatmap reset','/sponsor recurrente 120 10']},
