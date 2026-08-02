@@ -19802,7 +19802,9 @@ function admiraTvUrl(space){
   // pixeria.com/tiktok toma el Mupi en exclusiva 3 minutos (en bucle) y luego
   // se incorpora al loop, que sigue por la siguiente pieza. El refresco baja a
   // 20 s para que la novedad entre pronto (con 30 s tardaba media vuelta más).
-  return 'https://admira.tv/canal.html?clean=1&screen='+encodeURIComponent(TOTEM_SCREEN_ID)+'&shot=0&muted=1&fresh=180&refresh=20'
+  // freshtail=1: y entra por la COLA del loop, no por la cabeza (el orden de
+  // casa del canal es lo más nuevo primero). Es sólo para ESTA pantalla.
+  return 'https://admira.tv/canal.html?clean=1&screen='+encodeURIComponent(TOTEM_SCREEN_ID)+'&shot=0&muted=1&fresh=180&refresh=20&freshtail=1'
     +((tag&&tag!=='all')?('&tag='+encodeURIComponent(tag)):'');
 }
 const ADMIRATV_URL=admiraTvUrl();
