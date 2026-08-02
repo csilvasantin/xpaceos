@@ -189,6 +189,12 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .gm-chip.live{color:var(--good);border-color:rgba(136,255,170,.35)}
   .gm-foot{margin-top:16px;font-size:13px;color:var(--mut);max-width:760px}
 
+  /* Pulso vivo de cada ficha de la suite — señal real, no adorno */
+  .layer .pulse{display:flex;align-items:center;gap:7px;font-family:monospace;font-size:11px;color:var(--good);letter-spacing:.03em;min-height:16px}
+  .layer .pulse .pv{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .layer .pulse.off{color:var(--mut)}
+  .layer .pulse.off .gm-dot{background:var(--mut);box-shadow:none;animation:none}
+
   /* Live studio library (same public R2 index that pixeria.com/stock reads) */
   .px-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
   .px-card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .12s,transform .12s;color:inherit}
@@ -528,6 +534,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         <div class="lkind" data-i18n="platform.studioKind">Creating</div>
         <h3>admira.studio</h3>
         <div class="who dom"><span class="lbl" data-i18n="platform.brand">brand</span> · <a href="https://www.pixeria.com" target="_blank" rel="noopener">pixeria.com</a></div>
+        <div class="pulse" id="pulse-studio"><span class="gm-dot"></span><span class="pv">…</span></div>
         <p data-i18n="platform.studioCopy">The AI content factory. Briefs in; signage-ready audio, music, image and video out in minutes — the creative fuel for every screen in the space.</p>
         <a class="more" href="https://admira.studio/" target="_blank" rel="noopener">→ admira.studio</a>
       </div>
@@ -536,6 +543,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         <div class="lkind" data-i18n="platform.tvKind">Emitting</div>
         <h3>admira.tv</h3>
         <div class="who dom native"><span class="lbl" data-i18n="platform.brand">brand</span> · <span data-i18n="platform.tvBrand">native to Admira</span></div>
+        <div class="pulse" id="pulse-tv"><span class="gm-dot"></span><span class="pv">…</span></div>
         <p data-i18n="platform.tvCopy">The live DOOH channel. Everything created flows onto the network of screens — a shared grid, per-surface scheduling and the on-air layer that puts content in front of real audiences.</p>
         <a class="more" href="https://admira.tv/" target="_blank" rel="noopener">→ admira.tv</a>
       </div>
@@ -544,6 +552,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         <div class="lkind" data-i18n="platform.xpaceKind">Distributing · you are here</div>
         <h3>admira.live</h3>
         <div class="who dom"><span class="lbl" data-i18n="platform.brand">brand</span> · <a href="https://www.xpaceos.com" target="_blank" rel="noopener">XpaceOS.com</a></div>
+        <div class="pulse" id="pulse-live"><span class="gm-dot"></span><span class="pv">…</span></div>
         <p data-i18n="platform.xpaceCopy">The retail operating system you are reading right now. The Digital Twin distributes that content across every surface of the physical space and turns each one into measurable inventory.</p>
         <a class="more" href="https://admira.live/" target="_blank" rel="noopener">→ admira.live</a>
       </div>
@@ -552,6 +561,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         <div class="lkind" data-i18n="platform.appKind">Selling</div>
         <h3>admira.app</h3>
         <div class="who dom"><span class="lbl" data-i18n="platform.brand">brand</span> · <a href="https://www.clearchannel.tv" target="_blank" rel="noopener">clearchannel.tv</a></div>
+        <div class="pulse" id="pulse-app"><span class="gm-dot"></span><span class="pv">…</span></div>
         <p data-i18n="platform.appCopy">The marketplace that monetizes it all. Every visible surface becomes tradeable DOOH inventory — programmatic demand, per-impression pricing and audited CPM across the whole network.</p>
         <a class="more" href="https://admira.app/" target="_blank" rel="noopener">→ admira.app</a>
       </div>
@@ -757,7 +767,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
     <a href="/ayuda/">Método Xpacios</a>
     <a href="/backoffice/" rel="nofollow">Club</a>
-    <span class="sig">XPACEOS · v.2026.08.02</span>
+    <span class="sig">XPACEOS · v.2026.08.02.r2</span>
   </div>
 </footer>
 
@@ -855,6 +865,12 @@ const I18N = {
     'pixer.feat4': '<b>IMAGEN 4 · FLUX · GROK</b>static image 1024-2K',
     'pixer.feat5': '<b>VEO 3</b>720p video with native audio',
     'pixer.outro': 'Each asset is delivered with a descriptive title and auto-generated cover, ready to push to the Digital Twin feed with one click.',
+    'pulse.studio': '{n} pieces · {t} created today',
+    'pulse.tv': 'on air: {title}',
+    'pulse.tvIdle': 'channel standing by',
+    'pulse.live': '{n} twins · {s} surfaces',
+    'pulse.app': '{s} surfaces live as inventory',
+    'pulse.off': 'live signal unreachable',
     'pixer.stockLink': '↗ the whole studio library',
     'pixer.next': '↓ next: Admira XP',
     'pixstock.badge': 'Fresh out of the studio',
@@ -1004,6 +1020,12 @@ const I18N = {
     'pixer.feat4': '<b>IMAGEN 4 · FLUX · GROK</b>imagen estática 1024-2K',
     'pixer.feat5': '<b>VEO 3</b>video 720p con audio nativo',
     'pixer.outro': 'Cada activo sale con título descriptivo y carátula generada automáticamente, listo para enviarse al flujo del Gemelo Digital con un clic.',
+    'pulse.studio': '{n} piezas · {t} creadas hoy',
+    'pulse.tv': 'en antena: {title}',
+    'pulse.tvIdle': 'canal a la espera',
+    'pulse.live': '{n} gemelos · {s} superficies',
+    'pulse.app': '{s} superficies vivas como inventario',
+    'pulse.off': 'sin señal en vivo',
     'pixer.stockLink': '↗ toda la biblioteca del estudio',
     'pixer.next': '↓ siguiente: Admira XP',
     'pixstock.badge': 'Recién salido del estudio',
@@ -1089,6 +1111,7 @@ function applyLanguage(lang) {
   try { window.dispatchEvent(new CustomEvent('admira:languagechange', { detail: { lang } })); } catch {}
   if (typeof renderGemelos === 'function') renderGemelos();
   if (typeof renderPixStock === 'function') renderPixStock();
+  if (typeof renderPulses === 'function') renderPulses();
 }
 
 // El formulario de contacto de la home es ahora el MISMO modal de lead del
@@ -1165,6 +1188,7 @@ async function loadGemelos() {
     gemelosData = 'error';
   }
   renderGemelos();
+  if (typeof renderPulses === 'function') renderPulses();
 }
 renderGemelos();
 loadGemelos();
@@ -1250,23 +1274,96 @@ async function loadPixStock() {
     pixStockData = 'error';
   }
   renderPixStock();
+  renderPulses();
+}
+
+// ─── Pulso vivo de las cuatro fichas de la suite ────────────────────
+// Cada producto de la cadena enseña su señal REAL, del mismo dato del que
+// ya vive el resto de la página: studio ← índice del estudio · tv ← qué
+// está en antena ahora mismo · live/app ← catálogo compartido de gemelos.
+// Ninguna ficha inventa un número: si su fuente no responde, se apaga.
+let onAirData = null; // null = sin pedir · 'error' · {title} · {} = nadie emitiendo
+
+function pulseSet(id, text, off) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('off', !!off);
+  el.querySelector('.pv').textContent = text;
+}
+
+function renderPulses() {
+  const d = gmDict();
+  const fmt = (k, map) => Object.entries(map).reduce((s, [t, v]) => s.replace(t, v), d[k] || '');
+
+  if (pixStockData && pixStockData !== 'error') {
+    pulseSet('pulse-studio', fmt('pulse.studio', { '{n}': pixStockData.total, '{t}': pixStockData.today }));
+  } else if (pixStockData === 'error') {
+    pulseSet('pulse-studio', d['pulse.off'], true);
+  }
+
+  if (onAirData && onAirData !== 'error') {
+    pulseSet('pulse-tv', onAirData.title ? fmt('pulse.tv', { '{title}': onAirData.title }) : d['pulse.tvIdle'], !onAirData.title);
+  } else if (onAirData === 'error') {
+    pulseSet('pulse-tv', d['pulse.off'], true);
+  }
+
+  if (Array.isArray(gemelosData)) {
+    const surf = gemelosData.reduce((n, l) => n + (Array.isArray(l.surfaces) ? l.surfaces.length : 0), 0);
+    const live = gemelosData.reduce((n, l) => n + (Array.isArray(l.surfaces) ? l.surfaces.filter(s => s.status === 'live').length : 0), 0);
+    pulseSet('pulse-live', fmt('pulse.live', { '{n}': gemelosData.length.toLocaleString(document.documentElement.lang), '{s}': surf.toLocaleString(document.documentElement.lang) }));
+    pulseSet('pulse-app', fmt('pulse.app', { '{s}': live.toLocaleString(document.documentElement.lang) }));
+  } else if (gemelosData === 'error') {
+    pulseSet('pulse-live', d['pulse.off'], true);
+    pulseSet('pulse-app', d['pulse.off'], true);
+  }
+}
+
+// Qué está EN ANTENA ahora: pantallas con rol de canal vivas, y el título
+// resuelto contra el índice del estudio — la prueba de que lo creado en
+// Pixeria es exactamente lo que se emite. Contra el worker: es una
+// respuesta diminuta y si el ISP lo bloquea, la ficha se apaga y ya.
+async function loadOnAir() {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch('https://pixer-eleven.csilvasantin.workers.dev/signage/screens', { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('http ' + r.status);
+    const j = await r.json();
+    const live = (j.screens || []).filter(s => s.online && s.showing_id);
+    const canal = live.find(s => s.role === 'canal') || live[0];
+    let title = '';
+    if (canal) {
+      const items = (pixStockData && pixStockData !== 'error') ? pixStockData.items : [];
+      const hit = items.find(it => it.id === canal.showing_id);
+      title = (hit && (hit.title || `#${hit.num}`)) || String(canal.showing_id).slice(0, 18);
+    }
+    onAirData = { title };
+  } catch (e) {
+    onAirData = 'error';
+  }
+  renderPulses();
 }
 
 renderPixStock();
-// Carga perezosa CON RED DE SEGURIDAD: el observador dispara al acercarse la
-// sección, pero hay contextos (pestaña en segundo plano, documento sin pintar)
-// donde nunca llega a disparar y la tira se quedaba en "Cargando…" para
-// siempre. El plazo de 6 s —ya pasada la primera pintada— garantiza el dato.
+// Carga perezosa CON RED DE SEGURIDAD: el observador dispara al acercarse
+// cualquiera de las dos secciones que beben del índice, pero hay contextos
+// (pestaña en segundo plano, documento sin pintar) donde nunca llega a
+// disparar y la tira se quedaba en "Cargando…" para siempre. El plazo de
+// 6 s —ya pasada la primera pintada— garantiza el dato.
 (() => {
-  const host = document.getElementById('pixstock');
-  if (!host) return;
   let started = false;
-  const start = () => { if (started) return; started = true; loadPixStock(); };
-  if ('IntersectionObserver' in window) {
+  const start = () => {
+    if (started) return;
+    started = true;
+    loadPixStock().then(loadOnAir);
+  };
+  const hosts = ['plataforma', 'pixstock'].map(id => document.getElementById(id)).filter(Boolean);
+  if ('IntersectionObserver' in window && hosts.length) {
     const io = new IntersectionObserver(entries => {
       if (entries.some(e => e.isIntersecting)) { io.disconnect(); start(); }
     }, { rootMargin: '400px' });
-    io.observe(host);
+    hosts.forEach(h => io.observe(h));
   }
   setTimeout(start, 6000);
 })();
