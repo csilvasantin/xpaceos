@@ -1,0 +1,11 @@
+{
+  "version": "v.03.08.2026.r2.15:17",
+  "deployedAt": "2026-08-03T13:17:25Z",
+  "deployer": "NeoMini",
+  "machine": "MacMini",
+  "signature": "NeoMini · MacMini",
+  "git": "bc2e6310a8928a6a118b486f1d6e49b84c6ea9f6",
+  "gitShort": "bc2e631",
+  "gitFull": "bc2e6310a8928a6a118b486f1d6e49b84c6ea9f6",
+  "dirty": false
+}
