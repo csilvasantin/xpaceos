@@ -62,6 +62,8 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,sans-serif;line-height:1.55}
   a{color:var(--brand);text-decoration:none}
   a:hover{text-decoration:underline}
+  .skip-link{position:fixed;top:10px;left:10px;z-index:200000;transform:translateY(-160%);padding:10px 14px;border-radius:6px;background:var(--brand);color:#001620;font-weight:700}
+  .skip-link:focus{transform:translateY(0);outline:3px solid var(--accent);outline-offset:2px}
   .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
   header{padding:18px 0;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(2,8,13,.92);backdrop-filter:blur(8px);z-index:10}
   header .wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
@@ -102,7 +104,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .hero-visual::after{content:"AI media · Digital Twin · Live bidding";position:absolute;left:18px;right:18px;bottom:18px;padding:11px 14px;border:1px solid rgba(120,243,255,.32);border-radius:999px;background:rgba(2,8,13,.58);backdrop-filter:blur(10px);color:#e8fbff;font-family:monospace;font-size:11px;letter-spacing:.12em;text-align:center;text-transform:uppercase}
   .badge{display:inline-flex;align-items:center;gap:8px;font-family:monospace;font-size:11px;color:var(--accent);letter-spacing:.18em;border:1px solid rgba(255,216,102,.45);padding:6px 12px;border-radius:999px;margin-bottom:18px}
   .ctas{display:flex;gap:12px;flex-wrap:wrap}
-  .cta{display:inline-flex;gap:10px;align-items:center;background:var(--brand);color:#001620;padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px;letter-spacing:.04em}
+  .cta{display:inline-flex;gap:10px;align-items:center;background:var(--brand);color:#001620;padding:12px 22px;border:0;border-radius:8px;font-family:inherit;font-weight:700;font-size:14px;line-height:1.55;letter-spacing:.04em;cursor:pointer}
   .cta.secondary{background:transparent;color:var(--brand);border:1px solid var(--brand)}
   .cta.event{background:linear-gradient(90deg,var(--lenovo),var(--nvidia));color:#fff;border:0}
 
@@ -328,8 +330,9 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     .brand-logo{width:128px}
     .nav-toggle{display:inline-flex}
     header .wrap{flex-wrap:nowrap;gap:14px}
-    nav{position:fixed;top:0;right:0;height:100dvh;width:min(82vw,320px);margin:0;padding:84px 22px 28px;flex-direction:column;align-items:stretch;gap:2px;font-size:15px;background:rgba(4,11,17,.98);backdrop-filter:blur(14px);border-left:1px solid var(--line);box-shadow:-20px 0 60px rgba(0,0,0,.5);transform:translateX(105%);transition:transform .32s cubic-bezier(.4,0,.2,1);z-index:35;overflow-y:auto}
-    nav.open{transform:translateX(0)}
+    nav{display:none;position:fixed;top:0;right:0;height:100dvh;width:min(82vw,320px);margin:0;padding:84px 22px 28px;flex-direction:column;align-items:stretch;gap:2px;font-size:15px;background:rgba(4,11,17,.98);backdrop-filter:blur(14px);border-left:1px solid var(--line);box-shadow:-20px 0 60px rgba(0,0,0,.5);z-index:35;overflow-y:auto}
+    nav.open{display:flex}
+    .nav-backdrop{display:block}
     nav a{padding:12px 4px;border-bottom:1px solid rgba(120,243,255,.08)}
     nav .live{padding:12px 4px;font-size:12px}
     .language-switcher{border-left:0;padding-left:0;margin:14px 0 0}
@@ -403,7 +406,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       "url": "https://www.xpaceos.com",
       "publisher": { "@id": "https://www.xpaceos.com/#org" },
       "description": "XpaceOS turns every store, shop window and booth into an intelligent advertising medium: PixerIA (AI content creation), Admira XP (digital twin distribution) and OmniPublicity (real-time bidding marketplace). Shown live at Shoptalk Europe 2026.",
-      "offers": { "@type": "Offer", "availability": "https://schema.org/PreOrder", "url": "https://www.xpaceos.com/leads.html" }
+      "offers": { "@type": "Offer", "availability": "https://schema.org/PreOrder", "url": "https://www.xpaceos.com/#contact" }
     }
   ]
 }
@@ -411,6 +414,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
 <meta name="admiranext-version" content="v.04.08.2026.r1.11:18">
 </head>
 <body id="top">
+<a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
 
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KD696XW" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -444,6 +448,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 </header>
 
+<main id="main-content" tabindex="-1">
 <div class="hero">
   <div class="starfield" aria-hidden="true"></div>
   <div class="wrap hero-grid">
@@ -501,7 +506,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
         </ul>
         <div class="ctas" style="margin-top:18px">
           <a class="cta secondary" href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk Europe ↗</a>
-          <a class="cta secondary" href="/leads.html" data-i18n="booth.bookDemo">Book demo</a>
+          <button type="button" class="cta secondary" data-admira-contact data-lead-source="xpaceos-booth" data-i18n="booth.bookDemo">Book demo</button>
         </div>
       </div>
 
@@ -783,6 +788,8 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   </div>
 </section>
 
+</main>
+
 <footer>
   <div class="wrap">
     <a class="footer-logo" href="#top" aria-label="XpaceOS"><img src="/assets/xpaceos-logo-transparent.webp" alt="XpaceOS"></a>
@@ -811,6 +818,7 @@ const I18N = {
     'nav.layers': '3 layers',
     'nav.demo': 'Live demo',
     contact: 'Contact',
+    skip: 'Skip to content',
     lang_toggle: 'ESP',
     lang_toggle_aria: 'Switch to Spanish',
     'demoGate.tag': 'restricted access',
@@ -976,6 +984,7 @@ const I18N = {
     'nav.layers': '3 capas',
     'nav.demo': 'Demo en vivo',
     contact: 'Contacto',
+    skip: 'Saltar al contenido',
     lang_toggle: 'ENG',
     lang_toggle_aria: 'Cambiar a inglés',
     'demoGate.tag': 'acceso restringido',
