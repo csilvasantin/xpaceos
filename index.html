@@ -1531,16 +1531,11 @@ function notifyXpaceVisit() {
     screen: `${window.screen.width}x${window.screen.height}`,
   };
   const body = JSON.stringify(payload);
-  try {
-    if (navigator.sendBeacon) {
-      const blob = new Blob([body], { type: 'application/json' });
-      if (navigator.sendBeacon(VISIT_NOTIFY_ENDPOINT, blob)) return;
-    }
-  } catch {}
   fetch(VISIT_NOTIFY_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body,
+    credentials: 'omit',
     keepalive: true,
   }).catch(() => {});
 }
