@@ -32173,6 +32173,9 @@ window.xtAPI = (function(){
 <script>
 (function(){
   const PIXER_WORKER='https://pixer-eleven.csilvasantin.workers.dev';
+  const REMOTE_API='https://api.admira.store';
+  const REMOTE_PLAYLIST_API='https://omnipublicity-api.csilvasantin.workers.dev/control/playlist';
+  const REMOTE_CACHE_NAME='xtore-remote-v1';
   const KEY='pixer-xtore-screen-id';
   // XTANCO INICIAL: el gemelo standalone (sin ?loc) es el demo público canónico
   // y reporta SIEMPRE bajo el mismo screenId fijo 'xtore-inicial'. Así pixeria
@@ -32258,6 +32261,8 @@ window.xtAPI = (function(){
   };
 
   let lastItemId=null, totalCount=0, currentPixerItem=null, firstPollDone=false;
+  let remoteShowingId=null, remoteGeneration=0, remotePlaylist=[], remoteReady=new Set(), remoteDownloading=new Map();
+  let remoteTagMode=false, remoteIndex=0, remotePlaying=false;
 
   function pixerItemToPlaylistName(item){
     const t=String(item.title||'Pixer item').replace(/[^\w\s\-áéíóúñÁÉÍÓÚÑ.,!?]/g,'').trim().slice(0,40);
@@ -32408,7 +32413,7 @@ window.xtAPI = (function(){
   // ⚠ PRIORIDAD 0 (interrupt): toma TODA la pantalla por encima de todo lo que
   // se esté emitiendo (juego, escaparate, menú). Se va solo al terminar el
   // vídeo/audio (imágenes: 12s) y vuelve lo de antes. Ignora el estado del juego.
-  function showPriorityInterrupt(item){
+  function showPriorityInterrupt(item,onDone){
     const titleSafe=item.title?String(item.title).replace(/</g,'&lt;'):'';
     // AUDIO/MÚSICA: NO tapa la pantalla — SUENA por encima de lo que se emite, con
     // un distintivo flotante; se quita al terminar la pista.
@@ -32420,7 +32425,8 @@ window.xtAPI = (function(){
       document.body.appendChild(ela);
       const a=document.createElement('audio'); a.src=item.url; a.autoplay=true;
       ela.appendChild(a);
-      const off=()=>{ try{ela.remove();}catch(e){} };
+      let finished=false;
+      const off=()=>{ if(finished) return; finished=true; try{ela.remove();}catch(e){}; try{ if(onDone) onDone(); }catch(e){} };
       try{ a.muted=false; }catch(e){} if(a.play) a.play().catch(()=>{});
       a.addEventListener('ended',off);
       return;
@@ -32434,10 +32440,146 @@ window.xtAPI = (function(){
       ? `<img src="${item.url}" style="max-width:100%;max-height:100%;object-fit:contain;">`
       : `<video src="${item.url}" autoplay playsinline style="max-width:100%;max-height:100%;object-fit:contain;"></video>`;
     el.innerHTML='<div style="position:absolute;top:14px;left:18px;color:#ff6644;font:700 14px monospace;letter-spacing:.05em;z-index:2;">⚠ PRIORIDAD 0'+(titleSafe?' · '+titleSafe:'')+'</div>'+inner;
-    const dismiss=()=>{ try{ el.remove(); }catch(e){} };
+    let finished=false;
+    const dismiss=()=>{ if(finished) return; finished=true; try{ el.remove(); }catch(e){}; try{ if(onDone) onDone(); }catch(e){} };
     const m=el.querySelector('video');
     if(m){ try{ m.muted=false; }catch(e){} if(m.play) m.play().catch(()=>{ try{ m.muted=true; m.play(); }catch(e){} }); m.addEventListener('ended',dismiss); }
     else { setTimeout(dismiss, 12000); }
+  }
+
+  // ── MANDO ADMIRA.TV PARA XTORE ──────────────────────────────────────────
+  // Los players clásicos ya escuchan /locations/cmd. El gemelo Xtore sólo
+  // publicaba heartbeat/feed y por eso el CMS podía encolar content-N/tag-X,
+  // pero nunca recibía ACK ni progreso. Esta junta conserva el juego autónomo
+  // y sólo monta una emisión prioritaria mientras haya una orden remota activa.
+  const remoteCmdState={since:0,init:false,busy:false};
+  function remoteKind(item){
+    const t=String(item&&((item.type||item.kind)||'video')).toLowerCase();
+    return t.startsWith('image')||['jpg','jpeg','png','webp','gif'].includes(t)?'image':
+      t.startsWith('audio')||['mp3','wav','m4a','aac'].includes(t)?'audio':'video';
+  }
+  function remoteItem(item){
+    return {id:String(item.id||''),num:Number(item.num)||null,title:String(item.title||item.name||('Contenido '+(item.num||''))),
+      type:remoteKind(item),kind:remoteKind(item),url:String(item.url||''),thumb:String(item.thumb||item.thumbnail||item.poster||''),
+      dur:Number(item.duration||item.dur)||null,tags:Array.isArray(item.tags)?item.tags:[]};
+  }
+  function remoteCanon(value){
+    return String(value||'').trim().replace(/^#+/,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  }
+  async function remoteJson(url,options){
+    const r=await fetch(url,options); if(!r.ok) throw new Error('http '+r.status); return r.json();
+  }
+  async function remoteStock(){
+    const d=await remoteJson(REMOTE_API+'/stock/list?limit=1000&t='+Date.now(),{cache:'no-store'});
+    return (Array.isArray(d)?d:(d.items||d.stock||[])).map(remoteItem).filter(x=>x.id&&x.url);
+  }
+  async function publishRemotePlaylist(items){
+    await remoteJson(REMOTE_PLAYLIST_API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({screen:screenId,items:items.map(x=>({id:x.id,title:x.title,type:x.type,url:x.url,thumb:x.thumb,dur:x.dur}))})});
+  }
+  async function publishRemoteCache(){
+    const contents=remotePlaylist.map(x=>({id:x.id,title:x.title,type:x.type,url:x.url,thumb:x.thumb,duration:x.dur,
+      ready:remoteReady.has(x.id),pct:remoteReady.has(x.id)?100:Number(remoteDownloading.get(x.id)||0)}));
+    const downloading=remotePlaylist.filter(x=>!remoteReady.has(x.id)).map(x=>({id:x.id,pct:Number(remoteDownloading.get(x.id)||0)}));
+    try{ await remoteJson(PIXER_WORKER+'/screen/cache',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({screen:screenId,ready:[...remoteReady],downloading,total:remotePlaylist.length,contents})}); }catch(_){}
+  }
+  async function publishRemoteNow(item){
+    try{ await remoteJson(PIXER_WORKER+'/signage/now',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({screen:screenId,item:item?{id:item.id,num:item.num,title:item.title,type:item.type,kind:item.kind,url:item.url,thumb:item.thumb,dur:item.dur,tags:item.tags}:null,
+        device:{role:'xtore-game',version:getVersion()},lastSeen:Date.now(),producer:'xtore-remote'})}); }catch(_){}
+  }
+  async function postRemoteAck(c,status){
+    if(!c||!c.action||!c.cid) return false;
+    const body=JSON.stringify({id:screenId,screen:screenId,cid:c.cid,action:c.action,status});
+    for(let attempt=0;attempt<3;attempt++){
+      try{ await remoteJson(REMOTE_API+'/locations/cmd/ack',{method:'POST',headers:{'Content-Type':'application/json'},body}); return true; }
+      catch(_){ if(attempt<2) await new Promise(resolve=>setTimeout(resolve,350*(attempt+1))); }
+    }
+    return false;
+  }
+  function stopRemotePlayback(clearPlaylist){
+    remoteGeneration++; remotePlaying=false; remoteShowingId=null; remoteTagMode=false; remoteIndex=0;
+    for(const id of ['pixerPrio0','pixerPrio0Audio']){ const el=document.getElementById(id); if(el) try{el.remove();}catch(_){} }
+    publishRemoteNow(null);
+    if(clearPlaylist){ remotePlaylist=[]; remoteReady.clear(); remoteDownloading.clear(); publishRemotePlaylist([]).catch(()=>{}); publishRemoteCache(); }
+    sendHeartbeat(true);
+  }
+  function playRemoteAt(index,generation){
+    if(generation!==remoteGeneration||!remotePlaylist.length) return;
+    const len=remotePlaylist.length; remoteIndex=((index%len)+len)%len;
+    const item=remotePlaylist[remoteIndex];
+    if(!remoteReady.has(item.id)){
+      setTimeout(()=>playRemoteAt(remoteIndex,generation),500); return;
+    }
+    remotePlaying=true; remoteShowingId=item.id; publishRemoteNow(item); sendHeartbeat(true);
+    showPriorityInterrupt(item,()=>{
+      if(generation!==remoteGeneration) return;
+      remotePlaying=false;
+      if(remoteTagMode&&remotePlaylist.length){ playRemoteAt(remoteIndex+1,generation); }
+      else { remoteShowingId=null; publishRemoteNow(null); sendHeartbeat(true); }
+    });
+  }
+  async function ensureRemoteCached(item,generation){
+    let cache=null;
+    try{ if('caches' in window) cache=await caches.open(REMOTE_CACHE_NAME); }catch(_){}
+    try{
+      if(cache&&await cache.match(item.url)){ remoteReady.add(item.id); remoteDownloading.delete(item.id); await publishRemoteCache(); return true; }
+      remoteDownloading.set(item.id,0); await publishRemoteCache();
+      const r=await fetch(item.url,{cache:'no-store'}); if(!r.ok) throw new Error('asset '+r.status);
+      const probe=r.clone(), total=Number(r.headers.get('content-length'))||0;
+      const cacheWrite=cache?cache.put(item.url,r).catch(()=>{}):Promise.resolve();
+      if(probe.body&&probe.body.getReader){
+        const reader=probe.body.getReader(); let loaded=0,last=-1;
+        while(true){ const part=await reader.read(); if(part.done) break; loaded+=part.value.byteLength;
+          const pct=total?Math.min(99,Math.round(loaded*100/total)):Math.min(95,last+5);
+          if(pct>=last+5){ last=pct; remoteDownloading.set(item.id,pct); publishRemoteCache(); }
+          if(generation!==remoteGeneration) try{ await reader.cancel(); }catch(_){}
+          if(generation!==remoteGeneration) return false;
+        }
+      }
+      await cacheWrite;
+      if(generation!==remoteGeneration) return false;
+      remoteReady.add(item.id); remoteDownloading.delete(item.id); await publishRemoteCache(); return true;
+    }catch(_){ remoteDownloading.delete(item.id); await publishRemoteCache(); return false; }
+  }
+  async function applyRemoteSelection(items,isTag){
+    if(!items.length) throw new Error('sin contenidos');
+    stopRemotePlayback(false);
+    const generation=remoteGeneration;
+    remotePlaylist=items; remoteReady=new Set(); remoteDownloading=new Map(); remoteTagMode=!!isTag; remoteIndex=0;
+    await publishRemotePlaylist(items); await publishRemoteCache();
+    (async()=>{ for(let i=0;i<items.length;i++){
+      if(generation!==remoteGeneration) return;
+      const ok=await ensureRemoteCached(items[i],generation);
+      if(ok&&!remotePlaying) playRemoteAt(i,generation);
+    } })();
+  }
+  async function executeRemoteCommand(c){
+    const cmd=String(c&&c.cmd||'').replace(/^\//,'').trim().toLowerCase();
+    if(cmd==='content-clear'||cmd==='tag-'){ stopRemotePlayback(true); return 'executed'; }
+    const content=/^content-(\d{1,6})$/.exec(cmd), tag=/^tag-([a-z0-9_,+\-]+)$/.exec(cmd);
+    if(!content&&!tag) return 'failed';
+    const stock=await remoteStock(); let items=[];
+    if(content) items=stock.filter(x=>String(x.num)===content[1]).slice(0,1);
+    else { const wanted=tag[1].split(/[,+]/).map(remoteCanon).filter(Boolean);
+      items=stock.filter(x=>{ const tags=(x.tags||[]).map(remoteCanon); return wanted.every(t=>tags.includes(t)); }); }
+    if(!items.length) return 'failed';
+    await applyRemoteSelection(items,!!tag); return 'executed';
+  }
+  async function pollRemoteCommands(){
+    if(remoteCmdState.busy) return; remoteCmdState.busy=true;
+    try{
+      const d=await remoteJson(REMOTE_API+'/locations/cmd?id='+encodeURIComponent(screenId)+'&since='+remoteCmdState.since+'&t='+Date.now(),{cache:'no-store'});
+      if(!remoteCmdState.init){ remoteCmdState.since=Number(d.seq)||0; remoteCmdState.init=true; return; }
+      for(const c of (d.commands||[])){
+        if(!Number.isSafeInteger(c.cid)||c.cid<=remoteCmdState.since) continue;
+        let status='failed'; try{ status=await executeRemoteCommand(c); }catch(_){}
+        if(!await postRemoteAck(c,status)) break;
+        remoteCmdState.since=c.cid;
+      }
+    }catch(_){} finally{ remoteCmdState.busy=false; }
   }
 
   function renderItem(item){
@@ -32491,7 +32633,8 @@ window.xtAPI = (function(){
   let lastHeartbeatAt=0, lastHeartbeatState='';
   async function sendHeartbeat(force){
     const now=Date.now();
-    const state=(lastItemId||'')+'|'+totalCount;
+    const effectiveShowingId=remoteShowingId||lastItemId;
+    const state=(effectiveShowingId||'')+'|'+totalCount;
     const stateChanged=state!==lastHeartbeatState;
     const elapsed=now-lastHeartbeatAt;
     // Permite forzar el primer envio, los cambios de estado y 1 vez por minuto.
@@ -32502,7 +32645,7 @@ window.xtAPI = (function(){
       await fetch(PIXER_WORKER+'/signage/heartbeat',{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({screen:screenId,role:'xtore-game',version:getVersion(),
-          feed_count:totalCount,showing_id:lastItemId,
+          feed_count:totalCount,showing_id:effectiveShowingId,
           loc:(window.STORE_CFG&&window.STORE_CFG.id)||'',locName:(window.STORE_CFG&&window.STORE_CFG.name)||''}),
       });
     }catch{}
@@ -32733,6 +32876,7 @@ window.xtAPI = (function(){
     updateIdentityBadge(); setInterval(updateIdentityBadge,1500);   // badge identidad (idea #2)
     setInterval(pollLayoutLive,3000);       // sync EN VIVO bidireccional (solo en sala visible)
     pollTwinCmd(); setInterval(pollTwinCmd,2500);   // CLI keyless: ejecuta comandos de pixeria EN VIVO
+    pollRemoteCommands(); setInterval(pollRemoteCommands,2500); // Remote Admira.tv: content-N / tag-X + ACK/progreso
     pollNpcQueue(); setInterval(pollNpcQueue,6000);  // NPCs enviados desde el Anonimizador → paseando por la tienda
     setInterval(()=>sendHeartbeat(false),300000);
   },3000);
