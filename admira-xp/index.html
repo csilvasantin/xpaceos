@@ -16,6 +16,7 @@
   <style>
   body::after{content:'';position:fixed;inset:0;z-index:99999;background:#05080d;pointer-events:none;opacity:0;transition:opacity .45s ease}
   html.adm-direct body::after{opacity:1;content:'· CARGANDO GEMELO ·';color:#3df08a;display:flex;align-items:center;justify-content:center;font:600 13px/1 ui-monospace,Menlo,monospace;letter-spacing:.22em}
+  html[lang="en"].adm-direct body::after{content:'· LOADING DIGITAL TWIN ·'}
   </style>
 <link rel="canonical" href="https://www.xpaceos.com/admira-xp/">
 <meta name="description" content="El gemelo digital jugable de XpaceOS: opera un espacio de retail físico en vivo —signage, audiencia y monetización— desde un único panel. Corriendo sobre Lenovo edge + Nvidia GPU.">
@@ -668,8 +669,17 @@
     .splash-lang-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
     .splash-lang-btn.is-active{color:#0a0a0a;background:#ffd86a}
   </style>
-  <!-- Idioma por defecto inglés; respeta la elección guardada antes de cargar el panel de contacto -->
-  <script>try{document.documentElement.lang=localStorage.getItem('xtanco_lang')==='es'?'es':'en';}catch(e){document.documentElement.lang='en';}</script>
+  <!-- Idioma por defecto inglés. Una entrada dedicada puede fijarlo con
+       ?lang=en&langlock=1 sin alterar la preferencia guardada del usuario. -->
+  <script>(function(){
+    var requested='';
+    try{requested=(new URLSearchParams(location.search).get('lang')||'').toLowerCase();}catch(e){}
+    window.XPACE_LANG_OVERRIDE=(requested==='es'||requested==='en')?requested:'';
+    try{window.XPACE_LANG_LOCKED=!!(window.XPACE_LANG_OVERRIDE&&new URLSearchParams(location.search).get('langlock')==='1');}catch(e){window.XPACE_LANG_LOCKED=false;}
+    var initial=window.XPACE_LANG_OVERRIDE;
+    if(!initial){try{initial=localStorage.getItem('xtanco_lang')==='es'?'es':'en';}catch(e){initial='en';}}
+    document.documentElement.lang=initial||'en';
+  })();</script>
   <!-- GUARDIA DE RED (01-08-2026) — ningún fetch del gemelo puede colgarse para siempre.
        El kiosko sondea cada 1-2,5 s contra backends que flaquean de verdad: *.workers.dev
        falla a ratos desde el navegador (bloqueo intermitente de los ISP de aquí) y el Funnel
@@ -5382,10 +5392,11 @@ const CAM={
 function camModeLabel(){ return CAM.mode==='exacto'?'EXACTO':(CAM.mode==='real'?'REAL':'FAKE'); }
 // Resumen para el "cerebro" de la tienda (contexto IA) y diagnósticos.
 function camBrainLine(){
-  if(CAM.mode==='fake') return 'FAKE (clientes aleatorios del juego; cámara ignorada)';
-  return camModeLabel()+' · cámara Hikvision '+(CAM.connected
-    ? (CAM.occupancy+' dentro (+'+CAM.enter+'/-'+CAM.leave+', pico '+CAM.peak+')')
-    : 'sin conexión');
+  const en=typeof lang!=='undefined'&&lang==='en';
+  if(CAM.mode==='fake') return en?'FAKE (simulated customers; camera ignored)':'FAKE (clientes aleatorios del juego; cámara ignorada)';
+  return camModeLabel()+' · '+(en?'Hikvision camera ':'cámara Hikvision ')+(CAM.connected
+    ? (CAM.occupancy+(en?' inside (':' dentro (')+'+'+CAM.enter+'/-'+CAM.leave+', '+(en?'peak ':'pico ')+CAM.peak+')')
+    : (en?'offline':'sin conexión'));
 }
 function updateCamHud(){
   const val=document.getElementById('bbCamVal'); if(!val) return;
@@ -5393,12 +5404,13 @@ function updateCamHud(){
   const box=document.getElementById('bbCamBox');
   val.textContent=CAM.connected?CAM.occupancy:'—';
   if(dot) dot.style.background=CAM.connected?'#33dd66':'#cc4444';
-  const modeTxt=CAM.mode==='exacto'?'EXACTO — la tienda es exactamente lo que dice la cámara'
-    :CAM.mode==='real'?'REAL — la tienda respira con la gente real'
-    :'FAKE — clientes aleatorios del juego';
+  const en=typeof lang!=='undefined'&&lang==='en';
+  const modeTxt=CAM.mode==='exacto'?(en?'EXACT — store occupancy mirrors the camera':'EXACTO — la tienda es exactamente lo que dice la cámara')
+    :CAM.mode==='real'?(en?'LIVE — the store follows real footfall':'REAL — la tienda respira con la gente real')
+    :(en?'SIMULATED — game-generated customers':'FAKE — clientes aleatorios del juego');
   if(box) box.title=CAM.connected
-    ?'Aforo (cámara Hikvision)\nDentro: '+CAM.occupancy+' · Pico hoy: '+CAM.peak+'\nEntradas: '+CAM.enter+' · Salidas: '+CAM.leave+'\nModo: '+modeTxt+'  (/aforo real | /aforo exacto | /aforo fake)'
-    :'Aforo: cámara sin conexión  (/aforo real | /aforo exacto | /aforo fake)';
+    ?(en?'Occupancy (Hikvision camera)\nInside: '+CAM.occupancy+' · Today peak: '+CAM.peak+'\nEntries: '+CAM.enter+' · Exits: '+CAM.leave+'\nMode: '+modeTxt+'  (/aforo real | /aforo exacto | /aforo fake)':'Aforo (cámara Hikvision)\nDentro: '+CAM.occupancy+' · Pico hoy: '+CAM.peak+'\nEntradas: '+CAM.enter+' · Salidas: '+CAM.leave+'\nModo: '+modeTxt+'  (/aforo real | /aforo exacto | /aforo fake)')
+    :(en?'Occupancy: camera offline  (/aforo real | /aforo exacto | /aforo fake)':'Aforo: cámara sin conexión  (/aforo real | /aforo exacto | /aforo fake)');
 }
 function camApplyToStore(){
   if(CAM.mode==='fake'||!CAM.connected) return;
@@ -5839,7 +5851,7 @@ function isLocalRuntime(){
 }
 
 async function hueProxyJson(path,opts){
-  if(!isLocalRuntime()) return {ok:false,message:'Hue real requiere proxy local'};
+  if(!isLocalRuntime()) return {ok:false,message:(typeof lang!=='undefined'&&lang==='en')?'Live Hue requires the local bridge':'Hue real requiere proxy local'};
   const options=opts||{};
   const res=await fetch(`${location.origin}${path}`,{
     method:options.method||'GET',
@@ -5847,7 +5859,7 @@ async function hueProxyJson(path,opts){
     body:options.body||undefined,
     signal:AbortSignal.timeout(options.timeout||2500),
   });
-  const data=await res.json().catch(()=>({ok:false,message:'Respuesta no válida del proxy Hue'}));
+  const data=await res.json().catch(()=>({ok:false,message:(typeof lang!=='undefined'&&lang==='en')?'Invalid response from Hue proxy':'Respuesta no válida del proxy Hue'}));
   if(!res.ok){
     if(data&&typeof data==='object') return {...data,ok:false};
     return {ok:false,message:`Hue proxy HTTP ${res.status}`};
@@ -6665,13 +6677,17 @@ const LANGS={
     modelStart:['€3,500','€2,800','€4,500','€6,000'],
   },
 };
-let lang=(function(){try{return localStorage.getItem('xtanco_lang')==='es'?'es':'en';}catch(e){return 'en';}})();
+let lang=(function(){
+  if(window.XPACE_LANG_OVERRIDE==='es'||window.XPACE_LANG_OVERRIDE==='en') return window.XPACE_LANG_OVERRIDE;
+  try{return localStorage.getItem('xtanco_lang')==='es'?'es':'en';}catch(e){return 'en';}
+})();
 const T=()=>LANGS[lang];
 function setLanguage(nextLang){
+  if(window.XPACE_LANG_LOCKED&&window.XPACE_LANG_OVERRIDE) nextLang=window.XPACE_LANG_OVERRIDE;
   lang=nextLang==='en'?'en':'es';
   menuSel=lang==='en'?1:0;
   document.documentElement.lang=lang;
-  try{localStorage.setItem('xtanco_lang',lang);}catch(e){}
+  if(!window.XPACE_LANG_LOCKED){try{localStorage.setItem('xtanco_lang',lang);}catch(e){}}
   try{if(typeof applyHtmlLang==='function')applyHtmlLang(lang);}catch(e){}
   // El dock de Telegram (Enviar/Ocultar, cabeceras, placeholder, estados) NO está
   // en la tabla I18N: lo traduce syncDockLanguage(). Sin esta llamada los botones
@@ -6687,7 +6703,7 @@ const S={ERA_SEL:'eraSel',PRELOAD:'preload',MENU:'menu',CLIENT_SEL:'clientSel',M
 const RENDER_TIERS=['8bit','16bit','habbo','real'];
 let renderMode=(function(){ try{ const v=localStorage.getItem('xtanco_render'); if(RENDER_TIERS.indexOf(v)>=0) return v; }catch(_){} return '16bit'; })();
 function setRenderMode(m){ if(RENDER_TIERS.indexOf(m)<0) return false; renderMode=m; try{ localStorage.setItem('xtanco_render',m); }catch(_){} return true; }
-let state=S.ERA_SEL, eraSel=0, menuSel=0, clientSel=0, modelSel=0, tutPage=0, helpPage=0;
+let state=S.ERA_SEL, eraSel=0, menuSel=lang==='en'?1:0, clientSel=0, modelSel=0, tutPage=0, helpPage=0;
 // Señal para el motor de ambiente (assets/js/ambient.js): rumor/lluvia/cafetera solo
 // deben sonar en partida activa, no en menús, pausa ni fin de partida.
 window.ambientActive=function(){return state===S.GAME;};
@@ -18699,12 +18715,18 @@ function drawEscaparate(){
   cx.setTransform(ax,ay,bx,by,iTL.x,iTL.y);
 
   // ── PRODUCT POSTERS ──
-  const posters=[
-    {label:'LOTERÍA',  icon:'🎫', bg:'#c41e3a', hi:'#ffdd00', sub:'¡Juega y Gana!'},
-    {label:'VAPES',    icon:'💨', bg:'#1a2a6c', hi:'#88ccff', sub:'Última Generación'},
-    {label:'TABACO',   icon:'🚬', bg:'#5a3a18', hi:'#c8a060', sub:'Premium Selection'},
-    {label:'PRENSA',   icon:'📰', bg:'#1a5a38', hi:'#aaddbb', sub:'Hoy en Portada'},
-    {label:'OFERTA',   icon:'⭐', bg:'#b85000', hi:'#ffeebb', sub:'Precio Especial'},
+  const posters=lang==='en'?[
+    {label:'LOTTERY', icon:'🎫', bg:'#c41e3a', hi:'#ffdd00', sub:'Play and Win!'},
+    {label:'VAPES',   icon:'💨', bg:'#1a2a6c', hi:'#88ccff', sub:'Next Generation'},
+    {label:'TOBACCO', icon:'🚬', bg:'#5a3a18', hi:'#c8a060', sub:'Premium Selection'},
+    {label:'PRESS',   icon:'📰', bg:'#1a5a38', hi:'#aaddbb', sub:'Today’s Headlines'},
+    {label:'OFFER',   icon:'⭐', bg:'#b85000', hi:'#ffeebb', sub:'Special Price'},
+  ]:[
+    {label:'LOTERÍA', icon:'🎫', bg:'#c41e3a', hi:'#ffdd00', sub:'¡Juega y Gana!'},
+    {label:'VAPES',   icon:'💨', bg:'#1a2a6c', hi:'#88ccff', sub:'Última Generación'},
+    {label:'TABACO',  icon:'🚬', bg:'#5a3a18', hi:'#c8a060', sub:'Selección Premium'},
+    {label:'PRENSA',  icon:'📰', bg:'#1a5a38', hi:'#aaddbb', sub:'Hoy en Portada'},
+    {label:'OFERTA',  icon:'⭐', bg:'#b85000', hi:'#ffeebb', sub:'Precio Especial'},
   ];
   const cycleLen=420; // frames per poster (7 seconds)
   const basePIdx=(Math.floor(tt/cycleLen)+esc.phase)%posters.length;
@@ -19133,7 +19155,7 @@ function drawIsoTabletKiosk(col,row){
   } else {
     // Pantalla en reposo: "VOTA" a 8px con pulso suave + LED cian
     cx.globalAlpha=0.35+0.15*Math.sin(tt*0.05);
-    tx('VOTA',tabX+tabW/2,tabY+tabH/2+3,'#9aa4b2',8,'center');
+  tx(lang==='en'?'RATE':'VOTA',tabX+tabW/2,tabY+tabH/2+3,'#9aa4b2',8,'center');
     cx.globalAlpha=1;
     r(tabX+tabW/2-1,tabY+tabH-4,2,2,'#78f3ff');    // LED de espera
   }
@@ -20596,8 +20618,8 @@ function drawIsoTurnKiosk(col,row){
   r(sx,sy,sw,1,'#123a4d');                             // brillo superior del cristal
 
   // Rótulo "TURNO" en cian (8px ≈ 24px de ancho, holgado en 38)
-  tx('TURNO',poleCX+1,sy+10,'#062028',8,'center');     // sombra 1px
-  tx('TURNO',poleCX,sy+9,'#8defff',8,'center');
+  tx(lang==='en'?'TURN':'TURNO',poleCX+1,sy+10,'#062028',8,'center');     // sombra 1px
+  tx(lang==='en'?'TURN':'TURNO',poleCX,sy+9,'#8defff',8,'center');
   r(sx+2,sy+3,2,2,'#d9a83f');                          // pips "ahora atendiendo"
   r(sx+sw-4,sy+3,2,2,'#d9a83f');
   r(sx+2,sy+12,sw-4,1,'#123a4d');                      // separador
@@ -21551,7 +21573,7 @@ function drawTurnManager(){
     // ── Separador horizontal ──
     cx.strokeStyle='#1e6a72';cx.globalAlpha=0.6;cx.lineWidth=1;cx.beginPath();cx.moveTo(6,38);cx.lineTo(vW-6,38);cx.stroke();cx.globalAlpha=1;
     // ── ABAJO: gestor de turnos ──
-    cx.fillStyle='#8defff';cx.font='bold 6px monospace';cx.fillText('TURNO · CAJA',cX,46);
+    cx.fillStyle='#8defff';cx.font='bold 6px monospace';cx.fillText(lang==='en'?'TURN · REGISTER':'TURNO · CAJA',cX,46);
     cx.fillStyle='#ffd86b';cx.font='bold 13px monospace';cx.fillText(num,cX,vH-2);
   }
   cx.setTransform(1,0,0,1,0,0);
@@ -22075,7 +22097,7 @@ function drawIsoLottery(col,row){
   rx(p.x-25,p.y-69,50,12,'#d9a83f',1);      // ribete oro
   r(p.x-23,p.y-67,46,9,'#f5e8aa');          // cara iluminada
   r(p.x-23,p.y-67,46,2,'#f3dc9e');          // bisel superior claro
-  tx('LOTERIAS',p.x,p.y-60,'#735615',7,'center'); // 8·0.6·7≈34px, cabe en 46
+  tx(lang==='en'?'LOTTERY':'LOTERIAS',p.x,p.y-60,'#735615',7,'center'); // 8·0.6·7≈34px, cabe en 46
   // Bombillos de marquesina en los extremos de la placa
   r(p.x-24,p.y-65,2,2,'#f5e8aa');
   r(p.x+22,p.y-65,2,2,'#f5e8aa');
@@ -22472,7 +22494,7 @@ function drawIsoWineRack(col,row){
   }
   // Label on front
   r(p.x-10,p.y-52,20,7,'#f0e8d0');
-  tx('VINOS',p.x,p.y-47,'#5a2020',6,'center');
+  tx(lang==='en'?'WINE':'VINOS',p.x,p.y-47,'#5a2020',6,'center');
 }
 
 // ── VENDING MACHINE (máquina expendedora) ────────────────────
@@ -22675,7 +22697,7 @@ function drawIsoMagazineRack(col,row,bw,bd){
   r(ctr.x-17,sy,34,9,'#f0e8d0');
   r(ctr.x-17,sy,34,2,'#fffaf0');
   rx(ctr.x-17,sy,34,9,'#8d8577',1);
-  tx('PRENSA',ctr.x,sy+7,'#3a3a5a',6,'center');
+  tx(lang==='en'?'PRESS':'PRENSA',ctr.x,sy+7,'#3a3a5a',6,'center');
 }
 
 // ── DRAW STAFF (ISOMETRIC) ───────────────────────────────────
@@ -26442,6 +26464,7 @@ function autoEnterVertical(id){
   try{ if(typeof startMusic==='function') startMusic(); }catch(e){}
   try{ updateMobileSkipButton(); }catch(e){}
   try{ updateEraVerticalDock(); }catch(e){}
+  try{ document.documentElement.classList.remove('adm-direct'); }catch(e){}
   return true;
 }
 try {
@@ -28584,7 +28607,7 @@ window.xtAPI = (function(){
         customAction:'pixerai'
       },
       {
-        label:'✏ Mobiliario',
+        label:isEs?'✏ Mobiliario':'✏ Furniture',
         status:isEs?'editor':'editor',
         customAction:'editor'
       },
@@ -28603,7 +28626,7 @@ window.xtAPI = (function(){
       })(),
       {
         // Debajo de DVR / a la derecha de Menu (8º slot, fila 2 col 4). Mismo que /impactos.
-        label:'📊 Audiencia',
+        label:isEs?'📊 Audiencia':'📊 Audience',
         status:(typeof IMPACTS!=='undefined'&&IMPACTS.on)
           ?(isEs?'en vivo':'live')
           :(isEs?'impactos·CPM':'impacts·CPM'),
@@ -32660,7 +32683,7 @@ window.xtAPI = (function(){
   function mudanzaToast(msg, undoFn){
     // Aviso en la barra superior (limpio), no un banner sobre el Xpacio.
     if(typeof window.xpTopNotify==='function'){
-      window.xpTopNotify(msg, '#9effa0', undoFn?{label:'↶ Deshacer', fn:undoFn}:null);
+      window.xpTopNotify(msg, '#9effa0', undoFn?{label:lang==='en'?'↶ Undo':'↶ Deshacer', fn:undoFn}:null);
       return;
     }
     // Fallback (por si la barra no está lista): toast clásico compacto.
@@ -32669,7 +32692,7 @@ window.xtAPI = (function(){
     t.style.cssText='position:fixed;top:44px;right:14px;z-index:2147483647;background:#04140a;border:1px solid #2ee06a;border-radius:8px;padding:8px 12px;color:#9effa0;font:700 12px monospace;display:flex;align-items:center;gap:10px;';
     const span=document.createElement('span'); span.textContent=msg; t.appendChild(span);
     if(undoFn){
-      const b=document.createElement('button'); b.textContent='↶ Deshacer';
+      const b=document.createElement('button'); b.textContent=lang==='en'?'↶ Undo':'↶ Deshacer';
       b.style.cssText='cursor:pointer;background:#0a2a18;border:1px solid #2ee06a;color:#9effa0;border-radius:7px;padding:4px 9px;font:700 11px monospace;';
       b.onclick=()=>{ try{ undoFn(); }catch(_){ } try{ t.remove(); }catch(_){ } };
       t.appendChild(b);
@@ -32688,8 +32711,8 @@ window.xtAPI = (function(){
           const prev=window.XPACE_DISTRO.snapshot();   // sala actual → para "Deshacer"
           const item=await window.XPACE_DISTRO.get(p.id);
           const n=window.XPACE_DISTRO.apply(item);
-          mudanzaToast('🚚 Mudanza en '+screenId+' · '+(p.name||item.name||'')+' · '+n+' muebles',
-            ()=>{ const m=window.XPACE_DISTRO.apply(prev); reportCurrentLayout(); mudanzaToast('↶ Mudanza deshecha · '+m+' muebles'); });
+          mudanzaToast('🚚 '+(lang==='en'?'Layout moved to ':'Mudanza en ')+screenId+' · '+(p.name||item.name||'')+' · '+n+' '+(lang==='en'?'items':'muebles'),
+            ()=>{ const m=window.XPACE_DISTRO.apply(prev); reportCurrentLayout(); mudanzaToast('↶ '+(lang==='en'?'Move undone · '+m+' items':'Mudanza deshecha · '+m+' muebles')); });
           reportCurrentLayout();   // el estado actual cambió → repórtalo a pixeria
         }
       }
@@ -33284,7 +33307,7 @@ window.xtAPI = (function(){
       // Directo al Xtanco por defecto (Carlos, 13-jul-2026): fuera XPACE INVADERS del camino
       // de entrada. El arcade queda como easter egg con ?arcade=1; los modos con entrada
       // propia (view/distro/present/preview) siguen intactos.
-      if(!_as && _qs.get('arcade')!=='1' && !_qs.get('view') && !_qs.get('distro') && !_qs.get('present') && !_qs.get('preview')){ _as='xtanco'; }
+      if(!_as && !_qs.get('play') && _qs.get('arcade')!=='1' && !_qs.get('view') && !_qs.get('distro') && !_qs.get('present') && !_qs.get('preview')){ _as='xtanco'; }
     if(_as){
       const _cmap={xtanco:0,loterias:1,supermercado:2,shoptalk:3,creator:4};
       const _ci=Object.prototype.hasOwnProperty.call(_cmap,_as)?_cmap[_as]:0;
@@ -33316,11 +33339,32 @@ window.xtAPI = (function(){
    setLanguage() llama a applyHtmlLang(); el selector del splash llama a setLanguage(). */
 (function(){
   var I18N = [
+    {sel:'title', en:'Admira XP // XpaceOS — NVIDIA Digital Twin', es:'Admira XP // XpaceOS — Gemelo Digital NVIDIA'},
+    {sel:'#saveTplModal .save-tpl-head h2', en:'⭐ Save as template', es:'⭐ Guardar como plantilla'},
+    {sel:'#saveTplCloseBtn', attr:'title', en:'Cancel', es:'Cancelar'},
+    {sel:'#saveTplModal .save-tpl-row label', idx:0, en:'Name', es:'Nombre'},
+    {sel:'#saveTplModal .save-tpl-row label', idx:1, en:'Icon', es:'Icono'},
+    {sel:'#saveTplModal .save-tpl-row label', idx:2, en:'Preview', es:'Vista previa'},
+    {sel:'#saveTplName', attr:'placeholder', en:'My custom Xpace', es:'Mi Xpacio personalizado'},
+    {sel:'#saveTplCancelBtn', en:'Cancel', es:'Cancelar'},
+    {sel:'#saveTplSaveBtn', en:'⭐ Save template', es:'⭐ Guardar plantilla'},
+    {sel:'[data-ctx-act="rename"]', en:'✏ Rename', es:'✏ Renombrar'},
+    {sel:'[data-ctx-act="duplicate"]', en:'📋 Duplicate', es:'📋 Duplicar'},
+    {sel:'[data-ctx-act="delete"]', en:'🗑 Delete', es:'🗑 Eliminar'},
+    {sel:'#splashIntro', attr:'aria-label', en:'Welcome to Digital Twin', es:'Bienvenido a Digital Twin'},
+    {sel:'#splashNav', attr:'aria-label', en:'Main navigation', es:'Navegación principal'},
     {sel:'#navigatorBtn', en:'↗ Navigator', es:'↗ Navegador'},
     {sel:'#splashJugarBtn', en:'▶ PLAY', es:'▶ JUGAR'},
     {sel:'#splashDemoBtn', en:'▶ DEMO', es:'▶ DEMO'},
     {sel:'.splash-hint', en:'PLAY · enter your Xpace · DEMO · hands-free autoplay', es:'JUGAR · entra a tu Xpacio · DEMO · autoplay sin manos'},
     {sel:'#splashContactBtn', en:'Contact', es:'Contacto'},
+    {sel:'#pfOptions', attr:'aria-label', en:'Options', es:'Opciones'},
+    {sel:'#pfOptions', attr:'title', en:'Options', es:'Opciones'},
+    {sel:'#pfToggles', attr:'aria-label', en:'Modes: advanced, expert', es:'Modos: avanzado, experto'},
+    {sel:'[data-quad-toggle="right"]', attr:'aria-label', en:'Open advanced menu', es:'Desplegar menú avanzado'},
+    {sel:'[data-quad-toggle="right"]', attr:'title', en:'Advanced menu', es:'Menú avanzado'},
+    {sel:'#pfExpert', attr:'aria-label', en:'Expert mode — show or hide the bottom menu', es:'Modo experto — mostrar u ocultar el menú inferior'},
+    {sel:'#pfExpert', attr:'title', en:'Expert mode · show/hide bottom menu', es:'Modo experto · mostrar/ocultar menú inferior'},
     {sel:'.stat-label', idx:0, en:'Sales', es:'Ventas'},
     {sel:'.stat-label', idx:1, en:'Profit', es:'Beneficio'},
     {sel:'.stat-label', idx:2, en:'Sat', es:'Sat'},
@@ -33331,15 +33375,65 @@ window.xtAPI = (function(){
     {sel:'#btnQuit', attr:'title', en:'Close audio and video, back to main menu', es:'Cerrar audios y videos, volver al menú principal'},
     {sel:'#btnConnectScreen', en:'📺 Screen', es:'📺 Pantalla'},
     {sel:'#btnConnectScreen', attr:'title', en:'Connect a physical screen (QR): the twin storefront mirrors live', es:'Conectar una pantalla física (QR): el escaparate del gemelo se refleja en vivo'},
+    {sel:'.quad-left', attr:'aria-label', en:'Options', es:'Opciones'},
+    {sel:'.quad-left > .qm-title', en:'Options', es:'Opciones'},
+    {sel:'[data-xp-do="mega"]', en:'📢 Make announcement', es:'📢 Lanzar aviso'},
+    {sel:'[data-xp-do="mega"]', attr:'title', en:'Write and play a voice announcement', es:'Redactar y lanzar un aviso por voz'},
+    {sel:'[data-xp-do="megaStop"]', en:'⏹ Stop', es:'⏹ Detener'},
+    {sel:'[data-xp-do="megaStop"]', attr:'title', en:'Stop the current announcement', es:'Detener el aviso en curso'},
+    {sel:'[data-xp-do="musicToggle"]', en:'▶ Play / Pause', es:'▶ Play / Pausa'},
+    {sel:'[data-xp-do="musicPrev"]', en:'◀ Previous', es:'◀ Anterior'},
+    {sel:'[data-xp-do="musicNext"]', en:'▶ Next', es:'▶ Siguiente'},
+    {sel:'[data-xp-do="sfxToggle"]', en:'🔊 Sound effects (FX)', es:'🔊 Efectos (FX)'},
+    {sel:'[data-xp-do="imgGen"]', en:'✨ Generate image (PixerIA)', es:'✨ Generar imagen (PixerIA)'},
+    {sel:'[data-xp-do="dsToggle"]', en:'▶ Play / Pause', es:'▶ Play / Pausa'},
+    {sel:'[data-xp-do="dsPrev"]', en:'◀ Previous video', es:'◀ Vídeo anterior'},
+    {sel:'[data-xp-do="dsNext"]', en:'▶ Next video', es:'▶ Vídeo siguiente'},
+    {sel:'[data-xp-do="avatarShow"]', en:'👤 Show presenter', es:'👤 Mostrar presentador'},
+    {sel:'[data-xp-do="avatarHide"]', en:'✕ Hide', es:'✕ Ocultar'},
+    {sel:'[data-xp-do="aforoReal"]', en:'📷 Live occupancy (camera)', es:'📷 Aforo real (cámara)'},
+    {sel:'[data-xp-do="aforoExact"]', en:'🎯 Exact occupancy (1:1)', es:'🎯 Aforo exacto (1:1)'},
+    {sel:'[data-xp-do="aforoFake"]', en:'🎲 Simulated occupancy', es:'🎲 Aforo del juego'},
+    {sel:'[data-xp-do="aforoStatus"]', en:'ℹ Status', es:'ℹ Estado'},
+    {sel:'.quad-left .qm-acc-head', idx:0, en:'📢 PA system', es:'📢 Megafonía'},
+    {sel:'.quad-left .qm-acc-head', idx:1, en:'♪ Background music', es:'♪ Hilo Musical'},
+    {sel:'.quad-left .qm-acc-head', idx:2, en:'🖼 Image', es:'🖼 Imagen'},
+    {sel:'.quad-left .qm-acc-head', idx:3, en:'📺 Video', es:'📺 Video'},
+    {sel:'.quad-left .qm-acc-head', idx:4, en:'🤖 Avatar', es:'🤖 Avatar'},
+    {sel:'.quad-left .qm-acc-head', idx:5, en:'🔢 Occupancy', es:'🔢 Contador'},
+    {sel:'#quadOptVersion', attr:'title', en:'Help · features', es:'Ayuda · funcionalidades'},
+    {sel:'.quad-right', attr:'aria-label', en:'Advanced options', es:'Opciones Avanzadas'},
+    {sel:'.quad-right > .qm-title', en:'Advanced options', es:'Opciones Avanzadas'},
+    {sel:'.quad-right > .qm-head', en:'Team · Customers', es:'Equipo · Clientes'},
+    {sel:'.quad-right > .qm-hint', html:true, en:'The <b>TEAM / CUSTOMERS</b> panel and its actors (Thief, Civil Guard, Reviewer, Unitree, Sponsor…) appears below when Advanced ▾ is open.', es:'El panel de <b>EQUIPO / CLIENTES</b> y sus actores (Ladrón, Guardia Civil, Opinador, Unitree, Sponsor…) aparece abajo al abrir Avanzado ▾'},
     {sel:'#ksTitle', en:'UNDER MAINTENANCE', es:'EN MANTENIMIENTO'},
     {sel:'#ksMsg', en:'We are preparing a new version of the Xpace OS. Come back in a few minutes.', es:'Estamos preparando una nueva versión del Xpace OS. Vuelve en unos minutos.'},
     {sel:'#dsImportTitle', en:'Drop here to import DS content', es:'Suelta para importar contenido DS'},
+    {sel:'#dsImportSub', en:'PNG / JPG / WEBP / GIF / MP4 / WEBM · fitted to 160×90', es:'PNG / JPG / WEBP / GIF / MP4 / WEBM · se ajusta a 160×90'},
     {sel:'#dsImportStatusText', en:'Importing…', es:'Importando…'},
     {sel:'#mhStatus', en:'ready', es:'listo'},
+    {sel:'#mhClose', attr:'aria-label', en:'Close', es:'Cerrar'},
+    {sel:'#mhFaceWrap .mh-face-badge', html:true, en:'<span class="dot"></span>LIVE', es:'<span class="dot"></span>EN VIVO'},
+    {sel:'#mhFace', attr:'title', en:'Live MetaHuman', es:'MetaHuman en vivo'},
     {sel:'#mhPrompt', attr:'placeholder', en:'Ask your Metahuman agent... (Ctrl/⌘+Enter sends)', es:'Pregunta a tu agente Metahuman... (Ctrl/⌘+Enter envía)'},
     {sel:'#mhAskBtn', en:'Ask', es:'Preguntar'},
+    {sel:'#mhMicBtn', attr:'title', en:'Ask by voice', es:'Preguntar hablando (voz)'},
+    {sel:'#mhMicBtn', attr:'aria-label', en:'Speak', es:'Hablar'},
+    {sel:'.mh-hint', en:'Ctrl/⌘ + Enter · 🎙️ voice', es:'Ctrl/⌘ + Enter · 🎙️ voz'},
     {sel:'#mhAnswer', en:'Tap the totem to start. The agent thinks with Grok while the voice wave animates.', es:'Toca el tótem para empezar. El agente piensa con Grok mientras anima la onda de voz.'},
     {sel:'#mhClubToggle', en:'Show QR', es:'Ver QR'},
+    {sel:'.mh-club-head > span', en:'🪪 Xtanco Club · mobile loyalty card', es:'🪪 Xtanco Club · tarjeta de fidelidad móvil'},
+    {sel:'.mh-club-hint', en:'Scan with your phone to create your card. Every 5 visits, one purchase is free.', es:'Escanea con el móvil para crear tu tarjeta. Cada 5 visitas, una compra gratis.'},
+    {sel:'#dvrLive', en:'● LIVE', es:'● EN VIVO'},
+    {sel:'#dvrLive', attr:'title', en:'Return to LIVE', es:'Volver a EN VIVO'},
+    {sel:'#dvrPlay', attr:'title', en:'Play / Pause', es:'Reproducir / Pausa'},
+    {sel:'#dvrStepB', attr:'title', en:'One step back', es:'Un paso atrás'},
+    {sel:'#dvrStepF', attr:'title', en:'One step forward', es:'Un paso adelante'},
+    {sel:'#dvrScrub', attr:'aria-label', en:'Day timeline', es:'Línea de tiempo del día'},
+    {sel:'#dvrTime', attr:'title', en:'Enter a time (HH:MM) and press Enter to jump there', es:'Escribe una hora (HH:MM) y pulsa Enter para saltar ahí'},
+    {sel:'#dvrTime', attr:'aria-label', en:'Time — editable to jump', es:'Hora — editable para saltar'},
+    {sel:'#dvrGo', attr:'title', en:'Go to entered time', es:'Ir a la hora escrita'},
+    {sel:'#dvrClose', attr:'title', en:'Close DVR', es:'Cerrar DVR'},
     {sel:'#robotGrokStatus', en:'Grok ready', es:'Grok listo'},
     {sel:'#robotGrokPrompt', attr:'placeholder', en:'Ask the Unitree Bot about stock, customers, layout or the store...', es:'Pregunta al Unitree Bot sobre stock, clientes, layout o la tienda...'},
     {sel:'#robotGrokAskBtn', en:'Ask Grok', es:'Preguntar a Grok'},
@@ -33347,6 +33441,16 @@ window.xtAPI = (function(){
     {sel:'#robotGrokSpeakBtn', en:'Audio', es:'Audio'},
     {sel:'#robotGrokAnswer', en:'Tap the robot and ask any operational question.', es:'Pulsa el robot y consulta cualquier duda operativa.'},
     {sel:'#evdHelpBtn', en:'? HELP', es:'? AYUDA'},
+    {sel:'#evdHelpBtn', attr:'aria-label', en:'Help · features', es:'Ayuda · funcionalidades'},
+    {sel:'#mobileSkipBtn', en:'PLAY', es:'JUEGO'},
+    {sel:'#mobileSkipBtn', attr:'aria-label', en:'Enter the experience', es:'Entrar al juego'},
+    {sel:'#demoBtn', attr:'aria-label', en:'Automatic demo', es:'Demo automático'},
+    {sel:'#characterSocioFocusBtn', en:'Members', es:'Socios'},
+    {sel:'#charActionsHideBtn', attr:'title', en:'Show/hide contextual actions', es:'Mostrar/ocultar acciones contextuales'},
+    {sel:'#characterDockActions', attr:'aria-label', en:'Contextual actions for the active tab', es:'Acciones contextuales del tab activo'},
+    {sel:'#telegramHelpPanel', attr:'aria-label', en:'Available commands', es:'Comandos disponibles'},
+    {sel:'#telegramQuickActions', attr:'aria-label', en:'Quick scene actions', es:'Acciones rápidas de escena'},
+    {sel:'#dockSiteLink', attr:'title', en:'Open OmniPublicity — XpaceOS programmatic module', es:'Abrir OmniPublicity — modulo programatico del Xpace OS'},
     {sel:'#demoOverlay', en:'▶ DEMO MODE · no human intervention', es:'▶ MODO DEMO · sin intervención humana'}
   ];
   window.applyHtmlLang = function(l){
@@ -33357,11 +33461,14 @@ window.xtAPI = (function(){
         var el = (typeof it.idx==='number') ? nodes[it.idx] : nodes[0];
         if(!el) return;
         var val = it[l]; if(val==null) return;
-        if(it.attr) el.setAttribute(it.attr, val); else el.textContent = val;
+        if(it.attr) el.setAttribute(it.attr, val); else if(it.html) el.innerHTML=val; else el.textContent = val;
       }catch(e){}
     });
   };
-  function curLang(){ try{ return localStorage.getItem('xtanco_lang')==='es'?'es':'en'; }catch(e){ return 'en'; } }
+  function curLang(){
+    if(window.XPACE_LANG_OVERRIDE==='es'||window.XPACE_LANG_OVERRIDE==='en') return window.XPACE_LANG_OVERRIDE;
+    try{ return localStorage.getItem('xtanco_lang')==='es'?'es':'en'; }catch(e){ return 'en'; }
+  }
   function wire(){
     var box = document.getElementById('splashLang');
     if(box) box.querySelectorAll('.splash-lang-btn').forEach(function(b){
@@ -33372,7 +33479,8 @@ window.xtAPI = (function(){
       });
     });
     var cur = curLang();
-    window.applyHtmlLang(cur);
+    if(typeof setLanguage==='function') setLanguage(cur); else window.applyHtmlLang(cur);
+    if(window.XPACE_LANG_LOCKED && box) box.hidden=true;
     document.querySelectorAll('#splashLang .splash-lang-btn').forEach(function(b){ b.classList.toggle('is-active', b.dataset.lang===cur); });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire); else wire();
@@ -34376,8 +34484,9 @@ window.xtAPI = (function(){
   // sobre el Xpacio (el #percibeFab queda oculto por CSS). Toggle del overlay.
   function makePercibe(){
     var e=document.createElement('button'); e.type='button'; e.className='tg-quick-btn'; e.id='advPercibeBtn';
-    e.title='La pantalla te ve (Shift+V)';
-    e.innerHTML='<strong>👁</strong><span>La pantalla te ve</span>';
+    var en=typeof lang!=='undefined'&&lang==='en';
+    e.title=(en?'The screen sees you':'La pantalla te ve')+' (Shift+V)';
+    e.innerHTML='<strong>👁</strong><span>'+(en?'The screen sees you':'La pantalla te ve')+'</span>';
     e.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); try{ if(window.__PERCIBE) window.__PERCIBE.toggle(); }catch(_){}} );
     return e;
   }
