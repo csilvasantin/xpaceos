@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const [entry, app, sitemap] = await Promise.all([
-  readFile(new URL('../../Nvidia/index.html', import.meta.url), 'utf8'),
+  readFile(new URL('../../nvidia/index.html', import.meta.url), 'utf8'),
   readFile(new URL('../index.html', import.meta.url), 'utf8'),
   readFile(new URL('../../sitemap.xml', import.meta.url), 'utf8'),
 ]);
 
 assert.match(entry, /<html lang="en">/);
-assert.match(entry, /canonical" href="https:\/\/www\.xpaceos\.com\/Nvidia\/"/);
+assert.match(entry, /canonical" href="https:\/\/www\.xpaceos\.com\/nvidia\/"/);
 assert.match(entry, /\/admira-xp\/\?lang=en&amp;langlock=1&amp;build=20260902-1245/);
 assert.doesNotMatch(entry, /play=shoptalk|nvidia=1/);
 assert.match(app, /window\.XPACE_LANG_OVERRIDE/);
@@ -22,6 +22,6 @@ assert.match(app, /lang==='en'\?'RATE US':'QUÉ TAL'/);
 assert.match(app, /'THIEF ENTERING'/);
 assert.match(app, /lang==='en'\?'📦 Supplier deal: -50% restock!'/);
 assert.match(app, /en\?'AUDIENCE · CPM':'AUDIENCIA · CPM'/);
-assert.match(sitemap, /https:\/\/www\.xpaceos\.com\/Nvidia\//);
+assert.match(sitemap, /https:\/\/www\.xpaceos\.com\/nvidia\//);
 
 console.log('NVIDIA maximized English Admira XP contracts: OK');
