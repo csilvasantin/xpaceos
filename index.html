@@ -411,7 +411,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   ]
 }
 </script>
-<meta name="admiranext-version" content="v.02.09.2026.r4.12:45">
+<meta name="admiranext-version" content="v.03.09.2026.r1.08:07">
 </head>
 <body id="top">
 <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -1181,7 +1181,7 @@ function applyLanguage(lang) {
 // Same GET /locations that feeds the admira.app map and that the
 // OmniPublicity backoffice publishes to. Register a twin there → it
 // shows up here. Train-proof: single fetch, 7s timeout, no retry loop.
-const GEMELOS_API = 'https://omnipublicity-api.csilvasantin.workers.dev/locations';
+const GEMELOS_API = 'https://omnipublicity-api.csilvasantin.workers.dev/locations?view=summary'; // resumen (id, nombre, tipo, superficies): el catálogo entero son ~9 MB de JSON para 24 tarjetas · DEC-mtl47kozreul
 const SURF_ICON = { pantalla:'📺', escaparate:'🪟', mostrador:'🧾', vending:'🥤', pwa:'📱' };
 const GEMELOS_MAX = 24; // tope de tarjetas renderizadas — el catálogo puede tener miles
 let gemelosData = null; // null = loading · 'error' · []/[…] = data
