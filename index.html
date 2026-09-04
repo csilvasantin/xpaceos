@@ -6,11 +6,11 @@
 <!-- Resource hints — abre conexiones a orígenes críticos antes de necesitarlos (Morfeo, Track A SEO/perf) -->
 <link rel="preconnect" href="https://csilvasantin.github.io" crossorigin>
 <link rel="preconnect" href="https://www.googletagmanager.com">
-<link rel="dns-prefetch" href="https://omnipublicity-api.csilvasantin.workers.dev">
+<!-- Dominios propios: LaLiga bloquea workers.dev/r2.dev en horas de fútbol (FLT-1633). -->
+<link rel="dns-prefetch" href="https://brain.digitalavatar.ai">
 <link rel="dns-prefetch" href="https://api.admira.store">
 <link rel="dns-prefetch" href="https://admira.tv">
-<link rel="dns-prefetch" href="https://pixer-eleven.csilvasantin.workers.dev">
-<link rel="dns-prefetch" href="https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev">
+<link rel="dns-prefetch" href="https://stock.admira.store">
 <title>XpaceOS — The operating system for physical retail · Shown live at Shoptalk Europe 2026</title>
 <meta name="description" content="XpaceOS by ADmiraNeXT turns every store and every booth into an intelligent advertising medium. Three integrated layers — PixerIA (AI creation), Admira XP (digital twin) and OmniPublicity (RTB marketplace) — running on Lenovo edge + Nvidia GPU. Shown live at Shoptalk Europe, Fira Barcelona, June 9-11, 2026.">
 <meta property="og:title" content="XpaceOS — Shown live at Shoptalk Europe 2026">
@@ -411,7 +411,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   ]
 }
 </script>
-<meta name="admiranext-version" content="v.03.09.2026.r1.08:07">
+<meta name="admiranext-version" content="v.04.09.2026.r1.22:44">
 </head>
 <body id="top">
 <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -1181,7 +1181,8 @@ function applyLanguage(lang) {
 // Same GET /locations that feeds the admira.app map and that the
 // OmniPublicity backoffice publishes to. Register a twin there → it
 // shows up here. Train-proof: single fetch, 7s timeout, no retry loop.
-const GEMELOS_API = 'https://omnipublicity-api.csilvasantin.workers.dev/locations?view=summary'; // resumen (id, nombre, tipo, superficies): el catálogo entero son ~9 MB de JSON para 24 tarjetas · DEC-mtl47kozreul
+// Dominio propio: LaLiga bloquea workers.dev/r2.dev en horas de fútbol (FLT-1633).
+const GEMELOS_API = 'https://brain.digitalavatar.ai/locations?view=summary'; // resumen (id, nombre, tipo, superficies): el catálogo entero son ~9 MB de JSON para 24 tarjetas · DEC-mtl47kozreul
 const SURF_ICON = { pantalla:'📺', escaparate:'🪟', mostrador:'🧾', vending:'🥤', pwa:'📱' };
 const GEMELOS_MAX = 24; // tope de tarjetas renderizadas — el catálogo puede tener miles
 let gemelosData = null; // null = loading · 'error' · []/[…] = data
@@ -1253,10 +1254,11 @@ loadGemelos();
 // El puente real entre las capas 04 (crear) y 05 (distribuir): lo que se
 // crea en pixeria.com aterriza en este índice público de R2, y de ahí lo
 // leen tanto la galería pixeria.com/stock como la parrilla del gemelo.
-// Se lee el índice de R2 (no el worker) A PROPÓSITO: los ISP de aquí
-// bloquean a ratos *.workers.dev, y r2.dev no. Carga perezosa — son
-// ~290 KB y no deben pesar en la primera pintada de la home.
-const PIXSTOCK_INDEX = 'https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev/stock/index.json';
+// Se lee el índice de R2 (no el worker) A PROPÓSITO, y por dominio propio:
+// LaLiga hace que los ISP bloqueen *.workers.dev y *.r2.dev en horas de
+// fútbol (FLT-1633). Carga perezosa — son ~290 KB y no deben pesar en la
+// primera pintada de la home.
+const PIXSTOCK_INDEX = 'https://stock.admira.store/stock/index.json';
 const PIXSTOCK_MAX = 8;                       // tarjetas pintadas
 const PIXSTOCK_THUMB_MAX = 3000000;           // 3 MB: por encima, la imagen no se usa de miniatura (pesa más que la página)
 const PIXSTOCK_KINDS = { video:'🎬', image:'🖼', audio:'🔊', music:'🎵', locucion:'🎙' };
@@ -1374,7 +1376,8 @@ async function loadDespacho() {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
     // El worker capa a 50 por dentro (Math.min(50, limit)) pidas lo que pidas.
-    const r = await fetch('https://pixer-eleven.csilvasantin.workers.dev/signage/feed?limit=50', { signal: ctrl.signal, cache: 'no-store' });
+    // Dominio propio: LaLiga bloquea workers.dev/r2.dev en horas de fútbol (FLT-1633).
+    const r = await fetch('https://api.admira.store/signage/feed?limit=50', { signal: ctrl.signal, cache: 'no-store' });
     clearTimeout(t);
     if (!r.ok) throw new Error('http ' + r.status);
     const items = (await r.json()).items || [];
@@ -1457,7 +1460,8 @@ async function loadOnAir() {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
-    const r = await fetch('https://pixer-eleven.csilvasantin.workers.dev/signage/screens', { signal: ctrl.signal, cache: 'no-store' });
+    // Dominio propio: LaLiga bloquea workers.dev/r2.dev en horas de fútbol (FLT-1633).
+    const r = await fetch('https://api.admira.store/signage/screens', { signal: ctrl.signal, cache: 'no-store' });
     clearTimeout(t);
     if (!r.ok) throw new Error('http ' + r.status);
     const j = await r.json();
@@ -1518,7 +1522,8 @@ try {
 }
 
 
-const VISIT_NOTIFY_ENDPOINT = 'https://admira-telegram-bridge.csilvasantin.workers.dev/visits/xpaceos';
+// Dominio propio: LaLiga bloquea workers.dev/r2.dev en horas de fútbol (FLT-1633).
+const VISIT_NOTIFY_ENDPOINT = 'https://bridge.admira.store/visits/xpaceos';
 
 function notifyXpaceVisit() {
   if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return;
