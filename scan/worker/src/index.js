@@ -120,7 +120,7 @@ export default {
       obj.writeHttpMetadata(h);
       if (!h.get('Content-Type') || h.get('Content-Type') === 'application/octet-stream') h.set('Content-Type', mimeFor(name));
       h.set('ETag', obj.httpEtag); h.set('Accept-Ranges', 'bytes'); h.set('Cache-Control', 'public, max-age=3600');
-      if (obj.range) {
+      if (range && obj.range) {   // R2 rellena obj.range también en un GET completo: 206 SOLO si el cliente pidió Range (three.js rechaza 206 sin pedirlo)
         const start = obj.range.offset ?? 0, end = obj.range.end ?? (start + (obj.range.length || obj.size) - 1);
         h.set('Content-Range', `bytes ${start}-${end}/${obj.size}`); h.set('Content-Length', String(end - start + 1));
         return new Response(obj.body, { status: 206, headers: h });
