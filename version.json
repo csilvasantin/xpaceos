@@ -1,11 +1,11 @@
 {
-  "version": "v.05.09.2026.r5.12:37",
-  "deployedAt": "2026-09-05T10:37:05Z",
+  "version": "v.05.09.2026.r6.22:53",
+  "deployedAt": "2026-09-05T20:53:43Z",
   "deployer": "NeoMBP14",
   "machine": "MacBookProNegro14",
   "signature": "NeoMBP14 · MacBookProNegro14",
-  "git": "2c81da7ccf696ef56145b4cbc305701c44f9fe24",
-  "gitShort": "2c81da7",
-  "gitFull": "2c81da7ccf696ef56145b4cbc305701c44f9fe24",
+  "git": "378abbc807d327674943959eeb5953cb8dd2218e",
+  "gitShort": "378abbc",
+  "gitFull": "378abbc807d327674943959eeb5953cb8dd2218e",
   "dirty": false
 }
