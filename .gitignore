@@ -2,3 +2,11 @@
 *.orig
 *.bak
 *~
+
+# XpaceScan: salidas del pipeline y estado de wrangler (no se publican; los resultados viven en R2)
+.wrangler/
+scan/worker/.wrangler/
+scan/scenes/*/frames/
+scan/scenes/*/sparse/
+scan/scenes/*/colmap.db*
+scan/scenes/*/video.*
