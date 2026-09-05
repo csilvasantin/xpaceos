@@ -173,6 +173,34 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   .deep .links a:hover{border-color:var(--brand);text-decoration:none}
 
   /* Live twins catalog (fed from the shared OmniPublicity worker) */
+  a.gm-card{text-decoration:none;color:inherit}
+  /* Prueba el gemelo — catálogo navegable + gemelo embebido (misión yokup 1206 · opción 2 de DEC-mto70hmjfc95) */
+  #prueba{padding-top:36px}
+  .pr-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,1fr);gap:18px;align-items:start;margin-top:22px}
+  .pr-stage{border:1px solid rgba(120,243,255,.24);border-radius:16px;overflow:hidden;background:#000}
+  .pr-stage-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;background:rgba(10,20,28,.92);border-bottom:1px solid var(--line)}
+  .pr-open{font-family:monospace;font-size:11px;letter-spacing:.08em;color:var(--brand);text-transform:uppercase;text-decoration:none}
+  .pr-frame-wrap{position:relative;aspect-ratio:16/9;background:#000}
+  .pr-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+  .pr-cover{position:absolute;inset:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(ellipse at center,#0e2a36 0%,#04101a 70%);color:var(--ink);border:0;cursor:pointer;font-family:inherit;font-weight:700;font-size:16px}
+  .pr-cover small{font-family:monospace;font-size:11px;color:var(--mut);letter-spacing:.08em;font-weight:400}
+  .pr-play{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--brand);color:#001620;font-size:24px;box-shadow:0 0 40px rgba(120,243,255,.35);transition:transform .2s}
+  .pr-cover:hover .pr-play{transform:scale(1.08)}
+  .pr-cat{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .pr-q{width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:11px 14px;color:var(--ink);font:inherit;font-size:14px}
+  .pr-q:focus{outline:0;border-color:var(--brand)}
+  .pr-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .pr-chip{font-family:monospace;font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:transparent;cursor:pointer;font-weight:400}
+  .pr-chip.on{color:#001620;background:var(--brand);border-color:var(--brand);font-weight:700}
+  .pr-list{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow:auto;padding-right:4px}
+  .pr-item{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--ink);cursor:pointer;font:inherit;transition:border-color .2s}
+  .pr-item:hover,.pr-item.sel{border-color:var(--brand)}
+  .pr-item.sel{box-shadow:0 0 0 1px var(--brand) inset}
+  .pr-item .nm{font-weight:700;font-size:14px}
+  .pr-item .kd{font-family:monospace;font-size:10px;letter-spacing:.07em;color:var(--accent);text-transform:uppercase}
+  .pr-item .ad{font-size:12px;color:var(--mut)}
+  .pr-more{align-self:center;margin-top:4px}
+  @media (max-width:900px){.pr-grid{grid-template-columns:1fr}.pr-list{max-height:360px}}
   .gm-live{margin-top:22px}
   .gm-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
   .gm-badge{display:inline-flex;align-items:center;gap:7px;font-family:monospace;font-size:11px;color:var(--good);letter-spacing:.14em;border:1px solid rgba(136,255,170,.4);padding:4px 10px;border-radius:999px;text-transform:uppercase}
@@ -411,7 +439,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   ]
 }
 </script>
-<meta name="admiranext-version" content="v.05.09.2026.r2.11:46">
+<meta name="admiranext-version" content="v.05.09.2026.r3.12:18">
 </head>
 <body id="top">
 <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -438,7 +466,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       <a href="/cpm/">CPM</a>
       <a href="/robot/">Robot</a>
       <a href="/ayuda/" data-i18n="nav.method">Method</a>
-      <a href="/admira-xp/" class="live" data-demo-gate data-i18n="nav.demo">Live demo</a>
+      <a href="#prueba" class="live" data-i18n="nav.demo">Try the twin</a>
       <span class="language-switcher" aria-label="Language selection">
         <button type="button" class="lang-toggle" id="lang-toggle" data-lang-target="es" aria-label="Switch to Spanish">ESP</button>
       </span>
@@ -457,9 +485,9 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       <h1 data-i18n-html="hero.title">The operating system<br>for <span class="grad">physical retail</span>.</h1>
       <p class="lede" data-i18n-html="hero.lede">XpaceOS turns every store, every shop window and every booth into an intelligent advertising medium. Three integrated layers — AI creation, distribution on a Digital Twin and a real-time bidding marketplace — running on <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. In production today on real stores and digital twins — proven live at Shoptalk Europe 2026, Barcelona.</p>
       <div class="ctas">
-        <button type="button" class="cta event" data-admira-contact data-lead-source="xpaceos-hero" data-i18n="hero.demoCta">Book a demo →</button>
+        <a class="cta event" href="#prueba" data-i18n="hero.tryCta">Try the twin →</a>
+        <button type="button" class="cta secondary" data-admira-contact data-lead-source="xpaceos-hero" data-i18n="hero.demoCta">Book a demo</button>
         <a class="cta secondary" href="#capas" data-i18n="hero.howCta">How it works</a>
-        <a class="cta secondary" href="#booth" data-i18n="hero.boothCta">Case study: Shoptalk 2026</a>
       </div>
     </div>
     <figure class="hero-visual" aria-label="XpaceOS retail robotics preview">
@@ -467,6 +495,32 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     </figure>
   </div>
 </div>
+
+<section id="prueba">
+  <div class="wrap">
+    <h2 data-i18n-html="prueba.title">Try the twin — pick any of the <span id="pr-total">8,775</span> real spaces</h2>
+    <p class="lede" data-i18n="prueba.lede">Every card is a real space registered in the platform. Choose one and its Digital Twin loads right here, in your browser — surfaces, screens and content as they are on air now.</p>
+    <div class="pr-grid">
+      <div class="pr-stage" id="pr-stage">
+        <div class="pr-stage-hd">
+          <span class="gm-badge"><span class="gm-dot"></span><span id="pr-now" data-i18n="prueba.now">Xtanco · reference twin</span></span>
+          <a class="pr-open" id="pr-open" href="/admira-xp/?from=portada" target="_blank" rel="noopener" data-i18n="prueba.open">Open full screen ↗</a>
+        </div>
+        <div class="pr-frame-wrap">
+          <button type="button" class="pr-cover" id="pr-cover"><span class="pr-play">▶</span><span data-i18n="prueba.load">Load the live twin</span><small data-i18n="prueba.loadHint">~3 MB · runs in your browser · nothing to install</small></button>
+          <iframe class="pr-frame" id="pr-frame" title="Admira XP digital twin" allow="autoplay; fullscreen" hidden></iframe>
+        </div>
+      </div>
+      <div class="pr-cat">
+        <input type="search" id="pr-q" class="pr-q" placeholder="Search by name, address or brand…" autocomplete="off" aria-label="Search twins">
+        <div class="pr-chips" id="pr-brands"></div>
+        <div class="pr-chips" id="pr-surf"></div>
+        <div class="gm-count" id="pr-count"></div>
+        <div class="pr-list" id="pr-list"><div class="gm-state" data-i18n="gemelos.loading">Loading live catalog…</div></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="booth">
   <div class="wrap">
@@ -801,7 +855,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
     <a href="https://europe.shoptalk.com/" target="_blank" rel="noopener">Shoptalk EU</a>
     <a href="/ayuda/">Método Xpacios</a>
     <a href="/backoffice/" rel="nofollow">Club</a>
-    <span class="sig">XPACEOS · v.05.09.2026.r2.11:46 · NeoMBP14 · MacBookProNegro14</span>
+    <span class="sig">XPACEOS · v.05.09.2026.r3.12:18 · NeoMBP14 · MacBookProNegro14</span>
   </div>
 </footer>
 
@@ -817,7 +871,7 @@ const I18N = {
     'nav.platform': 'Platform',
     'nav.method': 'Method',
     'nav.layers': '3 layers',
-    'nav.demo': 'Live demo',
+    'nav.demo': 'Try the twin',
     contact: 'Contact',
     skip: 'Skip to content',
     lang_toggle: 'ESP',
@@ -830,7 +884,20 @@ const I18N = {
     'hero.pulse': '● IN PRODUCTION · {n} TWINS · {s} SURFACES LIVE',
     'hero.title': 'The operating system<br>for <span class="grad">physical retail</span>.',
     'hero.lede': 'XpaceOS turns every store, every shop window and every booth into an intelligent advertising medium. Three integrated layers — AI creation, distribution on a Digital Twin and a real-time bidding marketplace — running on <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. In production today on real stores and digital twins — proven live at Shoptalk Europe 2026, Barcelona.',
-    'hero.demoCta': 'Book a demo →',
+    'hero.tryCta': 'Try the twin →',
+    'hero.demoCta': 'Book a demo',
+    'prueba.title': 'Try the twin — pick any of the <span id="pr-total">8,775</span> real spaces',
+    'prueba.lede': 'Every card is a real space registered in the platform. Choose one and its Digital Twin loads right here, in your browser — surfaces, screens and content as they are on air now.',
+    'prueba.now': 'Xtanco · reference twin',
+    'prueba.open': 'Open full screen ↗',
+    'prueba.load': 'Load the live twin',
+    'prueba.loadHint': '~3 MB · runs in your browser · nothing to install',
+    'prueba.search': 'Search by name, address or brand…',
+    'prueba.all': 'All',
+    'prueba.count': '{n} twins match',
+    'prueba.more': 'more',
+    'prueba.empty': 'No twin matches. Try another word.',
+    'surf.pantalla': 'screen', 'surf.escaparate': 'shop window', 'surf.mostrador': 'counter', 'surf.pwa': 'PWA', 'surf.atm': 'ATM', 'surf.vending': 'vending', 'surf.robot': 'robot', 'surf.pudo': 'parcel locker',
     'hero.boothCta': 'Case study: Shoptalk 2026',
     'hero.howCta': 'How it works',
     'booth.title': '<span class="num">00</span>Case study — the booth was the demo',
@@ -985,7 +1052,7 @@ const I18N = {
     'nav.platform': 'Plataforma',
     'nav.method': 'Método',
     'nav.layers': '3 capas',
-    'nav.demo': 'Demo en vivo',
+    'nav.demo': 'Prueba el gemelo',
     contact: 'Contacto',
     skip: 'Saltar al contenido',
     lang_toggle: 'ENG',
@@ -998,7 +1065,20 @@ const I18N = {
     'hero.lede': 'XpaceOS convierte cada tienda, cada escaparate y cada stand en un medio publicitario inteligente. Tres capas integradas — creación con IA, distribución sobre un Gemelo Digital y mercado de subastas en tiempo real — corriendo sobre <b style="color:var(--lenovo)">Lenovo edge</b> + <b style="color:var(--nvidia)">Nvidia GPU</b>. Hoy en producción en tiendas y gemelos digitales reales — demostrado en vivo en Shoptalk Europe 2026, Barcelona.',
     'hero.badge': '● EN PRODUCCIÓN · LENOVO EDGE + NVIDIA GPU',
     'hero.pulse': '● EN PRODUCCIÓN · {n} GEMELOS · {s} SUPERFICIES EN VIVO',
-    'hero.demoCta': 'Reservar demo →',
+    'hero.tryCta': 'Prueba el gemelo →',
+    'hero.demoCta': 'Reservar demo',
+    'prueba.title': 'Prueba el gemelo — elige cualquiera de los <span id="pr-total">8.775</span> espacios reales',
+    'prueba.lede': 'Cada tarjeta es un espacio real dado de alta en la plataforma. Elige uno y su Gemelo Digital se carga aquí mismo, en tu navegador — superficies, pantallas y contenido tal como están en antena ahora.',
+    'prueba.now': 'Xtanco · gemelo de referencia',
+    'prueba.open': 'Abrir a pantalla completa ↗',
+    'prueba.load': 'Cargar el gemelo en vivo',
+    'prueba.loadHint': '~3 MB · corre en tu navegador · sin instalar nada',
+    'prueba.search': 'Busca por nombre, dirección o marca…',
+    'prueba.all': 'Todos',
+    'prueba.count': '{n} gemelos coinciden',
+    'prueba.more': 'más',
+    'prueba.empty': 'Ningún gemelo coincide. Prueba otra palabra.',
+    'surf.pantalla': 'pantalla', 'surf.escaparate': 'escaparate', 'surf.mostrador': 'mostrador', 'surf.pwa': 'PWA', 'surf.atm': 'cajero', 'surf.vending': 'vending', 'surf.robot': 'robot', 'surf.pudo': 'taquilla de paquetes',
     'hero.boothCta': 'Caso de éxito: Shoptalk 2026',
     'hero.howCta': 'Cómo funciona',
     'booth.title': '<span class="num">00</span>Caso de éxito — el stand fue la demo',
@@ -1170,6 +1250,7 @@ function applyLanguage(lang) {
   try { localStorage.setItem('xpaceosLang', lang); } catch {}
   try { window.dispatchEvent(new CustomEvent('admira:languagechange', { detail: { lang } })); } catch {}
   if (typeof renderGemelos === 'function') renderGemelos();
+  if (typeof renderCatalogo === 'function') renderCatalogo();
   if (typeof renderPixStock === 'function') renderPixStock();
   if (typeof renderDespacho === 'function') renderDespacho();
   if (typeof renderPulses === 'function') renderPulses();
@@ -1223,12 +1304,12 @@ function renderGemelos() {
     const types = [...new Set(surfaces.map(s => s.surface))];
     const chips = types.map(t => `<span class="gm-chip">${SURF_ICON[t] || '▫'} ${gmEsc(t)}</span>`).join('');
     const liveChip = live ? `<span class="gm-chip live">● ${live} ${d['gemelos.live']}</span>` : '';
-    return `<div class="gm-card">
+    return `<a class="gm-card" href="${prTwinUrl(loc.id)}" target="_blank" rel="noopener">
       <div class="kd">${gmEsc(loc.kind || '')}</div>
       <div class="nm">${gmEsc(loc.name || loc.id || '')}</div>
       <div class="ad">${gmEsc(loc.addr || '')}</div>
       <div class="gm-chips"><span class="gm-chip">${surfaces.length} ${d['gemelos.surfaces']}</span>${liveChip}${chips}</div>
-    </div>`;
+    </a>`;
   }).join('');
   if (gemelosData.length > shown.length) {
     const rest = gemelosData.length - shown.length;
@@ -1250,10 +1331,96 @@ async function loadGemelos() {
     gemelosData = 'error';
   }
   renderGemelos();
+  if (typeof renderCatalogo === 'function') renderCatalogo();
   if (typeof renderPulses === 'function') renderPulses();
 }
 renderGemelos();
 loadGemelos();
+
+// ─── Prueba el gemelo · catálogo navegable + gemelo embebido ─────────
+// Opción 2 de la ventana DEC-mto70hmjfc95, elegida por Carlos (misión yokup 1206).
+// Reutiliza gemelosData (el mismo resumen del catálogo): cero peticiones extra.
+// El gemelo se carga BAJO DEMANDA (~3 MB): la portada no paga el iframe hasta
+// que el visitante lo pide. Tarjeta → /admira-xp/?loc=<id> (config real del punto).
+const PR_PAGE = 24;
+const PR_SURFS = ['pantalla','escaparate','mostrador','pwa','atm','pudo','vending','robot'];
+const prState = { q:'', brand:'', surf:'', page:1, sel:'', selName:'' };
+function prBrand(kind){ return String(kind || '').split('·')[0].trim(); }
+function prTwinUrl(id){ return '/admira-xp/?' + (id ? 'loc=' + encodeURIComponent(id) + '&' : '') + 'from=portada'; }
+function prFiltered(){
+  if (!Array.isArray(gemelosData)) return [];
+  const q = prState.q.trim().toLowerCase();
+  return gemelosData.filter(l => {
+    if (prState.brand && prBrand(l.kind) !== prState.brand) return false;
+    if (prState.surf && !(Array.isArray(l.surfaces) && l.surfaces.some(s => s.surface === prState.surf))) return false;
+    if (q) {
+      const hay = ((l.name || '') + ' ' + (l.addr || '') + ' ' + (l.kind || '') + ' ' + (l.id || '')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function prLoadTwin(id, name){
+  const frame = document.getElementById('pr-frame'); if (!frame) return;
+  const cover = document.getElementById('pr-cover'), open = document.getElementById('pr-open'), now = document.getElementById('pr-now');
+  prState.sel = id || ''; prState.selName = name || '';
+  const url = prTwinUrl(id);
+  if (frame.getAttribute('src') !== url) frame.src = url;
+  frame.hidden = false; if (cover) cover.hidden = true;
+  if (open) open.href = url;
+  if (now) now.textContent = name || gmDict()['prueba.now'];
+  document.querySelectorAll('.pr-item').forEach(el => el.classList.toggle('sel', el.dataset.id === prState.sel));
+}
+function renderCatalogo(){
+  const list = document.getElementById('pr-list'); if (!list) return;
+  const d = gmDict(), lang = document.documentElement.lang;
+  const q = document.getElementById('pr-q'); if (q) q.placeholder = d['prueba.search'] || '';
+  const now = document.getElementById('pr-now'); if (now && !prState.sel) now.textContent = d['prueba.now'] || '';
+  if (gemelosData === null) { list.innerHTML = `<div class="gm-state">${d['gemelos.loading']}</div>`; return; }
+  if (gemelosData === 'error') { list.innerHTML = `<div class="gm-state err">${d['gemelos.error']}</div>`; return; }
+  const total = document.getElementById('pr-total'); if (total) total.textContent = gemelosData.length.toLocaleString(lang);
+  const brands = document.getElementById('pr-brands');
+  if (brands && brands.dataset.built !== lang) {
+    const c = {}; gemelosData.forEach(l => { const b = prBrand(l.kind); if (b) c[b] = (c[b] || 0) + 1; });
+    const top = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 8).map(e => e[0]);
+    brands.innerHTML = [''].concat(top).map(b => `<button type="button" class="pr-chip" data-brand="${gmEsc(b)}">${b ? gmEsc(b) : gmEsc(d['prueba.all'] || 'All')}</button>`).join('');
+    brands.dataset.built = lang;
+  }
+  if (brands) brands.querySelectorAll('.pr-chip').forEach(b => b.classList.toggle('on', (b.dataset.brand || '') === prState.brand));
+  const surf = document.getElementById('pr-surf');
+  if (surf) {
+    const present = new Set(); gemelosData.forEach(l => (l.surfaces || []).forEach(s => present.add(s.surface)));
+    surf.innerHTML = PR_SURFS.filter(s => present.has(s)).map(s => `<button type="button" class="pr-chip${prState.surf === s ? ' on' : ''}" data-surf="${s}">${SURF_ICON[s] || '▫'} ${gmEsc(d['surf.' + s] || s)}</button>`).join('');
+  }
+  const rows = prFiltered(), shown = rows.slice(0, PR_PAGE * prState.page);
+  const cnt = document.getElementById('pr-count'); if (cnt) cnt.textContent = (d['prueba.count'] || '').replace('{n}', rows.length.toLocaleString(lang));
+  if (!rows.length) { list.innerHTML = `<div class="gm-state">${d['prueba.empty']}</div>`; return; }
+  list.innerHTML = shown.map(l => {
+    const surfaces = Array.isArray(l.surfaces) ? l.surfaces : [];
+    const live = surfaces.filter(s => s.status === 'live').length;
+    const kd = String(l.kind || '').split('·').slice(0, 2).join(' · ').trim();
+    return `<button type="button" class="pr-item${prState.sel === l.id ? ' sel' : ''}" data-id="${gmEsc(l.id)}" data-name="${gmEsc(l.name || l.id)}">
+      <span class="kd">${gmEsc(kd)}</span><span class="nm">${gmEsc(l.name || l.id || '')}</span><span class="ad">${gmEsc(l.addr || '')}</span>
+      <span class="gm-chips"><span class="gm-chip">${surfaces.length} ${d['gemelos.surfaces']}</span>${live ? `<span class="gm-chip live">● ${live} ${d['gemelos.live']}</span>` : ''}</span>
+    </button>`;
+  }).join('');
+  if (rows.length > shown.length) list.insertAdjacentHTML('beforeend', `<button type="button" class="cta secondary pr-more" id="pr-more">+ ${(rows.length - shown.length).toLocaleString(lang)} ${d['prueba.more']}</button>`);
+}
+(function prInit(){
+  const root = document.getElementById('prueba'); if (!root) return;
+  const q = document.getElementById('pr-q'); let t = 0;
+  if (q) q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { prState.q = q.value; prState.page = 1; renderCatalogo(); }, 120); });
+  root.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-brand]'); if (b) { prState.brand = prState.brand === b.dataset.brand ? '' : b.dataset.brand; prState.page = 1; renderCatalogo(); return; }
+    const s = ev.target.closest('[data-surf]'); if (s) { prState.surf = prState.surf === s.dataset.surf ? '' : s.dataset.surf; prState.page = 1; renderCatalogo(); return; }
+    if (ev.target.closest('#pr-more')) { prState.page++; renderCatalogo(); return; }
+    const it = ev.target.closest('.pr-item'); if (it) { prLoadTwin(it.dataset.id, it.dataset.name); document.getElementById('pr-stage').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+    if (ev.target.closest('#pr-cover')) prLoadTwin(prState.sel, prState.selName);
+  });
+  renderCatalogo();
+  // Enlace profundo: /?twin=<id> abre ese gemelo nada más entrar
+  try { const tw = new URLSearchParams(location.search).get('twin'); if (tw) { prLoadTwin(tw, tw); root.scrollIntoView(); } } catch {}
+})();
 
 // ─── Live studio library · PixerIA / admira.studio ──────────────────
 // El puente real entre las capas 04 (crear) y 05 (distribuir): lo que se
