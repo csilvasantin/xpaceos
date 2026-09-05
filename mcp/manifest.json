@@ -1,10 +1,15 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico: la red de pantallas (flota, emisión en vivo, audiencia, proof-of-play, alta, publicar), el catálogo de 8.775 gemelos digitales, XpaceScan (3D desde el móvil), el motor de reglas XPL y la ayuda para humanos. Puente silicio↔carbono. Doctrina: en Xpaces todos los elementos son movibles y sustituibles siempre (config, no motor).",
-  "version": "2.0.0",
+  "version": "v.05.09.2026.r8.23:45",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
-  "auth": "none",
+  "auth": {
+    "lectura": "none",
+    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset)",
+    "identidad": "https://www.admiranext.com/mcp/identidad-flota.mjs",
+    "directorio": "https://www.admiranext.com/mcp/#directorio"
+  },
   "docs": "https://www.xpaceos.com/mcp/",
   "tools": [
     {

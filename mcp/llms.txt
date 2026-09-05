@@ -15,10 +15,13 @@ Repo: https://github.com/csilvasantin/xpaceos
 
 - Endpoint: https://mcp.admira.store/mcp
 - Transporte: MCP Streamable HTTP (JSON-RPC sobre POST /mcp); salud en GET /
-- Auth: none (el alta es aditiva y acotada, no pisa inventario curado)
+- Auth: lecturas abiertas; ESCRITURAS (register_device, publish_asset) con la clave de flota AdmiraNeXT:
+  `Authorization: Bearer <clave>` (persona+equipo; ver https://www.admiranext.com/mcp/#identidad). Quedan firmadas
+  (firmado_por = NeoMacBookPro14, MorfeoMacMini…). `quien_soy` dice quién eres según la clave. Sin clave, el alta
+  responde isError. Directorio de los MCP de la suite: https://www.admiranext.com/mcp/#directorio (FLT-2137).
 - Claude Code: claude mcp add --transport http xpaceos https://mcp.admira.store/mcp
 - Config de cliente (JSON):
-  {"mcpServers":{"xpaceos":{"url":"https://mcp.admira.store/mcp"}}}
+  {"mcpServers":{"xpaceos":{"url":"https://mcp.admira.store/mcp","headers":{"Authorization":"Bearer <clave de flota>"}}}}
 - Prueba rápida:
   curl -s https://mcp.admira.store/mcp -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 

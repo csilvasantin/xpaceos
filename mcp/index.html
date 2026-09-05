@@ -61,7 +61,7 @@
     <code class="url" id="ep">https://mcp.admira.store/mcp</code>
     <button class="copy" onclick="copyEp()">Copiar</button>
   </div>
-  <p style="color:var(--mut);font-size:13.5px;margin:8px 2px 0">Transporte: <span class="pill">MCP Streamable HTTP</span> · <code>POST /mcp</code> (JSON-RPC) · salud en <code>GET /</code>. Sin auth: el alta es aditiva y acotada (no pisa inventario curado).</p>
+  <p style="color:var(--mut);font-size:13.5px;margin:8px 2px 0">Transporte: <span class="pill">MCP Streamable HTTP</span> · <code>POST /mcp</code> (JSON-RPC) · salud en <code>GET /</code>. Lecturas sin clave; <code>register_device</code> y <code>publish_asset</code> exigen la <a href="https://www.admiranext.com/mcp/#identidad">clave de flota AdmiraNeXT</a> (<code>Authorization: Bearer</code>) y quedan firmadas por el agente. <code>quien_soy</code> dice quién eres. Directorio de la suite: <a href="https://www.admiranext.com/mcp/#directorio">admiranext.com/mcp</a>.</p>
 
   <h2>Herramientas <small style="font-weight:400;color:var(--mut);font-size:13px">· 14 en v2.0.0 · red, catálogo de gemelos, XpaceScan, XPL, antena y ayuda</small></h2>
   <div class="card" id="tools">
