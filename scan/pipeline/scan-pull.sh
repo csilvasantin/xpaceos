@@ -22,7 +22,10 @@ MAQ="$(bash "$HOME/Claude/admira-vault/whoami.sh" 2>/dev/null || scutil --get Co
 status(){ curl -fsS -m 15 -A "$UA" -X POST -H "Authorization: Bearer $TOK" -H 'Content-Type: application/json' \
   -d "{\"status\":\"$1\",\"note\":\"$2\",\"machine\":\"$MAQ\",\"progress\":${3:-0}}" "$API/scenes/$ID/status" >/dev/null || true; }
 M="$(curl -fsS -m 20 -A "$UA" "$API/scenes/$ID")"
-VURL="$(printf '%s' "$M" | python3 -c 'import sys,json; s=json.load(sys.stdin)["scene"]; print(s["video"]["url"])')"
+# El vídeo se baja por el MISMO host del API (no por la URL pública del manifiesto): si
+# esta máquina no llega al dominio propio (IPv6/LaLiga) pero sí al respaldo, sigue funcionando.
+VNAME="$(printf '%s' "$M" | python3 -c 'import sys,json; s=json.load(sys.stdin)["scene"]; print(s["video"]["name"])')"
+VURL="$API/scenes/$ID/files/$VNAME"
 NAME="$(printf '%s' "$M" | python3 -c 'import sys,json; print(json.load(sys.stdin)["scene"]["name"])')"
 OUT="$HERE/../scenes/$ID"; mkdir -p "$OUT"
 VIDEO="$OUT/video.${VURL##*.}"

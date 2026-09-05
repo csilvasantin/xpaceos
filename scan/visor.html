@@ -70,7 +70,7 @@ a{color:var(--acc)}
       <button id="tg-avanzado" class="on" title="avanzado">▤</button>
       <button id="tg-experto" class="on" title="experto">⌥</button>
     </div>
-    <span class="ver">v26.09.05.2 · <a href="index.html">capturar</a> · <a href="../admira-xp/">gemelo XPL</a></span>
+    <span class="ver">v26.09.05.3 · <a href="index.html">capturar</a> · <a href="../admira-xp/">gemelo XPL</a></span>
   </div>
 
   <div id="bar-left" class="bar">
@@ -353,6 +353,7 @@ async function scanFetch(path){
     catch(e){ SCAN_API=SCAN_APIS[(SCAN_APIS.indexOf(SCAN_API)+1)%SCAN_APIS.length]; if(i===SCAN_APIS.length-1) throw e; }
   }
 }
+const fileUrl=(id,name)=>`${SCAN_API}/scenes/${encodeURIComponent(id)}/files/${encodeURIComponent(name)}`; // mismo host que contestó: si el dominio propio no llega (IPv6/LaLiga), el respaldo sirve también los ficheros
 const ESTADOS={uploading:'subiendo desde el móvil',uploaded:'subido · en cola de reconstrucción',processing:'reconstruyendo',ready:'gemelo listo',error:'error en la reconstrucción'};
 async function openScene(id){
   id=String(id||'').trim(); if(!id) return;
@@ -367,11 +368,11 @@ async function openScene(id){
       const st=ESTADOS[SCENE.status]||SCENE.status; const prog=SCENE.progress?(' '+SCENE.progress+'%'):'';
       pill.textContent=`${SCENE.name} · ${st}${prog}`;
       $('scene-info').innerHTML=`<b>${SCENE.name}</b> · ${st}${prog}<br>vídeo ${(SCENE.video?.size/1048576||0).toFixed(1)} MB${SCENE.duration?' · '+SCENE.duration+' s':''}${SCENE.machine?' · '+SCENE.machine:''}${SCENE.note?'<br>'+SCENE.note:''}<br>`
-        +(SCENE.video?`<a href="${SCENE.video.url}" target="_blank">vídeo original</a> · `:'')+`<a href="${location.pathname}?scene=${SCENE.id}">enlace del visor</a>`;
+        +(SCENE.video?`<a href="${fileUrl(SCENE.id,SCENE.video.name)}" target="_blank">vídeo original</a> · `:'')+`<a href="${location.pathname}?scene=${SCENE.id}">enlace del visor</a>`;
       if(Array.isArray(SCENE.nodes)&&SCENE.nodes.length&&!sceneLoaded){ NODOS=SCENE.nodes; $('nodos-json').value=JSON.stringify(NODOS,null,1); buildNodos(); log('nodos IoT de la escena: '+NODOS.length); }
       if(SCENE.status==='ready'){
         const f=(SCENE.files||[]).find(x=>x.name===SCENE.primary)||(SCENE.files||[]).find(x=>/\.(ply|splat|ksplat)$/i.test(x.name));
-        if(f&&sceneLoaded!==f.url){ sceneLoaded=f.url; log('escena lista → cargando '+f.name); route(f.url,f.name); }
+        if(f&&sceneLoaded!==f.name){ sceneLoaded=f.name; log('escena lista → cargando '+f.name); route(fileUrl(SCENE.id,f.name),f.name); }
         clearInterval(sceneTimer);
       }
     }catch(e){ pill.textContent='escena '+id+' · sin conexión'; log('escena: '+e.message); }
@@ -400,7 +401,7 @@ function anim(){
   renderer.render(scene,cam);
 }
 placeCam(); resize(); anim();
-log('visor isométrico listo — v26.09.05.2 · demo con '+NODOS.length+' nodos IoT · ?scene=<id> carga una escena de la nube');
+log('visor isométrico listo — v26.09.05.3 · demo con '+NODOS.length+' nodos IoT · ?scene=<id> carga una escena de la nube');
 </script>
 </body>
 </html>
