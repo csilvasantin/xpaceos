@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin,exteriorPassages,exteriorStatistics} from './xtore-window-core.mjs';
+import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin,exteriorPassages,exteriorStatistics,PassageState} from './xtore-window-core.mjs';
 import {boundedPosition} from './floating-window.mjs';
 const p={id:'bicycle',url:'https://stock.admira.store/video.mp4',type:'video',title:'Bici',position:90,duration:180,paused:false,rate:1,ts:10000,loop:false};
 test('only the selected window, origin, session and virtual screen can drive a mirror',()=>{
@@ -52,4 +52,13 @@ test('DooH keeps all five categories, resets and absence distinct from zero',()=
  assert.equal(exteriorStatistics({...counts,scooter:-1},10000,10500).scooter,null);
  assert.equal(exteriorStatistics(counts,10000,11500),null);
  assert.equal(exteriorStatistics({...counts,car:-1},10000,10500),null);
+});
+
+test('authoritative totals survive a camera pause, accept reset and cannot be rolled back by old camera data',()=>{
+ let now=10000;const state=new PassageState(()=>now),counts={person:47,car:0,motorcycle:1,bicycle:3,scooter:0};
+ assert.equal(state.update(counts,10000,true),true);now=12000;assert.equal(state.read().person,47);
+ assert.equal(state.update({...counts,person:40},12000,false),false);assert.equal(state.read().person,47);
+ assert.equal(state.update({...counts,person:0},12000,true),true);assert.equal(state.read().person,0);
+ assert.equal(state.update(counts,10000,true),false);now=16000;assert.equal(state.read(),null);
+ state.clear();now=20000;assert.equal(state.update(counts,20000,false),true);now=21500;assert.equal(state.read(),null);
 });

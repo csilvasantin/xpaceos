@@ -70,3 +70,12 @@ No se incluyen segmentos demográficos simulados ni ingresos del juego en DooH.
 El selector queda fuera del cuerpo que se refresca y conserva foco/selección.
 El panel mantiene arrastre, cierre y desplazamiento para pantallas pequeñas.
 Pruebas adicionales: `node --test admira-xp/scripts/impact-segments.test.mjs`.
+
+DooH recibe ahora `statistics` independiente de las imágenes (4 s de latido).
+Es el mismo acumulado que pinta la Xtore; una pausa de cámara no borra el
+contador y el reset se propaga inmediatamente. La fecha de vídeo no se renueva
+con esos mensajes. Emisores anteriores siguen usando el fallback en cámara.
+Las vistas Sin personas / Con personas se envían juntas con el mismo frameAt;
+ambas caducan a los 1,5 s. Sin el par de vistas nuevo se muestran como pendientes,
+no se presenta un original como si estuviera modificado. El detalle está cerrado
+por defecto y el refresco conserva canvases, foco y apertura del detalle.

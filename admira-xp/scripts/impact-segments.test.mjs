@@ -9,7 +9,14 @@ const begin=html.indexOf("      if(['impactos','impacts','impresiones','cpm'].in
 const handler=html.slice(begin,html.indexOf('      // ── /mupicam',begin));
 function fixture(){
  const buttons=['instore','dooh'].map(mode=>({dataset:{impactMode:mode},style:{},setAttribute(k,v){this[k]=v;}}));
- const body={innerHTML:''},hud={style:{},querySelectorAll:()=>buttons};let tick;
+ const body={html:'',nodes:{},replacements:0,get innerHTML(){return this.html;},set innerHTML(value){
+   this.html=value;this.replacements++;this.nodes={};
+   if(value.includes('id="dooh-view"')){
+     this.nodes['#dooh-view']={};this.nodes['#dooh-source-status']={textContent:''};this.nodes['#dooh-explanation']={open:false};
+     this.values=['person','car','motorcycle','bicycle','scooter'].map(key=>({dataset:{doohValue:key},textContent:'—'}));
+   }
+ },querySelector(id){return this.nodes[id]||null;},querySelectorAll(){return this.values||[];}};
+ const hud={style:{},querySelectorAll:()=>buttons};let tick;
  const impacts={on:false,cpm:8,dwellRef:3,timer:null,SCREENS:[{id:'inside',src:'in',label:'Interior',dwell:3},{id:'outside',src:'ext',label:'Escaparate',dwell:1}],day:{inside:{est:100,look:50},outside:{est:900,look:90}},aud:{hours:{9:{int:5,ext:0},10:{int:1,ext:999}}}};
  const context=vm.createContext({IMPACTS:impacts,G:{custIn:6,custs:[{}],gameTime:9},window:{__xtoreWindowPlayer:{exteriorStatistics:()=>null}},document:{getElementById:id=>id==='impactsHud'?hud:body},setInterval:fn=>{tick=fn;return 1;},clearInterval(){},impactsEnsureDay(){},lang:'es'});
  vm.runInContext(helper+'\nfunction run(cmd,arg){'+handler+'}',context);
@@ -24,12 +31,16 @@ test('Instore starts selected and totals, prime hour and revenue exclude exterio
  assert.ok(f.context.impactsDyn('in').revenueDyn<f.context.impactsDyn().revenueDyn);
 });
 test('DooH updates all categories without mixing simulations; selection survives refresh and reset goes back to Instore on reopen',()=>{
- const f=fixture();f.run('on');f.buttons[1].onclick();assert.match(f.body.innerHTML,/Sin señal actual/);
+ const f=fixture();f.run('on');f.buttons[1].onclick();assert.match(f.body.querySelector('#dooh-source-status').textContent,/Sin conexión reciente/);
  f.context.window.__xtoreWindowPlayer.exteriorStatistics=()=>({person:18,car:5,motorcycle:3,bicycle:2,scooter:1});f.tick();
  for(const key of ['person','car','motorcycle','bicycle','scooter'])assert.match(f.body.innerHTML,new RegExp('data-dooh-category="'+key+'"'));
  assert.match(f.body.innerHTML,/Observación manual/);assert.doesNotMatch(f.body.innerHTML,/CPM|TOTAL impactos|simulación/);
  assert.equal(f.buttons[1]['aria-pressed'],'true');
- f.context.window.__xtoreWindowPlayer.exteriorStatistics=()=>null;f.tick();assert.match(f.body.innerHTML,/Sin señal actual/);assert.equal((f.body.innerHTML.match(/>—</g)||[]).length,5);
+ const replacements=f.body.replacements,details=f.body.querySelector('#dooh-explanation');
+ assert.equal(details.open,false);details.open=true;f.tick();
+ assert.equal(f.body.replacements,replacements);assert.equal(f.body.querySelector('#dooh-explanation').open,true);
+ assert.deepEqual(f.body.values.map(v=>v.textContent),['18','5','3','2','1']);
+ f.context.window.__xtoreWindowPlayer.exteriorStatistics=()=>null;f.tick();assert.match(f.body.querySelector('#dooh-source-status').textContent,/Sin conexión reciente/);assert.equal(f.body.values.filter(v=>v.textContent==='—').length,5);
  f.run('on');assert.equal(f.buttons[0]['aria-pressed'],'true');f.buttons[1].onclick();f.tick();assert.equal(f.buttons[1]['aria-pressed'],'true');
 });
 test('all inline application scripts still parse',()=>{

@@ -1,7 +1,7 @@
 export const SCREEN='xtore-virtual-zapatillas';
 export const TTL=2500;
-export function exteriorStatistics(passages,frameAt,now=Date.now()){
-  if(!Number.isFinite(frameAt)||now-frameAt>=1500||frameAt>now+1000||!passages)return null;
+export function exteriorStatistics(passages,frameAt,now=Date.now(),ttl=1500){
+  if(!Number.isFinite(frameAt)||now-frameAt>=ttl||frameAt>now+1000||!passages)return null;
   if(!['person','car','motorcycle','bicycle'].every(k=>Number.isSafeInteger(passages[k])&&passages[k]>=0&&passages[k]<=10000000))return null;
   const counts=Object.fromEntries(['person','car','motorcycle','bicycle'].map(k=>[k,passages[k]]));
   counts.scooter=Number.isSafeInteger(passages.scooter)&&passages.scooter>=0&&passages.scooter<=10000000?passages.scooter:null;
@@ -9,6 +9,18 @@ export function exteriorStatistics(passages,frameAt,now=Date.now()){
 }
 export function exteriorPassages(passages,frameAt,now=Date.now()){
   return exteriorStatistics(passages,frameAt,now)?.person??null;
+}
+// Counter snapshots have their own heartbeat. Camera pauses must not erase totals.
+export class PassageState{
+  constructor(now=()=>Date.now()){this.now=now;this.clear();}
+  clear(){this.value=null;this.at=0;this.dedicated=false;}
+  update(passages,at,dedicated=false){
+    if(this.dedicated&&!dedicated)return false;
+    const value=exteriorStatistics(passages,at,this.now(),dedicated?4000:1500);
+    if(!value||at<this.at)return false;
+    this.value=value;this.at=at;this.dedicated=dedicated;return true;
+  }
+  read(){return exteriorStatistics(this.value,this.at,this.now(),this.dedicated?4000:1500);}
 }
 export function allowedOrigin(origin,own){
   return ['https://admira.tv','https://www.admira.tv'].includes(origin)||
