@@ -35,6 +35,8 @@ test('DooH updates all categories without mixing simulations; selection survives
  f.context.window.__xtoreWindowPlayer.exteriorStatistics=()=>({person:18,car:5,motorcycle:3,bicycle:2,scooter:1});f.tick();
  for(const key of ['person','car','motorcycle','bicycle','scooter'])assert.match(f.body.innerHTML,new RegExp('data-dooh-category="'+key+'"'));
  assert.match(f.body.innerHTML,/Observación manual/);assert.doesNotMatch(f.body.innerHTML,/CPM|TOTAL impactos|simulación/);
+ assert.ok(f.body.innerHTML.indexOf('data-dooh-value="scooter"')<f.body.innerHTML.indexOf('data-xtore-camera-view="original"'),'all statistics precede the camera pair');
+ assert.ok(f.body.innerHTML.indexOf('data-xtore-camera-view="original"')<f.body.innerHTML.indexOf('data-xtore-camera-view="clean"'),'original is the left preview');
  assert.equal(f.buttons[1]['aria-pressed'],'true');
  const replacements=f.body.replacements,details=f.body.querySelector('#dooh-explanation');
  assert.equal(details.open,false);details.open=true;f.tick();

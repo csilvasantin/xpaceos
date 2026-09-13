@@ -79,3 +79,10 @@ Las vistas Sin personas / Con personas se envían juntas con el mismo frameAt;
 ambas caducan a los 1,5 s. Sin el par de vistas nuevo se muestran como pendientes,
 no se presenta un original como si estuviera modificado. El detalle está cerrado
 por defecto y el refresco conserva canvases, foco y apertura del detalle.
+
+
+## Better y Best · 13 septiembre 2026
+
+Experto → Better / Best abre una ventana 3D movible y redimensionable con cruz. Better presenta la misma geometría como wireframe; Best añade materiales y luz. El selector no cambia XTANCO_MODELS ni la partida. Snapshot de mobiliario y actores del juego; mismo player para las texturas de pantalla y contador exterior de Puerta Cam. Entrada directa `?autostart=xtanco&virtualPlayer=xtore-virtual-zapatillas&visual=best`. Arrastrar escena gira cámara; rueda acerca; Reencuadrar restaura.
+
+DooH dispone estadísticas antes de los previos: original a la izquierda, modificado con recuadros de seguimiento a la derecha. Requiere analizador actualizado para recibir los recuadros; una captura ya abierta sigue ejecutando su versión hasta recargarla y compartir de nuevo.

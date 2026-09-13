@@ -1,0 +1,23 @@
+#xtanco-premium{position:fixed;left:6vw;top:70px;width:min(1180px,88vw);height:min(780px,calc(100dvh - 110px));min-width:min(360px,94vw);min-height:320px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);resize:both;overflow:hidden;z-index:2147481500;display:flex;flex-direction:column;background:#101b21;border:1px solid #52656a;border-radius:16px;box-shadow:0 30px 110px #000b;color:#e9eeeb;font:13px/1.4 system-ui,sans-serif;box-sizing:border-box}
+#xtanco-premium[hidden],body.xp-left-hidden #xtanco-premium{display:none!important}
+#xtanco-premium .premium-handle{display:flex;justify-content:space-between;align-items:center;padding:15px 20px 12px;flex:none;border-bottom:1px solid #ffffff15;user-select:none;background:linear-gradient(100deg,#1c2e35,#17232b)}
+#xtanco-premium .premium-eyebrow{display:block;color:#cdbb96;font:10px monospace;letter-spacing:.22em;margin-bottom:3px}
+#xtanco-premium header strong{font-weight:500;font-size:20px;letter-spacing:-.03em}
+#xtanco-premium button{color:inherit;cursor:pointer;font:inherit;border:1px solid #54656c;background:#ffffff07;border-radius:8px;padding:7px 14px}
+#xtanco-premium .premium-close{font-size:24px;line-height:1;padding:4px 10px}
+#xtanco-premium .premium-toolbar{padding:10px 20px;display:flex;gap:16px;align-items:center;justify-content:space-between;background:#132029;flex:none}
+#xtanco-premium .premium-modes{display:flex;gap:4px;padding:3px;background:#080f15;border:1px solid #34454c;border-radius:12px}
+#xtanco-premium .premium-modes button{border-color:transparent;min-width:120px;font-weight:650}
+#xtanco-premium .premium-modes span{font-size:10px;font-weight:400;margin-left:8px;opacity:.7}
+#xtanco-premium [data-premium-mode=best][aria-pressed=true]{background:#c9b38a;color:#171c1b}
+#xtanco-premium [data-premium-mode=better][aria-pressed=true]{background:#b2e9e7;color:#112225}
+#xtanco-premium .premium-live{font-size:11px;color:#9fb7b9;margin:0}
+#xtanco-premium .premium-stage{position:relative;min-height:100px;flex:1;background:radial-gradient(ellipse at 50% 60%,#223a42,#101923 75%);overflow:hidden}
+#xtanco-premium canvas{width:100%;height:100%;display:block;filter:none!important;image-rendering:auto!important;touch-action:none}
+#xtanco-premium .premium-loading{position:absolute;inset:40% 10% auto;text-align:center;background:#14262be8;border:1px solid #49656b;border-radius:10px;padding:16px}
+#xtanco-premium .premium-loading[hidden]{display:none}
+#xtanco-premium footer{padding:10px 20px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex:none;border-top:1px solid #ffffff15;background:#132029;font-size:11px;color:#a6b8b8}
+#xtanco-premium footer details{max-width:45%;text-align:right}
+#xtanco-premium summary{cursor:pointer;color:#d2c19d}
+#xtanco-premium footer p{margin:6px 0 0;text-align:left}
+@media(max-width:620px){#xtanco-premium{left:8px;top:60px;width:calc(100vw - 16px);height:calc(100dvh - 90px)}#xtanco-premium .premium-live{display:none}#xtanco-premium .premium-toolbar{padding:8px 12px}#xtanco-premium .premium-modes{width:100%}#xtanco-premium .premium-modes button{flex:1;min-width:0}#xtanco-premium header strong{font-size:16px}#xtanco-premium footer{font-size:10px;padding:8px 12px}}

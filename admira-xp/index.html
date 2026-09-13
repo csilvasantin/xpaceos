@@ -5147,6 +5147,7 @@ function renderSpeechOverlay(){
 function finalizeFrame(){
   try{renderSpeechOverlay();}catch(e){}
   drawTransition();
+  if(window.__xtancoPremiumView)window.__xtancoPremiumView.frame(performance.now());
 }
 function trimHudLabel(text,max=42){
   const clean=String(text||'').replace(/\s+/g,' ').trim();
@@ -26513,6 +26514,7 @@ function loop(){
   cx.save();try{if(codexMapOpen)drawCodexMapOverlay();}catch(e){}cx.restore();
   finalizeFrame();
 }
+window.__xtancoVisualState=()=>({iso:ISO,layout:shopFurnitureVisible?shopLayout:[],game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},active:!!G&&(state===S.GAME||state===S.PAUSE)&&CLIENTS[activeClient]?.id==='xtanco'});
 loop();
 
 // ── DIRECT ENTRY URL: ?play=<verticalId> ─────────────────────────
@@ -27889,10 +27891,11 @@ window.xtAPI = (function(){
             const counts=window.__xtoreWindowPlayer?.exteriorStatistics?.()??null;
             if(!body.querySelector('#dooh-view')){
               const labels=en?{person:'People passing',car:'Cars',motorcycle:'Motorcycles',bicycle:'Bicycles',scooter:'Scooters'}:{person:'Personas que han pasado',car:'Coches',motorcycle:'Motos',bicycle:'Bicis',scooter:'Patinetes'};
-              const views=[['clean',en?'Without people · modified':'Sin personas · modificado'],['original',en?'With people · original':'Con personas · original']];
-              body.innerHTML='<section id="dooh-view"><style>#dooh-view [hidden]{display:none!important}</style><div style="color:#8ed2ff;margin-bottom:8px">EXTERIOR · Puerta Cam</div><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px">'+views.map(([kind,label])=>'<figure style="margin:0;min-width:0"><figcaption style="font-size:10px;color:#bce5fa;margin-bottom:4px">'+label+'</figcaption><canvas data-xtore-camera-view="'+kind+'" width="1" height="1" hidden style="width:100%;aspect-ratio:4/3;object-fit:contain;background:#071117;border-radius:6px"></canvas><p data-xtore-camera-empty="'+kind+'" style="margin:0;min-height:70px;background:#071117;display:flex;align-items:center;justify-content:center;font-size:10px">'+(en?'Waiting for camera':'Esperando cámara')+'</p></figure>').join('')+'</div>'+
+              const views=[['original',en?'With people · original':'Con personas · original'],['clean',en?'Without people · tracking':'Sin personas · seguimiento']];
+              body.innerHTML='<section id="dooh-view"><style>#dooh-view [hidden]{display:none!important}</style><div style="color:#8ed2ff;margin-bottom:8px">EXTERIOR · Puerta Cam</div>'+
                 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+Object.entries(labels).map(([key,label])=>'<div data-dooh-category="'+key+'" style="'+(key==='person'?'grid-column:1 / -1;':'')+'padding:10px;border:1px solid #346071;border-radius:8px;background:#07171ecc"><div style="color:#bce5fa">'+label+'</div><strong data-dooh-value="'+key+'" style="display:block;font-size:26px;line-height:1.4">—</strong><span style="font-size:9px;opacity:.7">'+(key==='scooter'?(en?'Manual observation':'Observación manual'):(en?'Detected passages':'Pasos detectados'))+'</span></div>').join('')+'</div>'+
-                '<details id="dooh-explanation" style="margin-top:10px;font-size:10px;opacity:.8"><summary style="cursor:pointer;color:#8ed2ff">'+(en?'Camera and counting details':'Detalles de cámara y conteo')+'</summary><p id="dooh-source-status" role="status"></p><p>'+(en?'Source: shoe Xtore camera · AdmiraXperience. Same cumulative people counter as the analyzer; tracking IDs (#90…) are not passage totals. Scooters are added manually. The left image uses a temporary background to hide detected people; undetected people may remain visible.':'Fuente: cámara de la Xtore de zapatillas · AdmiraXperience. Mismo acumulado de personas que en el analizador; los identificadores de seguimiento (#90…) no son el total de pasos. Los patinetes se añaden manualmente. La vista izquierda usa fondo temporal para ocultar personas detectadas; pueden quedar visibles personas no detectadas.')+'</p></details></section>';
+                '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:12px;margin-bottom:10px">'+views.map(([kind,label])=>'<figure style="margin:0;min-width:0"><figcaption style="font-size:10px;color:#bce5fa;margin-bottom:4px">'+label+'</figcaption><canvas data-xtore-camera-view="'+kind+'" width="1" height="1" hidden style="width:100%;aspect-ratio:4/3;object-fit:contain;background:#071117;border-radius:6px"></canvas><p data-xtore-camera-empty="'+kind+'" style="margin:0;min-height:70px;background:#071117;display:flex;align-items:center;justify-content:center;font-size:10px">'+(en?'Waiting for camera':'Esperando cámara')+'</p></figure>').join('')+'</div>'+
+                '<details id="dooh-explanation" style="margin-top:10px;font-size:10px;opacity:.8"><summary style="cursor:pointer;color:#8ed2ff">'+(en?'Camera and counting details':'Detalles de cámara y conteo')+'</summary><p id="dooh-source-status" role="status"></p><p>'+(en?'Source: shoe Xtore camera · AdmiraXperience. Same cumulative people counter as the analyzer; tracking IDs (#90…) are not passage totals. Scooters are added manually. The right image uses a temporary background to hide detected people; undetected people may remain visible.':'Fuente: cámara de la Xtore de zapatillas · AdmiraXperience. Mismo acumulado de personas que en el analizador; los identificadores de seguimiento (#90…) no son el total de pasos. Los patinetes se añaden manualmente. La vista derecha usa fondo temporal para ocultar personas detectadas; pueden quedar visibles personas no detectadas.')+'</p></details></section>';
             }
             for(const value of body.querySelectorAll('[data-dooh-value]')){
               const n=counts?.[value.dataset.doohValue]??null;
@@ -34796,5 +34799,7 @@ window.xtAPI = (function(){
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
 <link rel="stylesheet" href="scripts/xtore-window.css?v=background-2">
 <script type="module" src="scripts/xtore-window.mjs?v=dual-1"></script>
+<link rel="stylesheet" href="scripts/xtanco-premium.css?v=1">
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=1"></script>
 </body>
 </html>
