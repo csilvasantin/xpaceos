@@ -1,5 +1,10 @@
 export const SCREEN='xtore-virtual-zapatillas';
 export const TTL=2500;
+export function exteriorPassages(passages,frameAt,now=Date.now()){
+  if(!Number.isFinite(frameAt)||now-frameAt>=1500||frameAt>now+1000||!passages)return null;
+  if(!['person','car','motorcycle','bicycle'].every(k=>Number.isSafeInteger(passages[k])&&passages[k]>=0&&passages[k]<=10000000))return null;
+  return passages.person;
+}
 export function allowedOrigin(origin,own){
   return ['https://admira.tv','https://www.admira.tv'].includes(origin)||
     (/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(own)&&/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin));

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin} from './xtore-window-core.mjs';
+import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin,exteriorPassages} from './xtore-window-core.mjs';
+import {boundedPosition} from './floating-window.mjs';
 const p={id:'bicycle',url:'https://stock.admira.store/video.mp4',type:'video',title:'Bici',position:90,duration:180,paused:false,rate:1,ts:10000,loop:false};
 test('only the selected window, origin, session and virtual screen can drive a mirror',()=>{
  const peer={},s=new MirrorSession({peer,origin:'https://admira.tv',session:'abc',now:()=>10000});
@@ -26,4 +27,18 @@ test('production only accepts Admira origins; local test origins cannot be enabl
  assert.equal(allowedOrigin('https://admira.tv.evil.test','https://xpaceos.com'),false);
  assert.equal(allowedOrigin('http://localhost:8791','https://xpaceos.com'),false);
  assert.equal(allowedOrigin('http://localhost:8791','http://localhost:8792'),true);
+});
+test('exterior uses person passages, never current presence or simulated pedestrians',()=>{
+ const totals={person:17,car:5,motorcycle:2,bicycle:1};
+ assert.equal(exteriorPassages(totals,10000,10500),17);
+ assert.equal(exteriorPassages(totals,10000,10500),17); // repeated reports are snapshots
+ assert.equal(exteriorPassages({...totals,person:0},10600,11000),0); // source reset
+ for(const data of [null,{person:17},{...totals,person:-1},{...totals,person:NaN},{...totals,person:1.5}])assert.equal(exteriorPassages(data,10000,10500),null);
+ assert.equal(exteriorPassages(totals,10000,11500),null);
+ assert.equal(exteriorPassages(totals,12000,10000),null);
+});
+test('floating tools keep their header reachable after dragging or viewport resize',()=>{
+ assert.deepEqual(boundedPosition(-100,-40,360,500,1000,800),{x:8,y:8});
+ assert.deepEqual(boundedPosition(900,750,360,500,1000,800),{x:632,y:292});
+ assert.deepEqual(boundedPosition(200,400,360,500,300,250),{x:8,y:8});
 });

@@ -1,22 +1,28 @@
-import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession} from './xtore-window-core.mjs';
+import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession,exteriorPassages} from './xtore-window-core.mjs?v=exterior-1';
+import {movableWindow} from './floating-window.mjs';
 const qs=new URLSearchParams(location.search);
 const enabled=qs.get('virtualPlayer')===SCREEN;
-const entry=document.createElement('a');entry.id='xtore-window-entry';entry.textContent='Xtore · zapatillas';
-entry.href='?autostart=xtanco&virtualPlayer='+SCREEN;
-entry.style.cssText='position:fixed;right:100px;top:6px;z-index:1000;padding:7px 12px;background:#10252b;color:#8ce8e0;border:1px solid #347b7d;border-radius:8px;font:12px sans-serif;text-decoration:none';
-if(!enabled){document.body.append(entry);}else{
+const dock=document.getElementById('telegramDock'),expert=document.getElementById('pfExpert');
+const entry=document.createElement('button');entry.type='button';entry.id='xtore-window-entry';entry.textContent='Player y cámara';
+const actions=dock.querySelector('.tg-cli-row .tg-actions');actions.append(entry);
+const grip=document.createElement('span');grip.id='xtore-expert-grip';grip.textContent='⠿ CONTROL XTORE';grip.setAttribute('aria-label','Mover Control Xtore');dock.querySelector('.tg-cli-row').prepend(grip);
+const closeDock=document.createElement('button');closeDock.type='button';closeDock.textContent='×';closeDock.setAttribute('aria-label','Cerrar modo experto');actions.append(closeDock);
+const dockWindow=movableWindow(dock,grip,{key:'xtore-expert-position',closeButton:closeDock,onClose:()=>{if(!document.body.classList.contains('xp-left-hidden'))expert.click();}});
+expert.addEventListener('click',()=>{if(!document.body.classList.contains('xp-left-hidden'))dockWindow.restore();});
+if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='+SCREEN;};}else{
   document.title='Xtore · zapatillas — Player virtual · XpaceOS';
   const panel=document.createElement('section');panel.id='xtore-window-panel';panel.setAttribute('aria-label','Player virtual de zapatillas');
-  panel.style.cssText='position:fixed;right:12px;top:52px;width:min(360px,90vw);z-index:1000;background:#08161df2;color:#d7f6ed;border:1px solid #347b7d;border-radius:12px;padding:14px;font:13px/1.5 sans-serif;box-shadow:0 8px 30px #0008';
-  panel.innerHTML='<strong>Xtore · zapatillas</strong><p id="xtore-link-status" role="status">Conecta el player interior para reflejarlo en las pantallas del gemelo.</p><button id="xtore-connect">Conectar player y cámara ↗</button> <button id="xtore-disconnect">Desconectar</button><details id="xtore-camera"><summary>Cámara del escaparate · Puerta Cam</summary><canvas width="1" height="1" style="width:100%;max-height:230px;object-fit:contain" hidden></canvas><p id="xtore-camera-status" role="status">Sin vídeo de cámara. Los peatones del juego no son detecciones reales.</p></details><p id="xtore-media-status" role="status">Player sin señal</p><button id="xtore-sound">Activar sonido del gemelo</button><p style="font-size:11px;opacity:.7">Mismo player virtual · espejo de esta sesión · sin grabación. El audio del espejo empieza silenciado.</p>';
-  for(const button of panel.querySelectorAll('button'))button.style.cssText="background:#163039;color:#d7f6ed;border:1px solid #38727a;border-radius:6px;padding:6px 9px;margin:3px 0;cursor:pointer;font:inherit";
-  panel.querySelector('summary').style.cssText="cursor:pointer;padding:8px 0";
+  panel.hidden=true;
+  panel.innerHTML='<header id="xtore-window-header" aria-label="Mover ventana Player y cámara"><strong>Xtore · zapatillas</strong><button type="button" id="xtore-close" aria-label="Cerrar Player y cámara">×</button></header><div id="xtore-window-body"><p id="xtore-link-status" role="status">Conecta el player interior para reflejarlo en las pantallas del gemelo.</p><button id="xtore-connect">Conectar player y cámara ↗</button> <button id="xtore-disconnect">Desconectar</button><details id="xtore-camera"><summary>Cámara del escaparate · Puerta Cam</summary><canvas width="1" height="1" hidden></canvas><p id="xtore-camera-status" role="status">Sin vídeo de cámara.</p></details><p id="xtore-exterior-status" role="status">Exterior · esperando Puerta Cam</p><p id="xtore-media-status" role="status">Player sin señal</p><button id="xtore-sound">Activar sonido del gemelo</button><p class="xtore-note">Fuente exterior: cámara de la Xtore de zapatillas · AdmiraXperience. Pasos detectados en esta sesión. Cerrar esta ventana mantiene la reproducción.</p></div>';
   document.body.append(panel);
+  const panelWindow=movableWindow(panel,panel.querySelector('header'),{key:'xtore-player-window-position',closeButton:panel.querySelector('#xtore-close'),onClose:()=>{panel.hidden=true;entry.focus();}});
+  function openPanel(){if(document.body.classList.contains('xp-left-hidden'))expert.click();panel.hidden=false;panelWindow.restore();}
+  entry.onclick=()=>{if(panel.hidden)openPanel();else panel.hidden=true;};
   const status=panel.querySelector('#xtore-link-status'),mediaStatus=panel.querySelector('#xtore-media-status'),cameraStatus=panel.querySelector('#xtore-camera-status'),camera=panel.querySelector('canvas');
-  let peer=null,origin='',token='',connection=null,connected=false,lastMedia=0,lastCamera=0,latest=null,element=null,mediaKey='',audio=false,loadFailed=false,applied=false;
+  let peer=null,origin='',token='',connection=null,connected=false,lastMedia=0,lastCamera=0,latest=null,element=null,mediaKey='',audio=false,loadFailed=false,applied=false,passages=null;
   function send(event){if(peer&&!peer.closed)peer.postMessage({source:'xpace-xtore-twin',screen:SCREEN,session:token,event},origin);}
   function stopMedia(){if(element){element.pause?.();element.removeAttribute('src');element.load?.();}element=null;mediaKey='';latest=null;applied=false;lastMedia=0;mediaStatus.textContent='Player sin señal · esperando al interior';}
-  function stopCamera(){camera.hidden=true;camera.width=1;camera.height=1;lastCamera=0;cameraStatus.textContent='Cámara sin señal reciente';}
+  function stopCamera(){camera.hidden=true;camera.width=1;camera.height=1;lastCamera=0;passages=null;cameraStatus.textContent='Cámara sin señal reciente';panel.querySelector('#xtore-exterior-status').textContent='Exterior · sin señal de Puerta Cam';}
   function disconnect(){send('disconnect');connected=false;peer=null;connection=null;stopMedia();stopCamera();status.textContent='Desconectado. Las pantallas esperan al player virtual.';}
   function bind(target,targetOrigin,session){disconnect();peer=target;origin=targetOrigin;token=session;connection=new MirrorSession({peer,origin,session});send('hello');}
   const requested=qs.get('twinOrigin'),session=qs.get('twinSession');
@@ -73,6 +79,9 @@ if(!enabled){document.body.append(entry);}else{
       const bmp=d.bitmap;
       if(!(bmp instanceof ImageBitmap)||!Number.isFinite(d.frameAt)||Date.now()-d.frameAt>=1500||d.frameAt>Date.now()+1000||bmp.width>480||bmp.height>1920||d.frameAt<=lastCamera){bmp?.close?.();return;}
       camera.width=bmp.width;camera.height=bmp.height;camera.getContext('2d').drawImage(bmp,0,0);bmp.close();camera.hidden=false;lastCamera=d.frameAt;
+      passages=d.passages;
+      const exterior=exteriorPassages(passages,lastCamera);
+      panel.querySelector('#xtore-exterior-status').textContent=exterior===null?'Exterior · contador de pasos no disponible':`Exterior · ${exterior.toLocaleString('es')} pasos de personas · esta sesión`;
       const names={person:'personas',car:'coches',motorcycle:'motos',bicycle:'bicis'};
       cameraStatus.textContent='Puerta Cam · presencia: '+Object.entries(names).map(([kind,name])=>`${Math.max(0,Math.min(100,Math.floor(d.counts?.[kind]||0)))} ${name}`).join(' · ');
     }else if(d.event==='camera-off')stopCamera();
@@ -88,7 +97,7 @@ if(!enabled){document.body.append(entry);}else{
     }else{ctx.textAlign='center';ctx.fillStyle='#8ce8e0';ctx.font=`${Math.max(4,w/16)}px sans-serif`;ctx.fillText(fresh&&latest.type==='audio'?'♪ '+latest.title:'PLAYER VIRTUAL',w/2,h/2,w-6);}
     ctx.restore();return true;
   }
-  window.__xtoreWindowPlayer={draw,openCamera(){panel.querySelector('details').open=true;},cameraActive:()=>Date.now()-lastCamera<1500&&lastCamera>0};
+  window.__xtoreWindowPlayer={draw,openCamera(){openPanel();panel.querySelector('details').open=true;},cameraActive:()=>Date.now()-lastCamera<1500&&lastCamera>0,exterior:()=>exteriorPassages(passages,lastCamera)};
   // Click the actual camera position already computed by the isometric renderer.
   document.addEventListener('click',e=>{
     const p=window.XPACE_MUPICAM?.pos,convert=window.__dsQuadCvToClient;

@@ -1,7 +1,12 @@
 # Xtore zapatillas: un player, dos superficies
 
 Entrada: `/admira-xp/?autostart=xtanco&virtualPlayer=xtore-virtual-zapatillas`.
-El botón Xtore · zapatillas abre esta variante desde el gemelo genérico.
+El acceso está en **⌘ Experto → Player y cámara**. Los controles no flotan al
+entrar ni cuando se oculta Experto. El panel de player/cámara y la barra Control
+Xtore se arrastran por su título y tienen cruz de cierre. Las posiciones se
+recuerdan y se ajustan al tamaño de pantalla. Cerrar una herramienta u ocultar
+Experto no desconecta el player ni la cámara; «Desconectar» sí lo hace.
+Toda nueva ventana flotante debe ser movible y disponer de cierre visible.
 
 Conectar player y cámara abre el analizador de Admira.tv en una ventana dedicada.
 Allí se comparte exclusivamente la pestaña autorizada de Digital Twin 360,
@@ -23,6 +28,15 @@ de ancho y cuatro envíos por segundo. No hay servidor, grabación, broadcast,
 storage ni publicación de imágenes. Si H está activado se utiliza su previo
 modificado, sin prometer anonimización. Los contadores son presencia por clase,
 no identificación, sexo o edad. El juego conserva sus KPI simulados aparte.
+
+**Exterior** en el panel de Impactos utiliza exclusivamente `passages.person`,
+los pasos confirmados de Puerta Cam de la Xtore de zapatillas en AdmiraXperience.
+Es un acumulado de la sesión del analizador, no de todo el día ni personas únicas.
+Los snapshots reemplazan el valor: no se suman por fotograma, y un reset del
+origen se refleja como tal. Se validan enteros y frescura del fotograma original;
+si falta el contador o la cámara caduca, se muestra «— / sin señal», nunca el
+contador de NPC. Presencia actual (personas ahora) y pasos acumulados son distintos.
+El resto de las estimaciones de Impactos se rotula separado de Puerta Cam.
 
 El enlace exige WindowProxy exacto, origen admitido, sesión aleatoria e identidad
 de player. El receptor rechaza mensajes antiguos o desordenados; cámara caduca
