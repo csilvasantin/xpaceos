@@ -1,10 +1,10 @@
 {
-  "version": "v.13.09.2026.r11.14:16",
+  "version": "v.13.09.2026.r12.15:10",
   "signature": "Codex · MacBookAir16plata",
   "machine": "MacBookAir16plata",
   "agent": "Codex",
   "deployer": "Codex",
-  "evidence": "Segmentación Instore de atributos de avatares presentes, marcada SIMULACIÓN: hombre/mujer/sin dato, menores18,18–60,mayores60,sin dato. Mismo denominador que aforo, exclusivamente look.gender/look.age, sin inferencia desde cámara ni mezcla con DooH real. 8pruebas aprobadas, límites17/18/60/61 y Chrome local comprobado en Better Matrix.",
+  "evidence": "Actores pixelados exteriores desde trayectorias Puerta Cam, sin tráfico aleatorio al enlazar; Good/Better Matrix/Best comparten capa operacional y contador autoritativo. Pantalla exterior condicional silenciosa por categorías, separada del interior. Patinete solo confirmado manualmente en trayectoria existente. 28 pruebas finales de transporte/render/programación/lifecycle aprobadas y fixture visual aislada Good/Matrix/TTL verificada. UI real local esperando señal; pendiente validación con cámara actualizada.",
   "day": "13.09.2026",
-  "time": "14:16"
+  "time": "15:10"
 }

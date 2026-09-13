@@ -5230,7 +5230,7 @@ function updateHtmlBar(){
   document.getElementById('bbSat').textContent=(G.satisfaction|0)+'%';
   const trafficLabel=document.getElementById('bbTrafficLabel');
   if(trafficLabel) trafficLabel.textContent=lang==='en'?'Pass/In':'Pasan/Entran';
-  document.getElementById('bbCli').textContent=(G.passersbyToday||0)+'/'+(G.customersToday||0);
+  document.getElementById('bbCli').textContent=exteriorPersonPassagesForDisplay()+'/'+(G.customersToday||0);
   const se=document.getElementById('bbStatus');
   se.textContent=trimHudLabel(ops.focus.label+' · '+ops.focus.detail,38);
   se.style.color=ops.focus.color;
@@ -13647,8 +13647,17 @@ function makePasserbyRoute(){
   return route;
 }
 
+function xtoreRealExteriorActive(){return !!window.__xtoreWindowPlayer;}
+function exteriorPersonPassagesForDisplay(){
+  if(!xtoreRealExteriorActive())return G?(G.passersbyToday||0):0;
+  // Display adapter only: cumulative measured passages are not the active
+  // trajectories count and must never be copied into the economic simulation.
+  let value;try{value=window.__xtoreWindowPlayer.exterior?.();}catch(_){}
+  return Number.isSafeInteger(value)&&value>=0?value:'—';
+}
+
 function spawnPasserby(){
-  if(!G) return null;
+  if(!G||xtoreRealExteriorActive()) return null;
   if(!Array.isArray(G.passersby)) G.passersby=[];
   if(G.passersby.length>=PASSERBY_MAX_ACTIVE) return null;
   const route=makePasserbyRoute();
@@ -13681,6 +13690,9 @@ function spawnPasserby(){
 
 function updatePassersby(){
   if(!G) return;
+  // A linked real-data twin never creates random/queued exterior traffic.
+  // Real tracks are a separate rendering layer and cannot enter G or its counters.
+  if(xtoreRealExteriorActive()){if(G.passersby?.length)G.passersby=[];return;}
   if(!Array.isArray(G.passersby)) G.passersby=[];
   if(!Number.isFinite(G.passerbySpawnCooldown)) scheduleNextPasserby();
   if(!G.dayEnded){
@@ -18383,7 +18395,7 @@ function drawShop(){
       entities.push({type:'cust',data:c,col:0,row:0,depth:c.y+20}); // feet Y
     }
     // Exterior passersby — they move past the door but never enter the shop
-    for(const p of (G.passersby||[])){
+    for(const p of (xtoreRealExteriorActive()?[]:G.passersby||[])){
       entities.push({type:'passerby',data:p,col:0,row:0,depth:p.y+20});
     }
     // La Saca delivery person (active phases only)
@@ -18536,6 +18548,7 @@ function drawShop(){
   // (passersby on the sidewalk + customers entering/leaving) re-painted
   // ON TOP of the glass-door frame so the wood jambs don't crop their bodies.
   if(!editorSceneActive && !isShoptalkBooth()) drawShopOperation(()=>drawDoorForegroundPeople(),'actor');
+  if(!editorSceneActive && !isShoptalkBooth()) drawShopOperation(()=>window.__xtoreRealTraffic?.draw(cx,ISO,W,H),'actor');
 
   // Compose the replacement world before operational marks and all HUD/editor UI.
   // DS monitors remain DOM behind #c: open their holes before adding the layer,
@@ -18684,10 +18697,11 @@ function drawEscaparate(){
     {x:iBR.x,y:iBR.y},{x:iBL.x,y:iBL.y},
   ];
 
-  // In the shoes twin the interior player owns both surfaces; local ads cannot override it.
+  // The shared receiver owns both surfaces. The exterior selects its own
+  // conditional program while the interior retains the current music playback.
   if(window.__xtoreWindowPlayer){
     cx.save();cx.setTransform(ax,ay,bx,by,iTL.x,iTL.y);
-    window.__xtoreWindowPlayer.draw(cx,vW,vH);cx.restore();return;
+    window.__xtoreWindowPlayer.draw(cx,vW,vH,'exterior');cx.restore();return;
   }
 
   // Xtanco Club celebration overrides the escaparate too.
@@ -18932,7 +18946,7 @@ function drawDoorForegroundPeople(){
   const NEAR=8; // px tolerance — actor x within this distance of doorX (or beyond) is "in/at the threshold"
   // Passersby always live on the sidewalk outside the door — they should never
   // be cropped by the door frame.
-  if(Array.isArray(G.passersby)){
+  if(Array.isArray(G.passersby)&&!xtoreRealExteriorActive()){
     for(const p of G.passersby) try{ drawIsoCust(p); }catch(e){}
     // Cámara del MUPI: la foto se toma AQUÍ, recién dibujado el viandante, para
     // que el recorte del canvas lo contenga (en update sólo se marca _wantSnap;
@@ -20825,7 +20839,7 @@ function _getLedParams(){
     ? (VIDEO_LED_MESSAGES[VIDEO_LIST[dsVideoIdx]] || `  ◆  VISITAS: AHORA SUENA ${VIDEO_LIST[dsVideoIdx].toUpperCase()}  ◆  `)
     : '';
   const liveData=(state===S.GAME||state===S.PAUSE)
-    ? `  ◈  ${lang==='es'?'PASAN':'PASS'}: ${G?(G.passersbyToday||0):0}  ◈  ${lang==='es'?'ENTRAN':'IN'}: ${G?(G.customersToday||0):0}  ◈  ${T().satisfaction}: ${G?(G.satisfaction|0):0}%  ◈  ${T().fame}: ${G?(G.fame|0):0}%  ◈  `
+    ? `  ◈  ${lang==='es'?'PASAN':'PASS'}: ${exteriorPersonPassagesForDisplay()}  ◈  ${lang==='es'?'ENTRAN':'IN'}: ${G?(G.customersToday||0):0}  ◈  ${T().satisfaction}: ${G?(G.satisfaction|0):0}%  ◈  ${T().fame}: ${G?(G.fame|0):0}%  ◈  `
     : '  ◈  ';
   // El nombre+dirección del punto van a la corona de LEDs vía AdmiraLive
   // (G.admiraLiveMsg, inicializado en initGame desde STORE_CFG) → ya entra en
@@ -23741,7 +23755,7 @@ function drawHUD(){
   const insideNow=G.custs?G.custs.length:0;
   const moneyEnd=130;
   tx('📷'+insideNow,moneyEnd,19,'#88ccee',11);
-  tx('↔'+(G.passersbyToday||0),moneyEnd+35,19,'#66ccee',11);
+  tx('↔'+exteriorPersonPassagesForDisplay(),moneyEnd+35,19,'#66ccee',11);
   tx('▲'+(G.custIn||0),moneyEnd+72,19,'#44dd66',11);
   tx('▼'+(G.custOut||0),moneyEnd+105,19,'#dd4444',11);
   // Now playing 🎵 — interactive: ♪ mute | ◀ prev | ▶ next
@@ -34872,7 +34886,8 @@ window.xtAPI = (function(){
 </script>
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
 <link rel="stylesheet" href="scripts/xtore-window.css?v=background-2">
-<script type="module" src="scripts/xtore-window.mjs?v=dual-2"></script>
+<script type="module" src="scripts/xtore-window.mjs?v=real-traffic-1"></script>
+<script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=1">
