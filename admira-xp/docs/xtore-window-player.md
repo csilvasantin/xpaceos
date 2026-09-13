@@ -56,3 +56,17 @@ necesitan un productor y transporte autenticados, independientes de este espejo.
 
 Pruebas: `node --test admira-xp/scripts/xtore-window.test.mjs` y
 `node admira-xp/scripts/test-xtore-remote.mjs`.
+
+## Panel Impactos: Instore / DooH
+
+Al abrir el panel se selecciona Instore. Aforo y franjas pertenecen al modelo de
+interior; pantallas, totales, atención, CPM e ingresos usan solo `src: in`.
+DooH muestra personas que han pasado, coches, motos, bicis y patinetes del mismo
+analizador enlazado. Son acumulados de la sesión, no presencia instantánea.
+Patinetes son observaciones manuales; un emisor antiguo sin ese campo muestra
+«—», nunca cero inventado. Se usa `exteriorStatistics()` y la misma caducidad de
+Puerta Cam (1,5 s). Sin señal se vacían las cinco cifras con «sin señal».
+No se incluyen segmentos demográficos simulados ni ingresos del juego en DooH.
+El selector queda fuera del cuerpo que se refresca y conserva foco/selección.
+El panel mantiene arrastre, cierre y desplazamiento para pantallas pequeñas.
+Pruebas adicionales: `node --test admira-xp/scripts/impact-segments.test.mjs`.

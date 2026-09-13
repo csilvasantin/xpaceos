@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin,exteriorPassages} from './xtore-window-core.mjs';
+import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin,exteriorPassages,exteriorStatistics} from './xtore-window-core.mjs';
 import {boundedPosition} from './floating-window.mjs';
 const p={id:'bicycle',url:'https://stock.admira.store/video.mp4',type:'video',title:'Bici',position:90,duration:180,paused:false,rate:1,ts:10000,loop:false};
 test('only the selected window, origin, session and virtual screen can drive a mirror',()=>{
@@ -41,4 +41,15 @@ test('floating tools keep their header reachable after dragging or viewport resi
  assert.deepEqual(boundedPosition(-100,-40,360,500,1000,800),{x:8,y:8});
  assert.deepEqual(boundedPosition(900,750,360,500,1000,800),{x:632,y:292});
  assert.deepEqual(boundedPosition(200,400,360,500,300,250),{x:8,y:8});
+});
+
+test('DooH keeps all five categories, resets and absence distinct from zero',()=>{
+ const counts={person:19,car:5,motorcycle:2,bicycle:3,scooter:4};
+ assert.deepEqual(exteriorStatistics(counts,10000,10500),counts);
+ assert.deepEqual(exteriorStatistics({...counts,scooter:0},10000,10500),{...counts,scooter:0});
+ const {scooter,...legacy}=counts;
+ assert.deepEqual(exteriorStatistics(legacy,10000,10500),{...legacy,scooter:null});
+ assert.equal(exteriorStatistics({...counts,scooter:-1},10000,10500).scooter,null);
+ assert.equal(exteriorStatistics(counts,10000,11500),null);
+ assert.equal(exteriorStatistics({...counts,car:-1},10000,10500),null);
 });

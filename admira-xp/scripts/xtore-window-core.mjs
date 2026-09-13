@@ -1,9 +1,14 @@
 export const SCREEN='xtore-virtual-zapatillas';
 export const TTL=2500;
-export function exteriorPassages(passages,frameAt,now=Date.now()){
+export function exteriorStatistics(passages,frameAt,now=Date.now()){
   if(!Number.isFinite(frameAt)||now-frameAt>=1500||frameAt>now+1000||!passages)return null;
   if(!['person','car','motorcycle','bicycle'].every(k=>Number.isSafeInteger(passages[k])&&passages[k]>=0&&passages[k]<=10000000))return null;
-  return passages.person;
+  const counts=Object.fromEntries(['person','car','motorcycle','bicycle'].map(k=>[k,passages[k]]));
+  counts.scooter=Number.isSafeInteger(passages.scooter)&&passages.scooter>=0&&passages.scooter<=10000000?passages.scooter:null;
+  return counts;
+}
+export function exteriorPassages(passages,frameAt,now=Date.now()){
+  return exteriorStatistics(passages,frameAt,now)?.person??null;
 }
 export function allowedOrigin(origin,own){
   return ['https://admira.tv','https://www.admira.tv'].includes(origin)||

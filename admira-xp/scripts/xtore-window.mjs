@@ -1,4 +1,4 @@
-import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession,exteriorPassages} from './xtore-window-core.mjs?v=exterior-1';
+import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession,exteriorPassages,exteriorStatistics} from './xtore-window-core.mjs?v=dooh-1';
 import {movableWindow} from './floating-window.mjs';
 const qs=new URLSearchParams(location.search);
 const enabled=qs.get('virtualPlayer')===SCREEN;
@@ -97,7 +97,7 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
     }else{ctx.textAlign='center';ctx.fillStyle='#8ce8e0';ctx.font=`${Math.max(4,w/16)}px sans-serif`;ctx.fillText(fresh&&latest.type==='audio'?'♪ '+latest.title:'PLAYER VIRTUAL',w/2,h/2,w-6);}
     ctx.restore();return true;
   }
-  window.__xtoreWindowPlayer={draw,openCamera(){openPanel();panel.querySelector('details').open=true;},cameraActive:()=>Date.now()-lastCamera<1500&&lastCamera>0,exterior:()=>exteriorPassages(passages,lastCamera)};
+  window.__xtoreWindowPlayer={draw,openCamera(){openPanel();panel.querySelector('details').open=true;},cameraActive:()=>Date.now()-lastCamera<1500&&lastCamera>0,exterior:()=>exteriorPassages(passages,lastCamera),exteriorStatistics:()=>exteriorStatistics(passages,lastCamera)};
   // Click the actual camera position already computed by the isometric renderer.
   document.addEventListener('click',e=>{
     const p=window.XPACE_MUPICAM?.pos,convert=window.__dsQuadCvToClient;
