@@ -1,4 +1,4 @@
-import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession,exteriorPassages,exteriorStatistics,PassageState} from './xtore-window-core.mjs?v=dual-1';
+import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession,exteriorPassages,exteriorStatistics,PassageState,acceptsCameraFrame} from './xtore-window-core.mjs?v=dual-2';
 import {movableWindow} from './floating-window.mjs';
 const qs=new URLSearchParams(location.search);
 const enabled=qs.get('virtualPlayer')===SCREEN;
@@ -80,7 +80,7 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
     else if(d.event==='playback-off')stopMedia();
     else if(d.event==='camera'){
       const bmp=d.bitmap;
-      if(!(bmp instanceof ImageBitmap)||!Number.isFinite(d.frameAt)||Date.now()-d.frameAt>=1500||d.frameAt>Date.now()+1000||bmp.width>480||bmp.height>1920||d.frameAt<=lastCamera){bmp?.close?.();d.originalBitmap?.close?.();return;}
+      if(!(bmp instanceof ImageBitmap)||bmp.width>480||bmp.height>1920||!acceptsCameraFrame(d.frameAt,d.modified,lastCamera,modifiedCamera)){bmp?.close?.();d.originalBitmap?.close?.();return;}
       camera.width=bmp.width;camera.height=bmp.height;camera.getContext('2d').drawImage(bmp,0,0);bmp.close();camera.hidden=false;lastCamera=d.frameAt;
       modifiedCamera=d.modified===true;hasOriginal=false;
       const original=d.originalBitmap;

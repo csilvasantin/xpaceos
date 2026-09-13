@@ -1,8 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin,exteriorPassages,exteriorStatistics,PassageState} from './xtore-window-core.mjs';
+import {SCREEN,MirrorSession,playbackState,targetTime,allowedOrigin,exteriorPassages,exteriorStatistics,PassageState,acceptsCameraFrame} from './xtore-window-core.mjs';
 import {boundedPosition} from './floating-window.mjs';
 const p={id:'bicycle',url:'https://stock.admira.store/video.mp4',type:'video',title:'Bici',position:90,duration:180,paused:false,rate:1,ts:10000,loop:false};
+test('a fresh clean inference upgrades a newer raw preview without extending capture lifetime',()=>{
+ // Raw @10500 arrives before analysis of the frame captured @10000 finishes.
+ assert.equal(acceptsCameraFrame(10000,true,10500,false,10574),true);
+ // Once clean, duplicates and older processed frames cannot roll it back.
+ assert.equal(acceptsCameraFrame(10000,true,10000,true,10750),false);
+ assert.equal(acceptsCameraFrame(9900,true,10000,true,10750),false);
+ assert.equal(acceptsCameraFrame(10200,true,10000,true,10750),true);
+ assert.equal(acceptsCameraFrame(10000,true,11000,false,11500),false);
+ assert.equal(acceptsCameraFrame(10000,false,10500,false,10574),false);
+ assert.equal(acceptsCameraFrame(NaN,true,10500,false,10574),false);
+ assert.equal(acceptsCameraFrame(12000,true,10500,false,10574),false);
+});
 test('only the selected window, origin, session and virtual screen can drive a mirror',()=>{
  const peer={},s=new MirrorSession({peer,origin:'https://admira.tv',session:'abc',now:()=>10000});
  const message={source:peer,origin:'https://admira.tv',data:{source:'admira-xtore-twin',screen:SCREEN,session:'abc',event:'playback',seq:1,ts:10000}};

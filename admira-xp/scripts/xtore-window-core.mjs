@@ -1,5 +1,11 @@
 export const SCREEN='xtore-virtual-zapatillas';
 export const TTL=2500;
+// Inference finishes after the raw preview. A fresh processed frame may upgrade
+// that preview even if it was captured earlier; it retains its original expiry.
+export function acceptsCameraFrame(frameAt,modified,lastCamera,wasModified,now=Date.now()){
+  if(!Number.isFinite(frameAt)||now-frameAt>=1500||frameAt>now+1000)return false;
+  return frameAt>lastCamera||(modified===true&&wasModified!==true);
+}
 export function exteriorStatistics(passages,frameAt,now=Date.now(),ttl=1500){
   if(!Number.isFinite(frameAt)||now-frameAt>=ttl||frameAt>now+1000||!passages)return null;
   if(!['person','car','motorcycle','bicycle'].every(k=>Number.isSafeInteger(passages[k])&&passages[k]>=0&&passages[k]<=10000000))return null;
