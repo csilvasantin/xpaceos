@@ -17,8 +17,8 @@ export function createPremiumScene(raw,{canvasFactory=()=>document.createElement
     brass:mat('#c2a05e',.3,.72),steel:mat('#273a3f',.38,.7),black:mat('#101b20',.42,.25),white:mat('#f6f2e9',.5),
     green:mat('#416b4e'),leaf:mat('#648660'),terracotta:mat('#a86748'),blue:mat('#456e82'),pavement:mat('#bbbdb2'),
     glass:mat('#96c2bd',.12,.18,{transparent:true,opacity:.25,depthWrite:false}),light:mat('#f4dfad',.5,0,{emissive:'#ffcc78',emissiveIntensity:.8})};
-  const wireMaterial=new T.MeshBasicMaterial({color:'#082431',polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
-  const edgeMaterial=new T.LineBasicMaterial({color:'#58d5e0',transparent:true,opacity:.72});materials.add(wireMaterial);materials.add(edgeMaterial);
+  const wireMaterial=new T.MeshBasicMaterial({color:'#001508',toneMapped:false,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
+  const edgeMaterial=new T.LineBasicMaterial({color:'#37ff69',toneMapped:false,transparent:true,opacity:.88});materials.add(wireMaterial);materials.add(edgeMaterial);
   const boxGeometry=new T.BoxGeometry(1,1,1),cylinderGeometry=new T.CylinderGeometry(1,1,1,12),sphereGeometry=new T.SphereGeometry(1,12,8);
   for(const g of [boxGeometry,cylinderGeometry,sphereGeometry])geometry.add(g);
   const edgesByGeometry=new Map();
@@ -183,7 +183,7 @@ export function createPremiumScene(raw,{canvasFactory=()=>document.createElement
     for(const m of usedMaterials){if(m.map){m.map.dispose();textures.delete(m.map);}m.dispose();materials.delete(m);}
     for(const g of usedGeometry){const edge=edgesByGeometry.get(g);if(edge){edge.dispose();geometry.delete(edge);edgesByGeometry.delete(g);}g.dispose();geometry.delete(g);}
   }
-  function setMode(value){mode=value==='better'?'better':'best';scene.background=new T.Color(mode==='better'?'#06151e':'#e7e7df');scene.traverse(o=>{
+  function setMode(value){mode=value==='better'?'better':'best';scene.background=new T.Color(mode==='better'?'#000502':'#e7e7df');scene.traverse(o=>{
     if(o.userData.premiumEdge)o.visible=mode==='better';
     if(o.isMesh&&o.userData.bestMaterial)o.material=mode==='better'&&o.userData.wire?wireMaterial:o.userData.bestMaterial;
   });}

@@ -1,8 +1,8 @@
 {
-  "version": "v.13.09.2026.r8.13:31",
+  "version": "v.13.09.2026.r9.13:52",
   "signature": "Codex · MacBookAir16plata",
   "machine": "MacBookAir16plata",
   "agent": "Codex",
   "deployer": "Codex",
-  "evidence": "Good, Better y Best cambian el acabado de la misma interfaz, conservando controles, editor, media, actores y conteos compartidos. Proyección exacta del lienzo y recuperación Good ante fallo 3D. 42 pruebas superadas y revisión visual en Chrome de Better/Best y editor."
+  "evidence": "Better con wireframe Matrix verde y negro sobre la misma interfaz Good/Best. ANONYMIZER sustituye la posición de Pixeria en Avanzado y abre la herramienta real de conversión píxeles/humanos; Pixeria al final mantiene importación. 45 pruebas correctas; QA Chrome de paleta, orden y apertura real de Anonymizer."
 }

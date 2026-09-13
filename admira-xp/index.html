@@ -28748,9 +28748,9 @@ window.xtAPI = (function(){
         active:!!(typeof REC!=='undefined'&&REC.replay&&REC.replay.on)
       },
       {
-        label:'🎨 Pixeria',
-        status:isEs?'último → gemelo':'latest → twin',
-        customAction:'pixerai'
+        label:'ANONYMIZER',
+        status:isEs?'Píxeles ↔ humanos':'Pixels ↔ humans',
+        customAction:'anonymizer'
       },
       {
         label:isEs?'✏ Mobiliario':'✏ Furniture',
@@ -28778,6 +28778,11 @@ window.xtAPI = (function(){
           :(isEs?'impactos·CPM':'impacts·CPM'),
         command:(typeof IMPACTS!=='undefined'&&IMPACTS.on)?'/impactos off':'/impactos',
         active:!!(typeof IMPACTS!=='undefined'&&IMPACTS.on)
+      },
+      {
+        label:'🎨 Pixeria',
+        status:isEs?'último → gemelo':'latest → twin',
+        customAction:'pixerai'
       }
     ];
   }
@@ -28822,6 +28827,12 @@ window.xtAPI = (function(){
   // Apertura síncrona en el click (sin await) para no disparar el popup blocker.
   // Botón "🎨 Pixeria": importa de un toque el ÚLTIMO mobiliario creado en
   // pixeria.com (type 'furni' del Stock) y lo coloca en el Xpacio del gemelo.
+  // Open the existing tool in its own signed-in context. The public route is
+  // gated, so embedding it cannot reliably reuse the user's Pixeria session.
+  // Creation, conversion and sending an NPC remain explicit actions in that tool.
+  function openAnonymizer(){
+    window.open('https://www.pixeria.com/anonimizador','_blank','noopener');
+  }
   async function openPixerAi(){
     try{
       if(typeof showEv==='function') showEv(lang==='en'?'🎨 Importing the latest item from Pixeria…':'🎨 Importando lo último de Pixeria…','#aa66ff');
@@ -32238,6 +32249,7 @@ window.xtAPI = (function(){
         if(kind==='signage'&&typeof toggleSignagePanel==='function') toggleSignagePanel();
         else if(kind==='editor'&&typeof doAction==='function'&&G) doAction('editor');
         else if(kind==='menu'&&typeof doAction==='function'&&G) doAction('menu');
+        else if(kind==='anonymizer') openAnonymizer();
         else if(kind==='pixerai') openPixerAi();
         else if(kind==='telegram' && typeof window.toggleTelegramDock==='function') window.toggleTelegramDock();
         return;
@@ -32266,6 +32278,7 @@ window.xtAPI = (function(){
         if(kind==='signage'&&typeof toggleSignagePanel==='function') toggleSignagePanel();
         else if(kind==='editor'&&typeof doAction==='function'&&G) doAction('editor');
         else if(kind==='menu'&&typeof doAction==='function'&&G) doAction('menu');
+        else if(kind==='anonymizer') openAnonymizer();
         else if(kind==='pixerai') openPixerAi();
         else if(kind==='telegram' && typeof window.toggleTelegramDock==='function') window.toggleTelegramDock();
         return;
@@ -34601,7 +34614,7 @@ window.xtAPI = (function(){
 </script>
 <!-- ════════ Lanzadera lateral en modo experto v1 (2026-07-18) ════════
      Modo EXPERTO (⌘): el dock inferior queda SOLO para el CLI (tiles ocultos).
-     Modo AVANZADO (▤): los 8 iconos (Signage/…/Audiencia) se espejan en el panel
+     Modo AVANZADO (▤): los iconos (Signage/…/Audiencia) se espejan en el panel
      derecho .quad-right, empezando bajo la barra superior, en lugar del texto
      EQUIPO CARBONO. Los originales siguen en #telegramQuickActions (ocultos) → el
      render y el click no cambian; cada icono reenvía el click al original.
@@ -34636,7 +34649,7 @@ window.xtAPI = (function(){
      input ocupa todo el ancho → máximo espacio para escribir. Oculto por defecto. */
   #telegramDock.compose-start.cli-out-hidden .tg-pane.send:not(.help-open):not(.signage-open) #telegramLastResponse{display:none !important}
   #telegramDock.compose-start.cli-out-hidden .tg-pane.send:not(.help-open):not(.signage-open) .tg-cli-row{flex:1 1 100% !important}
-  /* Modo AVANZADO (▤) = los 8 iconos ocupan el panel derecho, en lugar del texto
+  /* Modo AVANZADO (▤) = los iconos ocupan el panel derecho, en lugar del texto
      EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
      ancho = margen, con su animación de despliegue). */
   /* Título "OPCIONES AVANZADAS" visible (como "Equipo Silicio" pero a la DERECHA);
@@ -34678,12 +34691,15 @@ window.xtAPI = (function(){
   function mirror(){
     var btns=[].slice.call(src.querySelectorAll('.tg-quick-btn'));
     host.innerHTML='';
-    btns.forEach(function(b){
+    function appendAction(b){
       var c=b.cloneNode(true);
       c.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); try{ b.click(); }catch(e){} });
       host.appendChild(c);
-    });
-    host.appendChild(makePercibe());   // el ojo, al final de la lanzadera Avanzada
+    }
+    btns.filter(function(b){return b.getAttribute('data-quick-action')!=='pixerai';}).forEach(appendAction);
+    host.appendChild(makePercibe());
+    // Pixeria keeps its latest-item import and is always the final advanced action.
+    btns.filter(function(b){return b.getAttribute('data-quick-action')==='pixerai';}).forEach(appendAction);
   }
   try{ var mo=new MutationObserver(mirror); mo.observe(src,{childList:true,subtree:true,characterData:true}); }catch(e){}
   mirror();
