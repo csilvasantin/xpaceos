@@ -1,8 +1,10 @@
 {
-  "version": "v.13.09.2026.r10.14:01",
+  "version": "v.13.09.2026.r11.14:16",
   "signature": "Codex · MacBookAir16plata",
   "machine": "MacBookAir16plata",
   "agent": "Codex",
   "deployer": "Codex",
-  "evidence": "DooH acepta el fotograma limpio con tracking que termina después del original, conserva la fecha de captura y caducidad, sin retroceder entre imágenes limpias. Incluye Matrix verde/negro y menú ANONYMIZER con Pixeria al final. 9 pruebas de receptor correctas; 45 de integración previas."
+  "evidence": "Segmentación Instore de atributos de avatares presentes, marcada SIMULACIÓN: hombre/mujer/sin dato, menores18,18–60,mayores60,sin dato. Mismo denominador que aforo, exclusivamente look.gender/look.age, sin inferencia desde cámara ni mezcla con DooH real. 8pruebas aprobadas, límites17/18/60/61 y Chrome local comprobado en Better Matrix.",
+  "day": "13.09.2026",
+  "time": "14:16"
 }

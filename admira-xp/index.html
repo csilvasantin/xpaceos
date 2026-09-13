@@ -27966,6 +27966,7 @@ window.xtAPI = (function(){
           const dentro=(typeof G!=='undefined'&&G&&Array.isArray(G.custs))?G.custs.length:0;
           const flashIn=dentro!==prevIn&&prevIn>=0;prevIn=dentro;
           const marcador='<div style="background:rgba(0,0,0,.35);border:1px solid rgba(158,255,160,.35);border-radius:8px;padding:10px;text-align:center"><div style="color:#9effa0">'+(en?'🏪 IN STORE NOW':'🏪 EN TIENDA AHORA')+'</div><strong style="display:block;font-size:26px;color:'+(flashIn?'#fff':'#ffe6a8')+'">'+dentro.toLocaleString(en?'en':'es')+'</strong><div style="font-size:9px;opacity:.65">'+entran+(en?' entered today · simulation':' entran hoy · simulación')+'</div></div>';
+          const avatarAudience=window.__xtancoAvatarAudience?.render?.((typeof G!=='undefined'&&G)?G.custs:[],en)||'';
           // Franjas horarias de Instore: solo entradas del modelo interior.
           // por hora del día → el anunciante ve CUÁNDO hay audiencia. ⭐ = prime.
           let franjas='';
@@ -28004,7 +28005,7 @@ window.xtAPI = (function(){
           }
           const t=impactsTotals('in');
           const dyn=(typeof impactsDyn==='function')?impactsDyn('in'):{cpmDyn:IMPACTS.cpm,demandMult:1,qualityMult:1,revenueDyn:t.revenue,isPrime:false};
-          body.innerHTML=marcador+'<div style="margin:8px 0;font-size:9px;opacity:.7">'+(en?'TWIN MODEL · estimates below are separate from Puerta Cam':'MODELO DEL GEMELO · estimaciones separadas de Puerta Cam')+'</div>'+franjas+rows+
+          body.innerHTML=marcador+avatarAudience+'<div style="margin:8px 0;font-size:9px;opacity:.7">'+(en?'TWIN MODEL · estimates below are separate from Puerta Cam':'MODELO DEL GEMELO · estimaciones separadas de Puerta Cam')+'</div>'+franjas+rows+
             '<div style="border-top:1px dashed #8a6a2f;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between"><span>'+(en?'TOTAL impacts':'TOTAL impactos')+'</span><b>'+Math.round(t.imp).toLocaleString(en?'en':'es')+'</b></div>'+
             '<div style="display:flex;justify-content:space-between;color:#9ad8ff"><span>'+(en?'👁 Attention (views)':'👁 Atención (miran)')+'</span><b>'+Math.round(t.look).toLocaleString(en?'en':'es')+' · '+Math.round(t.att*100)+'%</b></div>'+
             '<div style="display:flex;justify-content:space-between"><span>CPM ref</span><b>'+IMPACTS.cpm.toFixed(2)+' €</b></div>'+
@@ -34872,6 +34873,8 @@ window.xtAPI = (function(){
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
 <link rel="stylesheet" href="scripts/xtore-window.css?v=background-2">
 <script type="module" src="scripts/xtore-window.mjs?v=dual-2"></script>
+<link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
+<script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=1">
 <script type="module" src="scripts/xtanco-premium-ui.mjs?v=1"></script>
 </body>
