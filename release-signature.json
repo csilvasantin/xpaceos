@@ -1,8 +1,8 @@
 {
-  "version": "v.13.09.2026.r7.13:07",
+  "version": "v.13.09.2026.r8.13:31",
   "signature": "Codex · MacBookAir16plata",
   "machine": "MacBookAir16plata",
   "agent": "Codex",
   "deployer": "Codex",
-  "evidence": "DooH muestra estadísticas antes de cámara, original izquierda y limpio con tracking derecha. Better wireframe y Best 3D premium comparten escena, actores y player, en ventana Experto movible. 21 tests receptor, escena, snapshot y panel correctos."
+  "evidence": "Good, Better y Best cambian el acabado de la misma interfaz, conservando controles, editor, media, actores y conteos compartidos. Proyección exacta del lienzo y recuperación Good ante fallo 3D. 42 pruebas superadas y revisión visual en Chrome de Better/Best y editor."
 }

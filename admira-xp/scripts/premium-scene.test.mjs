@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createPremiumScene} from './premium-scene.mjs';
+import {createPremiumScene,INTEGRATED_OPERATIONAL_TYPES} from './premium-scene.mjs';
 import {normalizeSnapshot,actorGridPosition} from './premium-model.mjs';
 
 const sceneInput={cols:14,rows:8,wallHeight:3.25,layout:[
@@ -68,4 +68,29 @@ test('Converted wall heights and centers are consumed once, independently of fur
   assert.equal(aroma.position.y,2.62);assert.equal(aroma.position.z,0);assert.equal(aroma.children[0].scale.y,.67);assert.equal(aroma.children[0].position.y,0);
   assert.deepEqual(aroma.scale.toArray(),[1,1,1]);
   model.setMode('better');assert.equal(screen.position.y,2.18);assert.equal(aroma.position.y,2.62);model.dispose();
+});
+
+test('Integrated architecture excludes operational duplicates and leaves their original media owner untouched',()=>{
+  const decorative=['plant','rug','vending','wineRack','magazines'];
+  const layout=[...INTEGRATED_OPERATIONAL_TYPES,...decorative].map((type,i)=>({id:type,type,col:i%12,row:Math.floor(i/12)+1}));
+  const input={...sceneInput,layout,projection:{width:800,height:500,ox:270,oy:185,tileW:80,tileH:28}};
+  const model=createPremiumScene(input,{canvasFactory,integrated:true});
+  for(const type of INTEGRATED_OPERATIONAL_TYPES)assert.equal(model.scene.getObjectByName(`furniture:${type}`),undefined,`${type} must remain in Good's operational overlay`);
+  for(const type of decorative)assert.ok(model.scene.getObjectByName(`furniture:${type}`),`${type} must keep the premium finish`);
+  assert.equal(model.actors.children.length,0);assert.equal(model.scene.getObjectByName('actor:ana'),undefined);
+  assert.equal(model.scene.getObjectByName('fixture:camera'),undefined);
+  assert.ok(model.scene.getObjectByName('architectural:window-support'));
+  assert.ok(meshes(model).every(o=>o.material.map?.image?.height!==768));
+  let draws=0;model.refreshMedia({draw(){draws++;}});assert.equal(draws,0);
+  const door=model.scene.getObjectByName('architectural:door'),ids=meshes(model).map(o=>o.uuid);
+  model.setMode('better');assert.deepEqual(meshes(model).map(o=>o.uuid),ids);
+  model.update({...input,doorOpen:1,actors:[{id:'later',col:2,row:2}]});
+  assert.equal(model.scene.getObjectByName('architectural:door'),door);assert.ok(door.rotation.y<-.7);assert.equal(model.actors.children.length,0);
+  model.dispose();
+});
+
+test('Standalone presentation continues to include operational geometry, actors and camera',()=>{
+  const model=createPremiumScene(sceneInput,{canvasFactory});
+  assert.ok(model.scene.getObjectByName('furniture:counter'));assert.ok(model.scene.getObjectByName('furniture:shelves'));
+  assert.ok(model.scene.getObjectByName('fixture:camera'));assert.equal(model.actors.children.length,1);model.dispose();
 });

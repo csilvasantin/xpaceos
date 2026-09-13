@@ -1,8 +1,13 @@
 import * as T from './premium-three.mjs';
 import {FOOTPRINTS,normalizeSnapshot,layoutSignature} from './premium-model.mjs';
+import {legacyFurnitureTransform} from './premium-projection.mjs';
+
+// Good draws these operational entities above the integrated architectural pass.
+// Keep this list explicit: decorative furniture continues to receive the premium finish.
+export const INTEGRATED_OPERATIONAL_TYPES=new Set(['counter','shelves','lottery','manager','floorLamp','djBooth','tablet','turnKiosk','aroma','metahuman','custom','tft','led']);
 
 // One geometry graph, two material presentations. Shared source data remains outside.
-export function createPremiumScene(raw,{canvasFactory=()=>document.createElement('canvas')}={}){
+export function createPremiumScene(raw,{canvasFactory=()=>document.createElement('canvas'),integrated=false}={}){
   let snapshot=normalizeSnapshot(raw),signature='',mode='best';
   const scene=new T.Scene(),world=new T.Group(),actors=new T.Group();
   scene.add(world,actors);
@@ -36,7 +41,7 @@ export function createPremiumScene(raw,{canvasFactory=()=>document.createElement
     const m=new T.MeshBasicMaterial({map:texture,toneMapped:false,side:T.DoubleSide});m.userData.premiumTransient=true;materials.add(m);
     const g=new T.PlaneGeometry(w,h);g.userData.premiumTransient=true;geometry.add(g);const o=mesh(parent,g,m,[x,y,z],null,false);o.rotation.y=rotation;o.castShadow=false;return o;
   }
-  const videoCanvas=canvasFactory();let videoContext=null,videoTexture=null,screenMaterial=palette.black;
+  const videoCanvas=integrated?null:canvasFactory();let videoContext=null,videoTexture=null,screenMaterial=palette.black;
   if(videoCanvas){videoCanvas.width=512;videoCanvas.height=768;videoContext=videoCanvas.getContext('2d');videoTexture=new T.CanvasTexture(videoCanvas);videoTexture.colorSpace=T.SRGBColorSpace;videoTexture.minFilter=T.LinearFilter;textures.add(videoTexture);screenMaterial=new T.MeshBasicMaterial({map:videoTexture,toneMapped:false,side:T.DoubleSide});materials.add(screenMaterial);}
   function screen(parent,x,y,z,w,h,rotation=0){
     const g=new T.Group();g.position.set(x,y,z);g.rotation.y=rotation;parent.add(g);
@@ -61,6 +66,7 @@ export function createPremiumScene(raw,{canvasFactory=()=>document.createElement
     // Wall heights are already converted from the rendered legacy polygon.
     // Their absolute placement must not receive floor-furniture scaling a second time.
     if(item.type==='tft'||item.type==='aroma'){root.position.set(item.col,item.wallY,0);root.scale.set(1,1,1);root.rotation.set(0,0,0);}
+    else if(snapshot.projection){root.matrixAutoUpdate=false;root.matrix.copy(legacyFurnitureTransform(snapshot.projection,item));}
     const [w,d]=item.fp||FOOTPRINTS[item.type]||[1,1];
     switch(item.type){
       case 'counter':
@@ -127,25 +133,27 @@ export function createPremiumScene(raw,{canvasFactory=()=>document.createElement
     for(let z=.6;z<r;z+=1.2)box(world,.018,h*.43,z,.04,h*.74,.024,palette.oak);
     box(world,c/2,.1,.035,c,.2,.08,palette.wood);box(world,.035,.1,r/2,.08,.2,r,palette.wood);
     box(world,c/2,h-.14,.04,c+.15,.28,.25,palette.darkWood);box(world,.04,h-.14,r/2,.25,.28,r+.15,palette.darkWood);
-    box(world,c/2,h-.3,.18,c,.025,.035,palette.light);box(world,.18,h-.3,r/2,.035,.025,r,palette.light);
-    label(world,'ADMIRA  /  XTANCO',c*.68,h-.14,.18,c*.46,.19,{bg:'#4c3428',fg:'#f5d8a1',font:44});
-    label(world,'DIGITAL EXPERIENCE',.18,h-.14,r*.56,r*.65,.19,{rotation:Math.PI/2,bg:'#4c3428',font:40});
+    if(!integrated){
+      box(world,c/2,h-.3,.18,c,.025,.035,palette.light);box(world,.18,h-.3,r/2,.035,.025,r,palette.light);
+      label(world,'ADMIRA  /  XTANCO',c*.68,h-.14,.18,c*.46,.19,{bg:'#4c3428',fg:'#f5d8a1',font:44});
+      label(world,'DIGITAL EXPERIENCE',.18,h-.14,r*.56,r*.65,.19,{rotation:Math.PI/2,bg:'#4c3428',font:40});
+    }
     // Two wall screens, matching the existing DS positions; primary media is shared with the window.
-    screen(world,.19,h*.56,r*.28,1.7,h*.54,Math.PI/2);screen(world,.19,h*.56,r*.72,1.7,h*.54,Math.PI/2);
+    if(!integrated){screen(world,.19,h*.56,r*.28,1.7,h*.54,Math.PI/2);screen(world,.19,h*.56,r*.72,1.7,h*.54,Math.PI/2);}
     // Window bays in the rear wall, with deep reveals and bronze mullions.
     for(const x of [c*.25,c*.65]){
       box(world,x,h*.64,.055,1.16,1.2,.06,palette.blue);box(world,x,h*.64,.10,.045,1.22,.06,palette.brass);box(world,x,h*.64,.10,1.18,.04,.06,palette.brass);
       box(world,x,h*.64-.62,.12,1.3,.06,.3,palette.limestone);
     }
     // Exterior: the short facade is cut away around the actual entrance, never an enclosing front wall.
-    box(world,c+.01,h*.39,1.18,.16,h*.78,2.0,palette.darkWood);
-    screen(world,c+.105,h*.39,1.18,1.73,h*.69,Math.PI/2);
+    box(world,c+.01,h*.39,1.18,.16,h*.78,2.0,palette.darkWood).name='architectural:window-support';
+    if(!integrated)screen(world,c+.105,h*.39,1.18,1.73,h*.69,Math.PI/2);
     box(world,c+.04,h*.79,2.63,.17,.12,1.15,palette.wood);
     for(const z of [2.08,3.18])box(world,c+.04,h*.4,z,.1,h*.8,.09,palette.brass);
-    const hinge=new T.Group();hinge.position.set(c+.04,0,3.12);world.add(hinge);doorLeaf=hinge;
+    const hinge=new T.Group();hinge.name='architectural:door';hinge.position.set(c+.04,0,3.12);world.add(hinge);doorLeaf=hinge;
     box(hinge,0,h*.38,-.49,.035,h*.75,.96,palette.glass);box(hinge,.032,h*.37,-.82,.045,.38,.045,palette.brass);
-    const camera=new T.Group();camera.position.set(c+.2,h*.86,1.1);camera.rotation.z=.25;world.add(camera);
-    box(camera,0,0,0,.34,.16,.18,palette.white);const lens=cyl(camera,.2,0,0,.058,.05,palette.black);lens.rotation.z=Math.PI/2;
+    if(!integrated){const camera=new T.Group();camera.name='fixture:camera';camera.position.set(c+.2,h*.86,1.1);camera.rotation.z=.25;world.add(camera);
+      box(camera,0,0,0,.34,.16,.18,palette.white);const lens=cyl(camera,.2,0,0,.058,.05,palette.black);lens.rotation.z=Math.PI/2;}
     // Raised stone sidewalk, roadside grove and bollards frame the cutaway rather than obscure it.
     box(world,c+1.03,-.11,r/2,1.55,.2,r+1,palette.pavement);
     for(let z=.1;z<r;z+=1.05)box(world,c+1.03,.001,z,1.55,.01,.015,palette.limestone);
@@ -166,6 +174,7 @@ export function createPremiumScene(raw,{canvasFactory=()=>document.createElement
     root.userData.legs=legs;root.userData.actor=actor;actors.add(root);actorMap.set(actor.id,root);return root;
   }
   function updateActors(){
+    if(integrated)return;
     const ids=new Set(snapshot.actors.map(a=>a.id));for(const [id,o]of actorMap)if(!ids.has(id)){releaseTransient(o);actors.remove(o);actorMap.delete(id);}
     for(const actor of snapshot.actors){let o=actorMap.get(actor.id);if(o&&(o.userData.actor.color!==actor.color||o.userData.actor.skin!==actor.skin||o.userData.actor.kind!==actor.kind)){releaseTransient(o);actors.remove(o);actorMap.delete(actor.id);o=null;}o=o||createActor(actor);o.position.set(actor.col,0,actor.row);o.rotation.y=actor.heading;o.userData.actor=actor;}
   }
@@ -183,7 +192,7 @@ export function createPremiumScene(raw,{canvasFactory=()=>document.createElement
   const fill=new T.DirectionalLight('#b9d7e7',1.0);fill.position.set(8,6,-4);scene.add(fill);
   function update(rawSnapshot){
     snapshot=normalizeSnapshot(rawSnapshot);const next=layoutSignature(snapshot);
-    if(signature!==next){releaseTransient(world);world.clear();architecture();for(const item of snapshot.layout)furniture(item);signature=next;sun.target.position.set(snapshot.cols/2,0,snapshot.rows/2);setMode(mode);}
+    if(signature!==next){releaseTransient(world);world.clear();architecture();for(const item of snapshot.layout)if(!integrated||!INTEGRATED_OPERATIONAL_TYPES.has(item.type))furniture(item);signature=next;sun.target.position.set(snapshot.cols/2,0,snapshot.rows/2);setMode(mode);}
     if(doorLeaf)doorLeaf.rotation.y=snapshot.doorOpen*-Math.PI*.48;
     updateActors();return snapshot;
   }

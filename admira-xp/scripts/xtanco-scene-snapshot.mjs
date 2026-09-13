@@ -2,9 +2,9 @@
 export function createSceneSnapshot(){
   const ids=new WeakMap();let sequence=0;
   const identity=(actor,kind)=>{if(!ids.has(actor))ids.set(actor,`${kind}-${++sequence}`);return ids.get(actor);};
-  return function snapshot({iso,layout=[],game,active=false,footprints={},wallHelpers={}}={}){
+  return function snapshot({iso,projection,layout=[],game,active=false,editor=false,footprints={},wallHelpers={}}={}){
     if(!active||!game||!iso)return null;
-    const elevation=Math.atan(Math.SQRT2*iso.tileH/iso.tileW);
+    const elevation=Math.asin(iso.tileH/iso.tileW);
     const pixelsPerHeightUnit=iso.tileW/Math.SQRT2*Math.cos(elevation);
     function dimensions(item){
       // Imported furniture stores its reference height in Canvas pixels.
@@ -35,7 +35,8 @@ export function createSceneSnapshot(){
     for(const kind of ['saca','thief','guardiaCivil','opinador','unitreeBot']){
       const value=game[kind];if(value&&value.phase!=='idle')actors.push(actor(value,kind));
     }
-    return {cols:iso.cols,rows:iso.rows,elevation,
+    return {cols:iso.cols,rows:iso.rows,elevation,editor,
+      projection:projection?{...projection}:undefined,
       wallHeight:iso.wallH/pixelsPerHeightUnit,
       layout:layout.map(v=>({id:v.id,type:v.type,col:v.col,row:v.row,sx:v.sx||1,sy:v.sy||1,
         rot:v.rot||0,flipX:!!v.flipX,label:v.label||'',fp:[...(v.fp||footprints[v.type]||[1,1])],...dimensions(v)})),

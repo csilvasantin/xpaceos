@@ -1414,7 +1414,8 @@ window.STORE_CFG=null; window.STORE_CFG_READY=false;
 // ═══════════════════════════════════════════════════════════════
 //  ADMIRA XP // THE XPACE OS — XTANCO — runtime version/build
 // ═══════════════════════════════════════════════════════════════
-const cv=document.getElementById('c'), cx=cv.getContext('2d');
+const cv=document.getElementById('c');
+let cx=cv.getContext('2d');
 // Canvas de fondo a pantalla completa para el cosmos de la página 1 (XPACE INVADERS)
 const _cosmosBg=document.getElementById('cosmosBg');
 const _cosmosCtx=_cosmosBg?_cosmosBg.getContext('2d'):null;
@@ -5147,7 +5148,6 @@ function renderSpeechOverlay(){
 function finalizeFrame(){
   try{renderSpeechOverlay();}catch(e){}
   drawTransition();
-  if(window.__xtancoPremiumView)window.__xtancoPremiumView.frame(performance.now());
 }
 function trimHudLabel(text,max=42){
   const clean=String(text||'').replace(/\s+/g,' ').trim();
@@ -11863,13 +11863,27 @@ function mupiCamDraw(TL,TR){
 }
 // "Fotografía" al viandante p recortando la región del canvas donde está.
 // Produce dataURL normal (ampliado, suavizado) y pixelado (baja-res reescalada).
+// A capture triggered by an operational actor must include the current world
+// as well as its transparent marks, never the transparent layer alone.
+let shopCaptureFrame=null;
+function getShopCaptureFrame(){
+  if(cx.canvas===cv)return cv;
+  if(!shopCaptureFrame)shopCaptureFrame=document.createElement('canvas');
+  if(shopCaptureFrame.width!==cv.width)shopCaptureFrame.width=cv.width;
+  if(shopCaptureFrame.height!==cv.height)shopCaptureFrame.height=cv.height;
+  const capture=shopCaptureFrame.getContext('2d');
+  capture.clearRect(0,0,cv.width,cv.height);
+  capture.drawImage(cv,0,0);
+  capture.drawImage(cx.canvas,0,0);
+  return shopCaptureFrame;
+}
 function mupiCamSnap(p, cam){
   cam=(cam==='int')?'int':'ext';
   if(window.__xtoreWindowPlayer||!MUPICAM.on || !p) return;
   if(cam==='ext' && p._snapped) return;
   if(typeof state!=='undefined' && typeof S!=='undefined' && state!==S.GAME) return;
   if(typeof REC!=='undefined' && REC && REC.replay && REC.replay.on) return;   // no fotografiar el pasado
-  let src; try{ src=cx.canvas; }catch(_){ return; }
+  let src; try{ src=getShopCaptureFrame(); }catch(_){ return; }
   const cw=src.width, ch=src.height;
   const sw=40, sh=52;                                  // recorte que encuadra al chibi (cabeza→pies)
   let sx=Math.round((p.x|0)+7-sw/2), sy=Math.round((p.y|0)-28);
@@ -17899,8 +17913,44 @@ function drawCityBg(){
   cx.restore();
 }
 
+// The running shop owns one operational pass in every visual mode. Better/Best
+// receives that pass on a transparent layer; callbacks still run exactly once,
+// preserving hitboxes, speech, timers, screen quads and physical-device state.
+function drawShopOperation(fn,kind='device'){
+  const target=window.__xtancoPremiumView?.operationContext?.(kind);
+  if(!target||target===cx)return fn();
+  const previous=cx;
+  target.save();
+  try{
+    target.setTransform(1,0,0,1,0,0);
+    const clipHeight=editorSceneActive&&!isXpaceCreator()?SHOP.h:Math.max(SHOP.h,H-SHOP.y);
+    target.beginPath();target.rect(SHOP.x,SHOP.y,SHOP.w,clipHeight);target.clip();
+    // The Canvas clip cannot be read or copied. Floor effects need the same
+    // explicit diamond clip as the base pass, before furniture transforms.
+    if(kind==='heatmap'||kind==='floor-effect'){
+      const floor=[toIso(0,0),toIso(ISO.cols,0),toIso(ISO.cols,ISO.rows),toIso(0,ISO.rows)];
+      target.beginPath();target.moveTo(floor[0].x,floor[0].y);
+      for(let i=1;i<floor.length;i++)target.lineTo(floor[i].x,floor[i].y);
+      target.closePath();target.clip();
+    }
+    target.setTransform(previous.getTransform());
+    for(const property of ['fillStyle','strokeStyle','globalAlpha','globalCompositeOperation',
+      'lineWidth','lineCap','lineJoin','miterLimit','lineDashOffset','shadowBlur',
+      'shadowColor','shadowOffsetX','shadowOffsetY','font','textAlign','textBaseline',
+      'direction','filter','imageSmoothingEnabled','imageSmoothingQuality','fontKerning',
+      'fontStretch','fontVariantCaps','letterSpacing','wordSpacing','textRendering']){
+      if(property in previous&&property in target)target[property]=previous[property];
+    }
+    target.setLineDash(previous.getLineDash());
+    cx=target;
+    return fn();
+  }finally{cx=previous;target.restore();}
+}
+
 // ── DRAW SHOP (ISOMETRIC — Kairosoft warm style) ─────────────
 function drawShop(){
+  const premiumView=window.__xtancoPremiumView;
+  const premiumActive=!!premiumView?.begin?.(cx,cv);
   // Clip to shop area. Extended down to the full canvas height so passersby
   // walking on the sidewalk past the building footprint (route reaches y≈470,
   // SHOP.h is 466) aren't clipped at the lower edge.
@@ -17964,11 +18014,11 @@ function drawShop(){
   }
 
   // ── SOCIO HEAT MAP — extraído a assets/js/heatmap.js (Fase 1 modularización) ──
-  if(window.drawSocioHeatmap) window.drawSocioHeatmap({cx,ISO,tt,G,toIso});
+  if(window.drawSocioHeatmap) drawShopOperation(()=>window.drawSocioHeatmap({cx,ISO,tt,G,toIso}),'heatmap');
 
   // ── WEATHER FLOOR EFFECTS ──
   const weatherFloor=G&&G.weather&&G.weather.type;
-  if(!editorSceneActive&&weatherFloor==='rain'){
+  if(!editorSceneActive&&weatherFloor==='rain')drawShopOperation(()=>{
     // Wet puddle near entrance door — ripples outward
     const dp=toIso(ISO.cols-1,3);
     cx.globalAlpha=0.22+Math.abs(Math.sin(tt*0.05))*0.06;
@@ -17984,7 +18034,7 @@ function drawShop(){
     cx.globalAlpha=0.2*(1-ripT2);
     cx.beginPath();cx.ellipse(dp.x-8,dp.y+10,4+ripT2*16,(4+ripT2*16)*0.38,0,0,Math.PI*2);cx.stroke();
     cx.globalAlpha=1;
-  }
+  },'floor-effect');
   cx.restore();
 
   // ── BACK WALL (cream/beige, Kairosoft style) ──
@@ -18259,22 +18309,22 @@ function drawShop(){
   // Xpace Creator. Skip de todos los elementos de pared hardcoded.
   if(!isShoptalkBooth()){
     // ── CLOCK on left wall ──
-    drawWallClock();
+    drawShopOperation(()=>drawWallClock());
     // ── LED on LEFT WALL (top edge) ──
     const ledItem=shopLayout.find(i=>i.id==='led');
-    if(ledItem) drawLED(ledItem.sx||1,ledItem.sy||1);
+    if(ledItem) drawShopOperation(()=>drawLED(ledItem.sx||1,ledItem.sy||1));
     // ── LED on BACK WALL (top edge, continues from left wall) ──
-    drawBackWallLED();
+    drawShopOperation(()=>drawBackWallLED());
     // ── AIR CONDITIONING on left wall (drawn AFTER LED so it's visible) ──
-    drawAirConditioning();
+    drawShopOperation(()=>drawAirConditioning());
     // ── TURN MANAGER between the back-wall displays/windows ──
-    drawTurnManager();
+    drawShopOperation(()=>drawTurnManager());
     // ── SECURITY CAMERA in the corner, aimed at the entrance ──
-    drawCornerSecurityCamera();
+    drawShopOperation(()=>drawCornerSecurityCamera());
     // ── TFT ALTADIS (16:9 screen on back wall, above 2nd window) ──
     // Pantalla de la pared larga: se muestra si el punto tiene ≥1 pantalla
     // (o si no hay punto activo → comportamiento original).
-    if(!window.STORE_CFG || (window.STORE_CFG.screens|0)>=1) drawAltadisTFT();
+    if(!window.STORE_CFG || (window.STORE_CFG.screens|0)>=1) drawShopOperation(()=>drawAltadisTFT());
   }
 
   // ── BLANK XPACE (Creator / Shoptalk): renderizar SOLO los items wall
@@ -18282,20 +18332,20 @@ function drawShop(){
   // existe; TFT centrado en su item.col + offset vertical item.wallY.
   if(isShoptalkBooth()){
     const ledItem=shopLayout.find(i=>i.type==='led');
-    if(ledItem) drawLED(ledItem.sx||1,ledItem.sy||1);
+    if(ledItem) drawShopOperation(()=>drawLED(ledItem.sx||1,ledItem.sy||1));
     const tftItem=shopLayout.find(i=>i.type==='tft');
     if(tftItem){
-      drawAltadisTFT(
+      drawShopOperation(()=>drawAltadisTFT(
         typeof tftItem.col==='number'?tftItem.col:7,
         typeof tftItem.wallY==='number'?tftItem.wallY:undefined
-      );
+      ));
     }
     const doorItem=shopLayout.find(i=>i.type==='door');
     if(doorItem){
-      drawCreatorDoor(
+      drawShopOperation(()=>drawCreatorDoor(
         typeof doorItem.col==='number'?doorItem.col:6,
         typeof doorItem.wallY==='number'?doorItem.wallY:undefined
-      );
+      ));
     }
   }
 
@@ -18396,32 +18446,32 @@ function drawShop(){
       drawFurnitureContactShadow(e.col,e.row,sbw,sbd);
     }
     switch(e.type){
-      case 'counter': drawScaled(e,drawIsoCounter); break;
-      case 'shelves': drawScaled(e,drawIsoShelves); break;
-      case 'lottery': drawScaled(e,drawIsoLottery); break;
-      case 'manager': drawScaled(e,drawIsoManager); break;
+      case 'counter': drawShopOperation(()=>drawScaled(e,drawIsoCounter)); break;
+      case 'shelves': drawShopOperation(()=>drawScaled(e,drawIsoShelves)); break;
+      case 'lottery': drawShopOperation(()=>drawScaled(e,drawIsoLottery)); break;
+      case 'manager': drawShopOperation(()=>drawScaled(e,drawIsoManager)); break;
       case 'plant': drawScaled(e,drawIsoPlant); break;
-      case 'floorLamp': drawScaled(e,drawIsoFloorLamp); break;
+      case 'floorLamp': drawShopOperation(()=>drawScaled(e,drawIsoFloorLamp)); break;
       case 'vending': drawScaled(e,drawIsoVending); break;
       case 'wineRack': drawScaled(e,drawIsoWineRack); break;
       case 'magazines': drawMagazineRack(e); break;
       case 'rug': drawScaled(e,drawIsoRug); break;
-      case 'djBooth': drawScaled(e,drawIsoDJBooth); break;
-      case 'tablet': drawScaled(e,drawIsoTabletKiosk); break;
-      case 'turnKiosk': drawScaled(e,drawIsoTurnKiosk); break;
-      case 'aroma': drawAromatizer(e.col,e.row,typeof e.wallY==='number'?e.wallY:undefined); break;
-      case 'metahuman': drawScaled(e,drawIsoMetahuman); break;
-      case 'custom': drawCustomFurni(e); break;
-      case 'staff': drawIsoStaff(e.data); break;
-      case 'cust': drawIsoCust(e.data); break;
-      case 'passerby': drawIsoCust(e.data); break;
-      case 'saca': drawIsoSaca(e.data); break;
-      case 'thief': drawIsoThief(e.data); break;
-      case 'guardiaCivil': drawIsoGuardiaCivil(e.data); break;
-      case 'opinador': drawIsoOpinador(e.data); break;
-      case 'unitreeBot': drawIsoUnitreeBot(e.data); break;
+      case 'djBooth': drawShopOperation(()=>drawScaled(e,drawIsoDJBooth)); break;
+      case 'tablet': drawShopOperation(()=>drawScaled(e,drawIsoTabletKiosk)); break;
+      case 'turnKiosk': drawShopOperation(()=>drawScaled(e,drawIsoTurnKiosk)); break;
+      case 'aroma': drawShopOperation(()=>drawAromatizer(e.col,e.row,typeof e.wallY==='number'?e.wallY:undefined)); break;
+      case 'metahuman': drawShopOperation(()=>drawScaled(e,drawIsoMetahuman)); break;
+      case 'custom': drawShopOperation(()=>drawCustomFurni(e)); break;
+      case 'staff': drawShopOperation(()=>drawIsoStaff(e.data),'actor'); break;
+      case 'cust': drawShopOperation(()=>drawIsoCust(e.data),'actor'); break;
+      case 'passerby': drawShopOperation(()=>drawIsoCust(e.data),'actor'); break;
+      case 'saca': drawShopOperation(()=>drawIsoSaca(e.data),'actor'); break;
+      case 'thief': drawShopOperation(()=>drawIsoThief(e.data),'actor'); break;
+      case 'guardiaCivil': drawShopOperation(()=>drawIsoGuardiaCivil(e.data),'actor'); break;
+      case 'opinador': drawShopOperation(()=>drawIsoOpinador(e.data),'actor'); break;
+      case 'unitreeBot': drawShopOperation(()=>drawIsoUnitreeBot(e.data),'actor'); break;
     }
-    if(isSelectedEditorFurniture){
+    if(isSelectedEditorFurniture)drawShopOperation(()=>{
       cx.globalAlpha=1;
       if(isWallMountedType(e.type)){
         // Item montado en pared — highlight RECORTADO al render real del
@@ -18461,7 +18511,7 @@ function drawShop(){
         r(sp.x-20,sp.y-29,40,11,'#072232cc');
         tx('● SEL',sp.x,sp.y-21,'#9fe7ff',6,'center');
       }
-    }
+    },'selection');
     if(isEditorFurniture) cx.restore();
   }
 
@@ -18471,12 +18521,12 @@ function drawShop(){
   try{ positionWallAvatar(); }catch(_){}
 
   // ── ESCAPARATE — right wall rows 0-2, above glass door ──
-  if(!editorSceneActive) drawEscaparate();
+  if(!editorSceneActive) drawShopOperation(()=>drawEscaparate());
 
   // ── AROMA MACHINE — wall overlay above exterior ads so waves stay visible ──
   if(!editorSceneActive&&shopFurnitureVisible){
     const aromaItem=shopLayout.find(i=>i.type==='aroma');
-    if(aromaItem) drawAromatizer(aromaItem.col,aromaItem.row);
+    if(aromaItem) drawShopOperation(()=>drawAromatizer(aromaItem.col,aromaItem.row));
   }
 
   // ── GLASS DOOR — drawn LAST, always on top of furniture/characters ──
@@ -18485,8 +18535,15 @@ function drawShop(){
   // ── DOOR FOREGROUND PEOPLE — characters physically in front of the door
   // (passersby on the sidewalk + customers entering/leaving) re-painted
   // ON TOP of the glass-door frame so the wood jambs don't crop their bodies.
-  if(!editorSceneActive && !isShoptalkBooth()) drawDoorForegroundPeople();
+  if(!editorSceneActive && !isShoptalkBooth()) drawShopOperation(()=>drawDoorForegroundPeople(),'actor');
 
+  // Compose the replacement world before operational marks and all HUD/editor UI.
+  // DS monitors remain DOM behind #c: open their holes before adding the layer,
+  // so a customer drawn in front of a screen is not erased by the punch.
+  if(premiumActive)premiumView.paint(cx,performance.now(),()=>punchDsScreenHoles());
+
+  // Lighting is shared by all visual modes and applies after composition,
+  // before the HUD, including real lamp state and the DJ lighting cues.
   // ── DAY / NIGHT AMBIENT OVERLAY ──
   if(!editorSceneActive&&G&&G.gameTime){
     const nh=G.gameTime;
@@ -26514,7 +26571,7 @@ function loop(){
   cx.save();try{if(codexMapOpen)drawCodexMapOverlay();}catch(e){}cx.restore();
   finalizeFrame();
 }
-window.__xtancoVisualState=()=>({iso:ISO,layout:shopFurnitureVisible?shopLayout:[],game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},active:!!G&&(state===S.GAME||state===S.PAUSE)&&CLIENTS[activeClient]?.id==='xtanco'});
+window.__xtancoVisualState=()=>({iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:shopFurnitureVisible||editorSceneActive?shopLayout:[],game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'});
 loop();
 
 // ── DIRECT ENTRY URL: ?play=<verticalId> ─────────────────────────
