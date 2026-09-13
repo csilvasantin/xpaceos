@@ -1,6 +1,8 @@
 {
-  "version": "v.11.09.2026.r1.15:52",
-  "deployer": "NeoMBA16",
+  "version": "v.13.09.2026.r1.11:26",
+  "signature": "Codex · MacBookAir16plata",
   "machine": "MacBookAir16plata",
-  "signature": "NeoMBA16 · MacBookAir16plata"
+  "agent": "Codex",
+  "deployer": "Codex",
+  "evidence": "Espejo Xtore de player y Puerta Cam en XpaceOS; pruebas de protocolo y regresión, QA de playlist y cambio condicional en navegador."
 }
