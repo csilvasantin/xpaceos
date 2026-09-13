@@ -28,7 +28,7 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
   const requested=qs.get('twinOrigin'),session=qs.get('twinSession');
   if(window.opener&&allowedOrigin(requested,location.origin)&&/^[a-f0-9-]{36}$/.test(session||''))bind(window.opener,requested,session);
   panel.querySelector('#xtore-connect').onclick=()=>{
-    if(peer&&!peer.closed){peer.focus();return;}
+    if(peer&&!peer.closed){send('hello');status.textContent='Comprobando el enlace con el player interior…';return;}
     const testOrigin=qs.get('analyzerOrigin');
     const analyzerOrigin=/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(location.origin)&&allowedOrigin(testOrigin,location.origin)?testOrigin:'https://admira.tv';
     const session=crypto.randomUUID(),url=new URL('/videoanalytics/xtore/',analyzerOrigin);

@@ -9,6 +9,7 @@ Experto no desconecta el player ni la cámara; «Desconectar» sí lo hace.
 Toda nueva ventana flotante debe ser movible y disponer de cierre visible.
 
 Conectar player y cámara abre el analizador de Admira.tv en una ventana dedicada.
+Si ya existe una ventana enlazada, el botón revalida su conexión sin cambiar de pestaña.
 Allí se comparte exclusivamente la pestaña autorizada de Digital Twin 360,
 se marca Puerta Cam y se inicia el análisis. En este flujo el iPad es opcional.
 También se puede abrir el gemelo desde el analizador con Abrir gemelo · zapatillas.
@@ -40,8 +41,10 @@ El resto de las estimaciones de Impactos se rotula separado de Puerta Cam.
 
 El enlace exige WindowProxy exacto, origen admitido, sesión aleatoria e identidad
 de player. El receptor rechaza mensajes antiguos o desordenados; cámara caduca
-con la edad original del fotograma a 1,5 s y reproducción a 2,5 s. Pausa, ocultación,
-cierre y desconexión retiran señal. El origen no actualiza la fecha de un reporte
+con la edad original del fotograma a 1,5 s y reproducción a 2,5 s. El analizador y el player siguen activos en segundo plano mientras reciben
+latidos del gemelo enlazado. Pausa manual, cierre y desconexión retiran la señal;
+si el enlace caduca con el analizador oculto, este se suspende. La recuperación
+requiere el enlace restablecido y fotogramas nuevos. El origen no actualiza la fecha de un reporte
 viejo para mantenerlo artificialmente vivo. El vídeo se carga con CORS anónimo
 para no contaminar el canvas del gemelo.
 
