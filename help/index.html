@@ -59,7 +59,7 @@
 <header><div class="bar">
   <a class="logo" href="/">XPACEOS · <span data-i18n="help">AYUDA</span></a>
   <nav>
-    <a href="/admira-xp/?autostart=xtanco&amp;visual=life" data-i18n="nav.try">Prueba el gemelo</a>
+    <a href="/admira-xp/?autostart=xtanco&amp;visual=better" data-i18n="nav.try">Prueba el gemelo</a>
     <a href="/scan/" data-i18n="nav.scan">Escanear</a>
     <a href="/help/cli/" data-i18n="nav.cli">Comandos CLI</a>
     <a href="/mcp/">MCP</a>
@@ -110,17 +110,21 @@
         <li data-i18n="s1.a.2">Busca por nombre, dirección o marca, o filtra por marca y tipo de superficie.</li>
         <li data-i18n="s1.a.3">Toca una tarjeta: su Gemelo Digital se carga ahí mismo con las pantallas y superficies reales de ese punto.</li>
         <li data-i18n="s1.a.4">«Abrir a pantalla completa» para operarlo con todo el espacio.</li>
-      </ol><a class="cta" href="/admira-xp/?autostart=xtanco&amp;visual=life" data-i18n="s1.cta">Prueba el gemelo →</a></div>
+      </ol><a class="cta" href="/admira-xp/?autostart=xtanco&amp;visual=better" data-i18n="s1.cta">Prueba el gemelo →</a></div>
       <div class="card"><h3 data-i18n="s1.b.h">Enlaces directos</h3>
         <p data-i18n-html="s1.b.1">Gemelo de un punto concreto: <code>/admira-xp/?loc=&lt;id&gt;</code> (p. ej. <a href="/admira-xp/?loc=mango-001" target="_blank" rel="noopener">?loc=mango-001</a>).</p>
         <p data-i18n-html="s1.b.2" style="margin-top:8px">Portada con ese gemelo ya cargado: <code>/?twin=&lt;id&gt;</code>.</p>
         <p data-i18n-html="s1.b.3" style="margin-top:8px">Dentro del gemelo hay un CLI con todo el vocabulario (velocidad, reloj, stock, pantallas, IA, música…): <a href="/help/cli/">referencia de comandos</a>.</p>
         <div class="tip" data-i18n="s1.tip">El gemelo de referencia es el Xtanco (estanco). Los demás espacios usan el mismo motor con su configuración real: nombre, pantallas y superficies del catálogo.</div>
       </div>
-      <div class="card"><h3 data-i18n="s1.3d.h">Explora El Xtanco en 3D</h3>
-        <p data-i18n-html="s1.3d.1"><a href="/admira-xp/?autostart=xtanco&amp;visual=life">Try the twin abre la nueva vista isométrica</a>: interior detallado, personajes articulados y luz de día, atardecer o noche. Es una representación estilizada del layout actual, no un escaneo fotogramétrico.</p>
+      <div class="card"><h3 data-i18n="s1.3d.h">Experto → Better: El Xtanco en 3D</h3>
+        <p data-i18n-html="s1.3d.1"><a href="/admira-xp/?autostart=xtanco&amp;visual=better">Try the twin abre Better</a>: interior detallado, personajes articulados y luz de día, atardecer o noche. Es una representación estilizada del layout actual, no un escaneo fotogramétrico.</p>
         <p data-i18n-html="s1.3d.2" style="margin-top:8px"><b>Arrastra</b> para girar; scroll o pellizco para acercar; toca un objeto para ver su ficha. Usa las cámaras Isométrica, Planta y Detalle. Con teclado: flechas, +/− e Inicio.</p>
-        <p data-i18n-html="s1.3d.3" style="margin-top:8px"><b>Volver al gemelo</b> (o Escape) devuelve al editor, CLI y controles operativos sin reiniciar la sesión. <b>Vista 3D</b>, en la barra superior, vuelve a abrirla. Los clientes son los de la simulación; esta vista no genera mediciones de audiencia.</p>
+        <p data-i18n-html="s1.3d.3" style="margin-top:8px">Abre <b>Experto (⌘)</b> y elige <b>Better</b>. <b>Volver al gemelo</b> (o Escape) regresa a <b>Good</b>, con editor, CLI y controles operativos, sin reiniciar la sesión. Los clientes son los de la simulación; esta vista no genera mediciones de audiencia.</p>
+      </div>
+      <div class="card" id="best"><h3 data-i18n="s1.best.h">Best: fotorealista · en preparación</h3>
+        <p data-i18n-html="s1.best.1"><b>Good</b>: juego clásico. <b>Better</b>: gemelo isométrico 3D estilizado. <b>Best</b>: objetivo fotorealista, aún no disponible; se activará cuando sus modelos y materiales estén validados.</p>
+        <p data-i18n-html="s1.best.2" style="margin-top:8px">La siguiente fase es modelar el local y los muebles pieza a pieza desde fotos y medidas verificadas, comenzando por el mostrador. Los originales editables en Blender se exportarán a modelos optimizados para la web, conservando el mismo estado y las funciones del gemelo.</p>
       </div>
     </div>
   </section>
@@ -278,10 +282,13 @@ const I18N={en:{
  's1.b.2':'Home page with that twin already loaded: <code>/?twin=&lt;id&gt;</code>.',
  's1.b.3':'Inside the twin there is a CLI with the whole vocabulary (speed, clock, stock, screens, AI, music…): <a href="/help/cli/">command reference</a>.',
  's1.tip':'The reference twin is the Xtanco (tobacco shop). Every other space uses the same engine with its real configuration: name, screens and surfaces from the catalog.',
- 's1.3d.h':'Explore El Xtanco in 3D',
- 's1.3d.1':'<a href="/admira-xp/?autostart=xtanco&amp;visual=life">Try the twin opens the new isometric view</a>: a detailed interior, articulated characters, and day, sunset or night lighting. This is a stylized representation of the current layout, not a photogrammetric scan.',
+ 's1.3d.h':'Expert → Better: El Xtanco in 3D',
+ 's1.3d.1':'<a href="/admira-xp/?autostart=xtanco&amp;visual=better">Try the twin opens Better</a>: a detailed interior, articulated characters, and day, sunset or night lighting. This is a stylized representation of the current layout, not a photogrammetric scan.',
  's1.3d.2':'<b>Drag</b> to orbit; scroll or pinch to zoom; tap an object to inspect it. Choose Isometric, Floor plan or Detail cameras. Keyboard: arrows, +/− and Home.',
- 's1.3d.3':'<b>Volver al gemelo</b> (or Escape) returns to the editor, CLI and operational controls without restarting the session. <b>Vista 3D</b> in the top bar opens it again. Customers come from the existing simulation; this view does not generate audience measurements.',
+ 's1.3d.3':'Open <b>Expert (⌘)</b> and choose <b>Better</b>. <b>Volver al gemelo</b> (or Escape) returns to <b>Good</b> with the editor, CLI and operational controls, without restarting the session. Customers come from the existing simulation; this view does not generate audience measurements.',
+ 's1.best.h':'Best: photorealistic · in preparation',
+ 's1.best.1':'<b>Good</b>: classic game. <b>Better</b>: stylized isometric 3D twin. <b>Best</b>: photorealistic target, not yet available; it will be enabled after its models and materials are validated.',
+ 's1.best.2':'The next phase is to model the real space and furniture piece by piece from verified photos and measurements, starting with the counter. Editable Blender sources will be exported as web-optimized models, preserving the same twin state and functions.',
  's2.h':'Scan your space (XpaceScan)','s2.k':'from the phone to the 3D twin, no cables','s2.a.h':'On the phone',
  's2.a.1':'Open <a href="/scan/">xpaceos.com/scan</a> and allow the camera.','s2.a.2':'Record 60–120 s walking slowly, with lateral and wrapping movement, covering each zone from two angles.',
  's2.a.3':'Tap <b>☁︎ Upload to XpaceOS</b>. The video uploads in chunks with progress.','s2.a.4':'Copy or share the viewer link that appears. That link is your scene.',

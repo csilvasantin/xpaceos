@@ -9,12 +9,13 @@ import {createLifeSnapshot} from './life-snapshot.mjs';
 // harness; the fake DOM exercises observable scheduling and event propagation.
 const source=fs.readFileSync(new URL('./life-ui.mjs',import.meta.url),'utf8')
   .replace(/^import .*;\n/,'')
-  .replace("await import('./life-renderer.mjs')",'await loadRenderer()');
+  .replace("await import('./life-renderer.mjs')",'await loadRenderer()')
+  .replace(/^export \{.*\};?\s*$/m,'');
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const releaseInputs=html.match(/window\.__xtancoReleaseInputs=.*;/)?.[0];
 const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve();};
 
-function harness({load}={}){
+function harness({load,search=''}={}){
   let document;
   class Element {
     constructor(name){
@@ -43,8 +44,8 @@ function harness({load}={}){
       return event;
     }
   }
-  const body=new Element('body'),actions=new Element('actions'),previous=new Element('previous');actions.parent=body;
-  document={body,activeElement:previous,hidden:false,createElement:name=>new Element(name),querySelector:()=>actions};
+  const body=new Element('body'),actions=new Element('actions'),previous=new Element('previous'),created=[];actions.parent=body;
+  document={body,activeElement:previous,hidden:false,createElement:name=>{created.push(name);return new Element(name);},querySelector:()=>actions};
   const window=new Element('window');body.parent=window;
   let raw={active:true,iso:{cols:14,rows:8,ox:270,oy:185,tileW:80,tileH:28,wallH:165},
     game:{staff:[],custs:[{x:343,y:249,dir:1,st:'walk'}],gameTime:14,custIn:3}};
@@ -58,7 +59,7 @@ function harness({load}={}){
       clearSelection(){calls.clearSelection++;options.onSelect(null);}};
     viewers.push(viewer);return viewer;
   };
-  const context=vm.createContext({document,window,keys,createLifeSnapshot,performance:{now:()=>clock},URLSearchParams,location:{search:''},
+  const context=vm.createContext({document,window,keys,createLifeSnapshot,performance:{now:()=>clock},URLSearchParams,location:{search},
     console:{warn(){}},loadRenderer:()=>{loads++;return load?load({createLifeRenderer},loads):Promise.resolve({createLifeRenderer});},
     requestAnimationFrame:fn=>{const id=++sequence;frames.set(id,fn);return id;},cancelAnimationFrame:id=>frames.delete(id),
     setTimeout:(fn,delay)=>{const id=++sequence;timers.set(id,{fn,at:clock+delay});return id;},clearTimeout:id=>timers.delete(id),
@@ -66,15 +67,41 @@ function harness({load}={}){
   });
   assert.ok(releaseInputs,'the shared game must expose its explicit held-input release hook');
   vm.runInContext(releaseInputs,context);
-  vm.runInContext(source+';globalThis.audit={open,close,dialog:()=>dialog,trigger};',context);
-  return {context,document,window,body,previous,keys,frames,timers,viewers,observers,
-    get dialog(){return context.audit.dialog();},get trigger(){return context.audit.trigger;},
+  vm.runInContext(source+';globalThis.audit={open,close,subscribeLifeView,dialog:()=>dialog};',context);
+  return {context,document,window,body,previous,keys,frames,timers,viewers,observers,created,
+    get dialog(){return context.audit.dialog();},subscribe:listener=>context.audit.subscribeLifeView(listener),
     setRaw:value=>{raw=value;},get raw(){return raw;},
     async open(){await context.audit.open();await flush();},close:()=>context.audit.close(),
     frame(time){clock=time;const first=frames.entries().next().value;assert.ok(first,'one frame must be scheduled');frames.delete(first[0]);first[1](time);},
     async timer(time){clock=time;for(const [id,timer]of [...timers])if(timer.at<=time){timers.delete(id);timer.fn();}await flush();}
   };
 }
+
+test('the reusable Life controller does not launch itself from URLs or create a separate trigger',()=>{
+  for(const search of ['?visual=life','?visual=better','?visual=best']){
+    const h=harness({search});assert.equal(h.dialog,undefined);assert.equal(h.viewers.length,0);assert.equal(h.frames.size,0);assert.equal(h.timers.size,0);
+    assert.deepEqual(h.created,[]);
+  }
+});
+
+test('Life subscribers observe opening, ready and closing, and can unsubscribe',async()=>{
+  const h=harness(),states=[];
+  const unsubscribe=h.subscribe(state=>states.push({...state}));
+  await h.open();assert.equal(states.length,2);
+  assert.equal(states[0].open,true);assert.equal(states[0].busy,true);
+  assert.equal(states[1].open,true);assert.equal(states[1].busy,false);assert.equal(states[1].error,'');
+  h.close();assert.equal(states.at(-1).open,false);assert.equal(states.at(-1).busy,false);
+  unsubscribe();const length=states.length;await h.open();h.close();assert.equal(states.length,length);
+});
+
+test('pagehide releases the real controller resources and publishes a distinct preference-preserving close reason',async()=>{
+  const h=harness(),states=[];h.subscribe(state=>states.push({...state}));await h.open();
+  h.window.emit('pagehide',{persisted:true});
+  assert.equal(h.dialog,null);assert.equal(h.viewers[0].calls.dispose,1);assert.equal(h.frames.size,0);assert.equal(h.timers.size,0);
+  assert.ok(h.observers.every(observer=>observer.disconnected));assert.equal(states.at(-1).open,false);assert.equal(states.at(-1).reason,'pagehide');
+  await h.open();h.dialog.querySelector('.life-close').emit('click');
+  assert.equal(states.at(-1).reason,'','a DOM click event must not be mistaken for a close reason');
+});
 
 test('modal releases held movement keys, keeps local camera actions, and blocks underlying game events',async()=>{
   const h=harness();await h.open();assert.deepEqual(h.keys,{KeyQ:false,KeyP:false});

@@ -1,6 +1,6 @@
 # El Xtanco · immersive 3D
 
-Open `/admira-xp/?autostart=xtanco&visual=life` or choose **Vista 3D** in the top bar. The homepage's **Try the twin** uses this entry. Escape / **Volver al gemelo** returns to operational tools without starting another game.
+Open `/admira-xp/?autostart=xtanco&visual=better` or choose **Expert (⌘) → Better**. The homepage's **Try the twin** uses this entry; `visual=life` remains an alias. Escape / **Volver al gemelo** returns to Good and its operational tools without starting another game. There is no separate top-bar 3D launcher.
 
 This is a stylized, procedural representation of the running layout, not a scan or a claim of photorealism. Customers are the existing game actors, not newly inferred camera detections. Camera-owned exterior traffic is not replaced with synthetic pedestrians.
 
@@ -11,7 +11,9 @@ This is a stylized, procedural representation of the running layout, not a scan 
 - `life-renderer.mjs` owns the local Three.js renderer, orthographic camera, pointer/pinch/keyboard camera actions and selection. Render is driven by the UI. Scene disposal releases GPU resources.
 - `life-ui.mjs` opens an isolated native modal, reads state at 10 Hz and renders while visible. It dynamically loads Three.js only on launch. It closes if the current game state can no longer be represented. `__xtancoReleaseInputs()` releases held gameplay keys when entering the modal.
 
-Existing Good / Better / Best modes, editor, live player, CLI and control panels remain unchanged. All immersive digital screens sample one shared canvas via the existing `__xtoreWindowPlayer.draw()` source. No extra video, stream, iframe or simulation is created by this view. Audio, measurement and operational interactions remain owned by the original game.
+The public tiers are **Good = classic**, **Better = this immersive 3D**, **Best = photorealistic, in preparation**. `xtanco-visual-tiers.mjs` owns routing and the versioned preference `xtanco_visual_tier_v2`; the old wireframe/hybrid preference is not migrated to an unrelated tier. `__xtancoPremiumView` remains a compatibility façade with no composition, keeping original operation callbacks intact. Legacy `data-xtanco-visual` stays `good` so camera traffic cannot acquire the old wireframe style; the public tier uses `data-xtanco-tier`.
+
+Editor, live player, CLI and control panels remain available in Good. All immersive digital screens sample one shared canvas via the existing `__xtoreWindowPlayer.draw()` source. No extra video, stream, iframe or simulation is created by this view. Audio, measurement and operational interactions remain owned by the original game. Best's asset pipeline and pending real-world references are described in [best-production.md](./best-production.md).
 
 ## Controls
 

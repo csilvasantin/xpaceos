@@ -1,17 +1,17 @@
 import {createLifeSnapshot} from './life-snapshot.mjs';
 
-const trigger=document.createElement('button');trigger.type='button';trigger.id='xtanco-life-launch';
-trigger.textContent='◈ Vista 3D';trigger.title='Explorar el gemelo en 3D';
-(document.querySelector('#pfToggles')||document.body).prepend(trigger);
-for(const event of ['keydown','keyup','keypress'])trigger.addEventListener(event,e=>e.stopPropagation());
+// The expert Good/Better/Best selector owns launch, routing and preference.
+const listeners=new Set();
+const announce=(busy=false,error='',reason='')=>{for(const listener of listeners)listener({open:!!dialog,busy,error,reason});};
+function subscribeLifeView(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
 const snapshot=createLifeSnapshot();
 let dialog,viewer,frame=0,pending=0,generation=0,resizeObserver,lastFocus;
 const names={counter:'Mostrador',shelves:'Estantería',wineRack:'Bodega',lottery:'Lotería',vending:'Vending',magazines:'Prensa',manager:'Puesto de gestión',plant:'Vegetación',floorLamp:'Iluminación',rug:'Alfombra',djBooth:'DJ booth',tablet:'Tablet',turnKiosk:'Gestor de turnos',aroma:'Aromatización',metahuman:'Asistente digital',tft:'Pantalla digital',led:'Superficie LED',custom:'Mobiliario'};
 const roles={staff:'Equipo',customer:'Cliente del gemelo',passerby:'Transeúnte simulado',saca:'Logística',thief:'Personaje del juego',guardiaCivil:'Personaje del juego',opinador:'Visitante',unitreeBot:'Robot'};
-function close(){
+function close(reason=''){
   generation++;cancelAnimationFrame(frame);clearTimeout(pending);resizeObserver?.disconnect();resizeObserver=null;
   viewer?.dispose();viewer=null;dialog?.close();dialog?.remove();dialog=null;
-  document.body.classList.remove('xtanco-life-open');lastFocus?.focus?.();trigger.removeAttribute('aria-busy');
+  document.body.classList.remove('xtanco-life-open');lastFocus?.focus?.();announce(false,'',typeof reason==='string'?reason:'');
 }
 function select(data){
   if(!dialog)return;const panel=dialog.querySelector('.life-selection');panel.hidden=!data;if(!data)return;
@@ -21,10 +21,10 @@ function select(data){
   panel.querySelector('p').textContent=data.item?'Elemento del layout actual. Para editarlo, vuelve a los controles del gemelo.':'Posición y movimiento sincronizados con la simulación del gemelo.';
 }
 async function open(){
-  if(dialog)return;const ticket=++generation;lastFocus=document.activeElement;trigger.setAttribute('aria-busy','true');
+  if(dialog)return;const ticket=++generation;lastFocus=document.activeElement;
   dialog=document.createElement('dialog');dialog.className='life-dialog';dialog.setAttribute('aria-labelledby','life-title');
   dialog.innerHTML=`<header class="life-header">
-    <div class="life-brand"><span class="life-mark" aria-hidden="true">X</span><div><span class="life-eyebrow">XPACEOS · DIGITAL TWIN</span><h1 id="life-title">Un espacio. Mil posibilidades.</h1></div></div>
+    <div class="life-brand"><span class="life-mark" aria-hidden="true">X</span><div><span class="life-eyebrow">XPACEOS · BETTER · DIGITAL TWIN</span><h1 id="life-title">Un espacio. Mil posibilidades.</h1></div></div>
     <button type="button" class="life-close" aria-label="Volver al gemelo">Volver al gemelo <span aria-hidden="true">↗</span></button>
   </header>
   <div class="life-stage"><canvas class="life-canvas" tabindex="0" aria-label="Gemelo 3D interactivo. Arrastra para girar, usa las flechas para rotar y más o menos para acercar."></canvas>
@@ -36,6 +36,7 @@ async function open(){
     <div class="life-compass" aria-hidden="true"><span>N</span><b>↟</b></div>
   </div><footer class="life-footer"><span><b>Arrastra</b> para girar · <b>Scroll / pellizca</b> para acercar · <b>Toca</b> para explorar</span><span class="life-footnote">Mismo gemelo · nueva perspectiva</span></footer>`;
   document.body.append(dialog);dialog.showModal();window.__xtancoReleaseInputs?.();document.body.classList.add('xtanco-life-open');
+  announce(true);
   dialog.querySelector('.life-close').onclick=close;dialog.querySelector('.life-selection-close').onclick=()=>viewer?.clearSelection();
   dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
   // Some legacy controls hit-test document clicks by coordinates, not target.
@@ -60,21 +61,21 @@ async function open(){
   const loading=dialog.querySelector('.life-loading'),canvas=dialog.querySelector('canvas');
   function fail(message){
     viewer?.dispose();viewer=null;loading.hidden=false;loading.classList.add('life-error');loading.querySelector('h2').textContent='El 3D no está disponible';loading.querySelector('p').textContent=message;
-    const retry=loading.querySelector('button');retry.hidden=false;retry.onclick=()=>{close();void open();};trigger.removeAttribute('aria-busy');
+    const retry=loading.querySelector('button');retry.hidden=false;retry.onclick=()=>{close();void open();};announce(false,message);
   }
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(ticket!==generation)return;cancelAnimationFrame(frame);fail('La conexión gráfica se ha interrumpido. Reintenta o vuelve al gemelo clásico.');});
   const started=performance.now();
   async function connect(){
     if(ticket!==generation)return;const input=snapshot(window.__xtancoVisualState?.());
     if(!input){
-      if(performance.now()-started>30000){fail('Abre El Xtanco en el gemelo y pulsa Vista 3D. Tus controles habituales siguen disponibles.');return;}
+      if(performance.now()-started>30000){fail('Abre El Xtanco y elige Experto → Better. Tus controles habituales siguen disponibles.');return;}
       pending=setTimeout(connect,180);return;
     }
     try{
       const {createLifeRenderer}=await import('./life-renderer.mjs');if(ticket!==generation)return;
       viewer=createLifeRenderer({canvas,snapshot:input,getPlayer:()=>window.__xtoreWindowPlayer,onSelect:select});
       resizeObserver=new ResizeObserver(()=>{if(viewer&&dialog){const rect=dialog.querySelector('.life-stage').getBoundingClientRect();viewer.resize(rect.width,rect.height);}});resizeObserver.observe(dialog.querySelector('.life-stage'));
-      loading.hidden=true;trigger.removeAttribute('aria-busy');canvas.focus();let lastSnapshot=0,lastStatus=0,current=input;
+      loading.hidden=true;announce();canvas.focus();let lastSnapshot=0,lastStatus=0,current=input;
       function tick(now){
         if(ticket!==generation||!viewer)return;
         try{
@@ -91,5 +92,5 @@ async function open(){
   }
   void connect();
 }
-trigger.onclick=()=>void open();window.addEventListener('pagehide',close);
-if(new URLSearchParams(location.search).get('visual')==='life')void open();
+window.addEventListener('pagehide',()=>close('pagehide'));
+export {open as openLifeView,close as closeLifeView,subscribeLifeView};
