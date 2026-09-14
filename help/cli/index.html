@@ -63,7 +63,7 @@
 <header><div class="wrap">
   <span class="logo">XPACEOS<span class="dot">·</span><span data-i="help">AYUDA</span></span>
   <nav>
-    <a href="https://www.pixeria.com/crear/">▶ <span data-i="opencli">Abrir el CLI</span></a>
+    <a href="/admira-xp/?autostart=xtanco&amp;visual=good">▶ <span data-i="opencli">Abrir el CLI</span></a>
     <a href="https://www.xpaceos.com/admira-xp/">🎮 <span data-i="twin">Gemelo</span></a>
     <a href="/ayuda/">◇ <span data-i="method">Método Xpacios</span></a>
     <a href="/">↗ XpaceOS</a>
@@ -73,7 +73,7 @@
 
 <div class="hero"><div class="wrap">
   <h1><span data-i="h1a">Comandos del CLI</span> · <span class="grad"><span data-i="h1b">Gemelo Admira XP</span></span></h1>
-  <p class="lede" data-i="lede">Todo el vocabulario del Xtanco. Estos comandos se ejecutan desde el <b>CLI Xtanco</b> de <a href="https://www.pixeria.com/crear/">pixeria.com/crear</a> (estando En vivo, sin clave) o en la consola del propio gemelo. Convención: invocar sin argumentos suele hacer <em>toggle</em>; los aliases en mayúsculas/minúsculas valen igual.</p>
+  <p class="lede" data-i="lede">Todo el vocabulario del Xtanco. Abre <b>Experto (⌘)</b> en el gemelo de XpaceOS para acceder a su consola. Los comandos de vista <code>/modo</code> actúan sólo en ese navegador. El <b>CLI Xtanco</b> de <a href="https://www.pixeria.com/crear/">pixeria.com/crear</a> conserva sus comandos operativos; no incorpora este selector visual. Convención: invocar sin argumentos suele hacer <em>toggle</em>; los aliases valen igual.</p>
   <div class="bar">
     <input id="q" type="search" placeholder="Buscar… (velocidad, ladron, restock)" autocomplete="off" spellcheck="false">
     <span class="pill" id="count"></span>
@@ -89,13 +89,13 @@
 <script>
 const UI={
   es:{help:'AYUDA',opencli:'Abrir el CLI',twin:'Gemelo',method:'Método Xpacios',h1a:'Comandos del CLI',h1b:'Gemelo Admira XP',
-    lede:'Todo el vocabulario del Xtanco. Estos comandos se ejecutan desde el <b>CLI Xtanco</b> de <a href="https://www.pixeria.com/crear/">pixeria.com/crear</a> (estando En vivo, sin clave) o en la consola del propio gemelo. Convención: invocar sin argumentos suele hacer <em>toggle</em>; los aliases valen igual.',
+    lede:'Todo el vocabulario del Xtanco. Abre <b>Experto (⌘)</b> en el gemelo de XpaceOS para acceder a su consola. Los comandos de vista <code>/modo</code> actúan sólo en ese navegador. El <b>CLI Xtanco</b> de <a href="https://www.pixeria.com/crear/">pixeria.com/crear</a> conserva sus comandos operativos; no incorpora este selector visual. Convención: invocar sin argumentos suele hacer <em>toggle</em>; los aliases valen igual.',
     tip:'💡 Haz clic en cualquier comando para <strong>copiarlo</strong> y pégalo en el CLI. Los que llevan número o texto (<code>/velocidad 8</code>, <code>/reloj 14:30</code>) son ejemplos — cámbialos a tu gusto.',
     tipMove:'📐 <strong>Doctrina Xpaces:</strong> todos los elementos del gemelo son <strong>movibles y sustituibles siempre</strong>. Layout, mobiliario, pantallas y activos viven en la config — se reubican o se reemplazan sin tocar el motor. Ver <a href="/ayuda/">Método Xpacio</a> y <a href="/mcp/">MCP</a>.',
     foot:'Referencia generada desde <code>helpSections()</code> del gemelo · todos los comandos son accesibles desde el CLI.',
     qph:'Buscar… (velocidad, ladron, restock)', cmds:'comandos', clic:'Clic para copiar', toast:'copiado: '},
   en:{help:'HELP',opencli:'Open the CLI',twin:'Twin',method:'Xpacio method',h1a:'CLI commands',h1b:'Admira XP twin',
-    lede:'The twin’s full vocabulary. Run these from the <b>Xtanco CLI</b> at <a href="https://www.pixeria.com/crear/">pixeria.com/crear</a> (while Live, no key) or in the twin’s own console. Convention: calling with no args usually toggles; aliases work the same.',
+    lede:'The twin’s full vocabulary. Open <b>Expert (⌘)</b> in the XpaceOS twin to access its console. The <code>/modo</code> view commands affect that browser only. The <b>Xtanco CLI</b> at <a href="https://www.pixeria.com/crear/">pixeria.com/crear</a> keeps its operational commands but does not include this visual selector. Convention: calling with no args usually toggles; aliases work the same.',
     tip:'💡 Click any command to <strong>copy</strong> it and paste it in the CLI. Ones with a number or text (<code>/velocidad 8</code>, <code>/reloj 14:30</code>) are examples — change them.',
     tipMove:'📐 <strong>Xpaces doctrine:</strong> every element in the twin must be <strong>movable and replaceable at all times</strong>. Layout, furniture, screens and assets live in config — rehome or swap them without touching the engine. See <a href="/ayuda/">Xpacio method</a> and <a href="/mcp/">MCP</a>.',
     foot:'Reference generated from the twin’s <code>helpSections()</code> · every command is reachable from the CLI.',
@@ -103,6 +103,7 @@ const UI={
 };
 // Fuente de verdad: helpSections() de game.html (gemelo). Mantener en sync si cambian los comandos.
 const CATS=[
+  {t:'Calidad del Xpacio · vista local',tEn:'Xpacio quality · local view',d:'En la consola del gemelo actual de xpaceos.com, /modo better abre el 3D y /modo good vuelve al clásico. /modo best informa de la producción pendiente; no activa todavía un gemelo fotorealista. Good 8-bit, Better 16-bit y Best 32-bit/hiperrealista son nombres de estilo, no profundidad de color. También accesible en Experto (⌘). Este comando visual no envía mensajes a Telegram ni cambia pantallas físicas; no se promete en la demo antigua de carlossilva.info ni en CLIs de otros sitios. Para /render se conserva el comportamiento clásico.',dEn:'In the current xpaceos.com twin console, /modo better opens 3D and /modo good returns to classic. /modo best reports the pending production; it does not enable a photorealistic twin yet. Good 8-bit, Better 16-bit and Best 32-bit/hyperrealistic are style names, not color depth. Also available in Expert (⌘). This view command does not send Telegram messages or change physical screens; it is not promised in the old carlossilva.info demo or other sites’ CLIs. The classic /render behavior is preserved.',c:['/modo','/modo good','/modo better','/modo best']},
   {t:'Consulta',tEn:'Status & queries',d:'Estado del Xpacio, equipo, stock y turnos.',dEn:'Xpacio status, staff, stock and shifts.',c:['/status','/staff','/stock','/turno']},
   {t:'Turnos (pantalla pared larga)',tEn:'Queue screen (long wall)',d:'Controla el número de turno de la pantalla secundaria. /turno off apaga el número y deja solo la publi. next/previous avanzan o retroceden; un número fija el turno; auto vuelve al modo automático.',dEn:'Controls the turn number on the secondary screen. /turno off hides the number leaving only the ad. next/previous step it; a number sets the turn; auto returns to automatic.',c:['/turno on','/turno off','/turno next','/turno previous','/turno 15','/turno auto']},
   {t:'Equipo y stock',tEn:'Staff & stock',d:'Contratar, formar y reponer producto.',dEn:'Hire, train and restock.',c:['/hire 1','/hire dj','/hire all','/train 1','/train all','/restock 2','/restock all','/restock prensa']},

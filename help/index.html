@@ -120,11 +120,11 @@
       <div class="card"><h3 data-i18n="s1.3d.h">Experto → Better: El Xtanco en 3D</h3>
         <p data-i18n-html="s1.3d.1"><a href="/admira-xp/?autostart=xtanco&amp;visual=better">Try the twin abre Better</a>: interior detallado, personajes articulados y luz de día, atardecer o noche. Es una representación estilizada del layout actual, no un escaneo fotogramétrico.</p>
         <p data-i18n-html="s1.3d.2" style="margin-top:8px"><b>Arrastra</b> para girar; scroll o pellizco para acercar; toca un objeto para ver su ficha. Usa las cámaras Isométrica, Planta y Detalle. Con teclado: flechas, +/− e Inicio.</p>
-        <p data-i18n-html="s1.3d.3" style="margin-top:8px">Abre <b>Experto (⌘)</b> y elige <b>Better</b>. <b>Volver al gemelo</b> (o Escape) regresa a <b>Good</b>, con editor, CLI y controles operativos, sin reiniciar la sesión. Los clientes son los de la simulación; esta vista no genera mediciones de audiencia.</p>
+        <p data-i18n-html="s1.3d.3" style="margin-top:8px">Abre <b>Experto (⌘)</b> y elige <b>Better</b>, o escribe <code>/modo better</code> en la consola del gemelo de XpaceOS. <code>/modo good</code>, <b>Volver al gemelo</b> o Escape regresan a <b>Good</b> sin reiniciar la sesión. El cambio de vista es local: no envía órdenes a Telegram ni cambia pantallas físicas. Los clientes son los de la simulación.</p>
       </div>
       <div class="card" id="best"><h3 data-i18n="s1.best.h">Best: fotorealista · en preparación</h3>
-        <p data-i18n-html="s1.best.1"><b>Good</b>: juego clásico. <b>Better</b>: gemelo isométrico 3D estilizado. <b>Best</b>: objetivo fotorealista, aún no disponible; se activará cuando sus modelos y materiales estén validados.</p>
-        <p data-i18n-html="s1.best.2" style="margin-top:8px">La siguiente fase es modelar el local y los muebles pieza a pieza desde fotos y medidas verificadas, comenzando por el mostrador. Los originales editables en Blender se exportarán a modelos optimizados para la web, conservando el mismo estado y las funciones del gemelo.</p>
+        <p data-i18n-html="s1.best.1"><b>Good · 8-bit</b>: estilo clásico. <b>Better · 16-bit</b>: 3D isométrico estilizado. <b>Best · 32-bit / hiperrealista</b>: objetivo de detalle y materiales, aún no disponible. 8/16/32 son nombres artísticos de los niveles, no la profundidad de color ni una garantía de fotorealismo. <code>/modo best</code> explica su estado; no activa un render terminado.</p>
+        <p data-i18n-html="s1.best.2" style="margin-top:8px">El <a href="/xpacios/lab/">laboratorio de producción Blender</a> comienza por un mostrador con caja/TPV editable y exportación GLB. Es un piloto interpretado, no una réplica medida. Para validar cada mueble y el local hacen falta fotos y medidas verificadas. Los modelos web conservarán el estado y las funciones del mismo gemelo.</p>
       </div>
     </div>
   </section>
@@ -285,10 +285,10 @@ const I18N={en:{
  's1.3d.h':'Expert → Better: El Xtanco in 3D',
  's1.3d.1':'<a href="/admira-xp/?autostart=xtanco&amp;visual=better">Try the twin opens Better</a>: a detailed interior, articulated characters, and day, sunset or night lighting. This is a stylized representation of the current layout, not a photogrammetric scan.',
  's1.3d.2':'<b>Drag</b> to orbit; scroll or pinch to zoom; tap an object to inspect it. Choose Isometric, Floor plan or Detail cameras. Keyboard: arrows, +/− and Home.',
- 's1.3d.3':'Open <b>Expert (⌘)</b> and choose <b>Better</b>. <b>Volver al gemelo</b> (or Escape) returns to <b>Good</b> with the editor, CLI and operational controls, without restarting the session. Customers come from the existing simulation; this view does not generate audience measurements.',
+ 's1.3d.3':'Open <b>Expert (⌘)</b> and choose <b>Better</b>, or enter <code>/modo better</code> in the XpaceOS twin console. <code>/modo good</code>, <b>Volver al gemelo</b> or Escape return to <b>Good</b> without restarting the session. View changes are local: they do not send Telegram commands or change physical screens. Customers come from the simulation.',
  's1.best.h':'Best: photorealistic · in preparation',
- 's1.best.1':'<b>Good</b>: classic game. <b>Better</b>: stylized isometric 3D twin. <b>Best</b>: photorealistic target, not yet available; it will be enabled after its models and materials are validated.',
- 's1.best.2':'The next phase is to model the real space and furniture piece by piece from verified photos and measurements, starting with the counter. Editable Blender sources will be exported as web-optimized models, preserving the same twin state and functions.',
+ 's1.best.1':'<b>Good · 8-bit</b>: classic style. <b>Better · 16-bit</b>: stylized isometric 3D. <b>Best · 32-bit / hyperrealistic</b>: the detail and material target, not yet available. 8/16/32 are artistic tier names, not color depth or a guarantee of photorealism. <code>/modo best</code> explains availability; it does not activate a finished renderer.',
+ 's1.best.2':'The <a href="/xpacios/lab/">Blender production lab</a> starts with an editable counter and POS, exported as GLB. This is an interpreted pilot, not a measured replica. Verified photos and dimensions are needed to validate each fixture and the space. Web models will preserve the state and functions of the same twin.',
  's2.h':'Scan your space (XpaceScan)','s2.k':'from the phone to the 3D twin, no cables','s2.a.h':'On the phone',
  's2.a.1':'Open <a href="/scan/">xpaceos.com/scan</a> and allow the camera.','s2.a.2':'Record 60–120 s walking slowly, with lateral and wrapping movement, covering each zone from two angles.',
  's2.a.3':'Tap <b>☁︎ Upload to XpaceOS</b>. The video uploads in chunks with progress.','s2.a.4':'Copy or share the viewer link that appears. That link is your scene.',

@@ -7,9 +7,19 @@ Best sustituirá progresivamente los modelos de Better por piezas creadas en Ble
 - `life-scene.mjs` construye geometría procedural con Three local; todavía no hay un cargador GLB de mobiliario en esta escena.
 - `life-snapshot.mjs` conserva actores y metadatos del juego; el layout contiene `id`, `type`, `label`, `col`, `row`, `sx`, `sy`, `rot`, `flipX`, `fp`, `ph` y, para paredes, `wallY`.
 - Las posiciones y `fp` están en casillas. `ph`, `wallY` y `wallHeight` proceden de la geometría de pantalla convertida a unidades del mundo. **No hay una equivalencia casilla–metro autenticada.**
-- No se encontraron archivos fuente `.blend` ni modelos `.glb`/`.gltf` del mobiliario de esta tienda en el árbol inspeccionado de `xpaceos`.
+- Al comenzar no había fuentes `.blend` ni modelos GLB de este mobiliario en el árbol inspeccionado. Ahora existe el piloto interpretado documentado abajo; aún no se carga dentro del juego.
 - `xpacios/xtanco-barcelona/index.html` y `xpacios/xtanco-valencia/index.html` se describen como «render interpretado del plano». Sus cotas compartidas no acreditan medidas de ninguno de los dos locales; no se usarán como levantamiento.
-- El acceso de producción a Blender, su versión, el método de ejecución y el equipo donde trabajar quedan pendientes de verificar. Este documento no acredita una sesión Blender disponible.
+- El 14-09-2026 se verificó Blender **5.2.1 LTS** en el MacBookPro16, ejecutando `/Applications/Blender.app/Contents/MacOS/Blender --version`. El trabajo se realiza por CLI en procesos aislados con `--background --factory-startup --python-exit-code 1`; no necesita activar un servidor MCP ni modificar la sesión gráfica del usuario.
+
+## Niveles de presentación
+
+Good **8-bit**, Better **16-bit** y Best **32-bit / hiperrealista** son nombres artísticos de calidad, no profundidades de color, arquitecturas de CPU ni una promesa de fidelidad física. La vista Better actual continúa siendo 3D estilizado. El propósito del pipeline es representar los mismos IDs, medidas verificadas, objetos y funciones con distintos niveles de geometría y materiales; no mantener tres simulaciones divergentes.
+
+En la consola del gemelo de XpaceOS, `/modo good`, `/modo better` y `/modo best` acceden al router público. Los aliases `/modo 8`, `/modo 16` y `/modo 32` apuntan a esos mismos niveles. Best informa de su preparación, no abre un gemelo fotorealista terminado. `/render` conserva sus estilos del motor clásico y no es el selector de niveles nuevos.
+
+Unreal 5.8.0 también está instalado en este equipo y contiene el plugin experimental `ModelContextProtocol`, desactivado por defecto. Se ha inspeccionado su disponibilidad, **no conectado ni activado**. Blender produce fuentes editables y exportaciones; Unreal puede ser otro destino de render. Un MCP es el canal de automatización, no el modelo, su fidelidad ni su publicación en la web.
+
+Referencias de automatización: [Blender CLI](https://docs.blender.org/manual/en/5.2/advanced/command_line/arguments.html), [Python en Unreal Editor](https://dev.epicgames.com/documentation/unreal-engine/scripting-the-unreal-editor-using-python). La versión local y la ejecución real prevalecen sobre instrucciones genéricas de versiones anteriores.
 
 ## Entrada necesaria para el primer mueble
 
@@ -30,7 +40,19 @@ Para colocar el modelo en metros dentro del gemelo harán falta dimensiones comp
 5. Conservar el `.blend` editable con materiales, referencias y colección de exportación. Generar un GLB optimizado por pieza, con transformaciones y normales comprobadas; evitar exportar cámaras o luces de prueba por accidente.
 6. Integrar sólo esa pieza en Best, medir su coste en el navegador y compararla con Better y con las fotografías. Continuar con el siguiente mueble tras resolver las diferencias del piloto.
 
-## Archivos propuestos, todavía no producidos
+## Piloto producido el 14-09-2026
+
+El pipeline reproducible está en [`../tools/xpacios-blender/`](../tools/xpacios-blender/README.md). Genera desde una configuración común tres perfiles de detalle del mostrador y ocho conjuntos editables: cuerpo, encimera, cajón de caja, TPV, terminal de pago, impresora, rótulo y accesorios. El GLB contiene una superficie `screen_tpv_main` para una futura conexión al player compartido; no reproduce contenido ni modifica la simulación.
+
+| Perfil del asset | Triángulos | GLB |
+| --- | ---: | ---: |
+| good | 2.982 | 320.568 bytes |
+| better | 20.966 | 1.346.000 bytes |
+| best | 40.022 | 3.488.148 bytes |
+
+Cada fuente Blender se abrió de nuevo y cada GLB se reimportó: jerarquía semántica, textos editables, texturas empaquetadas, pivot y exclusión del estudio comprobados. El render principal usa EEVEE y es una imagen fija. Los archivos y su ficha están en `/xpacios/lab/`; los perfiles del asset **no sustituyen todavía** los modos públicos del juego. Sus proporciones son de diseño en casillas sin calibración métrica, no medidas reales.
+
+## Estructura propuesta para piezas validadas del local
 
 ```text
 assets/best/<local-confirmado>/

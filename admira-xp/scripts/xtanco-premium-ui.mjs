@@ -4,7 +4,7 @@ import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs';
 const actions=document.querySelector('#telegramDock .tg-actions');
 const controls=document.createElement('div');controls.id='xtanco-visual-quality';
 controls.setAttribute('role','group');controls.setAttribute('aria-label','Calidad visual · modo experto');
-controls.innerHTML='<button type="button" data-visual-mode="good" aria-pressed="true" title="Good · gemelo clásico y controles operativos">Good</button><button type="button" data-visual-mode="better" aria-pressed="false" title="Better · gemelo 3D isométrico">Better</button><button type="button" data-visual-mode="best" aria-pressed="false" aria-disabled="true" aria-describedby="xtanco-best-status" title="Best · fotorealista en preparación">Best</button><span id="xtanco-best-status" class="quality-status" role="status" hidden></span>';
+controls.innerHTML='<button type="button" data-visual-mode="good" aria-pressed="true" title="Good · estilo 8-bit · gemelo clásico y controles operativos">Good</button><button type="button" data-visual-mode="better" aria-pressed="false" title="Better · estilo 16-bit · gemelo 3D isométrico">Better</button><button type="button" data-visual-mode="best" aria-pressed="false" aria-disabled="true" aria-describedby="xtanco-best-status" title="Best · estilo 32-bit / hiperrealista · en preparación">Best</button><span id="xtanco-best-status" class="quality-status" role="status" hidden></span>';
 actions?.prepend(controls);
 const status=controls.querySelector('.quality-status');
 // The compact expert dock clips its contents. Keep its accessible explanation
