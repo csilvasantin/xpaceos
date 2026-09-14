@@ -9314,6 +9314,8 @@ function drawLeaderboard(bx,by,bw){
 // ── INPUT ─────────────────────────────────────────────────────
 let activeTab=0;
 const keys={};
+// Release held game controls when a presentation-only modal takes focus.
+window.__xtancoReleaseInputs=()=>{for(const key of Object.keys(keys))keys[key]=false;};
 const BTNS={}; try{ window.BTNS=BTNS; }catch(_){}  // expuesto: lo usan el modo pared del Condicional y del Metahuman
 let editorSceneActive=false;
 
@@ -26585,7 +26587,7 @@ function loop(){
   cx.save();try{if(codexMapOpen)drawCodexMapOverlay();}catch(e){}cx.restore();
   finalizeFrame();
 }
-window.__xtancoVisualState=()=>({iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:shopFurnitureVisible||editorSceneActive?shopLayout:[],game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'});
+window.__xtancoVisualState=()=>({palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:shopFurnitureVisible||editorSceneActive?shopLayout:[],game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'});
 loop();
 
 // ── DIRECT ENTRY URL: ?play=<verticalId> ─────────────────────────
@@ -34893,5 +34895,7 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=1">
 <script type="module" src="scripts/xtanco-premium-ui.mjs?v=1"></script>
+<link rel="stylesheet" href="scripts/life-ui.css?v=1">
+<script type="module" src="scripts/life-ui.mjs?v=1"></script>
 </body>
 </html>
