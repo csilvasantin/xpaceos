@@ -128,6 +128,18 @@ test('normal close disposes once, removes resize observation and cancels renderi
   assert.ok(h.observers.every(observer=>observer.disconnected));assert.equal(h.dialog,null);assert.equal(h.document.activeElement,h.previous);
 });
 
+test('the functional catalog is a normal documentation link, not a game command',async()=>{
+  const h=harness();await h.open();
+  assert.match(h.dialog.innerHTML,/<a class="life-functions" href="\/help\/funcionalidades\/" target="_blank" rel="noopener">/);
+  let leaked=0;h.body.addEventListener('click',()=>leaked++);
+  const click=h.dialog.querySelector('.life-functions').emit('click');
+  assert.equal(click.prevented,false,'keep the normal browser link behavior');
+  assert.equal(click.stopped,true,'do not activate a legacy canvas action underneath');
+  assert.equal(leaked,0);assert.equal(h.viewers[0].calls.dispose,0);
+  assert.ok(h.dialog.open,'documentation does not restart or close the twin');
+  h.close();
+});
+
 test('game transitions without a representable snapshot close the view instead of showing stale moving actors',async()=>{
   const h=harness();await h.open();h.frame(1100);
   assert.match(h.dialog.querySelector('.life-state').textContent,/1 cliente en la simulación/);

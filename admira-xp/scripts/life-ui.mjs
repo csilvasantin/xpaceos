@@ -25,7 +25,7 @@ async function open(){
   dialog=document.createElement('dialog');dialog.className='life-dialog';dialog.setAttribute('aria-labelledby','life-title');
   dialog.innerHTML=`<header class="life-header">
     <div class="life-brand"><span class="life-mark" aria-hidden="true">X</span><div><span class="life-eyebrow">XPACEOS · BETTER · DIGITAL TWIN</span><h1 id="life-title">Un espacio. Mil posibilidades.</h1></div></div>
-    <button type="button" class="life-close" aria-label="Volver al gemelo">Volver al gemelo <span aria-hidden="true">↗</span></button>
+    <div class="life-header-actions"><a class="life-functions" href="/help/funcionalidades/" target="_blank" rel="noopener">Funciones <span aria-hidden="true">↗</span></a><button type="button" class="life-close" aria-label="Volver al gemelo">Volver al gemelo <span aria-hidden="true">↗</span></button></div>
   </header>
   <div class="life-stage"><canvas class="life-canvas" tabindex="0" aria-label="Gemelo 3D interactivo. Arrastra para girar, usa las flechas para rotar y más o menos para acercar."></canvas>
     <div class="life-location"><span class="life-eyebrow">BARCELONA · GRAN DE GRÀCIA</span><h2>El Xtanco<span>en otra dimensión.</span></h2><p><i aria-hidden="true"></i><span class="life-state">Conectando con el gemelo…</span></p></div>
