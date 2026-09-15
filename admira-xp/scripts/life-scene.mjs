@@ -387,12 +387,21 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
   }
 
   function createActor(actor){
+    // The shared profile changes only presentation. Keep the source actor on the
+    // selectable root so snapshots, routing and counters retain their identity.
+    const sourceActor=actor,style=['customer','passerby'].includes(actor.kind)&&!actor.robot&&actor.visitorProfileId?actor.visitorStyle:null;
+    if(style)actor={...actor,...style.palette,accessory:0,
+      gender:actor.gender||(['m','male','f','female'].includes(style.gender)?style.gender:null),
+      age:actor.age||(['adult','adulto','senior','child','nino'].includes(style.age)?style.age:null)};
     const root=group(actors),resources=new Set(),seed=colorSeed(actor.id),cloth=material(actor.color,{roughness:.94},resources),skin=material(actor.skin,{roughness:.82},resources);
     const hair=material(actor.hair||['#3c3028','#69432c','#b17e47','#272e30'][seed%4],{roughness:.92},resources);
     const trousers=material(actor.pants||['#344651','#625649','#66746b','#333d3d'][seed%4],{roughness:.92},resources);
     const shoes=actor.shoes?material(actor.shoes,{roughness:.75},resources):palette.cream;
-    root.name=`actor:${actor.id}`;root.userData={actorId:actor.id,actor,kind:actor.kind,selectable:true,resources,legs:[],arms:[],seed};
+    root.name=`actor:${actor.id}`;root.userData={actorId:actor.id,actor:sourceActor,kind:actor.kind,selectable:true,resources,legs:[],arms:[],seed,visitorProfileId:style?actor.visitorProfileId:null};
     const body=group(root);root.userData.body=body;
+    const dimension=(value,min,max)=>Number.isFinite(value)?Math.max(min,Math.min(max,value)):1;
+    if(style)body.scale.set(dimension(style.width,.87,1.16),dimension(style.height,.94,1.07),Math.sqrt(dimension(style.width,.87,1.16)));
+    const outfit=style?.outfit||'shirt',accessory=style?.accessory;
     // Hip and shoulder pivots make a real alternating gait, including the knees
     // and elbows. Nothing here advances the actor's simulation coordinates.
     for(const side of [-1,1]){
@@ -402,7 +411,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       box(knee,0,-.313,.054,.15,.095,.27,shoes);box(knee,0,-.356,.055,.151,.028,.268,palette.darkWood);
       const shoulder=group(body,side*.242,1.14,0);root.userData.arms.push(shoulder);shoulder.rotation.z=-side*.075;
       mesh(shoulder,capsuleGeometry,cloth,0,-.096,0,.142,.105,.155);
-      const elbow=group(shoulder,0,-.204,0);shoulder.userData.elbow=elbow;mesh(elbow,capsuleGeometry,skin,0,-.085,0,.095,.092,.105);
+      const elbow=group(shoulder,0,-.204,0);shoulder.userData.elbow=elbow;mesh(elbow,capsuleGeometry,['jacket','knit'].includes(outfit)?cloth:skin,0,-.085,0,.095,.092,.105);
       ellipsoid(elbow,0,-.195,.008,.059,.075,.050,skin);
     }
     box(body,0,.95,0,.41,.48,.265,cloth);ellipsoid(body,0,.745,0,.192,.107,.129,trousers);
@@ -416,23 +425,46 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       const brow=box(head,side*.061,.063,.145,.047,.012,.01,hair);brow.rotation.z=side*.07;
     }
     ellipsoid(head,0,-.022,.167,.027,.038,.033,skin);box(head,0,-.080,.147,.064,.009,.012,palette.terracotta);
-    mesh(head,hairGeometry,hair,0,.034,-.018,.184,.211,.17);
-    const fringe=ellipsoid(head,-.044,.132,.103,.136,.067,.055,hair);fringe.rotation.z=.18;
-    if(actor.gender==='f'||actor.gender==='female'||seed%3===0){ellipsoid(head,0,.02,-.15,.15,.165,.065,hair);ellipsoid(head,.025,.155,-.16,.091,.09,.078,hair);}
-    if(actor.hat||(actor.accessory===2&&!actor.isDJ)){
+    const hairstyle=style?.hairstyle||((actor.gender==='f'||actor.gender==='female'||seed%3===0)?'long':'short');
+    head.userData.hairstyle=hairstyle;
+    if(hairstyle!=='bald'){
+      mesh(head,hairGeometry,hair,0,.034,-.018,hairstyle==='curly'?.208:.184,hairstyle==='curly'?.235:.211,.17);
+      const fringe=ellipsoid(head,-.044,.132,.103,.136,.067,.055,hair);fringe.rotation.z=.18;
+      if(hairstyle==='bob'||hairstyle==='long'){
+        for(const side of [-1,1])ellipsoid(head,side*.142,hairstyle==='long'?-.075:.005,-.055,.067,hairstyle==='long'?.235:.154,.126,hair);
+        ellipsoid(head,0,hairstyle==='long'?-.075:.015,-.15,.151,hairstyle==='long'?.215:.14,.066,hair);
+      }
+      if(hairstyle==='curly')for(let i=0;i<12;i++){
+        const angle=i*Math.PI*2/12;ellipsoid(head,Math.cos(angle)*.17,.09+Math.sin(i*2.4)*.06,Math.sin(angle)*.14-.016,.060,.072,.060,hair);
+      }
+    }
+    if(actor.hat||accessory==='cap'||(actor.accessory===2&&!actor.isDJ)){
       const hat=material(actor.hatColor||(actor.accessory===2?'#cc3333':'#384f4a'),{roughness:.85},resources);
       if(actor.hat==='top-hat'){cylinder(head,0,.27,0,.155,.26,hat);cylinder(head,0,.156,0,.235,.025,hat);cylinder(head,0,.192,0,.158,.047,palette.coral);}
       else if(actor.hat==='beanie')ellipsoid(head,0,.15,-.014,.202,.119,.184,hat);
       else if(actor.hat==='tricorn'){box(head,0,.192,0,.40,.12,.27,hat);box(head,0,.145,0,.45,.032,.31,hat);}
       else{ellipsoid(head,0,.185,-.015,.20,.095,.176,hat);box(head,0,.175,.12,.29,.033,.22,hat);if(actor.hat==='hardhat')box(head,0,.254,0,.038,.035,.24,hat);}
     }
-    if(actor.accessory===1||actor.accessory==='glasses'||actor.accessory==='gafas'){
+    if(accessory==='glasses'||actor.accessory===1||actor.accessory==='glasses'||actor.accessory==='gafas'){
       for(const side of [-1,1]){box(head,side*.062,.025,.168,.091,.07,.012,palette.black);box(head,side*.062,.025,.176,.068,.047,.009,palette.glass);}
       box(head,0,.029,.177,.043,.013,.015,palette.black);
     }
     // Collar, seams and a pocket remain visible at the store's normal zoom.
-    for(const side of [-1,1]){const collar=box(body,side*.067,1.177,.13,.08,.048,.025,actor.kind==='staff'?palette.paper:cloth);collar.rotation.z=side*.35;}
-    box(body,-.112,1.019,.139,.081,.082,.011,actor.kind==='staff'?palette.teal:cloth);box(body,-.112,1.06,.145,.082,.011,.008,palette.paper);
+    if(outfit==='shirt'||outfit==='jacket'){
+      for(const side of [-1,1]){const collar=box(body,side*.067,1.177,.13,.08,.048,.025,actor.kind==='staff'?palette.paper:cloth);collar.rotation.z=side*.35;}
+      box(body,-.112,1.019,.139,.081,.082,.011,actor.kind==='staff'?palette.teal:cloth);box(body,-.112,1.06,.145,.082,.011,.008,palette.paper);
+      if(style&&outfit==='shirt')for(let i=0;i<4;i++)ellipsoid(body,0,.90+i*.075,.142,.009,.009,.006,palette.paper);
+    }
+    if(style&&outfit==='jacket'){
+      box(body,0,1.019,.14,.112,.335,.015,palette.paper);
+      for(const side of [-1,1])box(body,side*.076,1.076,.15,.039,.213,.020,cloth).rotation.z=side*.20;
+      box(body,0,.748,0,.439,.071,.292,cloth);
+    }
+    if(style&&outfit==='knit'){
+      cylinder(body,0,1.205,0,.089,.059,cloth);
+      for(const y of [.79,.87,.95])box(body,0,y,.139,.385,.015,.008,palette.cream);
+    }
+    body.userData.outfit=outfit;body.userData.accessory=accessory||'legacy';
     if(actor.kind==='staff'){
       box(body,0,.891,.142,.32,.39,.027,palette.teal);box(body,0,1.056,.144,.19,.17,.026,palette.teal);
       for(const x of [-.098,.098])box(body,x,1.13,.135,.028,.21,.022,palette.sage);
@@ -442,11 +474,15 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       box(body,.26,.66,-.025,.17,.30,.23,palette.terracotta);box(body,.25,.90,-.005,.024,.65,.03,palette.darkWood).rotation.z=-.14;
     }
     if(actor.skirt)mesh(body,coneGeometry,trousers,0,.66,0,.29,.37,.21);
-    if(actor.isDJ||actor.accessory===3){
+    if(accessory==='backpack'){
+      box(body,0,1.01,-.19,.31,.38,.17,trousers);box(body,0,.96,-.287,.23,.14,.035,cloth);
+      for(const side of [-1,1])box(body,side*.13,1.055,.143,.027,.315,.023,trousers);
+    }
+    if(accessory==='headphones'||actor.isDJ||actor.accessory===3){
       for(const side of [-1,1])ellipsoid(head,side*.195,.02,0,.033,.07,.059,palette.black);
       box(head,0,.233,-.022,.35,.031,.08,palette.black);
     }
-    if(actor.accessory===4){box(body,0,1.205,.12,.23,.067,.057,palette.coral);box(body,.07,1.10,.15,.065,.18,.035,palette.coral).rotation.z=.15;}
+    if(accessory==='scarf'||actor.accessory===4){box(body,0,1.205,.12,.23,.067,.057,palette.coral);box(body,.07,1.10,.15,.065,.18,.035,palette.coral).rotation.z=.15;}
     if(actor.robot){
       // The live Unitree remains the same actor; a visor, joint shells and chest
       // panel distinguish its physical representation from human visitors.
@@ -485,7 +521,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     for(const [id,root]of actorMap)if(!ids.has(id)){removeActor(root);actorMap.delete(id);}
     for(const actor of snapshot.actors){
       let root=actorMap.get(actor.id);
-      const appearance=a=>JSON.stringify([a.color,a.skin,a.kind,a.hair,a.pants,a.shoes,a.gender,a.age,a.hat,a.hatColor,a.accessory,a.skirt,a.isDJ,a.bag,a.robot]);
+      const appearance=a=>JSON.stringify([a.color,a.skin,a.kind,a.hair,a.pants,a.shoes,a.gender,a.age,a.hat,a.hatColor,a.accessory,a.skirt,a.isDJ,a.bag,a.robot,a.visitorProfileId,a.visitorStyle]);
       if(root&&appearance(root.userData.actor)!==appearance(actor)){
         removeActor(root);actorMap.delete(actor.id);root=null;
       }

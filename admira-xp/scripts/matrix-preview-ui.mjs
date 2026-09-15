@@ -1,5 +1,5 @@
-import {createBestPeopleLayer} from './best-live-people.mjs?v=matrix-furniture-1';
-import {mountMatrixFurniture} from './matrix-furniture.mjs?v=matrix-furniture-1';
+import {createBestPeopleLayer} from './best-live-people.mjs?v=visitors-24';
+import {mountMatrixFurniture} from './matrix-furniture.mjs?v=visitors-24';
 import {projectMatrixFloor,MATRIX_FLOOR_POLYGON} from './matrix-floor.mjs?v=matrix-furniture-1';
 
 // Matrix keeps the Avenida Admira room as its backdrop. Furniture and visitors

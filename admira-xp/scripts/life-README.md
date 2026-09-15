@@ -21,6 +21,10 @@ The permanent Expert menu, CLI and control panels remain available around every 
 
 `/modo best` opens the live 3D view. **Vista general**, **Detalle** and the zoom buttons control its camera; click a person or object to see its label. Escape returns to Good. The loading status reports detailed human assets still loading or using a provisional model. A renderer error remains explicit and offers the shared Good/Better controls. A successful local result includes `ok:true`, `preview:true` and `availability:"preview"`; it confirms a rendered frame of the 3D scene, not implementation of all 30 operational areas. The `preview` value is retained for compatibility while those capabilities are developed. `/modo` is not an MCP tool. The [functional catalog](../../mcp/funcionalidades.json) retains stable IDs and pending Best capabilities.
 
+## Shared visitor appearances
+
+Matrix, Better and Best use the same [24 fictional profiles](../assets/people/matrix-v2/README.md). `visitor-profiles.mjs` keeps one appearance per live customer or passer-by across snapshot adapters and visual-tier switches. New visitors prefer the least-used compatible profile; existing source demographics, palettes and counters remain untouched. A larger compatible crowd may repeat profiles. Staff and special actors are excluded. Matrix uses transparent photo atlases, Better builds procedural variants, and Best adapts the existing four rigged body bases with private materials, hair, accessories and body scales. The detailed 3D variants share appearance cues, not identical photographic faces.
+
 ## Checks
 
 `node --test admira-xp/scripts/life-*.test.mjs homepage-twin-cta.test.mjs`

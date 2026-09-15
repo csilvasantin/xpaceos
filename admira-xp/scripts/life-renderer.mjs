@@ -1,5 +1,5 @@
 import * as T from './premium-three.mjs';
-import {createLifeScene} from './life-scene.mjs?v=best-people-1';
+import {createLifeScene} from './life-scene.mjs?v=visitors-24';
 import {mappedCameraFrame} from './life-camera.mjs';
 
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
@@ -12,7 +12,7 @@ export function createLifeRenderer({canvas,snapshot,getPlayer=()=>null,onSelect=
   try{model=createLifeScene(snapshot,{
     assetQuality,
     loadFurniture:item=>import('./furniture-asset.mjs').then(m=>m.loadFurniture(item,assetQuality)),
-    loadPerson:assetQuality==='best'?actor=>import('./best-person-asset.mjs').then(m=>m.loadBestPerson(actor)):null
+    loadPerson:assetQuality==='best'?actor=>import('./best-person-asset.mjs?v=visitors-24').then(m=>m.loadBestPerson(actor)):null
   });}catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
   const camera=new T.OrthographicCamera(-15,15,10,-10,.1,200);
   const target=new T.Vector3(),raycaster=new T.Raycaster(),pointers=new Map();

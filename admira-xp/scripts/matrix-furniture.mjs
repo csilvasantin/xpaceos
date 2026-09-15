@@ -1,4 +1,4 @@
-import {createLifeSnapshot} from './life-snapshot.mjs';
+import {createLifeSnapshot} from './life-snapshot.mjs?v=visitors-24';
 import {assetForInstance} from '../../inventario/model.mjs?v=catalog-43';
 import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';
 import {MATRIX_ATLAS_URL,MATRIX_ATLAS_SIZE,MATRIX_ARCHITECTURE_DETAILS,photoPieceFor} from './matrix-photo-pieces.mjs?v=matrix-furniture-1';

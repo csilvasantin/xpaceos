@@ -1,4 +1,5 @@
 import {createSceneSnapshot} from './xtanco-scene-snapshot.mjs?v=inventari-1';
+import {visitorProfilesForGame} from './visitor-profiles.mjs?v=visitors-24';
 
 // Read-only presentation adapter for the immersive view. The game continues to
 // own navigation, appearance, media, time and counters. These defaults mirror P
@@ -42,7 +43,7 @@ function appearance(value,kind,palette,isPlayer){
     accessory:Number.isInteger(resolvedLook.accessory)?resolvedLook.accessory:0,
     age:text(resolvedLook.age),gender:['m','f'].includes(resolvedLook.gender)?resolvedLook.gender:null,
     skirt:!!(resolvedLook.gender==='f'||resolvedLook.skirt),
-    scale:customer&&resolvedLook.age==='nino'?.72:customer&&resolvedLook.age==='senior'?.9:1,
+    scale:customer&&['nino','child'].includes(resolvedLook.age)?.72:customer&&resolvedLook.age==='senior'?.9:1,
     isDJ,sponsor:!!value.sponsor,customSprite:!!(value.customSpriteReady&&value.customSpriteImg)
   };
   // Dedicated sprites have fixed uniforms rather than indexed customer looks.
@@ -68,6 +69,7 @@ export function createLifeSnapshot(){
       ||iso.tileW<=0||iso.tileH<=0||iso.tileH>=iso.tileW)return null;
     const scene=geometrySnapshot(input);
     if(!scene)return null;
+    const visitorProfiles=visitorProfilesForGame(game);
     const palette={...DEFAULT_PALETTE,...input.palette};
     for(const name of ['hair','shirts','skins','pantsArr','shoesArr']){
       if(!Array.isArray(palette[name])||!palette[name].length)palette[name]=DEFAULT_PALETTE[name];
@@ -90,9 +92,11 @@ export function createLifeSnapshot(){
         ||kind==='passerby'||['incoming','entering','leaving','fleeing','sneaking'].includes(value.phase);
       motion.set(value,{col,row,heading,direction});
       const isPlayer=kind==='staff'&&value===list(game.staff)[0];
+      const profile=(kind==='customer'||kind==='passerby')?visitorProfiles.get(value):null;
       return {
         id:identities.get(value),sourceId:typeof value.id==='string'||finite(value.id)?value.id:null,
         kind,col,row,heading,walking,...appearance(value,kind,palette,isPlayer),
+        ...(profile?{visitorProfileId:profile.id,visitorStyle:profile.style}:{}),
         label:text(value.name)||SPECIAL_NAMES[kind]||'',role:finite(value.role)?value.role:null,isPlayer,
         number:Number.isSafeInteger(value.num)?value.num:null,
         bubble:value.bTimer>0?text(value.bMsg):'',emote:value.emoteTimer>0?text(value.emote):'',

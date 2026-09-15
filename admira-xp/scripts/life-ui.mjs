@@ -1,4 +1,4 @@
-import {createLifeSnapshot} from './life-snapshot.mjs';
+import {createLifeSnapshot} from './life-snapshot.mjs?v=visitors-24';
 
 // The expert Good/Better/Best selector owns launch, routing and preference.
 const listeners=new Set();
@@ -88,7 +88,7 @@ async function open(options={}){
       pending=setTimeout(connect,180);return;
     }
     try{
-      const {createLifeRenderer}=await import('./life-renderer.mjs?v=catalog-43');if(ticket!==generation)return;
+      const {createLifeRenderer}=await import('./life-renderer.mjs?v=visitors-24');if(ticket!==generation)return;
       viewer=createLifeRenderer({canvas,snapshot:input,getPlayer:()=>window.__xtoreWindowPlayer,onSelect:select,onCameraChange:state=>{
         if(ticket!==generation||!dialog)return;
         const mapped=state.mode==='mapped';dialog.dataset.camera=mapped?'mapped':'free';

@@ -1,10 +1,10 @@
 {
-  "version": "v.15.09.2026.r17.19:48",
+  "version": "v.15.09.2026.r18.20:27",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Matrix con mobiliario independiente: inventario compartido de 43 modelos, capas fotográficas y 172 vistas Blender, CLI añadir/eliminar/deshacer, proyección de sala y obstáculos dinámicos. Misión DCL-62027ba4aea5648aa1872ace.",
+  "evidence": "24 perfiles ficticios compartidos por Matrix, Better y Best. Atlas transparentes, variantes 3D de ropa, peinados y accesorios, asignación estable y reparto con menor repetición. Misión DCL-00fa1ab845b8153db69b0690 (#215).",
   "day": "15.09.2026",
-  "time": "19:48"
+  "time": "20:27"
 }

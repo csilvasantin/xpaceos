@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import * as T from './premium-three.mjs';
 import {GLTFLoader} from './vendor/GLTFLoader.mjs';
 import {clonePersonScene,createPersonPresentation,personProfile,personAssetURL} from './best-person-asset.mjs';
+import {VISITOR_PROFILES} from './visitor-profiles.mjs';
 
 const near=(a,b,tolerance=1e-6)=>assert.ok(Math.abs(a-b)<tolerance,`${a} ≠ ${b}`);
 const meshes=scene=>{const result=[];scene.traverse(node=>{if(node.isMesh)result.push(node);});return result;};
@@ -33,6 +34,15 @@ test('actual visitor metadata selects adult/child profiles without changing iden
  }
  const fallback=personProfile({id:'unchanging'});assert.equal(personProfile({id:'unchanging',col:5,walking:true}),fallback);
  assert.throws(()=>personAssetURL('../male'),/Perfil/);assert.throws(()=>personAssetURL('robot'),/Perfil/);
+});
+
+test('a visitor without source gender uses the assigned shared profile, while explicit and protected identities keep precedence',()=>{
+ const actor={id:'untyped',kind:'customer',gender:null,age:null,visitorProfileId:'shared-female',visitorStyle:{gender:'f',age:'child'}};
+ const unchanged=JSON.stringify(actor);
+ assert.equal(personProfile(actor),'child-female');assert.equal(personProfile({...actor,kind:'passerby'}),'child-female');
+ assert.equal(personProfile({...actor,gender:'m',age:'adulto'}),'male');assert.equal(JSON.stringify(actor),unchanged);
+ for(const extra of [{kind:'staff'},{robot:true},{kind:'special'}])assert.equal(personProfile({...actor,...extra}),personProfile({id:actor.id,...extra}));
+ for(const gender of ['not-a-gender',{},null])assert.equal(personProfile({...actor,age:'adulto',visitorStyle:{gender,age:'not-an-age'}}),personProfile({id:actor.id}));
 });
 
 test('clones have independent skeletons and palettes while shared cached geometry/textures survive disposal',()=>{
@@ -204,4 +214,101 @@ for(const profile of ['male','female','child-male','child-female'])test(`${profi
  const geometries=new Set(),materials=new Set(),textures=new Set(),skeletons=new Set();
  gltf.scene.traverse(node=>{if(!node.isMesh)return;geometries.add(node.geometry);if(node.isSkinnedMesh)skeletons.add(node.skeleton);for(const material of Array.isArray(node.material)?node.material:[node.material]){materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});
  for(const resource of [...geometries,...materials,...textures,...skeletons])resource.dispose();
+});
+
+test('the 24 shared profiles dress real rigs without changing source geometry, simulation data or skeletal ownership',async()=>{
+ const sources=new Map(),sourceGeometry=new Set(),sourceMaterials=new Set(),sourceTextures=new Set(),sourceSkeletons=new Set();
+ let sharedDisposals=0;
+ for(const name of ['male','female','child-male','child-female']){
+  const {bytes}=readGLB(name),loader=new GLTFLoader();loader.register(()=>({name:'CPUTextureStub',loadTexture:()=>Promise.resolve(new T.Texture())}));
+  const gltf=await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');sources.set(name,gltf);
+  gltf.scene.traverse(node=>{if(!node.isMesh)return;sourceGeometry.add(node.geometry);if(node.isSkinnedMesh)sourceSkeletons.add(node.skeleton);
+   for(const material of Array.isArray(node.material)?node.material:[node.material]){sourceMaterials.add(material);for(const value of Object.values(material))if(value?.isTexture)sourceTextures.add(value);}
+  });
+ }
+ for(const resource of [...sourceGeometry,...sourceMaterials,...sourceTextures])resource.addEventListener('dispose',()=>sharedDisposals++);
+ const originalPositions=new Map([...sourceGeometry].map(geometry=>[geometry,Array.from(geometry.attributes.position.array)]));
+ const appearances=new Set();
+ for(const profile of VISITOR_PROFILES){
+  const actor={id:`real-${profile.id}`,kind:'customer',age:profile.age,gender:profile.gender,walking:false,color:'#ff00ff',skin:'#ff0000',visitorProfileId:profile.id,visitorStyle:profile.style};
+  const unchanged=JSON.stringify(actor),source=sources.get(personProfile(actor)),person=createPersonPresentation(source,actor);
+  const {scene}=person,head=scene.getObjectByName('head'),chest=scene.getObjectByName('spine01');
+  const hair=scene.getObjectByName(`visitor-hair:${profile.style.hairstyle}`),outfit=scene.getObjectByName(`visitor-outfit:${profile.style.outfit}`);
+  assert.equal(hair.parent,head);assert.equal(outfit.parent,chest);
+  assert.equal(hair.userData.accessory,profile.style.accessory);assert.equal(scene.userData.visitorProfileId,profile.id);
+  assert.deepEqual(scene.scale.toArray(),[profile.style.width,profile.style.height,Math.sqrt(profile.style.width)]);
+  assert.equal(scene.getObjectByName('hair').visible,profile.style.hairstyle!=='bald');
+  for(const time of [0,250,500]){
+   person.animate(time,{...actor,walking:time>0},{position:{x:time/2000,z:0}});scene.updateMatrixWorld(true);
+   const bounds=new T.Box3().setFromObject(scene,true);
+   assert.ok(bounds.min.y>-.10&&bounds.min.y<.08,`${profile.id} retains grounded feet`);
+   assert.ok(bounds.max.y>1.5&&bounds.max.y<2.05,`${profile.id} retains a human silhouette`);
+   assert.ok(bounds.getSize(new T.Vector3()).x<1.05,`${profile.id} accessories stay close to the body`);
+  }
+  const ownedMaterials=new Set(meshes(scene).flatMap(mesh=>Array.isArray(mesh.material)?mesh.material:[mesh.material]));
+  const ownedGeometry=new Set(meshes(scene).map(mesh=>mesh.geometry).filter(geometry=>!sourceGeometry.has(geometry)));
+  let disposedMaterials=0,disposedGeometry=0;
+  for(const material of ownedMaterials)material.addEventListener('dispose',()=>disposedMaterials++);
+  for(const geometry of ownedGeometry)geometry.addEventListener('dispose',()=>disposedGeometry++);
+  const shirt=[...ownedMaterials].find(material=>material.userData?.personPart==='shirt');
+  appearances.add(JSON.stringify([scene.scale.toArray(),profile.style.hairstyle,profile.style.accessory,profile.style.outfit,shirt.color.getHexString()]));
+  assert.equal(JSON.stringify(actor),unchanged);
+  assert.notEqual(head,source.scene.getObjectByName('head'));
+  person.dispose();person.dispose();assert.equal(disposedMaterials,ownedMaterials.size);assert.equal(disposedGeometry,ownedGeometry.size);
+  assert.equal(sharedDisposals,0);assert.equal(hair.parent,null);assert.equal(outfit.parent,null);
+ }
+ assert.equal(appearances.size,24);
+ for(const [geometry,positions] of originalPositions)assert.deepEqual(Array.from(geometry.attributes.position.array),positions);
+ for(const resource of [...sourceGeometry,...sourceMaterials,...sourceTextures,...sourceSkeletons])resource.dispose();
+});
+
+test('profile styling cannot override Best staff uniforms or robot appearance',()=>{
+ const profile=VISITOR_PROFILES[2],source=fixture();
+ for(const extra of [{kind:'staff'},{kind:'customer',robot:true}]){
+  const person=createPersonPresentation(source,{id:'protected',...extra,visitorProfileId:profile.id,visitorStyle:profile.style});
+  assert.equal(person.scene.userData.visitorProfileId,undefined);assert.deepEqual(person.scene.scale.toArray(),[1,1,1]);
+  assert.equal(person.scene.getObjectByName(`visitor-hair:${profile.style.hairstyle}`),undefined);person.dispose();
+ }
+ source.dispose();
+});
+
+test('profiled fabric recolors each UV island while preserving original maps, normal detail, alpha and material ownership',()=>{
+ const source=fixture(),profile=VISITOR_PROFILES[0];
+ const texture=new T.DataTexture(new Uint8Array([24,30,42,255,24,30,42,255,180,190,200,255,180,190,200,255]),4,1);
+ texture.colorSpace=T.SRGBColorSpace;texture.flipY=false;
+ source.geometry.setAttribute('uv',new T.Float32BufferAttribute([.75,.5,.75,.5,.75,.5],2));
+ source.shirt.map=texture;source.shirt.normalMap=source.texture;source.skin.map=texture;
+ const geometry=source.geometry.clone();geometry.setAttribute('uv',new T.Float32BufferAttribute([.125,.5,.125,.5,.125,.5],2));
+ const trousers=new T.MeshStandardMaterial({map:texture,normalMap:source.texture});trousers.userData.personPart='trousers';
+ const pants=new T.Mesh(geometry,trousers);pants.name='pants';source.scene.add(pants);
+ const sourceHook=source.shirt.onBeforeCompile,sourceKey=source.shirt.customProgramCacheKey(),pixels=Array.from(texture.image.data);
+ const actor={id:'fabric-a',kind:'customer',visitorProfileId:profile.id,visitorStyle:profile.style};
+ const a=createPersonPresentation(source,actor),b=createPersonPresentation(source,{...actor,id:'fabric-b'});
+ const shirtA=a.scene.getObjectByName('body').material[0],pantsA=a.scene.getObjectByName('pants').material;
+ const pantsB=b.scene.getObjectByName('pants').material,skinA=a.scene.getObjectByName('body').material[1];
+ const compile=material=>{const shader={uniforms:{},fragmentShader:T.ShaderLib.standard.fragmentShader};material.onBeforeCompile(shader);return shader;};
+ const shirtShader=compile(shirtA),pantsShader=compile(pantsA),otherShader=compile(pantsB),skinShader=compile(skinA);
+ assert.ok(pantsShader.uniforms.visitorFabricReference.value<shirtShader.uniforms.visitorFabricReference.value*.1,'dark trouser UV island has its own normalization, independent of the shared bright shirt atlas');
+ assert.ok(pantsShader.uniforms.visitorFabricReference.value>.001);
+ assert.equal(shirtA.color.getHexString(),profile.style.palette.color.slice(1));assert.equal(pantsA.color.getHexString(),profile.style.palette.pants.slice(1));
+ assert.match(pantsShader.fragmentShader,/diffuseColor\.rgb \*= visitorFabricShade/);
+ assert.match(pantsShader.fragmentShader,/diffuseColor\.a \*= sampledDiffuseColor\.a/);
+ assert.match(pantsShader.fragmentShader,/visitorFabricLuminance.*dot/);
+ assert.match(pantsShader.fragmentShader,/#include <normal_fragment_maps>/);
+ assert.equal(pantsShader.fragmentShader.includes('#include <map_fragment>'),false);
+ assert.notEqual(pantsShader.uniforms.visitorFabricReference,otherShader.uniforms.visitorFabricReference);
+ const otherReference=otherShader.uniforms.visitorFabricReference.value;pantsShader.uniforms.visitorFabricReference.value=.9;
+ assert.equal(otherShader.uniforms.visitorFabricReference.value,otherReference);
+ assert.equal(pantsA.customProgramCacheKey(),pantsB.customProgramCacheKey());assert.notEqual(pantsA.customProgramCacheKey(),sourceKey);
+ assert.equal(skinShader.uniforms.visitorFabricReference,undefined);assert.ok(skinShader.fragmentShader.includes('#include <map_fragment>'));
+ for(const material of [shirtA,pantsA,pantsB]){assert.equal(material.map,texture);assert.equal(material.normalMap,source.texture);}
+ assert.equal(source.shirt.onBeforeCompile,sourceHook);assert.equal(source.shirt.customProgramCacheKey(),sourceKey);assert.deepEqual(Array.from(texture.image.data),pixels);
+ let mapDisposals=0,sourceDisposals=0,ownedDisposals=0;
+ texture.addEventListener('dispose',()=>mapDisposals++);source.texture.addEventListener('dispose',()=>mapDisposals++);
+ source.shirt.addEventListener('dispose',()=>sourceDisposals++);trousers.addEventListener('dispose',()=>sourceDisposals++);
+ pantsA.addEventListener('dispose',()=>ownedDisposals++);a.dispose();a.dispose();assert.equal(ownedDisposals,1);assert.equal(mapDisposals,0);assert.equal(sourceDisposals,0);
+ b.dispose();assert.equal(mapDisposals,0);assert.equal(sourceDisposals,0);
+ const staff=createPersonPresentation(source,{...actor,kind:'staff'}),staffMaterial=staff.scene.getObjectByName('pants').material;
+ assert.equal(compile(staffMaterial).uniforms.visitorFabricReference,undefined);staff.dispose();
+ geometry.dispose();trousers.dispose();texture.dispose();source.dispose();
 });

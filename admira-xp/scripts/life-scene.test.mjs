@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLifeScene} from './life-scene.mjs';
 import {Group} from './premium-three.mjs';
+import {VISITOR_PROFILES} from './visitor-profiles.mjs';
 
 // Canvas drawing is procedural; these offline tests exercise ownership and
 // geometry contracts. Actual shading and composition are reviewed in WebGL.
@@ -142,4 +143,51 @@ test('Failed or invalid Best loads leave the existing animated fallback and rele
     assert.notEqual(root.userData.legs[0].rotation.x,0);model.dispose();
   }
   assert.equal(invalidDisposed,1);
+});
+
+test('all shared visitor profiles keep their source identity, proportions and appearance across Better updates',()=>{
+  const actors=VISITOR_PROFILES.map((profile,i)=>({id:`person-${profile.id}`,kind:'customer',col:i%8,row:Math.floor(i/8),heading:0,walking:false,
+    color:'#ff00ff',skin:'#c68642',hair:'#111111',scale:profile.age==='child'?.7:1,gender:profile.gender,age:profile.age,
+    visitorProfileId:profile.id,visitorStyle:profile.style}));
+  const raw={...input,actors},unchanged=JSON.stringify(raw),model=createLifeScene(raw,{canvasFactory});
+  assert.equal(model.actors.children.length,24);
+  const roots=[...model.actors.children];
+  for(const [i,root] of roots.entries()){
+    const profile=VISITOR_PROFILES[i],body=root.userData.body;
+    assert.equal(root.userData.actorId,actors[i].id);assert.equal(root.userData.visitorProfileId,profile.id);
+    assert.equal(root.userData.actor.color,'#ff00ff');assert.equal(root.userData.actor.gender,profile.gender);
+    assert.deepEqual(body.scale.toArray(),[profile.style.width,profile.style.height,Math.sqrt(profile.style.width)]);
+    assert.equal(root.userData.head.userData.hairstyle,profile.style.hairstyle);
+    assert.equal(body.userData.outfit,profile.style.outfit);assert.equal(body.userData.accessory,profile.style.accessory);
+    assert.equal([...root.userData.resources][0].color.getHexString(),profile.style.palette.color.slice(1));
+  }
+  model.update({...raw,actors:actors.map(actor=>({...actor,col:actor.col+.1,walking:true}))});model.animate(1000);
+  assert.deepEqual(model.actors.children,roots);assert.equal(JSON.stringify(raw),unchanged);
+  let releases=0;for(const material of roots[0].userData.resources)material.addEventListener('dispose',()=>releases++);
+  const resourceCount=roots[0].userData.resources.size;
+  model.update({...raw,actors:[{...actors[0],visitorProfileId:'replacement',visitorStyle:VISITOR_PROFILES[1].style}]});
+  assert.notEqual(model.actors.children[0],roots[0]);assert.equal(releases,resourceCount);
+  model.dispose();assert.deepEqual(model.resources,{geometry:0,materials:0,textures:0});
+});
+
+test('shared visitor styling does not replace staff or robot uniforms and proportions',()=>{
+  const profile=VISITOR_PROFILES[2];
+  for(const extra of [{kind:'staff'},{kind:'customer',robot:true}]){
+    const actor={...input.actors[0],...extra,visitorProfileId:profile.id,visitorStyle:profile.style};
+    const model=createLifeScene({...input,actors:[actor]},{canvasFactory}),root=model.actors.children[0];
+    assert.deepEqual(root.userData.body.scale.toArray(),[1,1,1]);assert.equal(root.userData.visitorProfileId,null);
+    assert.equal([...root.userData.resources][0].color.getHexString(),actor.color.slice(1));model.dispose();
+  }
+});
+
+test('Better interprets a missing visitor gender from the shared style without rewriting its source metadata',async()=>{
+  const actor={id:'untyped-person',kind:'customer',col:2,row:3,color:'#224466',skin:'#d3aa88',gender:null,age:null,
+    visitorProfileId:'shared-female',visitorStyle:{gender:'female',age:'child',palette:{color:'#446688'}}};
+  const unchanged=JSON.stringify(actor),loaded=[];
+  const model=createLifeScene({...input,actors:[actor]},{canvasFactory,assetQuality:'best',loadPerson:visual=>{loaded.push(visual);return personAsset();}});
+  assert.equal(model.actors.children[0].userData.head.userData.hairstyle,'long');
+  await settled();assert.equal(loaded[0].gender,'female');assert.equal(loaded[0].age,'child');
+  assert.equal(model.snapshot.actors[0].gender,null);assert.equal(model.snapshot.actors[0].age,null);assert.equal(JSON.stringify(actor),unchanged);model.dispose();
+  const malformed=createLifeScene({...input,actors:[{...actor,visitorStyle:{gender:{},age:'not-an-age'}}]},{canvasFactory});
+  assert.equal(malformed.snapshot.actors[0].gender,null);malformed.dispose();
 });

@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BEST_HARDNESS_ZONES,createBestPeopleLayer,isBestWalkable,projectBestFloor,resolveBestHardness,segmentCrossesBestHardness} from './best-live-people.mjs';
+import {readFileSync} from 'node:fs';
+import {BEST_HARDNESS_ZONES,isBestWalkable,projectBestFloor,resolveBestHardness,segmentCrossesBestHardness} from './best-live-people.mjs';
+import {createLifeSnapshot} from './life-snapshot.mjs';
+import {visitorProfileById} from './visitor-profiles.mjs';
+
+// Isolate rendering from profile assignment: the original collision cases still
+// exercise the legacy fallback, while atlas cases supply a canonical snapshot.
+const source=readFileSync(new URL('./best-live-people.mjs',import.meta.url),'utf8');
+function layerFactory(snapshotFactory=createLifeSnapshot,profileLookup=()=>null){
+  return new Function('createLifeSnapshot','visitorProfileById',source.replace(/^import .*;\n/gm,'').replace(/\bexport /g,'')+'\nreturn createBestPeopleLayer;')(snapshotFactory,profileLookup);
+}
+const createBestPeopleLayer=layerFactory();
+const imagesUnder=node=>node.tag==='img'?[node]:(node.children||[]).flatMap(imagesUnder);
 
 const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-9,`${actual} != ${expected}`);
 
@@ -72,7 +84,7 @@ test('the overlay follows live actor positions, excludes outdoor traffic and dis
     assert.equal(people.count,1);assert.equal(layer.children.length,1);assert.match(status.textContent,/1 cliente simulado/);
     assert.match(status.textContent,/colisiones activas/);assert.equal(container.children.filter(node=>node.className==='best-depth-occluder').length,0);
     assert.equal(layer.children.some(node=>node.className.includes('passerby')),false);
-    assert.match(layer.children[0].innerHTML,/best-person-(?:male-rust|female-denim)-20260915\.png/);
+    assert.match(imagesUnder(layer.children[0])[0].src,/best-person-(?:male-rust|female-denim)-20260915\.png/);
     const customer=layer.children.find(node=>node.className.includes('kind-customer')),left=customer.style.left;
     Object.assign(state.game.custs[0],at(7,4));people.update();
     assert.notEqual(customer.style.left,left);assert.match(customer.className,/is-walking/);
@@ -92,7 +104,7 @@ test('children use real child cutouts and deterministic age variation instead of
     const state=fixture();Object.assign(state.game.custs[0].look,{age:'nino',gender:'f'});state.hardness={cols:14,rows:8,blocked:['6,4']};
     const container=new Element('scene'),people=createBestPeopleLayer({container,getState:()=>state,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:()=>{}});
     const child=container.children.find(node=>node.className==='best-people-layer').children[0];
-    assert.match(child.className,/is-child/);assert.match(child.innerHTML,/best-person-child-ochre-20260915\.png/);
+    assert.match(child.className,/is-child/);assert.match(imagesUnder(child)[0].src,/best-person-child-ochre-20260915\.png/);
     assert.ok(Number(child.style.values['--person-scale'])<.8);assert.equal(isBestWalkable({x:parseFloat(child.style.left)/100,y:parseFloat(child.style.top)/100}),true);
     people.dispose();
   }finally{globalThis.document=originalDocument;}
@@ -168,4 +180,139 @@ test('a supplied floor projector drives visitor feet and transitions without pul
     assert.deepEqual(calls.at(-1),[7,4,14,8]);assert.equal(person.style.left,'80.400%');assert.equal(person.style.top,'18.000%');assert.doesNotMatch(person.className,/is-repositioning/);
     assert.equal(person.style.zIndex,'190');people.dispose();assert.equal(container.children.length,0);
   }finally{globalThis.document=originalDocument;}
+});
+
+class VisitorElement{
+  constructor(tag){this.tag=tag;this.children=[];this.parent=null;this.attrs={};this.style={values:{},setProperty:(name,value)=>{this.style.values[name]=value;}};}
+  setAttribute(name,value){this.attrs[name]=String(value);}
+  append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
+  remove(){if(this.parent){const at=this.parent.children.indexOf(this);if(at>=0)this.parent.children.splice(at,1);}this.parent=null;}
+}
+const visitor=(id,profileId)=>({id,visitorProfileId:profileId,kind:'customer',col:6,row:4,scale:1,age:'adulto',gender:'m',heading:0,walking:true});
+function withVisitorLayer(actors,run,lookup=visitorProfileById){
+  const originalDocument=globalThis.document,container=new VisitorElement('scene'),cancelled=[];
+  globalThis.document={hidden:false,createElement:tag=>new VisitorElement(tag)};
+  const scene={cols:14,rows:8,actors,hardness:{blocked:[]},source:'xtanco-running-game'};
+  const create=layerFactory(()=>()=>scene,lookup);
+  const people=create({container,getState:()=>({}),getFurnitureZones:()=>[],requestFrame:()=>1,cancelFrame:id=>cancelled.push(id)});
+  const layer=container.children.find(node=>node.className==='best-people-layer'),status=container.children.find(node=>node.className==='best-people-status');
+  try{return run({scene,container,people,layer,status,cancelled});}
+  finally{people.dispose();globalThis.document=originalDocument;}
+}
+function finishImage(image){image.naturalWidth=1536;image.naturalHeight=1536;image.onload?.();}
+
+test('Matrix shows all 24 shared profiles as independent atlas cells without adding simulated actors',()=>{
+  const ids=['a','b','c','d'].flatMap(prefix=>Array.from({length:6},(_,index)=>`${prefix}${index+1}`));
+  const actors=ids.map((id,index)=>visitor(`customer-${index}`,id)),before=JSON.stringify(actors);
+  withVisitorLayer(actors,({people,layer,status})=>{
+    assert.equal(people.count,24);assert.equal(layer.children.length,24);
+    for(let index=0;index<24;index++){
+      const node=layer.children[index],image=imagesUnder(node)[0],profile=visitorProfileById(ids[index]);
+      assert.equal(node.attrs['data-visitor-profile-id'],ids[index]);
+      assert.equal(image.src,profile.sprite.atlas);
+      const [x,y,width,height]=profile.sprite.crop;
+      assert.equal(image.style.width,`${profile.sprite.atlasWidth/width*100}%`);assert.equal(image.style.height,`${profile.sprite.atlasHeight/height*100}%`);
+      assert.equal(image.style.left,`${-x/width*100}%`);assert.equal(image.style.top,`${-y/height*100}%`);
+      finishImage(image);
+      assert.equal(image.parent.style.values['--visitor-cell-aspect'],String(width/height));
+      assert.equal(node.attrs['data-visitor-image-state'],'ready');
+    }
+    assert.match(status.textContent,/24 clientes simulados · 24 perfiles distintos/);
+    assert.equal(status.attrs['data-distinct-profiles'],'24');
+    assert.equal(new Set(layer.children.map(node=>node.style.values['--visitor-walk-phase'])).size,24);
+    const phases=layer.children.map(node=>parseFloat(node.style.values['--visitor-walk-phase']));
+    assert.ok(Math.max(...phases)-Math.min(...phases)>.75);
+    assert.ok(new Set(layer.children.map(node=>node.style.values['--visitor-walk-duration'])).size>1);
+    assert.equal(JSON.stringify(actors),before);
+  });
+});
+
+test('grid-only atlases still clip exactly one cell and malformed contour metadata falls back to the grid',()=>{
+  for(const crop of [undefined,[-1,0,200,480],[0,0,200,1025],[0,0,NaN,480],[0,0,0,480]]){
+    const profile={...visitorProfileById('b5'),sprite:{...visitorProfileById('b5').sprite,crop}};
+    withVisitorLayer([visitor('grid','b5')],({layer})=>{
+      const image=imagesUnder(layer.children[0])[0];
+      assert.equal(image.style.width,'300%');assert.equal(image.style.height,'200%');
+      assert.equal(image.style.left,'-100%');assert.equal(image.style.top,'-100%');
+      finishImage(image);assert.equal(image.parent.style.values['--visitor-cell-aspect'],String(2/3));
+    },()=>profile);
+  }
+});
+
+test('an atlas error falls back only that visitor, reports the actual variety and does not reload the failure every frame',()=>{
+  const actors=[visitor('one','a1'),visitor('two','a2')];
+  withVisitorLayer(actors,({people,layer,status})=>{
+    const first=layer.children[0],second=layer.children[1],image=imagesUnder(first)[0],otherImage=imagesUnder(second)[0];
+    finishImage(otherImage);
+    image.onerror();
+    assert.match(image.src,/best-person-male-rust-20260915\.png$/);
+    assert.equal(first.attrs['data-visitor-image-state'],'fallback-loading');
+    assert.equal(first.attrs['data-visitor-requested-profile-id'],'a1');
+    assert.match(first.attrs['data-visitor-profile-id'],/^legacy:/);
+    assert.equal(image.style.width,'100%');assert.equal(image.style.height,'100%');assert.equal(image.style.left,'0');
+    finishImage(image);people.update();
+    assert.equal(imagesUnder(first)[0],image);assert.equal(first.attrs['data-visitor-image-state'],'fallback');
+    assert.equal(second.attrs['data-visitor-profile-id'],'a2');
+    assert.match(status.textContent,/2 perfiles distintos · 1 con imagen de reserva/);
+    assert.equal(status.attrs['data-fallback-count'],'1');
+    // A missing legacy image remains a visible status failure, never a false
+    // successful atlas count or an infinite onerror loop.
+    image.onerror();assert.equal(image.onerror instanceof Function,true);
+    assert.match(status.textContent,/1 perfil distinto · 1 sin imagen/);
+    assert.equal(first.attrs['data-visitor-image-state'],'failed');
+  });
+});
+
+test('reusing an actor identity updates its appearance in place and ignores late callbacks from the previous atlas',()=>{
+  const actor=visitor('persistent','a1');
+  withVisitorLayer([actor],({people,layer,status})=>{
+    const node=layer.children[0],previousImage=imagesUnder(node)[0],lateLoad=previousImage.onload,lateError=previousImage.onerror;
+    Object.assign(actor,{visitorProfileId:'c6',age:'nino',scale:.72,gender:'f',heading:Math.PI});people.update();
+    const currentImage=imagesUnder(node)[0];
+    assert.equal(layer.children[0],node);assert.notEqual(currentImage,previousImage);
+    assert.equal(previousImage.onload,null);assert.equal(previousImage.onerror,null);assert.equal(previousImage.parent.parent,null);
+    assert.equal(node.attrs['data-visitor-profile-id'],'c6');assert.match(node.className,/is-child/);
+    assert.ok(Number(node.style.values['--person-scale-x'])<0);
+    lateLoad();lateError();
+    assert.equal(node.attrs['data-visitor-profile-id'],'c6');assert.equal(currentImage.src,visitorProfileById('c6').sprite.atlas);
+    finishImage(currentImage);assert.match(status.textContent,/1 perfil distinto/);
+  });
+});
+
+test('unknown and malformed profile cells retain the correct legacy child image',()=>{
+  const actor={...visitor('child','missing'),age:'nino',scale:.72,gender:'f'};
+  for(const lookup of [()=>null,()=>({id:'broken',sprite:{atlas:'atlas.png',column:3,row:0,columns:3,rows:2}})]){
+    withVisitorLayer([actor],({layer,status})=>{
+      const node=layer.children[0],image=imagesUnder(node)[0];
+      assert.match(image.src,/best-person-child-ochre-20260915\.png$/);assert.equal(image.className,'best-person-sprite');
+      finishImage(image);assert.match(status.textContent,/1 perfil distinto · 1 con imagen de reserva/);
+    },lookup);
+  }
+});
+
+test('Matrix treats nino and child as equivalent silhouettes, scales and fallback cutouts',()=>{
+  // Scale 1 deliberately isolates the age alias from the secondary scale<.8
+  // check; the shared snapshot normally supplies .72 for either child alias.
+  const actor={...visitor('child','missing'),age:'nino',scale:1,gender:'f'};
+  withVisitorLayer([actor],({people,layer})=>{
+    const node=layer.children[0],image=imagesUnder(node)[0],scale=node.style.values['--person-scale'];
+    actor.age='child';people.update();
+    assert.match(node.className,/is-child/);assert.equal(node.style.values['--person-scale'],scale);
+    assert.equal(imagesUnder(node)[0],image);assert.match(image.src,/best-person-child-ochre-20260915\.png$/);
+  },()=>null);
+});
+
+test('removal and disposal release all atlas callbacks and late image events cannot resurrect visitor status',()=>{
+  withVisitorLayer([visitor('one','a1'),visitor('two','b1')],({scene,people,layer,status,container,cancelled})=>{
+    const removedImage=imagesUnder(layer.children[0])[0],lateRemovedLoad=removedImage.onload;
+    scene.actors.splice(0,1);people.update();
+    assert.equal(people.count,1);assert.equal(removedImage.onload,null);assert.equal(removedImage.onerror,null);
+    lateRemovedLoad();assert.match(status.textContent,/1 cliente simulado/);
+    const image=imagesUnder(layer.children[0])[0],lateLoad=image.onload,lateError=image.onerror;
+    people.dispose();const disposedStatus=status.textContent;
+    assert.equal(people.count,0);assert.equal(image.onload,null);assert.equal(image.onerror,null);
+    assert.equal(container.children.length,0);assert.equal(cancelled.length,1);
+    lateLoad();lateError();people.update();people.dispose();
+    assert.equal(status.textContent,disposedStatus);assert.equal(container.children.length,0);assert.equal(cancelled.length,1);
+  });
 });

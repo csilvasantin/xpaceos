@@ -27,6 +27,16 @@ test('immersive view retains layout, canonical navigation anchors and indexed ap
   scene.layout[0].fp[0]=99;customer.color='red';assert.equal(JSON.stringify(input),before);
 });
 
+test('nino and child keep the same child profile and scale without rewriting their source age',()=>{
+  const input=fixture(),snapshot=createLifeSnapshot(),first=snapshot(input).actors.find(a=>a.kind==='customer');
+  input.game.custs[0].look.age='child';
+  const before=JSON.stringify(input),second=snapshot(input).actors.find(a=>a.kind==='customer');
+  assert.equal(first.age,'nino');assert.equal(second.age,'child');
+  assert.equal(first.scale,.72);assert.equal(second.scale,first.scale);
+  assert.equal(second.id,first.id);assert.equal(second.visitorProfileId,first.visitorProfileId);
+  assert.equal(second.visitorStyle.age,'child');assert.equal(JSON.stringify(input),before);
+});
+
 test('live palette overrides defaults and named character uniforms follow the running renderer',()=>{
   const input=fixture(),snapshot=createLifeSnapshot();
   input.palette={shirts:['#010101','#020202','#030303'],skins:['#eeeeee']};
