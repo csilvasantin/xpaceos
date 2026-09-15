@@ -8716,6 +8716,14 @@ function buildWalkGrid(){
   walkGrid=[];
   for(let c=0;c<ISO.cols;c++){walkGrid[c]=[];for(let r=0;r<ISO.rows;r++) walkGrid[c][r]=!isTileBlocked(c,r);}
 }
+function getHardnessSnapshot(){
+  if(!walkGrid) buildWalkGrid();
+  const blocked=[];
+  for(let c=0;c<ISO.cols;c++) for(let r=0;r<ISO.rows;r++){
+    if(!walkGrid[c]?.[r]) blocked.push(gridKey(c,r));
+  }
+  return {cols:ISO.cols,rows:ISO.rows,blocked};
+}
 function astarPath(sc,sr,ec,er,opts={}){
   if(!walkGrid) buildWalkGrid();
   sc=clampGridCol(sc);sr=clampGridRow(sr);ec=clampGridCol(ec);er=clampGridRow(er);
@@ -26587,7 +26595,7 @@ function loop(){
   cx.save();try{if(codexMapOpen)drawCodexMapOverlay();}catch(e){}cx.restore();
   finalizeFrame();
 }
-window.__xtancoVisualState=()=>({palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:shopFurnitureVisible||editorSceneActive?shopLayout:[],game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'});
+window.__xtancoVisualState=()=>({palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:shopFurnitureVisible||editorSceneActive?shopLayout:[],hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'});
 loop();
 
 // ── DIRECT ENTRY URL: ?play=<verticalId> ─────────────────────────
@@ -30667,7 +30675,7 @@ window.xtAPI = (function(){
     if(!/^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
     const language=typeof lang==='undefined'?'es':lang;
     try{
-      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=tiers-live-7');
+      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=tiers-live-8');
       return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,lang:language});
     }catch(error){
       return {ok:false,local:true,message:language==='en'?'The local visual command could not load. Please retry.':'No se pudo cargar el comando visual local. Reintenta.'};
@@ -34916,9 +34924,9 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
-<link rel="stylesheet" href="scripts/xtanco-premium.css?v=tiers-live-7">
-<link rel="stylesheet" href="scripts/life-ui.css?v=tiers-live-7">
-<link rel="stylesheet" href="scripts/best-preview.css?v=tiers-live-7">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=tiers-live-7"></script>
+<link rel="stylesheet" href="scripts/xtanco-premium.css?v=tiers-live-8">
+<link rel="stylesheet" href="scripts/life-ui.css?v=tiers-live-8">
+<link rel="stylesheet" href="scripts/best-preview.css?v=tiers-live-8">
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=tiers-live-8"></script>
 </body>
 </html>

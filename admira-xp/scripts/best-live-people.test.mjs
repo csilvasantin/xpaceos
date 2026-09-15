@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createBestPeopleLayer,projectBestFloor} from './best-live-people.mjs';
+import {BEST_HARDNESS_ZONES,createBestPeopleLayer,isBestWalkable,projectBestFloor,resolveBestHardness,segmentCrossesBestHardness} from './best-live-people.mjs';
 
 const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-9,`${actual} != ${expected}`);
 
@@ -11,6 +11,14 @@ test('the Good grid maps into the four measured floor corners of the approved Be
   const center=projectBestFloor(7,4);near(center.x,.4875);near(center.y,.55);near(center.depth,.5);
   assert.deepEqual(projectBestFloor(-10,-10),projectBestFloor(0,0));
   assert.deepEqual(projectBestFloor(99,99),projectBestFloor(14,8));
+});
+
+test('the Best plate has calibrated hard furniture footprints and every resolved foot point stays on open floor',()=>{
+  for(const zone of BEST_HARDNESS_ZONES){
+    const point={x:zone.reduce((sum,p)=>sum+p[0],0)/zone.length,y:zone.reduce((sum,p)=>sum+p[1],0)/zone.length,depth:.5};
+    assert.equal(isBestWalkable(point),false);assert.equal(isBestWalkable(resolveBestHardness(point)),true);
+  }
+  assert.equal(segmentCrossesBestHardness({x:.46,y:.49},{x:.46,y:.63}),true);
 });
 
 const iso={cols:14,rows:8,tileW:80,tileH:28,wallH:165,ox:270,oy:185};
@@ -35,13 +43,32 @@ test('the overlay follows live actor positions, excludes outdoor traffic and dis
   try{
     const state=fixture(),container=new Element('scene');
     const people=createBestPeopleLayer({container,getState:()=>state,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:id=>cancelled.push(id)});
-    const [layer,status]=container.children;
+    const layer=container.children.find(node=>node.className==='best-people-layer'),status=container.children.find(node=>node.className==='best-people-status');
     assert.equal(people.count,1);assert.equal(layer.children.length,1);assert.match(status.textContent,/1 cliente simulado/);
+    assert.match(status.textContent,/colisiones activas/);assert.equal(container.children.filter(node=>node.className==='best-depth-occluder').length,7);
     assert.equal(layer.children.some(node=>node.className.includes('passerby')),false);
     assert.match(layer.children[0].innerHTML,/best-person-(?:male-rust|female-denim)-20260915\.png/);
     const customer=layer.children.find(node=>node.className.includes('kind-customer')),left=customer.style.left;
     Object.assign(state.game.custs[0],at(7,4));people.update();
     assert.notEqual(customer.style.left,left);assert.match(customer.className,/is-walking/);
     people.dispose();people.dispose();assert.equal(container.children.length,0);assert.equal(cancelled.length,1);
+  }finally{globalThis.document=originalDocument;}
+});
+
+test('children use real child cutouts and deterministic age variation instead of scaled adult sprites',()=>{
+  const originalDocument=globalThis.document,frames=[];
+  class Element{
+    constructor(tag){this.tag=tag;this.children=[];this.parent=null;this.style={values:{},setProperty:(name,value)=>{this.style.values[name]=value;}};}
+    setAttribute(){} append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
+    remove(){if(this.parent){const index=this.parent.children.indexOf(this);if(index>=0)this.parent.children.splice(index,1);}this.parent=null;}
+  }
+  globalThis.document={hidden:false,createElement:tag=>new Element(tag)};
+  try{
+    const state=fixture();Object.assign(state.game.custs[0].look,{age:'nino',gender:'f'});state.hardness={cols:14,rows:8,blocked:['6,4']};
+    const container=new Element('scene'),people=createBestPeopleLayer({container,getState:()=>state,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:()=>{}});
+    const child=container.children.find(node=>node.className==='best-people-layer').children[0];
+    assert.match(child.className,/is-child/);assert.match(child.innerHTML,/best-person-child-ochre-20260915\.png/);
+    assert.ok(Number(child.style.values['--person-scale'])<.8);assert.equal(isBestWalkable({x:parseFloat(child.style.left)/100,y:parseFloat(child.style.top)/100}),true);
+    people.dispose();
   }finally{globalThis.document=originalDocument;}
 });
