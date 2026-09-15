@@ -1,5 +1,5 @@
-import {createTierControls} from './visual-tier-controls.mjs?v=tiers-live-6';
-import {createBestPeopleLayer} from './best-live-people.mjs?v=tiers-live-6';
+import {createTierControls} from './visual-tier-controls.mjs?v=tiers-live-7';
+import {createBestPeopleLayer} from './best-live-people.mjs?v=tiers-live-7';
 const listeners=new Set();
 let dialog,controls,people,lastFocus,requestId,removeAbort,busy=false;
 const announce=(error='',reason='')=>{for(const fn of listeners)fn({open:!!dialog,busy,error,reason,requestId});};
