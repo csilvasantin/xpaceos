@@ -65,11 +65,11 @@ test('choosing an already open Better view is idempotent and cannot leave the se
   assert.equal(f.life.calls.open,1);assert.equal(f.tiers.mode,'better');assert.equal(f.changes.at(-1).busy,false);
 });
 
-test('Best opens only its injected static preview, persists Best and never opens the graphics view',async()=>{
+test('Best opens only its injected live-people preview, persists Best and never opens the graphics view',async()=>{
   const f=routerFixture(),result=await f.tiers.choose('best');
   assert.equal(f.life.calls.open,0);assert.equal(f.best.calls.open,1);assert.equal(f.tiers.mode,'best');assert.equal(f.bestRequests.length,1);
   assert.equal(result.ok,true);assert.equal(result.availability,'preview');assert.equal(result.preview,true);
-  assert.equal(f.changes.at(-1).busy,false);assert.match(f.changes.at(-1).notice,/Best.*previa estática.*no es.*interactivo/);
+  assert.equal(f.changes.at(-1).busy,false);assert.match(f.changes.at(-1).notice,/Best.*personas del gemelo en vivo.*interacción completa/);
   assert.equal(f.storage.values.get(TIER_STORAGE_KEY),'best');
   await f.tiers.choose('best');assert.equal(f.best.calls.open,1,'already open is idempotent');
   await f.tiers.choose('better');assert.equal(f.best.calls.close,1);assert.equal(f.tiers.availability,'interactive');
@@ -250,9 +250,9 @@ test('Advanced and Expert offer the same enabled Best preview and synchronize th
   assert.match(h.advancedControls.attrs['aria-label'],/avanzado/);
   for(const group of [h.controls,h.advancedControls]){
     assert.notEqual(h.button('best',group).attrs['aria-disabled'],'true');assert.equal(h.button('best',group).attrs['aria-pressed'],'true');
-    assert.match(h.button('best',group).attrs.title,/concepto estático, no operativo/);
+    assert.match(h.button('best',group).attrs.title,/escenario conceptual con personas del gemelo/);
   }
-  assert.equal(h.status.hidden,false);assert.match(h.status.textContent,/previa estática.*no es.*interactivo/);
+  assert.equal(h.status.hidden,false);assert.match(h.status.textContent,/personas del gemelo en vivo.*interacción completa/);
   assert.equal(h.best.calls.open,1);assert.equal(h.life.calls.open,0);assert.ok(h.created.every(tag=>tag==='div'),'selector creates no GPU canvas');
 });
 
@@ -297,7 +297,7 @@ test('selector boots safely with denied storage or stale legacy Best and never i
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
   const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-linked-4','./best-preview-ui.mjs?v=tiers-linked-4','./xtanco-visual-tiers.mjs?v=tiers-linked-4','./visual-tier-controls.mjs?v=tiers-linked-4']);
+  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-live-5','./best-preview-ui.mjs?v=tiers-live-5','./xtanco-visual-tiers.mjs?v=tiers-live-5','./visual-tier-controls.mjs?v=tiers-live-5']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);

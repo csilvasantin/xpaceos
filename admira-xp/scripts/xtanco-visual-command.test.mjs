@@ -36,14 +36,14 @@ function publicRouter(){
   return {router,calls};
 }
 
-test('commands use the actual public router; Better opens once and Best opens an explicitly static preview',async()=>{
+test('commands use the actual public router; Better opens once and Best opens a live-people preview',async()=>{
   const f=publicRouter();
   let answer=await executeVisualCommand('/modo better',f);assert.equal(answer.ok,true);assert.equal(answer.mode,'better');assert.match(answer.message,/Better.*16-bit.*abriendo/);
   await executeVisualCommand('/mode 16',f);assert.equal(f.calls.open,1,'the public router owns idempotence');
   answer=await executeVisualCommand('/modo good',f);assert.equal(answer.mode,'good');assert.match(answer.message,/Good.*8-bit/);
   answer=await executeVisualCommand('/modo best',f);assert.equal(answer.ok,true);assert.equal(answer.mode,'best');assert.equal(answer.requested,'best');
   assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');
-  assert.match(answer.message,/32-bit.*hiperrealista.*previa conceptual estática.*no es.*interactivo/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
+  assert.match(answer.message,/32-bit.*hiperrealista.*personas.*gemelo en vivo.*interacción completa/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
 });
 
 test('help, invalid mode and current-mode queries do not open or close any view',async()=>{
@@ -56,7 +56,7 @@ test('help, invalid mode and current-mode queries do not open or close any view'
   await executeVisualCommand('/modo better',f);answer=await executeVisualCommand('/mode status',{...f,lang:'en'});
   assert.equal(answer.mode,'better');assert.match(answer.message,/Current.*Better.*16-bit/);assert.equal(f.calls.open,1);
   await executeVisualCommand('/modo best',f);answer=await executeVisualCommand('/mode status',{...f,lang:'en'});
-  assert.equal(answer.mode,'best');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/static preview, not interactive/);
+  assert.equal(answer.mode,'best');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/concept scene with live twin people/);
 });
 
 test('missing or failed routing never reports a successful visual switch',async()=>{
@@ -91,7 +91,7 @@ test('a cancelled live command resolves even when the older opener never complet
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 function section(start,end){const from=html.indexOf(start),to=html.indexOf(end,from);assert.ok(from>=0&&to>from,`${start} source boundaries`);return html.slice(from,to);}
 const helperSource=section('  async function executeLocalVisualCommand(rawText){','  async function executeTelegramText(rawText){')
-  .replace("import('./scripts/xtanco-visual-command.mjs?v=tiers-linked-4')",'loadVisualCommand()');
+  .replace("import('./scripts/xtanco-visual-command.mjs?v=tiers-live-5')",'loadVisualCommand()');
 const dispatcherSource=section('  async function executeTelegramText(rawText){','  // === Stream Deck (Corsair Galleon 100 SD) bridge');
 const composerSource=section('  async function sendComposerText(text){','  function bindDockButton(button,handler){');
 
@@ -148,7 +148,7 @@ test('visual feedback is labelled local while all existing bot and error labels 
 
 test('__xtExec runs the same visual command without remote output or command logging',async()=>{
   const h=consoleHarness();let answer=await h.exec('/modo better');assert.match(answer,/Better.*16-bit/);assert.equal(h.router.mode,'better');
-  answer=await h.exec('/mode best');assert.match(answer,/previa conceptual estática.*no es.*interactivo/);assert.equal(h.router.mode,'best');
+  answer=await h.exec('/mode best');assert.match(answer,/escenario conceptual.*personas.*gemelo en vivo.*interacción completa/);assert.equal(h.router.mode,'best');
   answer=await h.exec('/modo desconocido');assert.match(answer,/Estilos visuales locales/);
   assert.deepEqual(h.sent,[]);assert.deepEqual(h.sessionCommands,[]);assert.deepEqual(h.responses,[]);assert.equal(h.calls.open,1);
 });

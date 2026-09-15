@@ -2,7 +2,7 @@
 
 Best sustituirá progresivamente los modelos de Better por piezas creadas en Blender a partir del local real. Ambos deben mostrar el mismo snapshot, personas, mobiliario, reproducción e interacciones. Better sigue disponible y aporta la representación de cualquier pieza cuyo modelo Best aún no esté validado.
 
-Estado de navegación: **Avanzado → Best · 32 bits** y el selector dentro de las vistas abren una **vista previa conceptual estática**, con regreso a Good o Better. La preview no sigue el snapshot ni implementa las funciones operativas de Best. Los 30 IDs del catálogo conservan su estado `planned`; el resto de este documento describe la producción futura y el piloto de assets existente.
+Estado de navegación: **Avanzado → Best · 32 bits** y el selector dentro de las vistas abren una **vista previa híbrida**, con regreso a Good o Better. El escenario sigue siendo una placa conceptual fija, pero las personas superpuestas leen sus posiciones del mismo snapshot vivo del Xtanco. La cámara, el mobiliario y los 30 IDs del catálogo conservan su estado `planned`; el resto de este documento describe la producción futura y el piloto de assets existente.
 
 ## Punto de partida comprobado
 
@@ -17,7 +17,7 @@ Estado de navegación: **Avanzado → Best · 32 bits** y el selector dentro de 
 
 Good **8-bit**, Better **16-bit** y Best **32-bit / hiperrealista** son nombres artísticos de calidad, no profundidades de color, arquitecturas de CPU ni una promesa de fidelidad física. La vista Better actual continúa siendo 3D estilizado. El propósito del pipeline es representar los mismos IDs, medidas verificadas, objetos y funciones con distintos niveles de geometría y materiales; no mantener tres simulaciones divergentes.
 
-En la consola del gemelo de XpaceOS, `/modo good`, `/modo better` y `/modo best` acceden al router público. Los aliases `/modo 8`, `/modo 16` y `/modo 32` apuntan a esos mismos niveles. Una apertura correcta de Best devuelve `ok:true`, `preview:true` y `availability:"preview"`: confirma una vista estática, no un gemelo fotorealista operativo. `/render` conserva sus estilos del motor clásico y no es el selector de niveles nuevos. Better permite comparar una cámara mapped con Good o explorar 3D de forma independiente; alinear cámaras no recupera los controles pendientes.
+En la consola del gemelo de XpaceOS, `/modo good`, `/modo better` y `/modo best` acceden al router público. Los aliases `/modo 8`, `/modo 16` y `/modo 32` apuntan a esos mismos niveles. Una apertura correcta de Best devuelve `ok:true`, `preview:true` y `availability:"preview"`: confirma el escenario conceptual con personas vivas, no un gemelo fotorealista operativo. `/render` conserva sus estilos del motor clásico y no es el selector de niveles nuevos. Better permite comparar una cámara mapped con Good o explorar 3D de forma independiente; alinear cámaras no recupera los controles pendientes.
 
 Unreal 5.8.0 también está instalado en este equipo y contiene el plugin experimental `ModelContextProtocol`, desactivado por defecto. Se ha inspeccionado su disponibilidad, **no conectado ni activado**. Blender produce fuentes editables y exportaciones; Unreal puede ser otro destino de render. Un MCP es el canal de automatización, no el modelo, su fidelidad ni su publicación en la web.
 

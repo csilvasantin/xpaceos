@@ -30667,7 +30667,7 @@ window.xtAPI = (function(){
     if(!/^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
     const language=typeof lang==='undefined'?'es':lang;
     try{
-      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=tiers-linked-4');
+      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=tiers-live-5');
       return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,lang:language});
     }catch(error){
       return {ok:false,local:true,message:language==='en'?'The local visual command could not load. Please retry.':'No se pudo cargar el comando visual local. Reintenta.'};
@@ -34916,9 +34916,9 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
-<link rel="stylesheet" href="scripts/xtanco-premium.css?v=tiers-linked-4">
-<link rel="stylesheet" href="scripts/life-ui.css?v=tiers-linked-4">
-<link rel="stylesheet" href="scripts/best-preview.css?v=tiers-linked-4">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=tiers-linked-4"></script>
+<link rel="stylesheet" href="scripts/xtanco-premium.css?v=tiers-live-5">
+<link rel="stylesheet" href="scripts/life-ui.css?v=tiers-live-5">
+<link rel="stylesheet" href="scripts/best-preview.css?v=tiers-live-5">
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=tiers-live-5"></script>
 </body>
 </html>

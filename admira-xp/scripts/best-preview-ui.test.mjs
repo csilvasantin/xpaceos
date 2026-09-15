@@ -9,7 +9,7 @@ const source=fs.readFileSync(new URL('./best-preview-ui.mjs',import.meta.url),'u
 const controlSource=fs.readFileSync(new URL('./visual-tier-controls.mjs',import.meta.url),'utf8');
 function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}){
   let document,releaseCount=0;
-  const created=[],selected=[];
+  const created=[],selected=[],liveLayers=[];
   class Element{
     constructor(tag){this.tag=tag;this.attrs={};this.dataset={};this.children=[];this.queries=new Map();this.listeners={};this.hidden=false;}
     setAttribute(key,value){this.attrs[key]=String(value);}
@@ -50,22 +50,26 @@ function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}
   document={body,activeElement:previous,createElement(tag){created.push(tag);return new Element(tag);}};
   window.__xtancoReleaseInputs=()=>releaseCount++;
   window.__xtancoVisualTiers={choose:tier=>selected.push(tier)};
-  window.__xtancoVisualState=()=>{throw Error('static preview must not read or invent game state');};
-  const context=vm.createContext({document,window,fetch(){throw Error('No fetch or operational network calls');}});
+  function createBestPeopleLayer(options){
+    const layer={options,disposed:false,dispose(){this.disposed=true;}};liveLayers.push(layer);return layer;
+  }
+  const context=vm.createContext({document,window,createBestPeopleLayer,fetch(){throw Error('No fetch or operational network calls');}});
   vm.runInContext(controlSource.replace(/export function /g,'function '),context);
   vm.runInContext(source.replace(/^import .*;\n/gm,'').replace(/export function /g,'function ')+';globalThis.audit={openBestView,closeBestView,subscribeBestView,get dialog(){return dialog;}};',context);
-  return {body,window,document,previous,created,selected,context,get releases(){return releaseCount;},get dialog(){return context.audit.dialog;},
+  return {body,window,document,previous,created,selected,liveLayers,context,get releases(){return releaseCount;},get dialog(){return context.audit.dialog;},
     open:options=>context.audit.openBestView(options),close:reason=>context.audit.closeBestView(reason),subscribe:fn=>context.audit.subscribeBestView(fn)};
 }
 
-test('Best remains dormant until opened and creates only a static dialog and selector, never GPU/media players',()=>{
+test('Best remains dormant until opened and creates a clean plate with a read-only people overlay, never GPU/media players',()=>{
   const h=harness();assert.deepEqual(h.created,[]);assert.equal(h.dialog,undefined);
   h.open({requestId:1});assert.deepEqual(h.created,['dialog','div']);assert.equal(h.dialog.open,true);assert.equal(h.releases,1);
-  assert.match(h.dialog.innerHTML,/CONCEPTO ESTÁTICO · NO OPERATIVO/);
-  assert.match(h.dialog.innerHTML,/no sigue la cámara, los muebles ni los clientes en tiempo real/);
-  assert.match(h.dialog.innerHTML,/<img[^>]+best-xtanco-mapped-20260915\.png/);
+  assert.match(h.dialog.innerHTML,/PERSONAS EN VIVO · ESCENARIO CONCEPTUAL/);
+  assert.match(h.dialog.innerHTML,/los clientes superpuestos sí leen sus posiciones del Xtanco/);
+  assert.match(h.dialog.innerHTML,/<img[^>]+best-xtanco-cleanplate-20260915\.png/);
   assert.doesNotMatch(h.dialog.innerHTML,/<(?:canvas|video|audio|iframe)\b/i);
-  assert.doesNotMatch(source,/createLifeRenderer|WebGL|requestAnimationFrame|setInterval|__xtExec/);
+  assert.match(source,/createBestPeopleLayer/);assert.doesNotMatch(source,/createLifeRenderer|WebGL|setInterval|__xtExec/);
+  h.dialog.querySelector('img').emit('load');assert.equal(h.liveLayers.length,1);
+  assert.equal(h.liveLayers[0].options.container,h.dialog.querySelector('.best-live-scene'));
 });
 
 test('Best emits the request identity, opens idempotently, restores focus and removes subscriptions',()=>{
@@ -74,7 +78,9 @@ test('Best emits the request identity, opens idempotently, restores focus and re
   assert.equal(h.dialog,dialog);assert.equal(states.length,1);assert.equal(states[0].requestId,44);assert.equal(states[0].open,true);
   assert.equal(states[0].busy,true);assert.equal(h.releases,1);
   dialog.querySelector('img').emit('load');assert.equal(states.length,2);assert.equal(states[1].busy,false);assert.equal(states[1].requestId,44);
+  const liveLayer=h.liveLayers[0];assert.equal(liveLayer.disposed,false);
   h.close('switch');h.close('switch');assert.equal(states.length,3);assert.equal(states[2].requestId,44);assert.equal(states[2].reason,'switch');assert.equal(states[2].busy,false);
+  assert.equal(liveLayer.disposed,true);
   assert.equal(h.dialog,null);assert.equal(dialog.open,false);assert.equal(dialog.removed,true);assert.equal(h.document.activeElement,h.previous);
   unsubscribe();h.open({requestId:46});h.close();assert.equal(states.length,3);
 });

@@ -23,13 +23,13 @@ export async function executeVisualCommand(input,{router,lang='es'}={}){
   const command=parseVisualCommand(input);if(!command)return null;
   const en=lang==='en';
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (twin console or __xtExec): /mode good · Good 8-bit; /mode better · Better 16-bit (isometric 3D); /mode best · Best 32-bit / hyperrealistic (static preview, not interactive). /modo, 8/16/32 and /mode status are also accepted.'
-    : 'Estilos visuales locales (consola del gemelo o __xtExec): /modo good · Good 8-bit; /modo better · Better 16-bit (3D isométrico); /modo best · Best 32-bit / hiperrealista (vista previa estática, no interactiva). También /mode, 8/16/32 y /modo estado.'};
+    ? 'Local visual styles (twin console or __xtExec): /mode good · Good 8-bit; /mode better · Better 16-bit (isometric 3D); /mode best · Best 32-bit / hyperrealistic (concept scene with live twin people). /modo, 8/16/32 and /mode status are also accepted.'
+    : 'Estilos visuales locales (consola del gemelo o __xtExec): /modo good · Good 8-bit; /modo better · Better 16-bit (3D isométrico); /modo best · Best 32-bit / hiperrealista (escenario conceptual con personas del gemelo en vivo). También /mode, 8/16/32 y /modo estado.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
   if(command.status){
-    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit / hyperrealistic · static preview, not interactive':'Best · 32-bit / hiperrealista · vista previa estática, no interactiva'}[mode];
+    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit / hyperrealistic · concept scene with live twin people':'Best · 32-bit / hiperrealista · escenario conceptual con personas del gemelo en vivo'}[mode];
     return {ok:!!label&&!router.error,local:true,mode,availability:router.availability,preview:mode==='best',busy:!!router.busy,message:router.error|| (label
       ? (en?'Current local visual mode: ':'Modo visual local actual: ')+label+'.'
       : (en?'The local visual mode is not available.':'El modo visual local no está disponible.'))};
@@ -50,8 +50,8 @@ export async function executeVisualCommand(input,{router,lang='es'}={}){
       ? 'The Best preview is not available. Interactive Best is still in preparation.'
       : 'La vista previa Best no está disponible. Best interactivo sigue en preparación.'};
     return {ok:true,local:true,mode,requested:'best',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Best · 32-bit / hyperrealistic: static conceptual preview, not the interactive twin. Use “Back to Good” to return.'
-      : 'Best · 32-bit / hiperrealista: vista previa conceptual estática, no es el gemelo interactivo. Usa «Volver a Good» para regresar.'};
+      ? 'Best · 32-bit / hyperrealistic: concept scene with people moving from the live twin. Full interaction is still in preparation. Use “Back to Good” to return.'
+      : 'Best · 32-bit / hiperrealista: escenario conceptual con personas que se mueven desde el gemelo en vivo. La interacción completa sigue en preparación. Usa «Volver a Good» para regresar.'};
   }
   return {ok:true,local:true,mode,availability:router.availability||'interactive',preview:false,busy:!!router.busy,message:mode==='good'
     ? (en?'Good · 8-bit: back to the classic twin and its controls.':'Good · 8-bit: vuelta al gemelo clásico y sus controles.')

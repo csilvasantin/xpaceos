@@ -11,7 +11,7 @@ export function updateTierControls(next){
 export function createTierControls({context='Calidad visual',choose}={}){
   const element=document.createElement('div');element.className='visual-tier-controls';
   element.setAttribute('role','group');element.setAttribute('aria-label',context);
-  element.innerHTML='<button type="button" data-visual-mode="good" title="01.- Good · estilo 8-bit · gemelo clásico"><span>01.- Good</span><small>8 bits</small></button><button type="button" data-visual-mode="better" title="02.- Better · estilo 16-bit · mismo gemelo en 3D"><span>02.- Better</span><small>16 bits</small></button><button type="button" data-visual-mode="best" title="03.- Best · estilo 32-bit · concepto estático, no operativo"><span>03.- Best</span><small>32 bits · preview</small></button>';
+  element.innerHTML='<button type="button" data-visual-mode="good" title="01.- Good · estilo 8-bit · gemelo clásico"><span>01.- Good</span><small>8 bits</small></button><button type="button" data-visual-mode="better" title="02.- Better · estilo 16-bit · mismo gemelo en 3D"><span>02.- Better</span><small>16 bits</small></button><button type="button" data-visual-mode="best" title="03.- Best · estilo 32-bit · escenario conceptual con personas del gemelo"><span>03.- Best</span><small>32 bits · live preview</small></button>';
   for(const button of element.querySelectorAll('[data-visual-mode]'))button.onclick=event=>{event.stopPropagation();void choose?.(button.dataset.visualMode);};
   for(const type of ['click','keydown','keyup','keypress','pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])element.addEventListener(type,event=>event.stopPropagation());
   groups.add(element);updateTierControls(state);

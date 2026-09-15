@@ -1,7 +1,7 @@
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=tiers-linked-4';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=tiers-linked-4';
-import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=tiers-linked-4';
-import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=tiers-linked-4';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=tiers-live-5';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=tiers-live-5';
+import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=tiers-live-5';
+import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=tiers-live-5';
 
 const actions=document.querySelector('#telegramDock .tg-actions');
 const advanced=document.querySelector('.quad-right');
