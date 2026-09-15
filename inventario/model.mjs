@@ -11,7 +11,7 @@ export function numberedCatalog(native,items,registry){
  const all=new Map(native.map(a=>[a.id,a]));
  for(const item of items){const asset=fromPixeria(item);if(asset)all.set(asset.id,asset);}
  return [...all.values()].filter(a=>Number.isSafeInteger(registry.numbers[a.id]))
-  .map(a=>({...a,number:registry.numbers[a.id]})).sort((a,b)=>a.number-b.number);
+  .map(a=>({...a,name:registry.labels?.[a.id]||a.name,number:registry.numbers[a.id]})).sort((a,b)=>a.number-b.number);
 }
 export async function loadCatalog(fetcher=fetch){
  const files=['catalog.json','pixeria-cache.json','registry.json'];

@@ -17,7 +17,7 @@ function normalizeLifeSnapshot(raw={}){
 
 // A presentation of Xtanco's live snapshot. This module owns neither a clock,
 // simulation, media player nor animation loop. All dimensions are grid units.
-export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createElement('canvas'),inventory=false,loadCounter=null}={}){
+export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createElement('canvas'),inventory=false,loadCounter=null,loadFurniture=null}={}){
   let snapshot=normalizeLifeSnapshot(rawSnapshot),signature='',lighting='day',disposed=false,lastAnimationTime=null;
   const scene=new T.Scene(),world=new T.Group(),actors=new T.Group();
   world.name='life:world';actors.name='life:actors';scene.add(world,actors);
@@ -298,18 +298,23 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
         for(const x of [.07,w-.07])box(root,x,1.19,.025,.10,2.38,.12,palette.oak);box(root,w/2,2.36,.025,w,.10,.12,palette.oak);
         const leaf=group(root,.08,0,.025);leaf.name=`door:${item.id}`;doors.push(leaf);
         box(leaf,(w-.16)/2,1.18,0,w-.16,2.25,.045,palette.glass);box(leaf,w-.28,1.06,.047,.035,.3,.035,palette.brass);
-        return root;
+        break;
       }
       default:{
         cabinet(root,w,d,Math.max(.3,item.ph),{finish:palette.oak});
         if(item.label)label(root,item.label,w/2,item.ph*.65,d+.029,w*.83,.17,{bg:'#bb8b59',fg:'#284a42',font:37});
       }
     }
-    batch(root);
-    if(item.type==='counter'&&loadCounter){
+    if(item.type!=='door')batch(root);
+    const loader=loadFurniture?()=>loadFurniture(item):item.type==='counter'?loadCounter:null;
+    if(loader){
       root.userData.assetStatus='loading';
-      Promise.resolve().then(loadCounter).then(asset=>{
+      Promise.resolve().then(loader).then(asset=>{
         if(disposed||root.parent!==world)return;
+        if(!asset){root.userData.assetStatus='unregistered';return;}
+        const retiredDoors=new Set();root.traverse(o=>{if(doors.includes(o))retiredDoors.add(o);});
+        for(let i=doors.length-1;i>=0;i--)if(retiredDoors.has(doors[i]))doors.splice(i,1);
+        asset.traverse(o=>{if(o.userData.doorHinge){o.rotation.y=-snapshot.doorOpen*Math.PI*.48;doors.push(o);}});
         asset.traverse(o=>{if(o.isMesh&&o.userData.mediaSurface==='existing_shared_player')o.material=mediaMaterial;});
         root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});root.clear();root.add(asset);root.userData.assetStatus='ready';root.userData.assetSource='Blender';
       }).catch(()=>{if(!disposed&&root.parent===world)root.userData.assetStatus='fallback';});
