@@ -1,4 +1,4 @@
-import {mountInventoryBest} from './inventory-best.mjs?v=1';
+import {mountInventoryBest} from './inventory-best.mjs?v=blender-1';
 import {createBestPeopleLayer} from './best-live-people.mjs?v=tiers-live-12';
 const listeners=new Set();
 let inventoryDispose,inventorySubscription;

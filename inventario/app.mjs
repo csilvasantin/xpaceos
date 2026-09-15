@@ -1,4 +1,7 @@
-import {preview} from './viewer.mjs';
+import {preview} from './viewer.mjs?v=blender-1';
+import {mountCounterStage} from './counter-stage.mjs';
+let disposePilot;mountCounterStage(document.querySelector('#mostrador')).then(dispose=>{disposePilot=dispose;});
+window.addEventListener('pagehide',()=>disposePilot?.());
 import {STOCK_URL,numberedCatalog,loadCatalog,instancesFor} from './model.mjs';
 const $=s=>document.querySelector(s),store=window.XpaceInventory,tiers=['good','better','best'];
 let data,stock,registry,assets=[],category='Todas',selected=null,angle=0,space='xtanco',renderRevision=0;

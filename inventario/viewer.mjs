@@ -1,5 +1,6 @@
 import * as T from '../admira-xp/scripts/premium-three.mjs';
 import {createLifeScene} from '../admira-xp/scripts/life-scene.mjs?v=inventari-1';
+import {cloneCounter} from '../admira-xp/scripts/counter-asset.mjs';
 let renderer,queue=Promise.resolve();const imageCache=new Map();
 function loadImage(url){if(!imageCache.has(url))imageCache.set(url,new Promise((resolve,reject)=>{const im=new Image();im.crossOrigin='anonymous';const timeout=setTimeout(()=>reject(Error('La imagen tarda demasiado')),12000);im.onload=()=>{clearTimeout(timeout);resolve(im);};im.onerror=()=>{clearTimeout(timeout);reject(Error('No se pudo leer el sprite'));};im.src=url;}));return imageCache.get(url);}
 export function preview(asset,tier,angle=0){const task=queue.then(()=>render(asset,tier,angle));queue=task.catch(()=>{});return task;}
@@ -9,7 +10,9 @@ async function render(asset,tier,angle){
  renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=tier==='best'?1.2:1.1;
  renderer.setClearColor(0x000000,0);const size=tier==='good'?88:420;renderer.setSize(size,size,false);
  let scene,object,dispose;
- if(asset.img){
+ if(asset.id==='native:counter'){
+  object=await cloneCounter(tier);scene=new T.Scene();scene.add(object,new T.HemisphereLight('#ffffff','#7e8f81',2.8));const key=new T.DirectionalLight('#fff0d7',3.2);key.position.set(3,6,4);scene.add(key);dispose=()=>scene.clear();
+ }else if(asset.img){
   const im=await loadImage(asset.img),frame=document.createElement('canvas'),views=asset.views||1;
   frame.width=Math.floor(im.width/views);frame.height=im.height;const fc=frame.getContext('2d',{willReadFrequently:true});
   const face=views===4?Math.floor(angle/(Math.PI/2))%4:0;fc.drawImage(im,face*frame.width,0,frame.width,im.height,0,0,frame.width,frame.height);

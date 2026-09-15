@@ -1,15 +1,15 @@
 import * as T from './premium-three.mjs';
-import {createLifeScene} from './life-scene.mjs?v=inventari-1';
+import {createLifeScene} from './life-scene.mjs?v=blender-1';
 import {mappedCameraFrame} from './life-camera.mjs';
 
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 /** Presentation only: no simulation, media owner or autonomous animation loop. */
-export function createLifeRenderer({canvas,snapshot,getPlayer=()=>null,onSelect=()=>{},onCameraChange=()=>{}}={}){
+export function createLifeRenderer({canvas,snapshot,getPlayer=()=>null,onSelect=()=>{},onCameraChange=()=>{},assetQuality='better'}={}){
   const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
   renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
   renderer.setClearColor('#e7e8dc');renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   let model;
-  try{model=createLifeScene(snapshot);}catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
+  try{model=createLifeScene(snapshot,{loadCounter:()=>import('./counter-asset.mjs').then(m=>m.cloneCounter(assetQuality))});}catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
   const camera=new T.OrthographicCamera(-15,15,10,-10,.1,200);
   const target=new T.Vector3(),raycaster=new T.Raycaster(),pointers=new Map();
   let width=1,height=1,lastMedia=-Infinity,disposed=false,gesture=null,selected=null;
@@ -96,5 +96,5 @@ export function createLifeRenderer({canvas,snapshot,getPlayer=()=>null,onSelect=
   function dispose(){if(disposed)return;disposed=true;for(const [event,handler]of Object.entries(handlers))canvas.removeEventListener(event,handler);pointers.clear();haloGeometry.dispose();haloMaterial.dispose();halo.removeFromParent();model.dispose();renderer.dispose();renderer.forceContextLoss();}
   resize(canvas.clientWidth||1000,canvas.clientHeight||700);
   onCameraChange(cameraState());
-  return {resize,update,render,preset,rotate,zoomBy,setLighting,clearSelection,dispose,get snapshot(){return model.snapshot;},get cameraState(){return cameraState();}};
+  return {resize,update,render,preset,rotate,zoomBy,setLighting,clearSelection,dispose,get blenderCounters(){return model.world.children.filter(o=>o.userData.type==='counter'&&o.userData.assetStatus==='ready').length;},get snapshot(){return model.snapshot;},get cameraState(){return cameraState();}};
 }

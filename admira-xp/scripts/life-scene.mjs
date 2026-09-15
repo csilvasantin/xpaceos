@@ -17,7 +17,7 @@ function normalizeLifeSnapshot(raw={}){
 
 // A presentation of Xtanco's live snapshot. This module owns neither a clock,
 // simulation, media player nor animation loop. All dimensions are grid units.
-export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createElement('canvas'),inventory=false}={}){
+export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createElement('canvas'),inventory=false,loadCounter=null}={}){
   let snapshot=normalizeLifeSnapshot(rawSnapshot),signature='',lighting='day',disposed=false,lastAnimationTime=null;
   const scene=new T.Scene(),world=new T.Group(),actors=new T.Group();
   world.name='life:world';actors.name='life:actors';scene.add(world,actors);
@@ -305,7 +305,16 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
         if(item.label)label(root,item.label,w/2,item.ph*.65,d+.029,w*.83,.17,{bg:'#bb8b59',fg:'#284a42',font:37});
       }
     }
-    batch(root);return root;
+    batch(root);
+    if(item.type==='counter'&&loadCounter){
+      root.userData.assetStatus='loading';
+      Promise.resolve().then(loadCounter).then(asset=>{
+        if(disposed||root.parent!==world)return;
+        asset.traverse(o=>{if(o.isMesh&&o.userData.mediaSurface==='existing_shared_player')o.material=mediaMaterial;});
+        root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});root.clear();root.add(asset);root.userData.assetStatus='ready';root.userData.assetSource='Blender';
+      }).catch(()=>{if(!disposed&&root.parent===world)root.userData.assetStatus='fallback';});
+    }
+    return root;
   }
 
   function architecture(){

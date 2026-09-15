@@ -43,3 +43,15 @@ La eliminación se guarda **en este navegador y por Xpacio**, con un registro de
 El compositor y el dispatcher interceptan estos comandos antes de Telegram, IA, memoria y registro de comandos. Los errores de sintaxis, carga o almacenamiento permanecen locales. La escritura de los slots del layout es local y no invoca el espejo de publicación de Pixeria. La eliminación queda sin aplicar si falla el guardado; el adaptador revierte slots y escena ante un fallo. Undo persiste tras recargar y se limita a la última eliminación del Xpacio.
 
 QA de esta entrega: 43 filas CLI, `eliminar el 1`, recarga con Mostrador = 0, undo = 1, búsqueda Estantería = 02 y Best editable. Misión DCL-e60b74a2900b00147b614708 · #163.
+
+## Piloto Blender · Mostrador 1
+
+`/inventario/#mostrador` muestra el GLB completo en WebGL, con órbita por arrastre/teclado, frontal, trasera, lateral, zoom, malla y descarga del maestro Blender. Los tres perfiles se generan con Blender 5.2.2 LTS y el script `admira-xp/tools/xpacios-blender/build_counter.py`. La revisión añade puertas, tiradores y bisagras posteriores e identidad `native:counter`, número 1.
+
+Los assets actuales viven en `inventario/assets/mostrador/`; el antiguo laboratorio queda como referencia histórica. Las tres miniaturas del mostrador se generan desde estos GLB (Good rasteriza a 88 px). Better carga el GLB intermedio y Best editable el completo. Good en el simulador conserva su renderer clásico. El TPV 3D reutiliza la superficie del reproductor compartido; no se crea otro reproductor.
+
+El GLB se cuelga del nodo lógico existente, aplicando posición, orientación y escala una sola vez. Las retiradas CLI y los filtros de visibilidad siguen controlando el mismo ID. Si la pieza tarda o falla, permanece la versión procedural; una respuesta tardía nunca reinserta una pieza retirada. El visor mantiene un caché acotado a tres GLB y no necesita CDN ni extensiones de Blender. Los recursos de cada visor se liberan al cerrarlo.
+
+Diseño interpretado, pendiente de valoración humana; las proporciones de casilla todavía no están calibradas con medidas de un mueble real. 8/16/32 son estilos, no profundidades de color ni niveles de precisión geométrica.
+
+Verificado: importación GLB y apertura `.blend` en Blender para los tres perfiles; materiales empaquetados, 110 objetos de malla, geometría posterior y exclusión de cámaras/luces de estudio. QA navegador: parte posterior, malla, Best con modelo Blender, CLI eliminar 1 (17→16) y deshacer (16→17). Misión DCL-fe628ccda18b44ba84ba5717 · #169.

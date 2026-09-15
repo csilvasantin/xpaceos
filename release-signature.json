@@ -1,10 +1,10 @@
 {
-  "version": "v.15.09.2026.r10.16:50",
+  "version": "v.15.09.2026.r11.17:06",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Inventario: ruta corregida, 43 números permanentes, CLI local eliminar por número y deshacer persistente. Misión DCL-e60b74a2900b00147b614708.",
+  "evidence": "Blender 5.2.2 LTS instalado, Mostrador 1 editable con geometría completa, visor 360 y GLB conectado a Better/Best. Misión DCL-fe628ccda18b44ba84ba5717.",
   "day": "15.09.2026",
-  "time": "16:50"
+  "time": "17:06"
 }
