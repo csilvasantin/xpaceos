@@ -30178,7 +30178,7 @@ window.xtAPI = (function(){
       {title:'Ajustes rápidos',items:['/money 12000','/sat 90','/fame 80','/set week 12','/set year 2','/set revenue 5000','/set storeLevel 2','/set customers 30']},
       {title:'Musica y layout',items:['/music on','/music off','/music next','/music previous','/music 3','/song 1','/song bad bunny','/next','/prev','/seoul2026','/seul','/seultrap','/seultecno','/equipo inicio ana 3 4','/equipo zona dj 12 2 2','/catalogo','/catalogo pared','/importar catalogo','/importar 1','/importar lista','/importar quitar 1','/mobiliario','/mobiliario inicio','/layout','/layout save','/layout factory','/layout xpacio','/layout xpacio load']},
       {title:'Inventario local · números permanentes',items:['/inventario','eliminar el 1','/inventario deshacer']},
-      {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit',items:['good','better','best','/mudanza','/modo estado']},
+      {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit / Matrix Avenida Admira',items:['good','better','best','matrix','/mudanza','/modo estado']},
       {title:'Estilo del render clásico',items:['/render 8bit','/render 16bit','/render habbo','/render real']},
       {title:'Mapa de navegacion',items:['/xpacio','/mapa','/map','/red','/sd list','/streamdeck','/help','/debug']},
     ];
@@ -30728,10 +30728,10 @@ window.xtAPI = (function(){
         });
       }catch{return {ok:false,local:true,kind:'inventory',message:'No se pudo cargar el inventario local. Recarga la Xperience y reintenta.'};}
     }
-    if(!/^(?:good|better|best)$|^\/mudanza(?:@\w+)?$|^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
+    if(!/^(?:good|better|best|matrix)$|^\/mudanza(?:@\w+)?$|^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
     const language=typeof lang==='undefined'?'es':lang;
     try{
-      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=best-people-1');
+      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=matrix-1');
       return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,moving:window.__xtancoMudanza,lang:language});
     }catch(error){
       return {ok:false,local:true,message:language==='en'?'The local visual command could not load. Please retry.':'No se pudo cargar el comando visual local. Reintenta.'};
@@ -34997,6 +34997,6 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=inventari-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=inventari-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=best-people-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=matrix-1"></script>
 </body>
 </html>

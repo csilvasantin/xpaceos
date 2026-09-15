@@ -3,13 +3,14 @@
 const aliases=new Map([
   ['good','good'],['8','good'],['8bit','good'],['8-bit','good'],
   ['better','better'],['life','better'],['16','better'],['16bit','better'],['16-bit','better'],
-  ['best','best'],['32','best'],['32bit','best'],['32-bit','best'],['hiperrealista','best'],['hyperrealistic','best']
+  ['best','best'],['32','best'],['32bit','best'],['32-bit','best'],['hiperrealista','best'],['hyperrealistic','best'],
+  ['matrix','matrix']
 ]);
 
 export function parseVisualCommand(input){
   const text=String(input||'').trim();
   if(/^\/mudanza(?:@\w+)?$/i.test(text))return {moving:true};
-  const direct=text.toLowerCase();if(['good','better','best'].includes(direct))return {tier:direct};
+  const direct=text.toLowerCase();if(['good','better','best','matrix'].includes(direct))return {tier:direct};
   const match=text.match(/^\/?(?:modo|mode)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
   if(!match)return null;
   const argument=(match[1]||'').trim().toLowerCase();
@@ -39,14 +40,14 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
     }
   }
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (Expert CLI or __xtExec): type good, better or best. /mudanza toggles an empty floor-and-walls view without changing the real layout. /mode, 8/16/32 and /mode status are also accepted.'
-    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better o best. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. También se aceptan /modo, 8/16/32 y /modo estado.'};
+    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Matrix shows Avenida Admira with a fixed backdrop and live visitors. /mudanza toggles an empty floor-and-walls view without changing the real layout. /mode, 8/16/32 and /mode status are also accepted.'
+    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Matrix muestra Avenida Admira con escenario fijo y visitantes en vivo. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. También se aceptan /modo, 8/16/32 y /modo estado.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
   if(command.status){
-    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit · live 3D store and people':'Best · 32-bit · tienda y personas en 3D en vivo'}[mode];
-    return {ok:!!label&&!router.error,local:true,mode,availability:router.availability,preview:mode==='best',busy:!!router.busy,message:router.error|| (label
+    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit · live 3D store and people':'Best · 32-bit · tienda y personas en 3D en vivo',matrix:en?'Matrix · Avenida Admira · fixed backdrop and live visitors':'Matrix · Avenida Admira · escenario fijo y visitantes en vivo'}[mode];
+    return {ok:!!label&&!router.error,local:true,mode,availability:router.availability,preview:mode==='best'||mode==='matrix',busy:!!router.busy,message:router.error|| (label
       ? (en?'Current local visual mode: ':'Modo visual local actual: ')+label+'.'
       : (en?'The local visual mode is not available.':'El modo visual local no está disponible.'))};
   }
@@ -61,13 +62,21 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
   if(mode!==command.tier||outcome?.ok===false||router.error)return {ok:false,local:true,mode,requested:command.tier,message:en
     ? 'The requested view could not open. The current twin remains available; try again from Advanced (▤).'
     : 'No se pudo abrir la vista solicitada. El gemelo actual sigue disponible; reintenta desde Avanzado (▤).'};
+  if(command.tier==='matrix'){
+    if(router.availability!=='preview')return {ok:false,local:true,mode,requested:'matrix',message:en
+      ? 'The Matrix preview is not available. Try again from Advanced (▤).'
+      : 'La vista previa Matrix no está disponible. Reintenta desde Avanzado (▤).'};
+    return {ok:true,local:true,mode,requested:'matrix',availability:'preview',preview:true,busy:!!router.busy,message:en
+      ? 'Matrix · Avenida Admira: fixed backdrop and live visitors, synchronized with the same Xtanco. Type good, better or best in the Expert CLI to change view.'
+      : 'Matrix · Avenida Admira: escenario fijo y visitantes en vivo, sincronizados con el mismo Xtanco. Escribe good, better o best en el CLI experto para cambiar de vista.'};
+  }
   if(command.tier==='best'){
     if(router.availability!=='preview')return {ok:false,local:true,mode,requested:'best',message:en
       ? 'The Best preview is not available. Interactive Best is still in preparation.'
       : 'La vista previa Best no está disponible. Best interactivo sigue en preparación.'};
     return {ok:true,local:true,mode,requested:'best',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Best · 32-bit: live 3D store and people, synchronized with the same Xtanco. Type good or better in the Expert CLI to change view.'
-      : 'Best · 32-bit: tienda y personas en 3D en vivo, sincronizadas con el mismo Xtanco. Escribe good o better en el CLI experto para cambiar de vista.'};
+      ? 'Best · 32-bit: live 3D store and people, synchronized with the same Xtanco. Type good, better or matrix in the Expert CLI to change view.'
+      : 'Best · 32-bit: tienda y personas en 3D en vivo, sincronizadas con el mismo Xtanco. Escribe good, better o matrix en el CLI experto para cambiar de vista.'};
   }
   return {ok:true,local:true,mode,availability:router.availability||'interactive',preview:false,busy:!!router.busy,message:mode==='good'
     ? (en?'Good · 8-bit: fused back to the classic twin; HUD and Expert CLI remain in place.':'Good · 8-bit: fusión de vuelta al gemelo clásico; el HUD y el CLI experto permanecen en su sitio.')

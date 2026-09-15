@@ -1,7 +1,8 @@
+import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=matrix-1';
 import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=catalog-43';
 import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=best-people-1';
-import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=best-people-1';
-import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=best-people-1';
+import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=matrix-1';
+import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=matrix-1';
 
 const actions=document.querySelector('#telegramDock .tg-actions');
 const advanced=document.querySelector('.quad-right');
@@ -39,7 +40,8 @@ function ensureExpertDock(){
 }
 
 const tiers=createVisualTiers({openBetter:openLifeView,closeBetter:closeLifeView,subscribeBetter:subscribeLifeView,
-  openBest:openBestView,closeBest:closeBestView,subscribeBest:subscribeBestView,storage,
+  openBest:openBestView,closeBest:closeBestView,subscribeBest:subscribeBestView,
+  openMatrix:openMatrixView,closeMatrix:closeMatrixView,subscribeMatrix:subscribeMatrixView,storage,
   onChange(state){
     syncVisualSurface();document.body.dataset.xtancoTier=state.mode;updateTierControls(state);
     status.textContent=state.error||(state.busy?'Fusionando vista…':'');status.hidden=!status.textContent;

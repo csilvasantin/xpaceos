@@ -1,12 +1,13 @@
 # 01.- Un espacio, tres representaciones
 
-Release: v.15.09.2026.r8. Misión: interfaz continua, fusión visual y modo mudanza reversible.
+Actualización: 15/09/2026 · misión #198. Matrix recupera Avenida Admira; Best mantiene la nueva tienda 3D.
 
 | Nivel visual | Entrada | Estado y correspondencia |
 | --- | --- | --- |
 | 01.- Good · 8 bits | Experto ⌘ / selector / CLI `good` | Canvas clásico; dueño de simulación, layout y controles. |
 | 02.- Better · 16 bits | Mismos accesos / CLI `better` | Mismo snapshot de entidades. Cámara `mapped` por defecto; `Explorar 3D` no altera Good. |
-| 03.- Best · 32 bits | Mismos accesos / CLI `best` | Escenario conceptual fijo con una capa de personas que lee las posiciones del mismo snapshot vivo. La cámara, el mobiliario y las 30 funciones Best todavía no son interactivos. |
+| 03.- Best · 32 bits | Mismos accesos / CLI `best` | Tienda 3D en vivo, mobiliario Blender y personajes humanos con animación. |
+| 04.- Matrix · Avenida Admira | Mismos accesos / CLI `matrix` / `visual=matrix` | Composición fotorrealista fija original, con visitantes que leen el mismo snapshot vivo. Los cambios individuales de mobiliario se revisan en Good/Better/Best. |
 
 Los números anteriores pertenecen a los **niveles visuales**, no renumeran las funciones estables XP-F01–XP-F30. 8/16/32 son etiquetas artísticas, no profundidad de color ni una promesa de paridad.
 
@@ -27,10 +28,10 @@ Cada entrada en Better vuelve a `mapped`. Girar, desplazar, acercar, Planta o De
 
 La preview con personas usa `../assets/best-xtanco-avenida-admira-framelock-20260915.png`, sin ninguno de los dos marcos de puerta y con la placa «AVENIDA ADMIRA». Su recorte final 1504×940 conserva el render y adopta la proporción nativa 8:5 de Good para que los tres modos compartan exactamente el mismo marco. `best-live-people.mjs` consume el mapa real de dureza y añade huellas calibradas para el mobiliario fotográfico sin superponer máscaras que puedan cortar visitantes; no modifica la simulación. Los adultos y los niños tienen recortes fotográficos propios, con variación determinista de escala y corrección de profundidad.
 
-`/mudanza` activa una capa de presentación vacía y reversible. Good deja de pintar mobiliario, personas, dispositivos y decoración; Better recibe el mismo espacio con `layout: []`, `actors: []` y arquitectura sin fixtures; Best funde hacia `../assets/best-xtanco-avenida-admira-mudanza-20260915.png`, placa 1504×940 creada mediante edición precisa de la referencia Best. La simulación, el layout real, los mapas de dureza, las posiciones y los contadores continúan intactos. Una segunda ejecución de `/mudanza` restaura todos los objetos en sus posiciones anteriores.
+`/mudanza` activa una capa de presentación vacía y reversible. Good deja de pintar mobiliario, personas, dispositivos y decoración; Better recibe el mismo espacio con `layout: []`, `actors: []` y arquitectura sin fixtures; Matrix funde hacia `../assets/best-xtanco-avenida-admira-mudanza-20260915.png`, placa 1504×940 creada mediante edición precisa de la referencia Best. La simulación, el layout real, los mapas de dureza, las posiciones y los contadores continúan intactos. Una segunda ejecución de `/mudanza` restaura todos los objetos en sus posiciones anteriores.
 
 Para un Best operativo, Blender/Unreal deberán consumir el mismo layout y los mismos IDs de entidades, junto al contrato de cámara; los assets deberán verificarse contra anclas y medidas. La capa actual sí sigue aproximadamente las posiciones de las personas, pero la imagen de fondo no cumple ese contrato de runtime ni permite afirmar sincronización exacta del escenario. Las30 áreas funcionales de Best siguen `planned` en `/mcp/funcionalidades.json`.
 
 ## 04.- Navegación y seguridad
 
-Un único router y una única preferencia versionada gobiernan todos los selectores. Cada cambio conserva un fantasma local de la vista saliente y funde su opacidad con la entrante durante 820 ms; donde existe, también se usa la API nativa View Transitions. Los cambios cancelan la apertura anterior; `requestId` y `AbortSignal` impiden que resultados tardíos reabran una vista. Best confirma éxito después de cargar su imagen; Better después de preparar el renderer. `good`, `better`, `best`, `/mudanza` y `/modo …` son comandos locales: no se envían a Telegram ni ejecutan herramientas MCP. Escape vuelve a Good. `pagehide` libera recursos sin borrar la preferencia.
+Un único router y una única preferencia versionada gobiernan todos los selectores. Cada cambio conserva un fantasma local de la vista saliente y funde su opacidad con la entrante durante 820 ms; donde existe, también se usa la API nativa View Transitions. Los cambios cancelan la apertura anterior; `requestId` y `AbortSignal` impiden que resultados tardíos reabran una vista. Matrix confirma éxito después de cargar su imagen; Better y Best después de preparar su renderer. `good`, `better`, `best`, `matrix`, `/mudanza` y `/modo …` son comandos locales: no se envían a Telegram ni ejecutan herramientas MCP. Escape vuelve a Good. `pagehide` libera recursos sin borrar la preferencia.

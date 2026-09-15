@@ -1,6 +1,6 @@
 # El Xtanco · immersive 3D
 
-Open `/admira-xp/?autostart=xtanco&visual=better` or choose **Avanzado (▤) → Better · 16 bits**. The same selector is available inside the views: **Good · 8 bits**, **Better · 16 bits**, **Best · 32 bits**. The homepage's **Try the twin** uses Better; `visual=life` remains an alias. Escape / **Volver al gemelo** returns to Good and its operational tools without starting another game.
+Open `/admira-xp/?autostart=xtanco&visual=better` or choose **Avanzado (▤) → Better · 16 bits**. The same selector is available inside the views: **Good · 8 bits**, **Better · 16 bits**, **Best · 32 bits**, **Matrix · Avenida Admira**. The homepage's **Try the twin** uses Better; `visual=life` remains an alias. Escape / **Volver al gemelo** returns to Good and its operational tools without starting another game.
 
 This is a stylized, procedural representation of the running layout, not a scan or a claim of photorealism. Customers are the existing game actors, not newly inferred camera detections. Camera-owned exterior traffic is not replaced with synthetic pedestrians.
 
@@ -26,3 +26,10 @@ The permanent Expert menu, CLI and control panels remain available around every 
 `node --test admira-xp/scripts/life-*.test.mjs homepage-twin-cta.test.mjs`
 
 Browser QA: direct entry, furniture selection, camera presets, lighting, portrait layout, close/reopen and failure fallback. Check the preserved premium/controller/operations suite before publishing. WebGL is required; if it cannot start, the modal offers retry or return to the existing game.
+
+
+## Matrix · Avenida Admira
+
+Open `/admira-xp/?play=xtanco&visual=matrix`, choose **04.- Matrix** in Advanced/Expert or enter `/modo matrix` (also `matrix`). `quality=matrix` is accepted as a URL alias; explicit `visual` takes precedence, then `quality`, then the saved preference. Matrix restores the approved fixed photographic scene and its live cutout visitors. It uses the original Avenida Admira composition, not the retired green wireframe mode. The scene has a fixed camera and furniture arrangement; individual inventory edits are visible in Good/Better/Best. `/mudanza` switches Matrix to its matching empty composition. Matrix never silently switches to Best because of inventory changes.
+
+`matrix-preview-ui.mjs` owns its image and person-layer lifecycle independently of `best-preview-ui.mjs`. The shared router cancels pending views, rejects stale readiness events and preserves the selected preference on pagehide. Matrix is a presentation preview; its fixed image is not represented as full 3D or operational feature parity.
