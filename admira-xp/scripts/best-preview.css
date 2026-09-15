@@ -23,3 +23,5 @@ body[data-xtanco-tier=good] #c{view-transition-name:xtanco-stage}body:not([data-
 ::view-transition-new(xtanco-stage){animation:xtanco-fuse-in .82s cubic-bezier(.4,0,.2,1) both;mix-blend-mode:normal}
 @keyframes xtanco-fuse-out{to{opacity:0;filter:saturate(1.08) blur(1.5px)}}@keyframes xtanco-fuse-in{from{opacity:0;filter:saturate(.9) blur(1.5px)}to{opacity:1;filter:none}}
 @media(prefers-reduced-motion:reduce){dialog.visual-tier-surface{transition:none}::view-transition-group(xtanco-stage),::view-transition-old(xtanco-stage),::view-transition-new(xtanco-stage){animation-duration:.01ms}}
+
+.best-stage.best-inventory-mode{position:relative;width:100%;height:100%;display:block}.best-inventory-mode>.best-live-scene,.best-inventory-mode>figcaption,.best-inventory-mode>.visual-surface-badge{display:none}.inventory-best-canvas{display:block;width:100%;height:100%;touch-action:none}.inventory-best-label{position:absolute;left:18px;top:12px;padding:8px 12px;background:#173c35e8;color:#f4f7ec;border-radius:5px;font:10px sans-serif;letter-spacing:1px;pointer-events:none}

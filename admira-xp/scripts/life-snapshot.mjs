@@ -1,4 +1,4 @@
-import {createSceneSnapshot} from './xtanco-scene-snapshot.mjs';
+import {createSceneSnapshot} from './xtanco-scene-snapshot.mjs?v=inventari-1';
 
 // Read-only presentation adapter for the immersive view. The game continues to
 // own navigation, appearance, media, time and counters. These defaults mirror P

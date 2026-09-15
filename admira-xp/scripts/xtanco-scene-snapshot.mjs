@@ -41,7 +41,7 @@ export function createSceneSnapshot(){
       hardness:{cols:iso.cols,rows:iso.rows,blocked},
       wallHeight:iso.wallH/pixelsPerHeightUnit,
       layout:layout.map(v=>({id:v.id,type:v.type,col:v.col,row:v.row,sx:v.sx||1,sy:v.sy||1,
-        rot:v.rot||0,flipX:!!v.flipX,label:v.label||'',fp:[...(v.fp||footprints[v.type]||[1,1])],...dimensions(v)})),
+        rot:v.rot||0,flipX:!!v.flipX,img:typeof v.img==='string'?v.img:'',label:v.label||'',fp:[...(v.fp||footprints[v.type]||[1,1])],...dimensions(v)})),
       actors:actors.filter(Boolean),doorOpen:game.doorAnim??0,time:game.gameTime??12,
       inside:(game.custs||[]).length,entries:game.custIn||0};
   };

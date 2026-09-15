@@ -1,10 +1,13 @@
+import {mountInventoryBest} from './inventory-best.mjs?v=1';
 import {createBestPeopleLayer} from './best-live-people.mjs?v=tiers-live-12';
 const listeners=new Set();
+let inventoryDispose,inventorySubscription;
 let dialog,people,lastFocus,requestId,removeAbort,busy=false;
 const announce=(error='',reason='')=>{for(const fn of listeners)fn({open:!!dialog,busy,error,reason,requestId});};
 export function subscribeBestView(fn){listeners.add(fn);return ()=>listeners.delete(fn);}
 export function closeBestView(reason=''){
   if(!dialog)return;
+  inventoryDispose?.();inventoryDispose=null;inventorySubscription?.();inventorySubscription=null;
   removeAbort?.();removeAbort=null;people?.dispose();people=null;
   dialog.close();dialog.remove();dialog=null;busy=false;lastFocus?.focus?.();announce('',typeof reason==='string'?reason:'');
 }
@@ -18,9 +21,18 @@ export function openBestView(options={}){
     event.stopPropagation();if(type==='keydown'&&event.key==='Escape'){event.preventDefault();closeBestView();}
   });
   const current=dialog,image=dialog.querySelector('img');
-  image.onload=()=>{if(dialog!==current)return;busy=false;dialog.querySelector('.best-image-error').hidden=true;
+  function syncInventory(){
+    if(dialog!==current||inventoryDispose)return;
+    const requested=new URLSearchParams(location.search).get('inventory')==='1';
+    const hidden=Object.values(window.XpaceInventory?.read('xtanco')||{}).some(v=>v?.visible===false);
+    if(!requested&&!hidden)return;
+    people?.dispose();people=null;current.setAttribute('aria-label','Best · inventario editable PBR');
+    inventoryDispose=mountInventoryBest(current.querySelector('.best-stage'),()=>{if(dialog===current){busy=false;announce();}});
+  }
+  inventorySubscription=window.XpaceInventory?.subscribe(syncInventory);syncInventory();
+  image.onload=()=>{if(dialog!==current||inventoryDispose)return;busy=false;dialog.querySelector('.best-image-error').hidden=true;
     people?.dispose();people=createBestPeopleLayer({container:dialog.querySelector('.best-live-scene')});announce();};
-  image.onerror=()=>{if(dialog!==current)return;busy=false;dialog.querySelector('.best-image-error').hidden=false;announce('No se ha podido cargar la imagen conceptual de Best.');};
+  image.onerror=()=>{if(dialog!==current||inventoryDispose)return;busy=false;dialog.querySelector('.best-image-error').hidden=false;announce('No se ha podido cargar la imagen conceptual de Best.');};
   const abort=()=>{if(dialog===current)closeBestView('switch');};
   options.signal?.addEventListener('abort',abort,{once:true});removeAbort=()=>options.signal?.removeEventListener('abort',abort);
   announce();

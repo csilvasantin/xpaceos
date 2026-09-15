@@ -8,9 +8,9 @@ import {executeVisualCommand} from './xtanco-visual-command.mjs';
 const source=fs.readFileSync(new URL('./best-preview-ui.mjs',import.meta.url),'utf8');
 const controlSource=fs.readFileSync(new URL('./visual-tier-controls.mjs',import.meta.url),'utf8');
 const styleSource=fs.readFileSync(new URL('./best-preview.css',import.meta.url),'utf8');
-function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}){
+function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0,inventory=false}={}){
   let document,releaseCount=0;
-  const created=[],selected=[],liveLayers=[];
+  const created=[],selected=[],liveLayers=[],inventoryLayers=[];let inventoryListener=null;
   class Element{
     constructor(tag){this.tag=tag;this.attrs={};this.dataset={};this.children=[];this.queries=new Map();this.listeners={};this.hidden=false;const classes=new Set();this.classList={add:value=>classes.add(value),contains:value=>classes.has(value)};}
     setAttribute(key,value){this.attrs[key]=String(value);}
@@ -50,15 +50,17 @@ function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}
   }
   const body=new Element('body'),previous=new Element('previous'),window=new Element('window');body.parent=window;
   document={body,activeElement:previous,createElement(tag){created.push(tag);return new Element(tag);}};
+  window.XpaceInventory={read:()=>inventory?{counter:{visible:false}}:{},subscribe:fn=>{inventoryListener=fn;return()=>{inventoryListener=null;};}};
+  function mountInventoryBest(container,onReady){const layer={container,onReady,disposed:false};inventoryLayers.push(layer);return()=>{layer.disposed=true;};}
   window.__xtancoReleaseInputs=()=>releaseCount++;
   window.__xtancoVisualTiers={choose:tier=>selected.push(tier)};
   function createBestPeopleLayer(options){
     const layer={options,disposed:false,dispose(){this.disposed=true;}};liveLayers.push(layer);return layer;
   }
-  const context=vm.createContext({document,window,createBestPeopleLayer,fetch(){throw Error('No fetch or operational network calls');}});
+  const context=vm.createContext({document,window,createBestPeopleLayer,mountInventoryBest,URLSearchParams,location:{search:""},fetch(){throw Error('No fetch or operational network calls');}});
   vm.runInContext(controlSource.replace(/export function /g,'function '),context);
   vm.runInContext(source.replace(/^import .*;\n/gm,'').replace(/export function /g,'function ')+';globalThis.audit={openBestView,closeBestView,subscribeBestView,get dialog(){return dialog;}};',context);
-  return {body,window,document,previous,created,selected,liveLayers,context,get releases(){return releaseCount;},get dialog(){return context.audit.dialog;},
+  return {body,window,document,previous,created,selected,liveLayers,inventoryLayers,context,get releases(){return releaseCount;},get dialog(){return context.audit.dialog;},
     open:options=>context.audit.openBestView(options),close:reason=>context.audit.closeBestView(reason),subscribe:fn=>context.audit.subscribeBestView(fn)};
 }
 
@@ -177,4 +179,13 @@ test('switching from Best through the external Expert selector closes it and ope
   assert.equal(h.dialog,null);assert.equal(oldDialog.removed,true);assert.equal(router.mode,'better');assert.equal(betterOpen,1);
   const second=router.choose('best');h.dialog.querySelector('img').emit('load');await second;assert.equal(betterClose,1);assert.equal(router.availability,'preview');
   await router.choose('good');assert.equal(router.mode,'good');assert.equal(h.dialog,null);router.dispose();
+});
+
+
+test('hidden inventory mounts independent objects, waits for renderer readiness and cleans up on close',()=>{
+ const h=harness({inventory:true}),events=[];h.subscribe(e=>events.push(e));h.open({requestId:'inventory'});
+ assert.equal(h.inventoryLayers.length,1);assert.equal(h.liveLayers.length,0);
+ h.dialog.querySelector('img').emit('load');assert.equal(events.at(-1).busy,true);
+ h.inventoryLayers[0].onReady();assert.equal(events.at(-1).busy,false);
+ h.close();assert.equal(h.inventoryLayers[0].disposed,true);
 });

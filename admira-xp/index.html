@@ -718,6 +718,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <!-- Orbitron: tipografía tecnológica de la cuadrática (misma que admira.live/status) -->
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="../inventari/store.js?v=1"></script>
 </head>
 <body>
 <!-- ── Modal Guardar como Plantilla (sustituye prompt() nativo) ── -->
@@ -770,6 +771,7 @@
     <div class="splash-group">
       <div class="splash-group-kicker">Admira · Xperience</div>
       <div class="splash-group-row">
+        <a href="../inventari/" class="splash-link">Inventari · Mobiliario</a>
         <a href="https://www.pixeria.com" target="_blank" rel="noopener" class="splash-link">PixerIA</a>
         <span class="splash-group-sep">·</span>
         <a href="https://www.xpaceos.com" target="_blank" rel="noopener" class="splash-link">XpaceOS</a>
@@ -17970,7 +17972,15 @@ function drawShopOperation(fn,kind='device'){
 }
 
 // ── DRAW SHOP (ISOMETRIC — Kairosoft warm style) ─────────────
+let inventoryPublishedAt=0;
+function inventorySpace(){return CLIENTS[activeClient]?.id||'xtanco';}
+function inventoryPresentationLayout(){
+  const store=window.XpaceInventory,space=inventorySpace();
+  if(store&&Date.now()-inventoryPublishedAt>1000){store.publish(space,shopLayout);inventoryPublishedAt=Date.now();}
+  return store?store.filter(space,shopLayout):shopLayout;
+}
 function drawShop(){
+  const renderLayout=inventoryPresentationLayout();
   const premiumView=window.__xtancoPremiumView;
   const premiumActive=!!premiumView?.begin?.(cx,cv);
   const mudanzaActive=document.body.classList.contains('xtanco-mudanza');
@@ -18334,10 +18344,10 @@ function drawShop(){
     // ── CLOCK on left wall ──
     drawShopOperation(()=>drawWallClock());
     // ── LED on LEFT WALL (top edge) ──
-    const ledItem=shopLayout.find(i=>i.id==='led');
+    const ledItem=renderLayout.find(i=>i.id==='led');
     if(ledItem) drawShopOperation(()=>drawLED(ledItem.sx||1,ledItem.sy||1));
     // ── LED on BACK WALL (top edge, continues from left wall) ──
-    drawShopOperation(()=>drawBackWallLED());
+    if(ledItem)drawShopOperation(()=>drawBackWallLED());
     // ── AIR CONDITIONING on left wall (drawn AFTER LED so it's visible) ──
     drawShopOperation(()=>drawAirConditioning());
     // ── TURN MANAGER between the back-wall displays/windows ──
@@ -18354,16 +18364,16 @@ function drawShop(){
   // que el usuario haya añadido al layout. LED como banner full-wall si
   // existe; TFT centrado en su item.col + offset vertical item.wallY.
   if(!mudanzaActive&&isShoptalkBooth()){
-    const ledItem=shopLayout.find(i=>i.type==='led');
+    const ledItem=renderLayout.find(i=>i.type==='led');
     if(ledItem) drawShopOperation(()=>drawLED(ledItem.sx||1,ledItem.sy||1));
-    const tftItem=shopLayout.find(i=>i.type==='tft');
+    const tftItem=renderLayout.find(i=>i.type==='tft');
     if(tftItem){
       drawShopOperation(()=>drawAltadisTFT(
         typeof tftItem.col==='number'?tftItem.col:7,
         typeof tftItem.wallY==='number'?tftItem.wallY:undefined
       ));
     }
-    const doorItem=shopLayout.find(i=>i.type==='door');
+    const doorItem=renderLayout.find(i=>i.type==='door');
     if(doorItem){
       drawShopOperation(()=>drawCreatorDoor(
         typeof doorItem.col==='number'?doorItem.col:6,
@@ -18387,7 +18397,7 @@ function drawShop(){
 
   // Furniture from editable layout (skip wall-mounted overlays handled elsewhere)
   if(!mudanzaActive&&(shopFurnitureVisible||editorSceneActive)){
-    for(const item of shopLayout){
+    for(const item of renderLayout){
       if(item.type==='led'||item.type==='tft') continue;
       if(item.type==='aroma'&&!editorSceneActive) continue;
       const d=item.type==='rug'?-999:item.type==='aroma'?-1200:isoDepth(item.col,item.row+1);
@@ -18548,7 +18558,7 @@ function drawShop(){
 
   // ── AROMA MACHINE — wall overlay above exterior ads so waves stay visible ──
   if(!mudanzaActive&&!editorSceneActive&&shopFurnitureVisible){
-    const aromaItem=shopLayout.find(i=>i.type==='aroma');
+    const aromaItem=renderLayout.find(i=>i.type==='aroma');
     if(aromaItem) drawShopOperation(()=>drawAromatizer(aromaItem.col,aromaItem.row));
   }
 
@@ -18591,7 +18601,7 @@ function drawShop(){
       cx.fillStyle=edgeGrad;
       cx.fillRect(0,SHOP.y,W,H-SHOP.y);
       // Warm glow from floor lamp
-      const lampItem=shopLayout.find(i=>i.type==='floorLamp');
+      const lampItem=renderLayout.find(i=>i.type==='floorLamp');
       if(lampItem){
         const lp=toIso(lampItem.col,lampItem.row);
         const lampRad=cx.createRadialGradient(lp.x,lp.y-20,4,lp.x,lp.y-20,90);
@@ -18600,7 +18610,7 @@ function drawShop(){
         cx.fillStyle=lampRad;cx.fillRect(lp.x-90,lp.y-110,180,130);
       }
       // Warm glow from DJ booth LEDs at night
-      const djItem=shopLayout.find(i=>i.type==='djBooth');
+      const djItem=renderLayout.find(i=>i.type==='djBooth');
       const djHiredNight=G.staff&&G.staff.some(s=>s.hired&&s.role===4);
       if(djItem&&djHiredNight){
         const dp=toIso(djItem.col+0.5,djItem.row);
@@ -20306,7 +20316,7 @@ function positionTotemAvatar(){
   const pin=(typeof DS_PIN==='object'&&DS_PIN)?DS_PIN['metahuman']:null;
   const q=(typeof DS_SURFACE_QUADS==='object'&&DS_SURFACE_QUADS)?DS_SURFACE_QUADS.metahuman:null;
   // Mostrar siempre que haya pin web + quad del tótem (vale en juego Y en demo).
-  const on=pin&&pin.kind==='web'&&pin.src&&q;
+  const on=pin&&pin.kind==='web'&&pin.src&&q&&inventoryPresentationLayout().some(i=>i.type==='metahuman');
   if(!on){ totemSwapSrc(el,null); if(glow) glow.style.display='none'; if(chip) chip.style.display='none'; return; }
   try{
     const canvasRect=cv.getBoundingClientRect();
@@ -26599,7 +26609,7 @@ function loop(){
 }
 window.__xtancoVisualState=()=>{
   const moving=document.body.classList.contains('xtanco-mudanza');
-  return {palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:moving?[]:(shopFurnitureVisible||editorSceneActive?shopLayout:[]),hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,moving,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'};
+  return {palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:moving?[]:(shopFurnitureVisible||editorSceneActive?inventoryPresentationLayout():[]),hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,moving,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'};
 };
 loop();
 
@@ -30680,7 +30690,7 @@ window.xtAPI = (function(){
     if(!/^(?:good|better|best)$|^\/mudanza(?:@\w+)?$|^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
     const language=typeof lang==='undefined'?'es':lang;
     try{
-      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=tiers-live-12');
+      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=inventari-1');
       return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,moving:window.__xtancoMudanza,lang:language});
     }catch(error){
       return {ok:false,local:true,message:language==='en'?'The local visual command could not load. Please retry.':'No se pudo cargar el comando visual local. Reintenta.'};
@@ -34929,9 +34939,9 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
-<link rel="stylesheet" href="scripts/xtanco-premium.css?v=tiers-live-12">
-<link rel="stylesheet" href="scripts/life-ui.css?v=tiers-live-12">
-<link rel="stylesheet" href="scripts/best-preview.css?v=tiers-live-12">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=tiers-live-12"></script>
+<link rel="stylesheet" href="scripts/xtanco-premium.css?v=inventari-1">
+<link rel="stylesheet" href="scripts/life-ui.css?v=inventari-1">
+<link rel="stylesheet" href="scripts/best-preview.css?v=inventari-1">
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=inventari-1"></script>
 </body>
 </html>
