@@ -7,7 +7,9 @@ const aliases=new Map([
 ]);
 
 export function parseVisualCommand(input){
-  const match=String(input||'').trim().match(/^\/?(?:modo|mode)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
+  const text=String(input||'').trim();
+  const direct=text.toLowerCase();if(['good','better','best'].includes(direct))return {tier:direct};
+  const match=text.match(/^\/?(?:modo|mode)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
   if(!match)return null;
   const argument=(match[1]||'').trim().toLowerCase();
   if(!argument||['help','ayuda','?'].includes(argument))return {help:true};
@@ -23,8 +25,8 @@ export async function executeVisualCommand(input,{router,lang='es'}={}){
   const command=parseVisualCommand(input);if(!command)return null;
   const en=lang==='en';
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (twin console or __xtExec): /mode good · Good 8-bit; /mode better · Better 16-bit (isometric 3D); /mode best · Best 32-bit / hyperrealistic (concept scene with live twin people). /modo, 8/16/32 and /mode status are also accepted.'
-    : 'Estilos visuales locales (consola del gemelo o __xtExec): /modo good · Good 8-bit; /modo better · Better 16-bit (3D isométrico); /modo best · Best 32-bit / hiperrealista (escenario conceptual con personas del gemelo en vivo). También /mode, 8/16/32 y /modo estado.'};
+    ? 'Local visual styles (Expert CLI or __xtExec): type good, better or best. /mode, 8/16/32 and /mode status are also accepted. Every change uses a visual dissolve while the HUD and CLI remain visible.'
+    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better o best. También se aceptan /modo, 8/16/32 y /modo estado. Cada cambio usa una fusión visual y mantiene visibles el HUD y el CLI.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
@@ -50,10 +52,10 @@ export async function executeVisualCommand(input,{router,lang='es'}={}){
       ? 'The Best preview is not available. Interactive Best is still in preparation.'
       : 'La vista previa Best no está disponible. Best interactivo sigue en preparación.'};
     return {ok:true,local:true,mode,requested:'best',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Best · 32-bit / hyperrealistic: concept scene with people moving from the live twin. Full interaction is still in preparation. Use “Back to Good” to return.'
-      : 'Best · 32-bit / hiperrealista: escenario conceptual con personas que se mueven desde el gemelo en vivo. La interacción completa sigue en preparación. Usa «Volver a Good» para regresar.'};
+      ? 'Best · 32-bit / hyperrealistic: fused over the same Xtanco, with people moving from the live twin. Type good or better in the Expert CLI to change view.'
+      : 'Best · 32-bit / hiperrealista: fusionado sobre el mismo Xtanco, con personas que se mueven desde el gemelo en vivo. Escribe good o better en el CLI experto para cambiar de vista.'};
   }
   return {ok:true,local:true,mode,availability:router.availability||'interactive',preview:false,busy:!!router.busy,message:mode==='good'
-    ? (en?'Good · 8-bit: back to the classic twin and its controls.':'Good · 8-bit: vuelta al gemelo clásico y sus controles.')
-    : (en?'Better · 16-bit: opening the live isometric 3D twin. Use “Back to twin” to return.':'Better · 16-bit: abriendo el gemelo 3D isométrico en vivo. Usa «Volver al gemelo» para regresar.')};
+    ? (en?'Good · 8-bit: fused back to the classic twin; HUD and Expert CLI remain in place.':'Good · 8-bit: fusión de vuelta al gemelo clásico; el HUD y el CLI experto permanecen en su sitio.')
+    : (en?'Better · 16-bit: fused into the live isometric 3D twin; HUD and Expert CLI remain in place.':'Better · 16-bit: fusión al gemelo 3D isométrico en vivo; el HUD y el CLI experto permanecen en su sitio.')};
 }

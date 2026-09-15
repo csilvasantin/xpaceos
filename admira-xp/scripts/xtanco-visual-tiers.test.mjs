@@ -65,10 +65,10 @@ test('choosing an already open Better view is idempotent and cannot leave the se
   assert.equal(f.life.calls.open,1);assert.equal(f.tiers.mode,'better');assert.equal(f.changes.at(-1).busy,false);
 });
 
-test('switching to Good from a visual dialog preserves the comparison frame until the user exits it',async()=>{
-  const f=routerFixture();await f.tiers.choose('best');await f.tiers.choose('good',{preserveFrame:true});
-  assert.equal(f.best.calls.close,1);assert.equal(f.good.calls.open,1);assert.equal(f.tiers.mode,'good');
-  await f.tiers.choose('better',{preserveFrame:true});assert.equal(f.good.calls.close,1);assert.equal(f.life.calls.open,1);
+test('switching to Good removes only the visual surface and keeps the permanent application chrome',async()=>{
+  const f=routerFixture();await f.tiers.choose('best');await f.tiers.choose('good');
+  assert.equal(f.best.calls.close,1);assert.equal(f.good.calls.open,0);assert.equal(f.tiers.mode,'good');
+  await f.tiers.choose('better');assert.equal(f.good.calls.close,0);assert.equal(f.life.calls.open,1);
 });
 
 test('Best opens only its injected live-people preview, persists Best and never opens the graphics view',async()=>{
@@ -251,7 +251,7 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
 
 test('Advanced and Expert offer the same enabled Best preview and synchronize their pressed state',()=>{
   const h=selectorHarness({search:'?visual=best'});
-  assert.deepEqual(h.queries,['#telegramDock .tg-actions','.quad-right']);assert.equal(h.controls.parent,h.actions);
+  assert.deepEqual(h.queries,['#telegramDock .tg-actions','.quad-right','dialog.visual-tier-surface[open]']);assert.equal(h.controls.parent,h.actions);
   assert.equal(h.advancedControls.parent,h.advanced);
   assert.equal(h.controls.attrs.role,'group');assert.match(h.controls.attrs['aria-label'],/experto/);
   assert.match(h.advancedControls.attrs['aria-label'],/avanzado/);
@@ -259,18 +259,18 @@ test('Advanced and Expert offer the same enabled Best preview and synchronize th
     assert.notEqual(h.button('best',group).attrs['aria-disabled'],'true');assert.equal(h.button('best',group).attrs['aria-pressed'],'true');
     assert.match(h.button('best',group).attrs.title,/escenario conceptual con personas del gemelo/);
   }
-  assert.equal(h.status.hidden,false);assert.match(h.status.textContent,/personas del gemelo en vivo.*interacción completa/);
+  assert.equal(h.status.hidden,true,'a successful Best surface must not cover the shared interface');
   assert.equal(h.best.calls.open,1);assert.equal(h.life.calls.open,0);assert.ok(h.created.every(tag=>tag==='div'),'selector creates no GPU canvas');
 });
 
-test('the Best status escapes dock clipping and disappears when returning to Good',async()=>{
+test('the floating status stays silent on success and is reserved for loading or errors',async()=>{
   const h=selectorHarness({search:'?visual=best'}),status=h.status;
   assert.equal(status.parent,h.body,'the explanation must live outside the overflow-clipped expert dock');
   assert.equal(h.controls.querySelector('.quality-status'),null,'reparenting must remove the old nested node');
-  assert.equal(status.attrs.role,'status');assert.equal(status.hidden,false);
+  assert.equal(status.attrs.role,'status');assert.equal(status.hidden,true);
   assert.equal(h.body.children.filter(node=>node.id==='xtanco-best-status').length,1);
   await h.window.__xtancoVisualTiers.choose('good');assert.equal(status.hidden,true);
-  h.button('best').click();assert.equal(status.hidden,false);assert.equal(h.status,status);
+  h.button('best').click();assert.equal(status.hidden,true);assert.equal(h.status,status);
 });
 
 test('public Better preserves the legacy Good renderer facade and exterior traffic styling',async()=>{
@@ -304,7 +304,7 @@ test('selector boots safely with denied storage or stale legacy Best and never i
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
   const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-live-9','./best-preview-ui.mjs?v=tiers-live-9','./good-preview-ui.mjs?v=tiers-live-9','./xtanco-visual-tiers.mjs?v=tiers-live-9','./visual-tier-controls.mjs?v=tiers-live-9']);
+  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-live-11','./best-preview-ui.mjs?v=tiers-live-11','./xtanco-visual-tiers.mjs?v=tiers-live-11','./visual-tier-controls.mjs?v=tiers-live-11']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);

@@ -12,7 +12,7 @@ function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}
   let document,releaseCount=0;
   const created=[],selected=[],liveLayers=[];
   class Element{
-    constructor(tag){this.tag=tag;this.attrs={};this.dataset={};this.children=[];this.queries=new Map();this.listeners={};this.hidden=false;}
+    constructor(tag){this.tag=tag;this.attrs={};this.dataset={};this.children=[];this.queries=new Map();this.listeners={};this.hidden=false;const classes=new Set();this.classList={add:value=>classes.add(value),contains:value=>classes.has(value)};}
     setAttribute(key,value){this.attrs[key]=String(value);}
     set innerHTML(value){
       this.markup=value;
@@ -37,9 +37,10 @@ function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}
     addEventListener(type,fn){(this.listeners[type]??=[]).push(fn);}
     append(child){child.remove();child.parent=this;this.children.push(child);}
     remove(){if(this.parent){const index=this.parent.children.indexOf(this);if(index>=0)this.parent.children.splice(index,1);}this.parent=null;this.removed=true;}
-    showModal(){if(modalFailure)throw Error('showModal failed');this.open=true;}
+    show(){if(modalFailure)throw Error('show failed');this.open=true;}
     close(){this.open=false;}
     focus(){document.activeElement=this;}
+    getBoundingClientRect(){return {width:1000,height:625};}
     getContext(){throw Error('Best preview must not allocate graphics');}
     emit(type,props={}){
       const event={type,target:this,stopped:false,prevented:false,stopPropagation(){this.stopped=true;},preventDefault(){this.prevented=true;},...props};
@@ -63,9 +64,10 @@ function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}
 
 test('Best remains dormant until opened and creates a clean plate with a read-only people overlay, never GPU/media players',()=>{
   const h=harness();assert.deepEqual(h.created,[]);assert.equal(h.dialog,undefined);
-  h.open({requestId:1});assert.deepEqual(h.created,['dialog','div']);assert.equal(h.dialog.open,true);assert.equal(h.releases,1);
+  h.open({requestId:1});assert.deepEqual(h.created,['dialog']);assert.equal(h.dialog.open,true);assert.equal(h.releases,1);
+  assert.match(h.dialog.className,/visual-tier-surface/);assert.equal(h.dialog.classList.contains('is-visible'),true);
   assert.match(h.dialog.innerHTML,/PERSONAS EN VIVO · AVENIDA ADMIRA/);
-  assert.match(h.dialog.innerHTML,/respetan el mapa real de dureza/);
+  assert.match(source,/createBestPeopleLayer/,'the live layer owns the calibrated hardness map');
   assert.match(h.dialog.innerHTML,/<img[^>]+best-xtanco-avenida-admira-framelock-20260915\.png/);
   assert.doesNotMatch(h.dialog.innerHTML,/<(?:canvas|video|audio|iframe)\b/i);
   assert.match(source,/createBestPeopleLayer/);assert.doesNotMatch(source,/createLifeRenderer|WebGL|setInterval|__xtExec/);
@@ -106,10 +108,9 @@ test('pointer, touch, wheel and keyboard events cannot leak into the underlying 
   const escape=h.dialog.emit('keydown',{key:'Escape'});assert.equal(escape.prevented,true);assert.equal(h.dialog,null);assert.equal(leaked,0);
 });
 
-test('native cancel, close button and pagehide publish distinct safe close events',()=>{
+test('Escape and pagehide close the surface without hiding the permanent application chrome',()=>{
   const h=harness(),states=[];h.subscribe(state=>states.push({...state}));
-  h.open({requestId:1});assert.equal(h.dialog.emit('cancel').prevented,true);assert.equal(h.dialog,null);assert.equal(states.at(-1).reason,'');
-  h.open({requestId:2});h.dialog.querySelector('.best-close').emit('click');assert.equal(states.at(-1).open,false);assert.equal(states.at(-1).requestId,2);
+  h.open({requestId:1});const escape=h.dialog.emit('keydown',{key:'Escape'});assert.equal(escape.prevented,true);assert.equal(h.dialog,null);assert.equal(states.at(-1).reason,'');
   h.open({requestId:3});h.window.emit('pagehide');assert.equal(h.dialog,null);assert.equal(states.at(-1).reason,'pagehide');assert.equal(states.at(-1).requestId,3);
 });
 
@@ -142,17 +143,14 @@ test('/modo best waits for the real image and reports failure or cancellation wi
     if(completion==='close'||completion==='switch'){
       assert.equal(result.cancelled,true);oldImage.emit('load');oldImage.emit('error');assert.equal(router.mode,completion==='close'?'good':'better');
     }
-    assert.deepEqual(h.created,['dialog','div']);router.dispose();
+    assert.deepEqual(h.created,['dialog']);router.dispose();
   }
 });
 
-test('the three tier buttons forward exact local choices; documentation links retain browser navigation',()=>{
+test('Best contains only the visual surface; tier controls and CLI remain in the permanent Expert dock',()=>{
   const h=harness();h.open();
-  const controls=h.dialog.querySelector('.best-navigation').children[0];
-  for(const button of controls.querySelectorAll('[data-visual-mode]'))button.emit('click');
-  assert.deepEqual(h.selected,['good','better','best']);
-  const link=h.dialog.querySelector('.best-footer a'),event=link.emit('click');assert.equal(event.prevented,false);assert.equal(event.stopped,true);
-  assert.match(h.dialog.innerHTML,/href="\/help\/funcionalidades\/" target="_blank" rel="noopener"/);
+  assert.doesNotMatch(h.dialog.innerHTML,/data-visual-mode|best-header|best-footer|Salir del comparador/);
+  assert.match(h.dialog.innerHTML,/03\.- BEST · 32 BITS/);assert.deepEqual(h.selected,[]);
 });
 
 test('the real router returns to Good and cleans a failed dialog initialization',async()=>{
@@ -162,7 +160,7 @@ test('the real router returns to Good and cleans a failed dialog initialization'
   assert.equal(h.body.children.length,0);assert.equal(h.document.activeElement,h.previous);router.dispose();
 });
 
-test('switching from the actual Best selector closes its dialog and opens only the requested view',async()=>{
+test('switching from Best through the external Expert selector closes it and opens only Better',async()=>{
   const h=harness();let listener,betterOpen=0,betterClose=0;
   const router=createVisualTiers({openBest:h.open,closeBest:h.close,subscribeBest:h.subscribe,
     subscribeBetter(fn){listener=fn;return ()=>{};},
@@ -171,9 +169,8 @@ test('switching from the actual Best selector closes its dialog and opens only t
     onChange:state=>h.context.updateTierControls(state)});
   h.window.__xtancoVisualTiers=router;
   const first=router.choose('best');h.dialog.querySelector('img').emit('load');await first;const oldDialog=h.dialog;
-  const buttons=oldDialog.querySelector('.best-navigation').children[0].querySelectorAll('[data-visual-mode]');
-  assert.equal(buttons[2].attrs['aria-pressed'],'true');buttons[1].emit('click');await Promise.resolve();
+  await router.choose('better');
   assert.equal(h.dialog,null);assert.equal(oldDialog.removed,true);assert.equal(router.mode,'better');assert.equal(betterOpen,1);
   const second=router.choose('best');h.dialog.querySelector('img').emit('load');await second;assert.equal(betterClose,1);assert.equal(router.availability,'preview');
-  h.dialog.querySelector('.best-close').emit('click');assert.equal(router.mode,'good');assert.equal(h.dialog,null);router.dispose();
+  await router.choose('good');assert.equal(router.mode,'good');assert.equal(h.dialog,null);router.dispose();
 });

@@ -19,7 +19,7 @@ export const BEST_HARDNESS_ZONES=Object.freeze([
   Object.freeze([[.086,.445],[.218,.492],[.242,.555],[.112,.520]]), // counter
   Object.freeze([[.180,.550],[.300,.600],[.325,.664],[.205,.620]]), // magazines
   Object.freeze([[.292,.594],[.392,.638],[.408,.704],[.312,.668]]), // manager desk
-  Object.freeze([[.388,.650],[.505,.700],[.532,.760],[.414,.716]]), // DJ booth
+  Object.freeze([[.365,.545],[.515,.595],[.552,.760],[.397,.716]]), // DJ booth + body clearance
   Object.freeze([[.423,.505],[.484,.532],[.500,.612],[.438,.582]]), // central screen
   Object.freeze([[.345,.350],[.671,.473],[.695,.560],[.348,.426]]), // back fixtures
   Object.freeze([[.610,.748],[.658,.770],[.674,.858],[.620,.835]])  // turn kiosk

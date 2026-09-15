@@ -10,8 +10,8 @@ export function requestedTier(search='',storage){
  * Openers receive {signal,requestId}; async view events echo that requestId.
  * Views must cancel pending work on abort/close and never reopen after abort.
  */
-export function createVisualTiers({openGood,closeGood,subscribeGood,openBetter,closeBetter,subscribeBetter,openBest,closeBest,subscribeBest,storage,onChange=()=>{},onBestRequested=()=>{}}){
-  const views={good:{open:openGood,close:closeGood},better:{open:openBetter,close:closeBetter},best:{open:openBest,close:closeBest}};
+export function createVisualTiers({openBetter,closeBetter,subscribeBetter,openBest,closeBest,subscribeBest,storage,onChange=()=>{},onBestRequested=()=>{}}){
+  const views={better:{open:openBetter,close:closeBetter},best:{open:openBest,close:closeBest}};
   const previewNotice='Best · escenario conceptual con personas del gemelo en vivo; interacción completa en preparación.';
   let mode='good',busy=false,notice='',error='',active=null,sequence=0,disposed=false;
   const snapshot=()=>({mode,busy,notice,error,availability:mode==='best'?'preview':'interactive',preview:mode==='best'});
@@ -49,7 +49,7 @@ export function createVisualTiers({openGood,closeGood,subscribeGood,openBetter,c
     notice=error||(tier==='best'?previewNotice:'');publish();
     if(request.initialized&&!busy)settle(request,!error);
   }
-  const subscriptions=[subscribeGood?.(state=>receive('good',state)),subscribeBetter?.(state=>receive('better',state)),subscribeBest?.(state=>receive('best',state))];
+  const subscriptions=[subscribeBetter?.(state=>receive('better',state)),subscribeBest?.(state=>receive('best',state))];
   function choose(value,options={}){
     const next=value==='life'?'better':['good','better','best'].includes(value)?value:'good';
     if(disposed)return Promise.resolve(result(next,false,true));
@@ -57,7 +57,7 @@ export function createVisualTiers({openGood,closeGood,subscribeGood,openBetter,c
     const previous=active;mode='good';busy=false;error='';notice='';
     release(previous,'switch');
     if(error){save();publish();return Promise.resolve(result(next,false));}
-    if(next==='good'&&!(options.preserveFrame&&typeof views.good.open==='function')){save();publish();return Promise.resolve(result(next,true));}
+    if(next==='good'){save();publish();return Promise.resolve(result(next,true));}
     if(next==='best')onBestRequested();
     if(typeof views[next].open!=='function'){
       const label=next==='best'?'Best':next==='better'?'Better':'Good';error=`${label} no disponible · puedes reintentar`;notice=error;
