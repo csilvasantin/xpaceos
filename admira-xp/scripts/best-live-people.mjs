@@ -44,7 +44,7 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
     let current=null;
     try{current=snapshot(getState?.());}catch{}
     if(!current){status.textContent='Esperando la simulación del Xtanco…';removeMissing(new Set());return;}
-    const active=new Set(),actors=current.actors.filter(actor=>actor&&!actor.outside&&actor.col>=-.5&&actor.row>=-.5&&actor.col<=current.cols+.5&&actor.row<=current.rows+.5);
+    const active=new Set(),actors=current.actors.filter(actor=>actor?.kind==='customer'&&!actor.outside&&actor.col>=-.5&&actor.row>=-.5&&actor.col<=current.cols+.5&&actor.row<=current.rows+.5);
     for(const actor of actors){
       active.add(actor.id);let node=people.get(actor.id);
       if(!node){node=document.createElement('span');node.className='best-person';node.innerHTML=personMarkup(actor);layer.append(node);people.set(actor.id,node);}
