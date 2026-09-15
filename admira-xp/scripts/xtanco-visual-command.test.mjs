@@ -23,24 +23,27 @@ test('typos and extra arguments stay local while unrelated legacy commands are l
 });
 
 function publicRouter(){
-  const calls={open:0,close:0,best:0},listeners=new Set();
+  const calls={open:0,close:0,best:0},listeners=new Set(),bestListeners=new Set();
   const emit=state=>{for(const listener of listeners)listener(state);};
   const router=createVisualTiers({
     openBetter(){calls.open++;emit({open:true,busy:true});emit({open:true,busy:false});},
     closeBetter(){calls.close++;emit({open:false,busy:false});},
     subscribeBetter(listener){listeners.add(listener);return ()=>listeners.delete(listener);},
-    onBestRequested(){calls.best++;}
+    openBest({requestId}){calls.best++;for(const listener of bestListeners)listener({open:true,busy:false,requestId});},
+    closeBest(){for(const listener of bestListeners)listener({open:false,busy:false});},
+    subscribeBest(listener){bestListeners.add(listener);return ()=>bestListeners.delete(listener);}
   });
   return {router,calls};
 }
 
-test('commands use the actual public router; Better opens once and reserved Best never opens graphics',async()=>{
+test('commands use the actual public router; Better opens once and Best opens an explicitly static preview',async()=>{
   const f=publicRouter();
   let answer=await executeVisualCommand('/modo better',f);assert.equal(answer.ok,true);assert.equal(answer.mode,'better');assert.match(answer.message,/Better.*16-bit.*abriendo/);
   await executeVisualCommand('/mode 16',f);assert.equal(f.calls.open,1,'the public router owns idempotence');
   answer=await executeVisualCommand('/modo good',f);assert.equal(answer.mode,'good');assert.match(answer.message,/Good.*8-bit/);
-  answer=await executeVisualCommand('/modo best',f);assert.equal(answer.ok,false);assert.equal(answer.mode,'good');assert.equal(answer.requested,'best');
-  assert.match(answer.message,/32-bit.*hiperrealista.*preparación.*no está disponible/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
+  answer=await executeVisualCommand('/modo best',f);assert.equal(answer.ok,true);assert.equal(answer.mode,'best');assert.equal(answer.requested,'best');
+  assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');
+  assert.match(answer.message,/32-bit.*hiperrealista.*previa conceptual estática.*no es.*interactivo/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
 });
 
 test('help, invalid mode and current-mode queries do not open or close any view',async()=>{
@@ -52,21 +55,43 @@ test('help, invalid mode and current-mode queries do not open or close any view'
   let answer=await executeVisualCommand('/modo estado',f);assert.equal(answer.mode,'good');assert.match(answer.message,/actual.*Good.*8-bit/);
   await executeVisualCommand('/modo better',f);answer=await executeVisualCommand('/mode status',{...f,lang:'en'});
   assert.equal(answer.mode,'better');assert.match(answer.message,/Current.*Better.*16-bit/);assert.equal(f.calls.open,1);
+  await executeVisualCommand('/modo best',f);answer=await executeVisualCommand('/mode status',{...f,lang:'en'});
+  assert.equal(answer.mode,'best');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/static preview, not interactive/);
 });
 
 test('missing or failed routing never reports a successful visual switch',async()=>{
-  let answer=await executeVisualCommand('/modo better');assert.equal(answer.ok,false);assert.match(answer.message,/no está listo/);
+  let answer=await executeVisualCommand('/modo better');assert.equal(answer.ok,false);assert.match(answer.message,/no está listo.*Avanzado \(▤\)/);
   answer=await executeVisualCommand('/mode better',{router:{choose(){throw Error('GPU failure');}},lang:'en'});
-  assert.equal(answer.ok,false);assert.match(answer.message,/Could not change/);
+  assert.equal(answer.ok,false);assert.match(answer.message,/Could not change.*Advanced \(▤\)/);
   answer=await executeVisualCommand('/modo better',{router:{choose(){},mode:'good'}});
-  assert.equal(answer.ok,false);assert.equal(answer.mode,'good');assert.match(answer.message,/No se pudo abrir/);
+  assert.equal(answer.ok,false);assert.equal(answer.mode,'good');assert.match(answer.message,/No se pudo abrir.*Avanzado \(▤\)/);
   assert.equal(await executeVisualCommand('/render 16bit'),null);
+});
+
+test('Best without preview availability and failed or superseded openings never claim success',async()=>{
+  let answer=await executeVisualCommand('/modo best',{router:{choose(){},mode:'best',availability:'interactive'}});
+  assert.equal(answer.ok,false);assert.equal(answer.preview,undefined);assert.match(answer.message,/Best interactivo sigue en preparación/);
+  answer=await executeVisualCommand('/modo best',{router:{choose(){return {ok:false};},mode:'best',availability:'preview',error:'image failed'}});
+  assert.equal(answer.ok,false);assert.match(answer.message,/No se pudo abrir/);
+  answer=await executeVisualCommand('/modo best',{router:{choose(){return {ok:false,cancelled:true};},mode:'better',availability:'interactive'}});
+  assert.equal(answer.ok,false);assert.equal(answer.cancelled,true);assert.equal(answer.requested,'best');assert.equal(answer.mode,'better');
+  assert.match(answer.message,/se canceló/);
+});
+
+test('a cancelled live command resolves even when the older opener never completes',{timeout:2000},async()=>{
+  let options;
+  const router=createVisualTiers({openBetter(value){options=value;return new Promise(()=>{});},closeBetter(){},openBest(){},closeBest(){}});
+  const pending=executeVisualCommand('/modo better',{router});
+  const preview=await executeVisualCommand('/modo best',{router}),cancelled=await pending;
+  assert.equal(preview.ok,true);assert.equal(preview.preview,true);
+  assert.equal(cancelled.ok,false);assert.equal(cancelled.cancelled,true);assert.equal(cancelled.mode,'best');
+  assert.equal(options.signal.aborted,true);router.dispose();
 });
 
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 function section(start,end){const from=html.indexOf(start),to=html.indexOf(end,from);assert.ok(from>=0&&to>from,`${start} source boundaries`);return html.slice(from,to);}
 const helperSource=section('  async function executeLocalVisualCommand(rawText){','  async function executeTelegramText(rawText){')
-  .replace("import('./scripts/xtanco-visual-command.mjs')",'loadVisualCommand()');
+  .replace("import('./scripts/xtanco-visual-command.mjs?v=tiers-linked-4')",'loadVisualCommand()');
 const dispatcherSource=section('  async function executeTelegramText(rawText){','  // === Stream Deck (Corsair Galleon 100 SD) bridge');
 const composerSource=section('  async function sendComposerText(text){','  function bindDockButton(button,handler){');
 
@@ -93,7 +118,7 @@ test('the real composer handles every visual mode and typo before Telegram, AI/s
     const h=consoleHarness();await h.send(input);
     assert.equal(h.responses.length,1,input);assert.equal(h.composer.value,'');assert.equal(h.renders,1);assert.equal(h.helpClosed,1);
     assert.deepEqual(h.sent,[],`${input} must remain local`);assert.deepEqual(h.memory,[]);assert.deepEqual(h.logs,[]);assert.deepEqual(h.sessionCommands,[]);
-    assert.equal(h.loads.length,1);assert.equal(h.responses[0][1],/best|32|bettor/.test(input)?'err':'ok');
+    assert.equal(h.loads.length,1);assert.equal(h.responses[0][1],/bettor/.test(input)?'err':'ok');
     assert.equal(h.responses[0][2],'local-visual');
   }
 });
@@ -123,7 +148,7 @@ test('visual feedback is labelled local while all existing bot and error labels 
 
 test('__xtExec runs the same visual command without remote output or command logging',async()=>{
   const h=consoleHarness();let answer=await h.exec('/modo better');assert.match(answer,/Better.*16-bit/);assert.equal(h.router.mode,'better');
-  answer=await h.exec('/mode best');assert.match(answer,/no está disponible/);assert.equal(h.router.mode,'good');
+  answer=await h.exec('/mode best');assert.match(answer,/previa conceptual estática.*no es.*interactivo/);assert.equal(h.router.mode,'best');
   answer=await h.exec('/modo desconocido');assert.match(answer,/Estilos visuales locales/);
   assert.deepEqual(h.sent,[]);assert.deepEqual(h.sessionCommands,[]);assert.deepEqual(h.responses,[]);assert.equal(h.calls.open,1);
 });

@@ -106,6 +106,58 @@ test('todas las áreas tienen estados y criterios explícitos, sin anunciar Best
   for (const id of ['XP-F07', 'XP-F09', 'XP-F22']) assert.equal(feature(id).better.status, 'outside_view');
 });
 
+test('la navegación Best confirma sólo una preview y conserva el baseline funcional', () => {
+  const navigation = catalog.view_navigation;
+  assert.equal(navigation.menu, 'Avanzado (▤)');
+  assert.equal(navigation.selector_inside_views, true);
+  assert.deepEqual(Object.keys(navigation.labels).sort(), ['best', 'better', 'good']);
+  assert.equal(navigation.best.availability, 'preview');
+  assert.equal(navigation.best.static, true);
+  assert.equal(navigation.best.operational, false);
+  assert.deepEqual(navigation.best.success_result, {ok:true, preview:true, availability:'preview'});
+  assert.match(navigation.best.scope, /no sigue el estado en vivo/);
+  assert.match(navigation.better_camera.comparison, /mapped.*Good/);
+  assert.match(navigation.better_camera.exploration, /independiente/);
+  assert.equal(catalog.audit.source_commit, 'a7b8d62eacfcbb166d2ddc1e3a6758bec0fdc178');
+  assert.match(catalog.audit.baseline_note, /revisión funcional original/);
+  assert.match(command('XP-F26', '/modo best').note, /ok:true.*preview:true/);
+  for (const item of catalog.features) {
+    assert.equal(item.best.status, 'planned', item.id);
+    assert.match(item.best.detail, /vista previa conceptual estática/, item.id);
+  }
+});
+
+test('ayuda humana y texto MCP distinguen navegación disponible de funciones Best pendientes', async () => {
+  const [help, cli, page, llms] = await Promise.all([
+    'help/index.html', 'help/cli/index.html', 'help/funcionalidades/index.html', 'mcp/llms.txt',
+  ].map(path => readFile(new URL(path, repo), 'utf8')));
+  for (const document of [help, cli, page, llms]) {
+    assert.match(document, /Avanzado/);
+    assert.match(document, /estática/);
+    assert.match(document, /preparación|planned/);
+    assert.doesNotMatch(document, /Avanzado \(⌘\)|Advanced \(⌘\)|Experto \(▤\)|Expert \(▤\)/);
+  }
+  assert.match(help, /Comparar con Good/);
+  assert.match(help, /Explorar 3D/);
+  assert.match(help, /Avanzado \(▤\)/);
+  assert.match(cli, /Experto \(⌘\).*consola/);
+  assert.match(cli, /Expert \(⌘\).*console/);
+  assert.match(page, /visual=best/);
+  assert.match(llms, /ok:true, preview:true/);
+  assert.match(llms, /no a una herramienta MCP/);
+});
+
+test('los iconos documentados separan el selector Avanzado de la consola Experto real', async () => {
+  const [game, readme] = await Promise.all([
+    'admira-xp/index.html', 'admira-xp/scripts/life-README.md',
+  ].map(path => readFile(new URL(path, repo), 'utf8')));
+  assert.match(game, /<button\b[^>]*data-quad-toggle="right"[^>]*>▤<\/button>/);
+  assert.match(game, /<button\b[^>]*id="pfExpert"[^>]*>⌘<\/button>/);
+  assert.match(readme, /Avanzado \(▤\)/);
+  assert.doesNotMatch(readme, /Avanzado \(⌘\)|Advanced \(⌘\)/);
+  assert.equal(catalog.view_navigation.menu, 'Avanzado (▤)');
+});
+
 test('los ejemplos documentan entrada, estado y advertencia sin confundirse con herramientas MCP', () => {
   for (const item of catalog.features) {
     assert.ok(Array.isArray(item.commands), item.id);

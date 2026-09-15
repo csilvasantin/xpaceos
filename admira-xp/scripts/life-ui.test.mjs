@@ -8,8 +8,8 @@ import {createLifeSnapshot} from './life-snapshot.mjs';
 // WebGL/browser, external media, game loop or source files are changed by this
 // harness; the fake DOM exercises observable scheduling and event propagation.
 const source=fs.readFileSync(new URL('./life-ui.mjs',import.meta.url),'utf8')
-  .replace(/^import .*;\n/,'')
-  .replace("await import('./life-renderer.mjs')",'await loadRenderer()')
+  .replace(/^import .*;\n/gm,'')
+  .replace("await import('./life-renderer.mjs?v=tiers-linked-4')",'await loadRenderer()')
   .replace(/^export \{.*\};?\s*$/m,'');
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const releaseInputs=html.match(/window\.__xtancoReleaseInputs=.*;/)?.[0];
@@ -24,7 +24,7 @@ function harness({load,search=''}={}){
     }
     querySelector(key){if(!this.children.has(key)){const child=new Element(key);child.parent=this;this.children.set(key,child);}return this.children.get(key);}
     querySelectorAll(selector){
-      const group={'[data-light]':['light',['day','sunset','night']],'[data-preset]':['preset',['home','floor','detail']],'[data-zoom]':['zoom',['in','out']]}[selector];
+      const group={'[data-light]':['light',['day','sunset','night']],'[data-preset]':['preset',['mapped','home','floor','detail']],'[data-zoom]':['zoom',['in','out']]}[selector];
       return group?group[1].map(value=>{const button=this.querySelector(`${selector}:${value}`);button.dataset[group[0]]=value;return button;}):[];
     }
     addEventListener(type,fn){(this.listeners[type]??=[]).push(fn);}
@@ -32,6 +32,7 @@ function harness({load,search=''}={}){
     removeAttribute(key){delete this.attrs[key];}
     append(child){child.parent=this;} prepend(child){child.parent=this;}
     remove(){this.removed=true;this.parent=null;}
+    replaceWith(next){const parent=this.parent;for(const [key,value]of parent.children)if(value===this)parent.children.set(key,next);next.parent=parent;this.parent=null;}
     showModal(){this.open=true;} close(){this.open=false;}
     focus(){document.activeElement=this;}
     getBoundingClientRect(){return {width:1000,height:700};}
@@ -59,7 +60,7 @@ function harness({load,search=''}={}){
       clearSelection(){calls.clearSelection++;options.onSelect(null);}};
     viewers.push(viewer);return viewer;
   };
-  const context=vm.createContext({document,window,keys,createLifeSnapshot,performance:{now:()=>clock},URLSearchParams,location:{search},
+  const context=vm.createContext({document,window,keys,createLifeSnapshot,createTierControls:()=>({element:new Element('tiers'),dispose(){}}),performance:{now:()=>clock},URLSearchParams,location:{search},
     console:{warn(){}},loadRenderer:()=>{loads++;return load?load({createLifeRenderer},loads):Promise.resolve({createLifeRenderer});},
     requestAnimationFrame:fn=>{const id=++sequence;frames.set(id,fn);return id;},cancelAnimationFrame:id=>frames.delete(id),
     setTimeout:(fn,delay)=>{const id=++sequence;timers.set(id,{fn,at:clock+delay});return id;},clearTimeout:id=>timers.delete(id),
@@ -71,7 +72,7 @@ function harness({load,search=''}={}){
   return {context,document,window,body,previous,keys,frames,timers,viewers,observers,created,
     get dialog(){return context.audit.dialog();},subscribe:listener=>context.audit.subscribeLifeView(listener),
     setRaw:value=>{raw=value;},get raw(){return raw;},
-    async open(){await context.audit.open();await flush();},close:()=>context.audit.close(),
+    async open(options){await context.audit.open(options);await flush();},close:()=>context.audit.close(),
     frame(time){clock=time;const first=frames.entries().next().value;assert.ok(first,'one frame must be scheduled');frames.delete(first[0]);first[1](time);},
     async timer(time){clock=time;for(const [id,timer]of [...timers])if(timer.at<=time){timers.delete(id);timer.fn();}await flush();}
   };
@@ -179,4 +180,46 @@ test('a scene-construction failure releases the newly allocated WebGL renderer b
   vm.runInContext(rendererSource,context);
   assert.throws(()=>context.createLifeRenderer({canvas:{},snapshot:{}}),/texture initialization failed/);
   assert.deepEqual(calls,['allocate','dispose','release-context']);
+});
+
+test('router abort cancels the real Life import and every event retains its opening requestId',async()=>{
+  let finish;const h=harness({load:module=>new Promise(resolve=>{finish=()=>resolve(module);})});
+  const states=[],controller=new AbortController();h.subscribe(state=>states.push(state));
+  await h.open({signal:controller.signal,requestId:42});controller.abort();finish();await flush();
+  assert.equal(h.dialog,null);assert.equal(h.viewers.length,0);assert.equal(h.frames.size,0);
+  assert.ok(states.every(state=>state.requestId===42));assert.equal(states.at(-1).reason,'switch');
+});
+
+test('retry keeps the same dialog and router request instead of opening an unowned view',async()=>{
+  const h=harness({load:(module,attempt)=>attempt===1?Promise.reject(new Error('network')):Promise.resolve(module)});
+  const states=[],controller=new AbortController();h.subscribe(state=>states.push(state));
+  await h.open({signal:controller.signal,requestId:17});const original=h.dialog;
+  original.querySelector('.life-loading').querySelector('button').emit('click');await flush();
+  assert.equal(h.dialog,original);assert.equal(h.viewers.length,1);
+  assert.ok(states.every(state=>state.requestId===17&&state.open));
+  controller.abort();assert.equal(h.dialog,null);assert.equal(h.viewers[0].calls.dispose,1);
+});
+
+test('mapping controls return to the reference and distinguish free camera exploration',async()=>{
+  const h=harness();await h.open();const viewer=h.viewers[0];
+  h.dialog.querySelector('canvas').emit('keydown',{key:'Home'});
+  assert.deepEqual(viewer.calls.presets,['mapped']);
+  viewer.options.onCameraChange({mode:'mapped'});
+  assert.match(h.dialog.querySelector('.life-mapping-state').textContent,/cámara alineada/);
+  viewer.options.onCameraChange({mode:'free'});
+  assert.match(h.dialog.querySelector('.life-mapping-state').textContent,/Exploración libre/);
+  assert.equal(h.dialog.querySelectorAll('[data-preset]')[0].attrs['aria-pressed'],'false');h.close();
+});
+
+test('WebGL recovery uses a fresh canvas and ignores queued context loss from the disposed viewer',async()=>{
+  const h=harness();await h.open({requestId:31});const oldCanvas=h.dialog.querySelector('canvas');
+  h.dialog.querySelectorAll('[data-light]')[2].emit('click');
+  h.viewers[0].options.onSelect({actor:{kind:'customer',label:'Ada'}});
+  oldCanvas.emit('webglcontextlost');assert.equal(h.viewers[0].calls.dispose,1);
+  assert.equal(h.dialog.querySelector('.life-selection').hidden,true);
+  h.dialog.querySelector('.life-loading').querySelector('button').emit('click');await flush();
+  const current=h.viewers[1];assert.notEqual(current.options.canvas,oldCanvas);
+  assert.deepEqual(current.calls.lights,['night']);
+  oldCanvas.emit('webglcontextlost');assert.equal(current.calls.dispose,0);assert.equal(h.frames.size,1);
+  assert.equal(h.dialog.querySelector('.life-loading').hidden,true);h.close();
 });

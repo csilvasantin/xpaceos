@@ -138,6 +138,15 @@ test('commit references allow only 40 hexadecimal characters and use the fixed r
   assert.equal(unsafe.get('catalog-source').children.length,0);assert.match(unsafe.get('catalog-source').textContent,/No se ha indicado un commit válido/);
 });
 
+test('navigation updates explain their scope without replacing the audit baseline',async()=>{
+  const catalog=clone(canonical),h=harness({catalog});await h.load();
+  assert.ok(h.get('catalog-source').textContent.includes(catalog.audit.baseline_note));
+  assert.match(h.get('catalog-source').textContent,/revisión funcional original/);
+  assert.ok(h.get('catalog-source').children.some(child=>child.tagName==='A'&&child.title===catalog.audit.source_commit));
+  assert.match(h.get('XP-F26').textContent,/preview:true/);
+  assert.equal(catalog.features.filter(feature=>feature.best.status==='planned').length,30);
+});
+
 test('concurrent retries share one pending request and clear the timeout on completion',async()=>{
   let finish;const h=harness({fetcher:()=>new Promise(resolve=>{finish=resolve;})});
   const loading=h.load();await h.get('retry-load').emit('click');assert.equal(h.requests.length,1);assert.equal(h.timers.size,1);

@@ -138,6 +138,7 @@ async function loadCatalog(){
     if(commit){
       const link=node('a','',commit.slice(0,12));link.href=`https://github.com/csilvasantin/xpaceos/tree/${commit}`;link.title=commit;
       $('catalog-source').append('Código auditado: ',link,'. Las líneas de evidencia corresponden a este commit, no a HEAD.');
+      if(text(catalog.audit?.baseline_note))$('catalog-source').append(' ',text(catalog.audit.baseline_note));
     }else $('catalog-source').textContent='No se ha indicado un commit válido. Las referencias de código no están ancladas a una revisión verificable.';
     $('feature-search').disabled=false;$('feature-filters').disabled=false;$('load-state').hidden=true;
     applyFilters();followHash();
