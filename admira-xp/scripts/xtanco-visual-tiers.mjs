@@ -10,8 +10,8 @@ export function requestedTier(search='',storage){
  * Openers receive {signal,requestId}; async view events echo that requestId.
  * Views must cancel pending work on abort/close and never reopen after abort.
  */
-export function createVisualTiers({openBetter,closeBetter,subscribeBetter,openBest,closeBest,subscribeBest,storage,onChange=()=>{},onBestRequested=()=>{}}){
-  const views={better:{open:openBetter,close:closeBetter},best:{open:openBest,close:closeBest}};
+export function createVisualTiers({openGood,closeGood,subscribeGood,openBetter,closeBetter,subscribeBetter,openBest,closeBest,subscribeBest,storage,onChange=()=>{},onBestRequested=()=>{}}){
+  const views={good:{open:openGood,close:closeGood},better:{open:openBetter,close:closeBetter},best:{open:openBest,close:closeBest}};
   const previewNotice='Best · escenario conceptual con personas del gemelo en vivo; interacción completa en preparación.';
   let mode='good',busy=false,notice='',error='',active=null,sequence=0,disposed=false;
   const snapshot=()=>({mode,busy,notice,error,availability:mode==='best'?'preview':'interactive',preview:mode==='best'});
@@ -49,18 +49,18 @@ export function createVisualTiers({openBetter,closeBetter,subscribeBetter,openBe
     notice=error||(tier==='best'?previewNotice:'');publish();
     if(request.initialized&&!busy)settle(request,!error);
   }
-  const subscriptions=[subscribeBetter?.(state=>receive('better',state)),subscribeBest?.(state=>receive('best',state))];
-  function choose(value){
+  const subscriptions=[subscribeGood?.(state=>receive('good',state)),subscribeBetter?.(state=>receive('better',state)),subscribeBest?.(state=>receive('best',state))];
+  function choose(value,options={}){
     const next=value==='life'?'better':['good','better','best'].includes(value)?value:'good';
     if(disposed)return Promise.resolve(result(next,false,true));
     if(active?.tier===next){publish();return active.settled?Promise.resolve(result(next,!error)):active.promise;}
     const previous=active;mode='good';busy=false;error='';notice='';
     release(previous,'switch');
     if(error){save();publish();return Promise.resolve(result(next,false));}
-    if(next==='good'){save();publish();return Promise.resolve(result(next,true));}
+    if(next==='good'&&!(options.preserveFrame&&typeof views.good.open==='function')){save();publish();return Promise.resolve(result(next,true));}
     if(next==='best')onBestRequested();
     if(typeof views[next].open!=='function'){
-      error=`${next==='best'?'Best':'Better'} no disponible · puedes reintentar`;notice=error;
+      const label=next==='best'?'Best':next==='better'?'Better':'Good';error=`${label} no disponible · puedes reintentar`;notice=error;
       save();publish();return Promise.resolve(result(next,false));
     }
     const request={id:++sequence,tier:next,controller:new AbortController(),opened:false,seenEvent:false,initialized:false,settled:false};
@@ -75,7 +75,7 @@ export function createVisualTiers({openBetter,closeBetter,subscribeBetter,openBe
     }
     function failed(){
       if(active!==request||disposed)return;
-      mode='good';busy=false;error=`${next==='best'?'Best':'Better'} no disponible · puedes reintentar`;notice=error;
+      const label=next==='best'?'Best':next==='better'?'Better':'Good';mode='good';busy=false;error=`${label} no disponible · puedes reintentar`;notice=error;
       // A rejected initializer is a failure, not a superseded request.
       settle(request,false);release(request,'error');save();publish();
     }

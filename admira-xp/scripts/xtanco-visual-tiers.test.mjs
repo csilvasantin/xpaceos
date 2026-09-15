@@ -22,11 +22,11 @@ function lifeFixture(){
 }
 
 function routerFixture(options={}){
-  const life=lifeFixture(),best=lifeFixture(),storage=memoryStorage(),changes=[],bestRequests=[];
-  const tiers=createVisualTiers({openBetter:life.openLifeView,closeBetter:life.closeLifeView,subscribeBetter:life.subscribeLifeView,storage,
+  const good=lifeFixture(),life=lifeFixture(),best=lifeFixture(),storage=memoryStorage(),changes=[],bestRequests=[];
+  const tiers=createVisualTiers({openGood:good.openLifeView,closeGood:good.closeLifeView,subscribeGood:good.subscribeLifeView,openBetter:life.openLifeView,closeBetter:life.closeLifeView,subscribeBetter:life.subscribeLifeView,storage,
     openBest:best.openLifeView,closeBest:best.closeLifeView,subscribeBest:best.subscribeLifeView,
     onChange:state=>changes.push({...state}),onBestRequested:()=>bestRequests.push(true),...options});
-  return {life,best,storage,changes,bestRequests,tiers};
+  return {good,life,best,storage,changes,bestRequests,tiers};
 }
 
 test('explicit visual links override preferences and the former Life URL aliases Better',()=>{
@@ -63,6 +63,12 @@ test('Better opens the live view, and its own close event returns selection and 
 test('choosing an already open Better view is idempotent and cannot leave the selector busy',async()=>{
   const f=routerFixture();await f.tiers.choose('better');await f.tiers.choose('better');await f.tiers.choose('life');
   assert.equal(f.life.calls.open,1);assert.equal(f.tiers.mode,'better');assert.equal(f.changes.at(-1).busy,false);
+});
+
+test('switching to Good from a visual dialog preserves the comparison frame until the user exits it',async()=>{
+  const f=routerFixture();await f.tiers.choose('best');await f.tiers.choose('good',{preserveFrame:true});
+  assert.equal(f.best.calls.close,1);assert.equal(f.good.calls.open,1);assert.equal(f.tiers.mode,'good');
+  await f.tiers.choose('better',{preserveFrame:true});assert.equal(f.good.calls.close,1);assert.equal(f.life.calls.open,1);
 });
 
 test('Best opens only its injected live-people preview, persists Best and never opens the graphics view',async()=>{
@@ -200,7 +206,7 @@ test('same-request retries await fresh readiness and can still cancel immediatel
 const selectorSource=fs.readFileSync(new URL('./xtanco-premium-ui.mjs',import.meta.url),'utf8');
 const controlsSource=fs.readFileSync(new URL('./visual-tier-controls.mjs',import.meta.url),'utf8');
 function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false}={}){
-  const created=[],queries=[],life=lifeFixture(),best=lifeFixture(),windowEvents={};
+  const created=[],queries=[],good=lifeFixture(),life=lifeFixture(),best=lifeFixture(),windowEvents={};
   class Element {
     constructor(tag){this.tag=tag;this.dataset={};this.attrs={};this.children=[];this.listeners={};this.hidden=false;this.textContent='';
       const classes=new Set();this.classList={add:value=>classes.add(value),remove:value=>classes.delete(value),contains:value=>classes.has(value)};}
@@ -232,11 +238,12 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
     }};
   const window={addEventListener(type,fn){(windowEvents[type]??=[]).push(fn);}};Object.defineProperty(window,'localStorage',{get(){if(storageBlocked)throw Error('denied');return storage;}});
   const context=vm.createContext({document,window,location:{search},createVisualTiers,requestedTier,...life,
+    openGoodView:good.openLifeView,closeGoodView:good.closeLifeView,subscribeGoodView:good.subscribeLifeView,
     openBestView:best.openLifeView,closeBestView:best.closeLifeView,subscribeBestView:best.subscribeLifeView});
   vm.runInContext(controlsSource.replace(/export function /g,'function '),context);
   vm.runInContext(selectorSource.replace(/^import .*;\n/gm,''),context);
   const controls=actions.children[0];assert.ok(controls,'the selector must be inserted in the expert actions');
-  return {body,actions,advanced,controls,advancedControls:advanced.children[0],document,window,storage,life,best,created,queries,
+  return {body,actions,advanced,controls,advancedControls:advanced.children[0],document,window,storage,good,life,best,created,queries,
     get status(){return document.getElementById('xtanco-best-status');},
     pagehide(){for(const fn of windowEvents.pagehide||[])fn({persisted:false});},
     button:(tier,group=controls)=>group.querySelectorAll('[data-visual-mode]').find(node=>node.dataset.visualMode===tier)};
@@ -297,7 +304,7 @@ test('selector boots safely with denied storage or stale legacy Best and never i
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
   const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-live-8','./best-preview-ui.mjs?v=tiers-live-8','./xtanco-visual-tiers.mjs?v=tiers-live-8','./visual-tier-controls.mjs?v=tiers-live-8']);
+  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-live-9','./best-preview-ui.mjs?v=tiers-live-9','./good-preview-ui.mjs?v=tiers-live-9','./xtanco-visual-tiers.mjs?v=tiers-live-9','./visual-tier-controls.mjs?v=tiers-live-9']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);

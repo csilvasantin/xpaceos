@@ -2,12 +2,13 @@ import {createLifeSnapshot} from './life-snapshot.mjs';
 
 const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
 const DEFAULT_COLS=14,DEFAULT_ROWS=8;
-export const BEST_SCENE_ASSET='assets/best-xtanco-avenida-admira-cleanplate-20260915.png';
+export const BEST_SCENE_ASSET='assets/best-xtanco-avenida-admira-framelock-20260915.png';
+const platePoint=([x,y])=>[(x*1672-84)/1504,(y*941-.5)/940];
 
 // Four floor anchors measured on the approved Best plate. They follow Good's
 // (col,row) axes and therefore keep all tiers on the same canonical 14x8 room.
 const FLOOR=Object.freeze({
-  origin:[.355,.245],col:[.905,.505],row:[.085,.525],front:[.605,.925]
+  origin:platePoint([.355,.245]),col:platePoint([.905,.505]),row:platePoint([.085,.525]),front:platePoint([.605,.925])
 });
 const FLOOR_POLYGON=Object.freeze([FLOOR.origin,FLOOR.col,FLOOR.front,FLOOR.row]);
 
@@ -22,20 +23,7 @@ export const BEST_HARDNESS_ZONES=Object.freeze([
   Object.freeze([[.423,.505],[.484,.532],[.500,.612],[.438,.582]]), // central screen
   Object.freeze([[.345,.350],[.671,.473],[.695,.560],[.348,.426]]), // back fixtures
   Object.freeze([[.610,.748],[.658,.770],[.674,.858],[.620,.835]])  // turn kiosk
-]);
-
-// Object silhouettes copied from the same clean plate. Each becomes a depth
-// slice above the people layer: a visitor behind it is hidden, while one whose
-// feet are nearer than its depth is rendered in front.
-const BEST_OCCLUDERS=Object.freeze([
-  {depth:.555,poly:[[.082,.345],[.230,.382],[.242,.555],[.105,.520]]},
-  {depth:.664,poly:[[.176,.448],[.306,.482],[.325,.664],[.198,.620]]},
-  {depth:.704,poly:[[.286,.505],[.396,.535],[.408,.704],[.308,.668]]},
-  {depth:.760,poly:[[.382,.542],[.515,.573],[.532,.760],[.410,.716]]},
-  {depth:.612,poly:[[.416,.304],[.493,.332],[.500,.612],[.434,.582]]},
-  {depth:.560,poly:[[.345,.105],[.688,.279],[.695,.560],[.348,.426]]},
-  {depth:.858,poly:[[.606,.632],[.660,.648],[.674,.858],[.616,.835]]}
-]);
+].map(zone=>Object.freeze(zone.map(platePoint))));
 
 export function projectBestFloor(col,row,cols=DEFAULT_COLS,rows=DEFAULT_ROWS){
   const u=clamp(col/(Number.isFinite(cols)&&cols>0?cols:DEFAULT_COLS));
@@ -109,22 +97,12 @@ function spriteFor(actor){
 function personMarkup(actor){
   return `<i class="best-person-shadow"></i><img class="best-person-sprite" src="${spriteFor(actor)}" alt="">`;
 }
-function polygonCss(poly){return `polygon(${poly.map(([x,y])=>`${(x*100).toFixed(2)}% ${(y*100).toFixed(2)}%`).join(',')})`;}
-function createOccluders(){
-  return BEST_OCCLUDERS.map(item=>{
-    const node=document.createElement('i');node.className='best-depth-occluder';
-    node.style.backgroundImage=`url("${BEST_SCENE_ASSET}")`;node.style.clipPath=polygonCss(item.poly);
-    node.style.zIndex=String(10+Math.round(item.depth*1000));return node;
-  });
-}
-
 export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame}={}){
   if(!container)throw new Error('Best people layer requires a container');
   const snapshot=createLifeSnapshot(),people=new Map(),positions=new Map();
   const layer=document.createElement('div');layer.className='best-people-layer';layer.setAttribute('aria-hidden','true');
-  const occluders=createOccluders();
   const status=document.createElement('p');status.className='best-people-status';status.setAttribute('role','status');
-  container.append(layer,...occluders,status);
+  container.append(layer,status);
   let frame=0,lastUpdate=-Infinity,disposed=false;
 
   function removeMissing(active){
@@ -159,5 +137,5 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
     frame=requestFrame(tick);
   }
   update();frame=requestFrame(tick);
-  return {update,get count(){return people.size;},dispose(){if(disposed)return;disposed=true;cancelFrame(frame);people.clear();positions.clear();layer.remove();for(const node of occluders)node.remove();status.remove();}};
+  return {update,get count(){return people.size;},dispose(){if(disposed)return;disposed=true;cancelFrame(frame);people.clear();positions.clear();layer.remove();status.remove();}};
 }

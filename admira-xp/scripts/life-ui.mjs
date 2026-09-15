@@ -1,5 +1,5 @@
 import {createLifeSnapshot} from './life-snapshot.mjs';
-import {createTierControls} from './visual-tier-controls.mjs?v=tiers-live-8';
+import {createTierControls} from './visual-tier-controls.mjs?v=tiers-live-9';
 
 // The expert Good/Better/Best selector owns launch, routing and preference.
 const listeners=new Set();
@@ -24,20 +24,20 @@ function select(data){
 }
 async function open(options={}){
   if(dialog||options.signal?.aborted)return;const ticket=++generation;lastFocus=document.activeElement;requestId=options.requestId;
-  dialog=document.createElement('dialog');dialog.className='life-dialog';dialog.setAttribute('aria-labelledby','life-title');
-  dialog.innerHTML=`<header class="life-header">
-    <div class="life-brand"><span class="life-mark" aria-hidden="true">X</span><div><span class="life-eyebrow">XPACEOS · BETTER · DIGITAL TWIN</span><h1 id="life-title">Un espacio. Mil posibilidades.</h1></div></div>
-    <div class="life-header-actions"><a class="life-functions" href="/help/funcionalidades/" target="_blank" rel="noopener">Funciones <span aria-hidden="true">↗</span></a><button type="button" class="life-close" aria-label="Volver al gemelo">Volver al gemelo <span aria-hidden="true">↗</span></button></div>
-  </header><div class="life-navigation"><div class="life-tier-slot"></div><span class="life-mapping-state">Comparar con Good · cámara alineada</span></div>
-  <div class="life-stage"><canvas class="life-canvas" tabindex="0" aria-label="Gemelo 3D interactivo. Arrastra para girar, usa las flechas para rotar y más o menos para acercar."></canvas>
+  dialog=document.createElement('dialog');dialog.className='life-dialog visual-tier-dialog';dialog.setAttribute('aria-labelledby','life-title');
+  dialog.innerHTML=`<header class="life-header best-header">
+    <div><p class="best-eyebrow">XPACEOS · 02.- BETTER · 16 BITS</p><h1 id="life-title">El mismo Xtanco. Gemelo 3D.</h1></div>
+    <button type="button" class="life-close best-close" aria-label="Salir del comparador">Salir del comparador ↗</button>
+  </header><div class="life-navigation best-navigation"><div class="life-tier-slot"></div><span class="life-mapping-state">Comparar con Good · cámara alineada</span></div>
+  <div class="life-stage visual-tier-stage"><canvas class="life-canvas" tabindex="0" aria-label="Gemelo 3D interactivo. Arrastra para girar, usa las flechas para rotar y más o menos para acercar."></canvas>
     <div class="life-location"><span class="life-eyebrow">BARCELONA · GRAN DE GRÀCIA</span><h2>El Xtanco<span>en otra dimensión.</span></h2><p><i aria-hidden="true"></i><span class="life-state">Conectando con el gemelo…</span></p></div>
     <div class="life-loading" role="status"><span class="life-spinner"></span><h2>Abriendo tu espacio</h2><p>Preparando la escena 3D del gemelo…</p><button type="button" class="life-retry" hidden>Reintentar</button></div>
     <aside class="life-selection" hidden><span class="life-eyebrow life-selection-kind"></span><h2></h2><p></p><button type="button" class="life-selection-close" aria-label="Cerrar detalle">×</button></aside>
     <div class="life-toolbar"><div class="life-lights" role="group" aria-label="Iluminación de la escena"><button type="button" data-light="day" aria-pressed="true">☀ <span>Día</span></button><button type="button" data-light="sunset" aria-pressed="false">◒ <span>Atardecer</span></button><button type="button" data-light="night" aria-pressed="false">☾ <span>Noche</span></button></div>
     <div class="life-camera" role="group" aria-label="Cámara"><button type="button" data-preset="mapped" aria-pressed="true">Comparar con Good</button><button type="button" data-preset="home" aria-pressed="false">Explorar 3D</button><button type="button" data-preset="floor" aria-pressed="false">Planta</button><button type="button" data-preset="detail" aria-pressed="false">Detalle</button><span class="life-divider"></span><button type="button" data-zoom="out" aria-label="Alejar">−</button><button type="button" data-zoom="in" aria-label="Acercar">+</button></div></div>
     <div class="life-compass" aria-hidden="true"><span>N</span><b>↟</b></div>
-  </div><footer class="life-footer"><span><b>Arrastra</b> para girar · <b>Scroll / pellizca</b> para acercar · <b>Toca</b> para explorar</span><span class="life-footnote">Mismo gemelo · nueva perspectiva</span></footer>`;
-  controls=createTierControls({context:'Cambiar calidad desde Better',choose:mode=>window.__xtancoVisualTiers?.choose(mode)});
+  </div><footer class="life-footer best-footer"><span><b>Arrastra</b> para girar · <b>Scroll / pellizca</b> para acercar · <b>Toca</b> para explorar</span><span class="life-footnote">Mismo Xtanco · mismo encuadre 8:5</span><a class="life-functions" href="/help/funcionalidades/" target="_blank" rel="noopener">01–30 · Funcionalidades ↗</a></footer>`;
+  controls=createTierControls({context:'Cambiar calidad desde Better',choose:mode=>window.__xtancoVisualTiers?.choose(mode,{preserveFrame:true})});
   dialog.querySelector('.life-tier-slot').append(controls.element);
   document.body.append(dialog);dialog.showModal();window.__xtancoReleaseInputs?.();document.body.classList.add('xtanco-life-open');
   const abort=()=>{if(ticket===generation)close('switch');};

@@ -5,10 +5,11 @@ import {BEST_HARDNESS_ZONES,createBestPeopleLayer,isBestWalkable,projectBestFloo
 const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-9,`${actual} != ${expected}`);
 
 test('the Good grid maps into the four measured floor corners of the approved Best perspective',()=>{
-  for(const [col,row,x,y] of [[0,0,.355,.245],[14,0,.905,.505],[0,8,.085,.525],[14,8,.605,.925]]){
+  const point=([x,y])=>[(x*1672-84)/1504,(y*941-.5)/940];
+  for(const [col,row,[x,y]] of [[0,0,point([.355,.245])],[14,0,point([.905,.505])],[0,8,point([.085,.525])],[14,8,point([.605,.925])]]){
     const point=projectBestFloor(col,row);near(point.x,x);near(point.y,y);
   }
-  const center=projectBestFloor(7,4);near(center.x,.4875);near(center.y,.55);near(center.depth,.5);
+  const center=projectBestFloor(7,4),expected=point([.4875,.55]);near(center.x,expected[0]);near(center.y,expected[1]);near(center.depth,.5);
   assert.deepEqual(projectBestFloor(-10,-10),projectBestFloor(0,0));
   assert.deepEqual(projectBestFloor(99,99),projectBestFloor(14,8));
 });
@@ -45,7 +46,7 @@ test('the overlay follows live actor positions, excludes outdoor traffic and dis
     const people=createBestPeopleLayer({container,getState:()=>state,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:id=>cancelled.push(id)});
     const layer=container.children.find(node=>node.className==='best-people-layer'),status=container.children.find(node=>node.className==='best-people-status');
     assert.equal(people.count,1);assert.equal(layer.children.length,1);assert.match(status.textContent,/1 cliente simulado/);
-    assert.match(status.textContent,/colisiones activas/);assert.equal(container.children.filter(node=>node.className==='best-depth-occluder').length,7);
+    assert.match(status.textContent,/colisiones activas/);assert.equal(container.children.filter(node=>node.className==='best-depth-occluder').length,0);
     assert.equal(layer.children.some(node=>node.className.includes('passerby')),false);
     assert.match(layer.children[0].innerHTML,/best-person-(?:male-rust|female-denim)-20260915\.png/);
     const customer=layer.children.find(node=>node.className.includes('kind-customer')),left=customer.style.left;
