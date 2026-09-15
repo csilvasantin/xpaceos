@@ -1,6 +1,6 @@
 # 01.- Un espacio, tres representaciones
 
-Release: v.15.09.2026.r7. Misión: interfaz continua y fusión visual.
+Release: v.15.09.2026.r8. Misión: interfaz continua, fusión visual y modo mudanza reversible.
 
 | Nivel visual | Entrada | Estado y correspondencia |
 | --- | --- | --- |
@@ -27,8 +27,10 @@ Cada entrada en Better vuelve a `mapped`. Girar, desplazar, acercar, Planta o De
 
 La preview con personas usa `../assets/best-xtanco-avenida-admira-framelock-20260915.png`, sin ninguno de los dos marcos de puerta y con la placa «AVENIDA ADMIRA». Su recorte final 1504×940 conserva el render y adopta la proporción nativa 8:5 de Good para que los tres modos compartan exactamente el mismo marco. `best-live-people.mjs` consume el mapa real de dureza y añade huellas calibradas para el mobiliario fotográfico sin superponer máscaras que puedan cortar visitantes; no modifica la simulación. Los adultos y los niños tienen recortes fotográficos propios, con variación determinista de escala y corrección de profundidad.
 
+`/mudanza` activa una capa de presentación vacía y reversible. Good deja de pintar mobiliario, personas, dispositivos y decoración; Better recibe el mismo espacio con `layout: []`, `actors: []` y arquitectura sin fixtures; Best funde hacia `../assets/best-xtanco-avenida-admira-mudanza-20260915.png`, placa 1504×940 creada mediante edición precisa de la referencia Best. La simulación, el layout real, los mapas de dureza, las posiciones y los contadores continúan intactos. Una segunda ejecución de `/mudanza` restaura todos los objetos en sus posiciones anteriores.
+
 Para un Best operativo, Blender/Unreal deberán consumir el mismo layout y los mismos IDs de entidades, junto al contrato de cámara; los assets deberán verificarse contra anclas y medidas. La capa actual sí sigue aproximadamente las posiciones de las personas, pero la imagen de fondo no cumple ese contrato de runtime ni permite afirmar sincronización exacta del escenario. Las30 áreas funcionales de Best siguen `planned` en `/mcp/funcionalidades.json`.
 
 ## 04.- Navegación y seguridad
 
-Un único router y una única preferencia versionada gobiernan todos los selectores. Cada cambio conserva un fantasma local de la vista saliente y funde su opacidad con la entrante durante 820 ms; donde existe, también se usa la API nativa View Transitions. Los cambios cancelan la apertura anterior; `requestId` y `AbortSignal` impiden que resultados tardíos reabran una vista. Best confirma éxito después de cargar su imagen; Better después de preparar el renderer. `good`, `better`, `best` y `/modo …` son comandos locales: no se envían a Telegram ni ejecutan herramientas MCP. Escape vuelve a Good. `pagehide` libera recursos sin borrar la preferencia.
+Un único router y una única preferencia versionada gobiernan todos los selectores. Cada cambio conserva un fantasma local de la vista saliente y funde su opacidad con la entrante durante 820 ms; donde existe, también se usa la API nativa View Transitions. Los cambios cancelan la apertura anterior; `requestId` y `AbortSignal` impiden que resultados tardíos reabran una vista. Best confirma éxito después de cargar su imagen; Better después de preparar el renderer. `good`, `better`, `best`, `/mudanza` y `/modo …` son comandos locales: no se envían a Telegram ni ejecutan herramientas MCP. Escape vuelve a Good. `pagehide` libera recursos sin borrar la preferencia.

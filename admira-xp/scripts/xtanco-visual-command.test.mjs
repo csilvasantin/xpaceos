@@ -14,6 +14,8 @@ test('modo/mode names and bit-style aliases resolve only to public tiers',()=>{
   }
   assert.deepEqual(parseVisualCommand('mode better'),{tier:'better'});
   for(const tier of ['good','better','best'])assert.deepEqual(parseVisualCommand(tier),{tier});
+  assert.deepEqual(parseVisualCommand('/mudanza'),{moving:true});
+  assert.deepEqual(parseVisualCommand('/MUDANZA@AdmiraXPBot'),{moving:true});
 });
 
 test('typos and extra arguments stay local while unrelated legacy commands are left untouched',()=>{
@@ -45,6 +47,17 @@ test('commands use the actual public router; Better opens once and Best opens a 
   answer=await executeVisualCommand('/modo best',f);assert.equal(answer.ok,true);assert.equal(answer.mode,'best');assert.equal(answer.requested,'best');
   assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');
   assert.match(answer.message,/32-bit.*hiperrealista.*fusionado.*personas.*gemelo en vivo.*CLI experto/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
+});
+
+test('/mudanza is a local reversible presentation toggle and never changes the tier router',async()=>{
+  const f=publicRouter();let active=false;
+  const moving={toggle(){active=!active;return active;}};
+  let answer=await executeVisualCommand('/mudanza',{...f,moving});
+  assert.equal(answer.ok,true);assert.equal(answer.moving,true);assert.match(answer.message,/ACTIVADA.*suelo y paredes.*otra vez/);
+  assert.equal(f.router.mode,'good');assert.deepEqual(f.calls,{open:0,close:0,best:0});
+  answer=await executeVisualCommand('/mudanza',{...f,moving});
+  assert.equal(answer.moving,false);assert.match(answer.message,/DESACTIVADA.*posición anterior exacta/);
+  answer=await executeVisualCommand('/mudanza',{...f,lang:'en'});assert.equal(answer.ok,false);assert.match(answer.message,/not ready/);
 });
 
 test('help, invalid mode and current-mode queries do not open or close any view',async()=>{
@@ -92,13 +105,14 @@ test('a cancelled live command resolves even when the older opener never complet
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 function section(start,end){const from=html.indexOf(start),to=html.indexOf(end,from);assert.ok(from>=0&&to>from,`${start} source boundaries`);return html.slice(from,to);}
 const helperSource=section('  async function executeLocalVisualCommand(rawText){','  async function executeTelegramText(rawText){')
-  .replace("import('./scripts/xtanco-visual-command.mjs?v=tiers-live-11')",'loadVisualCommand()');
+  .replace("import('./scripts/xtanco-visual-command.mjs?v=tiers-live-12')",'loadVisualCommand()');
 const dispatcherSource=section('  async function executeTelegramText(rawText){','  // === Stream Deck (Corsair Galleon 100 SD) bridge');
 const composerSource=section('  async function sendComposerText(text){','  function bindDockButton(button,handler){');
 
 function consoleHarness({failLoad=false,lang='es'}={}){
   const f=publicRouter(),sent=[],memory=[],logs=[],sessionCommands=[],responses=[],loads=[];
-  const composer={value:'pending'},window={__xtancoVisualTiers:f.router,xtAPI:{},AdmiraXP_SessionLog:{logCommand:input=>sessionCommands.push(input)}};
+  let moving=false;
+  const composer={value:'pending'},window={__xtancoVisualTiers:f.router,__xtancoMudanza:{toggle(){moving=!moving;return moving;}},xtAPI:{},AdmiraXP_SessionLog:{logCommand:input=>sessionCommands.push(input)}};
   let renders=0,helpClosed=0;
   const context=vm.createContext({window,lang,composer,renderMode:'8bit',
     async loadVisualCommand(){loads.push(true);if(failLoad)throw Error('offline');return {executeVisualCommand};},
@@ -111,11 +125,11 @@ function consoleHarness({failLoad=false,lang='es'}={}){
   vm.runInContext(helperSource+dispatcherSource+composerSource,context);
   const exported=html.match(/window\.__xtExec=executeTelegramText;/)?.[0];assert.ok(exported);vm.runInContext(exported,context);
   return {...f,context,composer,sent,memory,logs,sessionCommands,responses,loads,
-    get renders(){return renders;},get helpClosed(){return helpClosed;},send:input=>context.sendComposerText(input),exec:input=>window.__xtExec(input)};
+    get renders(){return renders;},get helpClosed(){return helpClosed;},get moving(){return moving;},send:input=>context.sendComposerText(input),exec:input=>window.__xtExec(input)};
 }
 
 test('the real composer handles every visual mode and typo before Telegram, AI/session logging or remote fallback',async()=>{
-  for(const input of ['good','better','best','/modo good','/modo better','/modo best','/MODE 16','/modo 32','/modo ayuda','/mode status','/modo bettor']){
+  for(const input of ['good','better','best','/mudanza','/modo good','/modo better','/modo best','/MODE 16','/modo 32','/modo ayuda','/mode status','/modo bettor']){
     const h=consoleHarness();await h.send(input);
     assert.equal(h.responses.length,1,input);assert.equal(h.composer.value,'');assert.equal(h.renders,1);assert.equal(h.helpClosed,1);
     assert.deepEqual(h.sent,[],`${input} must remain local`);assert.deepEqual(h.memory,[]);assert.deepEqual(h.logs,[]);assert.deepEqual(h.sessionCommands,[]);
@@ -151,6 +165,8 @@ test('__xtExec runs the same visual command without remote output or command log
   const h=consoleHarness();let answer=await h.exec('better');assert.match(answer,/Better.*16-bit/);assert.equal(h.router.mode,'better');
   answer=await h.exec('best');assert.match(answer,/fusionado.*personas.*gemelo en vivo/);assert.equal(h.router.mode,'best');
   answer=await h.exec('/modo desconocido');assert.match(answer,/Estilos visuales locales/);
+  answer=await h.exec('/mudanza');assert.match(answer,/ACTIVADA/);assert.equal(h.moving,true);
+  answer=await h.exec('/mudanza');assert.match(answer,/DESACTIVADA/);assert.equal(h.moving,false);
   assert.deepEqual(h.sent,[]);assert.deepEqual(h.sessionCommands,[]);assert.deepEqual(h.responses,[]);assert.equal(h.calls.open,1);
 });
 
@@ -166,7 +182,7 @@ test('embedded help lists local visual commands separately from all existing leg
   const context=vm.createContext({});vm.runInContext(section('  function helpSections(){','  function showHelpPanel(){'),context);
   const sections=context.helpSections(),visual=sections.find(section=>section.items.includes('better'));
   assert.ok(visual);assert.match(visual.title,/CLI experto.*__xtExec/);assert.match(visual.title,/Best.*32-bit/);
-  assert.deepEqual(Array.from(visual.items),['good','better','best','/modo estado']);
+  assert.deepEqual(Array.from(visual.items),['good','better','best','/mudanza','/modo estado']);
   const legacy=sections.find(section=>section.items.includes('/render 8bit'));
   assert.notEqual(visual,legacy);assert.deepEqual(Array.from(legacy.items),['/render 8bit','/render 16bit','/render habbo','/render real']);
 });

@@ -102,7 +102,7 @@ export function createLifeSnapshot(){
       };
     }
     const actors=[];
-    if(!editor){
+    if(!editor&&!input.moving){
       for(const value of list(game.staff))if(value?.hired)actors.push(actor(value,'staff'));
       for(const value of list(game.custs))actors.push(actor(value,'customer'));
       if(!realTrafficActive)for(const value of list(game.passersby))actors.push(actor(value,'passerby'));
@@ -111,7 +111,7 @@ export function createLifeSnapshot(){
       }
     }
     return {
-      ...scene,actors:actors.filter(Boolean),realTrafficActive,
+      ...scene,actors:actors.filter(Boolean),realTrafficActive,moving:!!input.moving,
       // These are explicitly the existing simulation's counts, never measured
       // audience or invented camera traffic. Unknown input stays unknown.
       source:'xtanco-running-game',inside:list(game.custs).length,

@@ -8,6 +8,7 @@ const aliases=new Map([
 
 export function parseVisualCommand(input){
   const text=String(input||'').trim();
+  if(/^\/mudanza(?:@\w+)?$/i.test(text))return {moving:true};
   const direct=text.toLowerCase();if(['good','better','best'].includes(direct))return {tier:direct};
   const match=text.match(/^\/?(?:modo|mode)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
   if(!match)return null;
@@ -21,12 +22,25 @@ export function parseVisualCommand(input){
   return {help:true,invalid:true};
 }
 
-export async function executeVisualCommand(input,{router,lang='es'}={}){
+export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
   const command=parseVisualCommand(input);if(!command)return null;
   const en=lang==='en';
+  if(command.moving){
+    if(typeof moving?.toggle!=='function')return {ok:false,local:true,message:en
+      ? 'Moving mode is not ready. Reload the twin and try /mudanza again.'
+      : 'El modo mudanza no está listo. Recarga el gemelo y vuelve a escribir /mudanza.'};
+    try{
+      const active=!!moving.toggle();
+      return {ok:true,local:true,moving:active,message:active
+        ? (en?'Moving mode ON: the experience now shows only floor and walls. Type /mudanza again to restore every object.':'Mudanza ACTIVADA: la Xperiencia muestra únicamente suelo y paredes. Escribe /mudanza otra vez para recuperar todos los objetos.')
+        : (en?'Moving mode OFF: every object has returned to its exact previous position.':'Mudanza DESACTIVADA: todos los objetos han vuelto a su posición anterior exacta.')};
+    }catch{
+      return {ok:false,local:true,message:en?'Could not change moving mode. Please retry.':'No se pudo cambiar el modo mudanza. Reintenta.'};
+    }
+  }
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (Expert CLI or __xtExec): type good, better or best. /mode, 8/16/32 and /mode status are also accepted. Every change uses a visual dissolve while the HUD and CLI remain visible.'
-    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better o best. También se aceptan /modo, 8/16/32 y /modo estado. Cada cambio usa una fusión visual y mantiene visibles el HUD y el CLI.'};
+    ? 'Local visual styles (Expert CLI or __xtExec): type good, better or best. /mudanza toggles an empty floor-and-walls view without changing the real layout. /mode, 8/16/32 and /mode status are also accepted.'
+    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better o best. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. También se aceptan /modo, 8/16/32 y /modo estado.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};

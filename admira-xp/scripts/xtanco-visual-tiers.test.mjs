@@ -273,6 +273,16 @@ test('the floating status stays silent on success and is reserved for loading or
   h.button('best').click();assert.equal(status.hidden,true);assert.equal(h.status,status);
 });
 
+test('/mudanza toggles an independent presentation class without changing quality or persistence',()=>{
+  const h=selectorHarness({search:'?visual=best'}),writes=h.storage.writes.length;
+  assert.equal(h.window.__xtancoMudanza.active,false);assert.equal(h.body.dataset.xtancoMudanza,'furnished');
+  assert.equal(h.window.__xtancoMudanza.toggle(),true);assert.equal(h.window.__xtancoMudanza.active,true);
+  assert.equal(h.body.classList.contains('xtanco-mudanza'),true);assert.equal(h.body.dataset.xtancoMudanza,'empty');
+  assert.equal(h.body.dataset.xtancoTier,'best');assert.equal(h.storage.writes.length,writes);
+  assert.equal(h.window.__xtancoMudanza.toggle(),false);assert.equal(h.body.classList.contains('xtanco-mudanza'),false);
+  assert.equal(h.body.dataset.xtancoMudanza,'furnished');assert.equal(h.body.dataset.xtancoTier,'best');
+});
+
 test('public Better preserves the legacy Good renderer facade and exterior traffic styling',async()=>{
   const h=selectorHarness({search:'?visual=life'}),facade=h.window.__xtancoPremiumView;
   assert.equal(h.body.dataset.xtancoTier,'better');assert.equal(h.button('better').attrs['aria-pressed'],'true');
@@ -304,7 +314,7 @@ test('selector boots safely with denied storage or stale legacy Best and never i
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
   const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-live-11','./best-preview-ui.mjs?v=tiers-live-11','./xtanco-visual-tiers.mjs?v=tiers-live-11','./visual-tier-controls.mjs?v=tiers-live-11']);
+  assert.deepEqual(imports,['./life-ui.mjs?v=tiers-live-12','./best-preview-ui.mjs?v=tiers-live-12','./xtanco-visual-tiers.mjs?v=tiers-live-12','./visual-tier-controls.mjs?v=tiers-live-12']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);

@@ -1,4 +1,4 @@
-import {createBestPeopleLayer} from './best-live-people.mjs?v=tiers-live-11';
+import {createBestPeopleLayer} from './best-live-people.mjs?v=tiers-live-12';
 const listeners=new Set();
 let dialog,people,lastFocus,requestId,removeAbort,busy=false;
 const announce=(error='',reason='')=>{for(const fn of listeners)fn({open:!!dialog,busy,error,reason,requestId});};
@@ -12,7 +12,7 @@ export function openBestView(options={}){
   if(dialog||options.signal?.aborted)return;
   requestId=options.requestId;lastFocus=document.activeElement;busy=true;
   dialog=document.createElement('dialog');dialog.className='best-dialog visual-tier-surface';dialog.setAttribute('aria-label','Best · representación hiperrealista del Xtanco');
-  dialog.innerHTML=`<figure class="best-stage"><div class="best-live-scene"><img class="best-reference" src="assets/best-xtanco-avenida-admira-framelock-20260915.png" alt="Referencia hiperrealista del Xtanco en Avenida Admira, sin marcos de puerta ni personas fijas, preparada para mostrar los visitantes de la simulación."></div><p class="visual-surface-badge">03.- BEST · 32 BITS</p><figcaption>PERSONAS EN VIVO · AVENIDA ADMIRA</figcaption><p class="best-image-error" role="alert" hidden>No se ha podido cargar la referencia. Puedes volver a Good o Better desde el menú experto o el CLI.</p></figure>`;
+  dialog.innerHTML=`<figure class="best-stage"><div class="best-live-scene"><img class="best-reference best-reference-filled" src="assets/best-xtanco-avenida-admira-framelock-20260915.png" alt="Referencia hiperrealista del Xtanco en Avenida Admira, sin marcos de puerta ni personas fijas, preparada para mostrar los visitantes de la simulación."><img class="best-reference best-reference-empty" src="assets/best-xtanco-avenida-admira-mudanza-20260915.png" alt="El mismo Xtanco vacío, mostrando únicamente el suelo y las paredes."></div><p class="visual-surface-badge">03.- BEST · 32 BITS</p><figcaption><span class="best-filled-caption">PERSONAS EN VIVO · AVENIDA ADMIRA</span><span class="best-empty-caption">MUDANZA · SUELO Y PAREDES</span></figcaption><p class="best-image-error" role="alert" hidden>No se ha podido cargar la referencia. Puedes volver a Good o Better desde el menú experto o el CLI.</p></figure>`;
   window.__xtancoSyncVisualSurface?.();document.body.append(dialog);dialog.show();dialog.getBoundingClientRect();dialog.classList.add('is-visible');window.__xtancoReleaseInputs?.();
   for(const type of ['click','dblclick','pointerdown','pointerup','pointermove','mousedown','mouseup','mousemove','touchstart','touchmove','touchend','wheel','contextmenu','keydown','keyup','keypress'])dialog.addEventListener(type,event=>{
     event.stopPropagation();if(type==='keydown'&&event.key==='Escape'){event.preventDefault();closeBestView();}

@@ -69,12 +69,16 @@ test('Best remains dormant until opened and creates a clean plate with a read-on
   assert.match(h.dialog.innerHTML,/PERSONAS EN VIVO · AVENIDA ADMIRA/);
   assert.match(source,/createBestPeopleLayer/,'the live layer owns the calibrated hardness map');
   assert.match(h.dialog.innerHTML,/<img[^>]+best-xtanco-avenida-admira-framelock-20260915\.png/);
+  assert.match(h.dialog.innerHTML,/<img[^>]+best-xtanco-avenida-admira-mudanza-20260915\.png/);
+  assert.match(h.dialog.innerHTML,/MUDANZA · SUELO Y PAREDES/);
   assert.doesNotMatch(h.dialog.innerHTML,/<(?:canvas|video|audio|iframe)\b/i);
   assert.match(source,/createBestPeopleLayer/);assert.doesNotMatch(source,/createLifeRenderer|WebGL|setInterval|__xtExec/);
   assert.match(styleSource,/\.best-person\{[^}]*width:10%;height:25\.5%/,'adult figures stay calibrated against the furniture');
   assert.doesNotMatch(styleSource,/\.best-depth-occluder\{/,'depth masks must never cut a moving visitor into pieces');
   assert.match(styleSource,/aspect-ratio:8\/5/,'all visual tiers share Good’s native frame ratio');
   assert.match(styleSource,/\.best-person-sprite\{[^}]*height:100%/,'photorealistic sprites fill the calibrated body height');
+  assert.match(styleSource,/body\.xtanco-mudanza \.best-reference-empty\{opacity:1\}/,'moving mode crossfades to the registered empty plate');
+  assert.match(styleSource,/body\.xtanco-mudanza \.best-people-layer/,'moving mode hides visitors together with furniture');
   h.dialog.querySelector('img').emit('load');assert.equal(h.liveLayers.length,1);
   assert.equal(h.liveLayers[0].options.container,h.dialog.querySelector('.best-live-scene'));
 });

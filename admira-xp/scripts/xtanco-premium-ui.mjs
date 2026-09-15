@@ -1,7 +1,7 @@
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=tiers-live-11';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=tiers-live-11';
-import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=tiers-live-11';
-import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=tiers-live-11';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=tiers-live-12';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=tiers-live-12';
+import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=tiers-live-12';
+import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=tiers-live-12';
 
 const actions=document.querySelector('#telegramDock .tg-actions');
 const advanced=document.querySelector('.quad-right');
@@ -25,6 +25,15 @@ try{
   }
 }catch{}
 window.__xtancoSyncVisualSurface=syncVisualSurface;
+let mudanzaActive=false;
+function setMudanza(next){
+  mudanzaActive=!!next;
+  if(mudanzaActive)document.body.classList.add('xtanco-mudanza');else document.body.classList.remove('xtanco-mudanza');
+  document.body.dataset.xtancoMudanza=mudanzaActive?'empty':'furnished';
+  return mudanzaActive;
+}
+setMudanza(false);
+window.__xtancoMudanza={toggle:()=>setMudanza(!mudanzaActive),set:setMudanza,get active(){return mudanzaActive;}};
 function ensureExpertDock(){
   try{if(document.body.classList.contains('xp-left-hidden'))document.getElementById('pfExpert')?.click();}catch{}
 }

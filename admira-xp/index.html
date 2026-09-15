@@ -17973,6 +17973,7 @@ function drawShopOperation(fn,kind='device'){
 function drawShop(){
   const premiumView=window.__xtancoPremiumView;
   const premiumActive=!!premiumView?.begin?.(cx,cv);
+  const mudanzaActive=document.body.classList.contains('xtanco-mudanza');
   // Clip to shop area. Extended down to the full canvas height so passersby
   // walking on the sidewalk past the building footprint (route reaches y≈470,
   // SHOP.h is 466) aren't clipped at the lower edge.
@@ -18036,7 +18037,7 @@ function drawShop(){
   }
 
   // ── SOCIO HEAT MAP — extraído a assets/js/heatmap.js (Fase 1 modularización) ──
-  if(window.drawSocioHeatmap) drawShopOperation(()=>window.drawSocioHeatmap({cx,ISO,tt,G,toIso}),'heatmap');
+  if(!mudanzaActive&&window.drawSocioHeatmap) drawShopOperation(()=>window.drawSocioHeatmap({cx,ISO,tt,G,toIso}),'heatmap');
 
   // ── WEATHER FLOOR EFFECTS ──
   const weatherFloor=G&&G.weather&&G.weather.type;
@@ -18329,7 +18330,7 @@ function drawShop(){
   // En el booth Shoptalk arrancamos sin decoración: el usuario decide
   // qué surfaces colocar (pantallas, audio, Hue, cámara…) desde el
   // Xpace Creator. Skip de todos los elementos de pared hardcoded.
-  if(!isShoptalkBooth()){
+  if(!mudanzaActive&&!isShoptalkBooth()){
     // ── CLOCK on left wall ──
     drawShopOperation(()=>drawWallClock());
     // ── LED on LEFT WALL (top edge) ──
@@ -18352,7 +18353,7 @@ function drawShop(){
   // ── BLANK XPACE (Creator / Shoptalk): renderizar SOLO los items wall
   // que el usuario haya añadido al layout. LED como banner full-wall si
   // existe; TFT centrado en su item.col + offset vertical item.wallY.
-  if(isShoptalkBooth()){
+  if(!mudanzaActive&&isShoptalkBooth()){
     const ledItem=shopLayout.find(i=>i.type==='led');
     if(ledItem) drawShopOperation(()=>drawLED(ledItem.sx||1,ledItem.sy||1));
     const tftItem=shopLayout.find(i=>i.type==='tft');
@@ -18374,7 +18375,7 @@ function drawShop(){
   // Perfora el hueco de las pantallas DS de pared (divs detrás del canvas) ANTES
   // de dibujar los muebles → los muebles del canvas las ocluyen (objetos siempre
   // por delante de paredes y contenidos dinámicos).
-  try{ punchDsScreenHoles(); }catch(_){}
+  if(!mudanzaActive)try{ punchDsScreenHoles(); }catch(_){}
 
   // ── FURNITURE & ENTITIES (sorted by screen Y for correct occlusion) ──
   const entities=[];
@@ -18385,7 +18386,7 @@ function drawShop(){
   }
 
   // Furniture from editable layout (skip wall-mounted overlays handled elsewhere)
-  if(shopFurnitureVisible||editorSceneActive){
+  if(!mudanzaActive&&(shopFurnitureVisible||editorSceneActive)){
     for(const item of shopLayout){
       if(item.type==='led'||item.type==='tft') continue;
       if(item.type==='aroma'&&!editorSceneActive) continue;
@@ -18394,7 +18395,7 @@ function drawShop(){
     }
   }
 
-  if(!editorSceneActive){
+  if(!mudanzaActive&&!editorSceneActive){
     // Staff — use their actual screen Y position for depth
     for(const s of G.staff){
       if(!s.hired) continue;
@@ -18538,27 +18539,27 @@ function drawShop(){
   }
 
   // Avatar 3D sobre el tótem (vista 2D) cuando está encendido (/avatar3d on).
-  try{ positionTotemAvatar(); }catch(_){}
+  if(!mudanzaActive)try{ positionTotemAvatar(); }catch(_){}
   // Avatar 3D sobre la pantalla TFT de la pared larga (/avatar3d ds on).
-  try{ positionWallAvatar(); }catch(_){}
+  if(!mudanzaActive)try{ positionWallAvatar(); }catch(_){}
 
   // ── ESCAPARATE — right wall rows 0-2, above glass door ──
-  if(!editorSceneActive) drawShopOperation(()=>drawEscaparate());
+  if(!mudanzaActive&&!editorSceneActive) drawShopOperation(()=>drawEscaparate());
 
   // ── AROMA MACHINE — wall overlay above exterior ads so waves stay visible ──
-  if(!editorSceneActive&&shopFurnitureVisible){
+  if(!mudanzaActive&&!editorSceneActive&&shopFurnitureVisible){
     const aromaItem=shopLayout.find(i=>i.type==='aroma');
     if(aromaItem) drawShopOperation(()=>drawAromatizer(aromaItem.col,aromaItem.row));
   }
 
   // ── GLASS DOOR — drawn LAST, always on top of furniture/characters ──
   // Skip en el booth Shoptalk: un stand de feria no tiene puerta de calle.
-  if(!editorSceneActive && !isShoptalkBooth()) drawGlassDoor();
+  if(!mudanzaActive&&!editorSceneActive && !isShoptalkBooth()) drawGlassDoor();
   // ── DOOR FOREGROUND PEOPLE — characters physically in front of the door
   // (passersby on the sidewalk + customers entering/leaving) re-painted
   // ON TOP of the glass-door frame so the wood jambs don't crop their bodies.
-  if(!editorSceneActive && !isShoptalkBooth()) drawShopOperation(()=>drawDoorForegroundPeople(),'actor');
-  if(!editorSceneActive && !isShoptalkBooth()) drawShopOperation(()=>window.__xtoreRealTraffic?.draw(cx,ISO,W,H),'actor');
+  if(!mudanzaActive&&!editorSceneActive && !isShoptalkBooth()) drawShopOperation(()=>drawDoorForegroundPeople(),'actor');
+  if(!mudanzaActive&&!editorSceneActive && !isShoptalkBooth()) drawShopOperation(()=>window.__xtoreRealTraffic?.draw(cx,ISO,W,H),'actor');
 
   // Compose the replacement world before operational marks and all HUD/editor UI.
   // DS monitors remain DOM behind #c: open their holes before adding the layer,
@@ -23736,6 +23737,7 @@ function drawShopChars(){}
 
 // ── DRAW FLOATS ───────────────────────────────────────────────
 function drawFloats(){
+  if(document.body.classList.contains('xtanco-mudanza')) return;
   for(const f of G.floats){
     cx.globalAlpha=Math.min(1,f.life/18);
     glow(f.col,5);tx(f.txt,f.x,f.y,f.col,9,'center');nog();cx.globalAlpha=1;
@@ -23836,7 +23838,7 @@ function drawHUD(){
   BTNS['codexMapToggle']={x:W-12,y:2,w:10,h:10};
   // Marketplace overlay (sponsor band + physical posters) — drawn last so it
   // sits above the HUD top bar and any iso furniture.
-  try{ drawMarketplaceOverlay(); }catch(e){}
+  if(!document.body.classList.contains('xtanco-mudanza')) try{ drawMarketplaceOverlay(); }catch(e){}
   // Banda inferior del HUD identificando el booth Shoptalk si está activo.
   if(window.XPACE_BOOTH==='shoptalk') drawShoptalkBoothBadge();
 }
@@ -26595,7 +26597,10 @@ function loop(){
   cx.save();try{if(codexMapOpen)drawCodexMapOverlay();}catch(e){}cx.restore();
   finalizeFrame();
 }
-window.__xtancoVisualState=()=>({palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:shopFurnitureVisible||editorSceneActive?shopLayout:[],hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'});
+window.__xtancoVisualState=()=>{
+  const moving=document.body.classList.contains('xtanco-mudanza');
+  return {palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:moving?[]:(shopFurnitureVisible||editorSceneActive?shopLayout:[]),hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,moving,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&CLIENTS[activeClient]?.id==='xtanco'};
+};
 loop();
 
 // ── DIRECT ENTRY URL: ?play=<verticalId> ─────────────────────────
@@ -30148,7 +30153,7 @@ window.xtAPI = (function(){
       {title:'IA y contenido',items:['/grok pregunta','/draw dibujo','/metahuman pregunta','/avatar3d on|off','/avatar3d ds on|off','/avatar3d audio on|off','/avatar3d models','/avatar3d preset <nombre> <url RPM>','/avatar3d model <nombre|id>','/avatar3d pregunta','/log','/log thief','/log customer','/import','/import list','/import remove 1','/importTube https://youtu.be/...']},
       {title:'Ajustes rápidos',items:['/money 12000','/sat 90','/fame 80','/set week 12','/set year 2','/set revenue 5000','/set storeLevel 2','/set customers 30']},
       {title:'Musica y layout',items:['/music on','/music off','/music next','/music previous','/music 3','/song 1','/song bad bunny','/next','/prev','/seoul2026','/seul','/seultrap','/seultecno','/equipo inicio ana 3 4','/equipo zona dj 12 2 2','/catalogo','/catalogo pared','/importar catalogo','/importar 1','/importar lista','/importar quitar 1','/mobiliario','/mobiliario inicio','/layout','/layout save','/layout factory','/layout xpacio','/layout xpacio load']},
-      {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit',items:['good','better','best','/modo estado']},
+      {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit',items:['good','better','best','/mudanza','/modo estado']},
       {title:'Estilo del render clásico',items:['/render 8bit','/render 16bit','/render habbo','/render real']},
       {title:'Mapa de navegacion',items:['/xpacio','/mapa','/map','/red','/sd list','/streamdeck','/help','/debug']},
     ];
@@ -30672,11 +30677,11 @@ window.xtAPI = (function(){
 
   async function executeLocalVisualCommand(rawText){
     const text=String(rawText||'').trim();
-    if(!/^(?:good|better|best)$|^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
+    if(!/^(?:good|better|best)$|^\/mudanza(?:@\w+)?$|^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
     const language=typeof lang==='undefined'?'es':lang;
     try{
-      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=tiers-live-11');
-      return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,lang:language});
+      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=tiers-live-12');
+      return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,moving:window.__xtancoMudanza,lang:language});
     }catch(error){
       return {ok:false,local:true,message:language==='en'?'The local visual command could not load. Please retry.':'No se pudo cargar el comando visual local. Reintenta.'};
     }
@@ -34924,9 +34929,9 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
-<link rel="stylesheet" href="scripts/xtanco-premium.css?v=tiers-live-11">
-<link rel="stylesheet" href="scripts/life-ui.css?v=tiers-live-11">
-<link rel="stylesheet" href="scripts/best-preview.css?v=tiers-live-11">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=tiers-live-11"></script>
+<link rel="stylesheet" href="scripts/xtanco-premium.css?v=tiers-live-12">
+<link rel="stylesheet" href="scripts/life-ui.css?v=tiers-live-12">
+<link rel="stylesheet" href="scripts/best-preview.css?v=tiers-live-12">
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=tiers-live-12"></script>
 </body>
 </html>

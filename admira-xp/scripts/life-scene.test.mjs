@@ -39,6 +39,18 @@ test('Screens share one portrait canvas and exactly one external player draw',()
   assert.deepEqual(meshes(model).map(o=>o.uuid),uuids);model.dispose();
 });
 
+test('moving mode rebuilds Better with architecture only and restores the exact live contents',()=>{
+  const model=createLifeScene(input,{canvasFactory});
+  model.update({...input,moving:true,layout:[],actors:[]});
+  assert.equal(model.snapshot.moving,true);assert.equal(model.actors.children.length,0);
+  assert.equal(model.scene.getObjectByName('furniture:counter'),undefined);
+  assert.equal(model.scene.getObjectByName('life:entrance'),undefined);
+  assert.ok(model.scene.getObjectByName('life:architecture'));
+  model.update(input);
+  assert.ok(model.scene.getObjectByName('furniture:counter'));assert.ok(model.scene.getObjectByName('life:entrance'));
+  assert.equal(model.actors.children.length,1);model.dispose();
+});
+
 test('Pose interpolation follows snapshots without advancing source positions or counters',()=>{
   const raw=structuredClone(input),model=createLifeScene(raw,{canvasFactory}),actor=model.actors.children[0];
   model.animate(1000);

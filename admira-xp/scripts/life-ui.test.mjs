@@ -136,6 +136,12 @@ test('Better contains only the registered scene while the shared HUD, Expert sel
   assert.ok(h.dialog.open);h.close();
 });
 
+test('Better labels the reversible empty presentation without claiming the live people are visible',async()=>{
+  const h=harness();h.setRaw({...h.raw,moving:true,layout:[]});await h.open();h.frame(1100);
+  assert.match(h.dialog.querySelector('.life-state').textContent,/Mudanza activa.*suelo y paredes/);
+  assert.deepEqual(h.viewers[0].calls.updates.at(-1).actors,[]);h.close();
+});
+
 test('game transitions without a representable snapshot close the view instead of showing stale moving actors',async()=>{
   const h=harness();await h.open();h.frame(1100);
   assert.match(h.dialog.querySelector('.life-state').textContent,/1 cliente en la simulación/);

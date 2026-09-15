@@ -73,6 +73,13 @@ test('editor and inactive scenes match visibility; unavailable telemetry and inv
   assert.equal(scene.entries,null);assert.equal(scene.time,null);assert.ok(Number.isNaN(input.game.staff[0].x));
 });
 
+test('moving presentation keeps the room geometry but supplies no furniture or actors',()=>{
+  const input=fixture(),snapshot=createLifeSnapshot(),before=JSON.stringify(input);
+  const scene=snapshot({...input,moving:true,layout:[]});
+  assert.deepEqual(scene.layout,[]);assert.deepEqual(scene.actors,[]);
+  assert.equal(scene.cols,14);assert.equal(scene.rows,8);assert.equal(JSON.stringify(input),before);
+});
+
 test('presentation metadata copies existing customer fields without assigning numbers or changing timers',()=>{
   const input=fixture(),snapshot=createLifeSnapshot(),customer=input.game.custs[0];
   delete customer.num;Object.assign(customer,{bTimer:40,bMsg:'Hola',emoteTimer:2,emote:'👋',fanCustomerId:'member',bought:true,st:'leave'});

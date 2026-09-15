@@ -103,7 +103,9 @@ async function open(options={}){
         try{
           if(!document.hidden){
             if(now-lastSnapshot>=100){const next=snapshot(window.__xtancoVisualState?.());if(!next){close();return;}viewer.update(next);current=next;lastSnapshot=now;}
-            if(now-lastStatus>=1000){const count=current.inside??0;dialog.querySelector('.life-state').textContent=`Gemelo conectado · ${count} ${count===1?'cliente':'clientes'} en la simulación`;lastStatus=now;}
+            if(now-lastStatus>=1000){const count=current.inside??0;dialog.querySelector('.life-state').textContent=current.moving
+              ? 'Mudanza activa · solo suelo y paredes'
+              : `Gemelo conectado · ${count} ${count===1?'cliente':'clientes'} en la simulación`;lastStatus=now;}
             viewer.render(now);
           }
           frame=requestAnimationFrame(tick);

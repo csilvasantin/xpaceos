@@ -347,24 +347,28 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       box(architectureRoot,x,cy-windowHeight/2-.08,.14,windowWidth+.30,.085,.35,palette.stone);
       box(architectureRoot,x-.40,cy+.23,.103,.21,.47,.004,palette.cream);box(architectureRoot,x+.30,cy+.23,.103,.10,.47,.004,palette.cream);
     }
-    const screenHeight=Math.min(1.62,h*.52),screenY=Math.min(h*.61,h-screenHeight/2-.4);
-    screen(architectureRoot,.092,screenY,r*.27,1.06,screenHeight,Math.PI/2);
-    screen(architectureRoot,.092,screenY,r*.70,1.06,screenHeight,Math.PI/2);
-    if(c>8)art(architectureRoot,c*.84,h*.58,.11,1.1,1.42,0,1);
-    // Small pools of light accent the retail fixtures, with cables kept at the
-    // back of the cutaway so the orthographic view remains unobstructed.
-    for(const x of [c*.18,c*.48,c*.79])fixture(architectureRoot,x,h-.51,1.45,{size:.34});
+    if(!snapshot.moving){
+      const screenHeight=Math.min(1.62,h*.52),screenY=Math.min(h*.61,h-screenHeight/2-.4);
+      screen(architectureRoot,.092,screenY,r*.27,1.06,screenHeight,Math.PI/2);
+      screen(architectureRoot,.092,screenY,r*.70,1.06,screenHeight,Math.PI/2);
+      if(c>8)art(architectureRoot,c*.84,h*.58,.11,1.1,1.42,0,1);
+      // Small pools of light accent the retail fixtures, with cables kept at the
+      // back of the cutaway so the orthographic view remains unobstructed.
+      for(const x of [c*.18,c*.48,c*.79])fixture(architectureRoot,x,h-.51,1.45,{size:.34});
+    }
     // A paved edge accommodates the actual passerby actors from the snapshot.
     box(architectureRoot,c+1.05,-.22,r/2,1.45,.22,r+.7,palette.pavement);
     for(let z=.1;z<r+.2;z+=.8)box(architectureRoot,c+1.05,-.105,z,1.41,.008,.016,palette.cream);
     box(architectureRoot,c+1.80,-.16,r/2,.055,.1,r+.7,palette.stone);
     for(const z of [.3,r-.3]){cylinder(architectureRoot,c+1.63,.18,z,.047,.58,palette.teal);cylinder(architectureRoot,c+1.63,.48,z,.054,.024,palette.brass);}
     // A single open shopfront detail signals the entrance without hiding people.
-    const entrance=group(world,c+.08,0,2.06);entrance.name='life:entrance';
-    for(const z of [0,1.18])box(entrance,0,1.12,z,.07,2.24,.07,palette.brass);
-    box(entrance,0,2.27,.59,.10,.12,1.3,palette.teal);
-    const door=group(entrance,0,0,1.14);door.name='architectural:door';doors.push(door);
-    box(door,0,1.10,-.54,.03,2.13,1.05,palette.glass);box(door,.037,1.01,-.92,.038,.32,.038,palette.brass);
+    if(!snapshot.moving){
+      const entrance=group(world,c+.08,0,2.06);entrance.name='life:entrance';
+      for(const z of [0,1.18])box(entrance,0,1.12,z,.07,2.24,.07,palette.brass);
+      box(entrance,0,2.27,.59,.10,.12,1.3,palette.teal);
+      const door=group(entrance,0,0,1.14);door.name='architectural:door';doors.push(door);
+      box(door,0,1.10,-.54,.03,2.13,1.05,palette.glass);box(door,.037,1.01,-.92,.038,.32,.038,palette.brass);
+    }
     batch(architectureRoot);
   }
 
@@ -481,7 +485,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     snapshot=normalizeLifeSnapshot(raw);
     // The Canvas2D projection is deliberately absent from this signature. Orbit,
     // resize and editor zoom must never skew or rebuild genuine 3D furniture.
-    const next=JSON.stringify([snapshot.cols,snapshot.rows,snapshot.wallHeight,snapshot.layout]);
+    const next=JSON.stringify([snapshot.cols,snapshot.rows,snapshot.wallHeight,snapshot.moving,snapshot.layout]);
     if(next!==signature){
       release(worldResources);world.traverse(o=>{if(o.isInstancedMesh)o.dispose();});world.clear();fixtureLights.length=0;doors.length=0;
       architecture();for(const item of snapshot.layout)furniture(item);signature=next;
