@@ -14,7 +14,7 @@ export function requestedTier(search='',storage){
 export function createVisualTiers({openBetter,closeBetter,subscribeBetter,openBest,closeBest,subscribeBest,openMatrix,closeMatrix,subscribeMatrix,storage,onChange=()=>{},onBestRequested=()=>{}}){
   const views={better:{open:openBetter,close:closeBetter},best:{open:openBest,close:closeBest},matrix:{open:openMatrix,close:closeMatrix}};
   const previewNotice='Best · tienda y personas en 3D en vivo; funciones operativas completas en preparación.';
-  const tierNotice=tier=>tier==='best'?previewNotice:tier==='matrix'?'Matrix · Avenida Admira · escena fija con visitantes en vivo.':'';
+  const tierNotice=tier=>tier==='best'?previewNotice:tier==='matrix'?'Matrix · Avenida Admira · mobiliario editable e inventario compartido · cámara fija.':'';
   const isPreview=tier=>tier==='best'||tier==='matrix';
   const tierLabel=tier=>({good:'Good',better:'Better',best:'Best',matrix:'Matrix'})[tier];
   let mode='good',busy=false,notice='',error='',active=null,sequence=0,disposed=false;

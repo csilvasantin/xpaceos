@@ -30731,7 +30731,7 @@ window.xtAPI = (function(){
     if(!/^(?:good|better|best|matrix)$|^\/mudanza(?:@\w+)?$|^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
     const language=typeof lang==='undefined'?'es':lang;
     try{
-      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=matrix-1');
+      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=matrix-furniture-1');
       return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,moving:window.__xtancoMudanza,lang:language});
     }catch(error){
       return {ok:false,local:true,message:language==='en'?'The local visual command could not load. Please retry.':'No se pudo cargar el comando visual local. Reintenta.'};
@@ -34997,6 +34997,7 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=inventari-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=inventari-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=matrix-1"></script>
+<link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=matrix-furniture-1"></script>
 </body>
 </html>

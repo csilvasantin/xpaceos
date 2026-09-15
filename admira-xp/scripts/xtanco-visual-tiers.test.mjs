@@ -316,7 +316,7 @@ test('selector boots safely with denied storage or stale legacy Best and never i
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
   const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./matrix-preview-ui.mjs?v=matrix-1','./life-ui.mjs?v=catalog-43','./best-preview-ui.mjs?v=best-people-1','./xtanco-visual-tiers.mjs?v=matrix-1','./visual-tier-controls.mjs?v=matrix-1']);
+  assert.deepEqual(imports,['./matrix-preview-ui.mjs?v=matrix-furniture-1','./life-ui.mjs?v=catalog-43','./best-preview-ui.mjs?v=best-people-1','./xtanco-visual-tiers.mjs?v=matrix-furniture-1','./visual-tier-controls.mjs?v=matrix-furniture-1']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);
@@ -333,7 +333,7 @@ test('Matrix is an independent preview and can switch to live Best and back with
   const f=routerFixture();
   const result=await f.tiers.choose('matrix');
   assert.equal(result.ok,true);assert.equal(result.preview,true);assert.equal(result.availability,'preview');
-  assert.match(result.notice,/Matrix.*Avenida Admira.*escena fija/);
+  assert.match(result.notice,/Matrix.*Avenida Admira.*mobiliario editable.*inventario compartido.*cámara fija/);
   assert.equal(f.best.calls.open,0);assert.equal(f.life.calls.open,0);assert.equal(f.matrix.calls.open,1);
   assert.equal(f.storage.values.get(TIER_STORAGE_KEY),'matrix');
   const old=f.matrix.requests[0];

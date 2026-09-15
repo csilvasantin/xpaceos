@@ -52,14 +52,16 @@ test('commands use the actual public router; Better opens once and Best opens a 
   assert.match(answer.message,/32-bit.*tienda y personas en 3D en vivo.*mismo Xtanco.*CLI experto/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
 });
 
-test('Matrix opens Avenida Admira through the public router and reports its fixed backdrop honestly',async()=>{
+test('Matrix opens Avenida Admira through the public router and describes editable furniture with a fixed camera',async()=>{
   const f=publicRouter();
   let answer=await executeVisualCommand('matrix',f);
   assert.equal(answer.ok,true);assert.equal(answer.local,true);assert.equal(answer.mode,'matrix');assert.equal(answer.requested,'matrix');
   assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');
-  assert.match(answer.message,/Matrix.*Avenida Admira.*escenario fijo y visitantes en vivo.*mismo Xtanco/);
+  assert.match(answer.message,/Matrix.*Avenida Admira.*cámara fija, mobiliario editable y visitantes en vivo.*mismo Xtanco/);
   answer=await executeVisualCommand('/mode matrix',{...f,lang:'en'});
-  assert.match(answer.message,/fixed backdrop and live visitors/);assert.equal(f.calls.matrix,1);
+  assert.match(answer.message,/fixed camera, editable furniture and live visitors/);assert.equal(f.calls.matrix,1);
+  assert.match(answer.message,/43 shared models/);
+  for(const command of ['/inventario añadir 1','/inventario eliminar 1','/inventario deshacer'])assert.ok(answer.message.includes(command));
   await executeVisualCommand('best',f);assert.equal(f.router.mode,'best');assert.equal(f.calls.best,1);
 });
 
@@ -86,7 +88,7 @@ test('help, invalid mode and current-mode queries do not open or close any view'
   await executeVisualCommand('/modo best',f);answer=await executeVisualCommand('/mode status',{...f,lang:'en'});
   assert.equal(answer.mode,'best');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/live 3D store and people/);
   await executeVisualCommand('/modo matrix',f);answer=await executeVisualCommand('/modo estado',f);
-  assert.equal(answer.mode,'matrix');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/Avenida Admira.*escenario fijo y visitantes en vivo/);
+  assert.equal(answer.mode,'matrix');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/Avenida Admira.*cámara fija, mobiliario editable y visitantes en vivo/);
 });
 
 test('Matrix cannot report success when its preview is unavailable, failed or cancelled',async()=>{
@@ -196,7 +198,7 @@ test('visual feedback is labelled local while all existing bot and error labels 
 test('__xtExec runs the same visual command without remote output or command logging',async()=>{
   const h=consoleHarness();let answer=await h.exec('better');assert.match(answer,/Better.*16-bit/);assert.equal(h.router.mode,'better');
   answer=await h.exec('best');assert.match(answer,/tienda y personas en 3D en vivo.*mismo Xtanco/);assert.equal(h.router.mode,'best');
-  answer=await h.exec('matrix');assert.match(answer,/Avenida Admira.*escenario fijo y visitantes en vivo/);assert.equal(h.router.mode,'matrix');
+  answer=await h.exec('matrix');assert.match(answer,/Avenida Admira.*cámara fija, mobiliario editable y visitantes en vivo/);assert.equal(h.router.mode,'matrix');
   answer=await h.exec('/modo desconocido');assert.match(answer,/Estilos visuales locales/);
   answer=await h.exec('/mudanza');assert.match(answer,/ACTIVADA/);assert.equal(h.moving,true);
   answer=await h.exec('/mudanza');assert.match(answer,/DESACTIVADA/);assert.equal(h.moving,false);

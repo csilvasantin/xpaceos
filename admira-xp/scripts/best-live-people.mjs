@@ -40,25 +40,36 @@ function pointInPolygon(point,polygon){
   }
   return inside;
 }
-export function isBestWalkable(point){
-  return pointInPolygon(point,FLOOR_POLYGON)&&!BEST_HARDNESS_ZONES.some(zone=>pointInPolygon(point,zone));
+export function isBestWalkable(point,zones=BEST_HARDNESS_ZONES,floorPolygon=FLOOR_POLYGON){
+  return pointInPolygon(point,floorPolygon)&&!zones.some(zone=>pointInPolygon(point,zone));
 }
-export function resolveBestHardness(point){
-  if(isBestWalkable(point))return point;
+export function resolveBestHardness(point,zones=BEST_HARDNESS_ZONES,floorPolygon=FLOOR_POLYGON){
+  if(isBestWalkable(point,zones,floorPolygon))return point;
   let best=null;
   for(let radius=.006;radius<=.24;radius+=.006){
     for(let step=0;step<48;step++){
       const angle=step*Math.PI*2/48,candidate={x:point.x+Math.cos(angle)*radius,y:point.y+Math.sin(angle)*radius,depth:point.depth};
-      if(isBestWalkable(candidate)&&(!best||Math.hypot(candidate.x-point.x,candidate.y-point.y)<best.distance))best={...candidate,distance:Math.hypot(candidate.x-point.x,candidate.y-point.y)};
+      if(isBestWalkable(candidate,zones,floorPolygon)&&(!best||Math.hypot(candidate.x-point.x,candidate.y-point.y)<best.distance))best={...candidate,distance:Math.hypot(candidate.x-point.x,candidate.y-point.y)};
     }
     if(best)return {x:best.x,y:best.y,depth:clamp((best.x+best.y)/2)};
   }
-  return {x:.70,y:.66,depth:.68};
+  // Preserve the approved fixed plate fallback for existing callers. A custom
+  // room must never fall back to a coordinate from another photographic room.
+  if(floorPolygon===FLOOR_POLYGON)return {x:.70,y:.66,depth:.68};
+  const center={x:floorPolygon.reduce((sum,p)=>sum+p[0],0)/floorPolygon.length,y:floorPolygon.reduce((sum,p)=>sum+p[1],0)/floorPolygon.length,depth:point.depth};
+  if(isBestWalkable(center,zones,floorPolygon))return center;
+  const minX=Math.min(...floorPolygon.map(p=>p[0])),maxX=Math.max(...floorPolygon.map(p=>p[0]));
+  const minY=Math.min(...floorPolygon.map(p=>p[1])),maxY=Math.max(...floorPolygon.map(p=>p[1]));
+  for(let row=1;row<40;row++)for(let col=1;col<40;col++){
+    const candidate={x:minX+(maxX-minX)*col/40,y:minY+(maxY-minY)*row/40,depth:point.depth};
+    if(isBestWalkable(candidate,zones,floorPolygon))return candidate;
+  }
+  return center;
 }
-export function segmentCrossesBestHardness(from,to){
+export function segmentCrossesBestHardness(from,to,zones=BEST_HARDNESS_ZONES,floorPolygon=FLOOR_POLYGON){
   if(!from||!to)return false;
   const distance=Math.hypot(to.x-from.x,to.y-from.y),steps=Math.max(2,Math.ceil(distance/.006));
-  for(let i=1;i<steps;i++)if(!isBestWalkable({x:from.x+(to.x-from.x)*i/steps,y:from.y+(to.y-from.y)*i/steps}))return true;
+  for(let i=1;i<steps;i++)if(!isBestWalkable({x:from.x+(to.x-from.x)*i/steps,y:from.y+(to.y-from.y)*i/steps},zones,floorPolygon))return true;
   return false;
 }
 
@@ -97,7 +108,19 @@ function spriteFor(actor){
 function personMarkup(actor){
   return `<i class="best-person-shadow"></i><img class="best-person-sprite" src="${spriteFor(actor)}" alt="">`;
 }
-export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame}={}){
+// Dynamic furniture presentations supply their currently visible footprints.
+// Missing/failed dynamic data adds no photographic obstacle: the simulation's
+// logical hardness still applies, and an old photo must not resurrect furniture
+// that the user has removed. Callers without this option retain the fixed plate.
+function furnitureZones(getFurnitureZones,scene){
+  if(typeof getFurnitureZones!=='function')return BEST_HARDNESS_ZONES;
+  try{
+    const zones=getFurnitureZones(scene);
+    return Array.isArray(zones)?zones.filter(zone=>Array.isArray(zone)&&zone.length>=3
+      &&zone.every(point=>Array.isArray(point)&&point.length>=2&&Number.isFinite(point[0])&&Number.isFinite(point[1]))):[];
+  }catch{return [];}
+}
+export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),getFurnitureZones,projectFloor=projectBestFloor,floorPolygon=FLOOR_POLYGON,requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame}={}){
   if(!container)throw new Error('Best people layer requires a container');
   const snapshot=createLifeSnapshot(),people=new Map(),positions=new Map();
   const layer=document.createElement('div');layer.className='best-people-layer';layer.setAttribute('aria-hidden','true');
@@ -109,16 +132,18 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
     for(const [id,node] of people)if(!active.has(id)){node.remove();people.delete(id);positions.delete(id);}
   }
   function update(){
+    if(disposed)return;
     let current=null;
     try{current=snapshot(getState?.());}catch{}
     if(!current){status.textContent='Esperando la simulación del Xtanco…';removeMissing(new Set());return;}
+    const zones=furnitureZones(getFurnitureZones,current);
     const active=new Set(),actors=current.actors.filter(actor=>actor?.kind==='customer'&&!actor.outside&&actor.col>=0&&actor.row>=0&&actor.col<current.cols&&actor.row<current.rows);
     for(const actor of actors){
       const logical=logicalPosition(actor,current);if(!logical)continue;
       active.add(actor.id);let node=people.get(actor.id);
       if(!node){node=document.createElement('span');node.className='best-person';node.innerHTML=personMarkup(actor);layer.append(node);people.set(actor.id,node);}
-      const desired=projectBestFloor(logical.col,logical.row,current.cols,current.rows),point=resolveBestHardness(desired),previous=positions.get(actor.id);
-      const repositioning=segmentCrossesBestHardness(previous,point),child=isChild(actor),variation=child ? .88+(stableNumber(actor.id)%9)*.02 : .96+(stableNumber(actor.id)%6)*.02;
+      const desired=projectFloor(logical.col,logical.row,current.cols,current.rows),point=resolveBestHardness(desired,zones,floorPolygon),previous=positions.get(actor.id);
+      const repositioning=segmentCrossesBestHardness(previous,point,zones,floorPolygon),child=isChild(actor),variation=child ? .88+(stableNumber(actor.id)%9)*.02 : .96+(stableNumber(actor.id)%6)*.02;
       const scale=(actor.scale||1)*variation*(.78+point.depth*.28);
       node.className=`best-person kind-${actor.kind}${actor.walking?' is-walking':''}${actor.isPlayer?' is-player':''}${child?' is-child':''}${repositioning?' is-repositioning':''}`;
       node.style.left=`${(point.x*100).toFixed(3)}%`;node.style.top=`${(point.y*100).toFixed(3)}%`;

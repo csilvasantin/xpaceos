@@ -22,6 +22,30 @@ test('the Best plate has calibrated hard furniture footprints and every resolved
   assert.equal(segmentCrossesBestHardness({x:.46,y:.49},{x:.46,y:.63}),true);
 });
 
+test('dynamic furniture removal releases its footprint and crossing path without changing fixed-plate defaults',()=>{
+  const zone=BEST_HARDNESS_ZONES[3],point={x:zone.reduce((sum,p)=>sum+p[0],0)/zone.length,y:zone.reduce((sum,p)=>sum+p[1],0)/zone.length,depth:.5};
+  const zones=[zone],before=JSON.stringify(zones),from={...point,x:point.x-.07},to={...point,x:point.x+.07};
+  assert.equal(isBestWalkable(point,zones),false);
+  assert.equal(segmentCrossesBestHardness(from,to,zones),true);
+  assert.notDeepEqual(resolveBestHardness(point,zones),point);
+  assert.equal(isBestWalkable(point,[]),true);
+  assert.equal(segmentCrossesBestHardness(from,to,[]),false);
+  assert.equal(resolveBestHardness(point,[]),point);
+  assert.equal(isBestWalkable(point),false);
+  assert.equal(isBestWalkable({x:-1,y:-1},[]),false);
+  assert.equal(JSON.stringify(zones),before);
+});
+
+test('an independently calibrated room supplies its own walkable floor, obstacle resolution and movement segments',()=>{
+  const floor=Object.freeze([[.7,.1],[.95,.1],[.95,.3],[.7,.3]].map(Object.freeze));
+  const from={x:.75,y:.2,depth:.4},to={x:.9,y:.2,depth:.6},zone=[[.8,.15],[.85,.15],[.85,.25],[.8,.25]],before=JSON.stringify({floor,zone});
+  assert.equal(isBestWalkable(from,[]),false);assert.equal(isBestWalkable(from,[],floor),true);
+  assert.equal(segmentCrossesBestHardness(from,to,[],floor),false);assert.equal(segmentCrossesBestHardness(from,to,[zone],floor),true);
+  const resolved=resolveBestHardness({x:.825,y:.2,depth:.5},[zone],floor);assert.equal(isBestWalkable(resolved,[zone],floor),true);
+  const farAway=resolveBestHardness({x:.1,y:.9,depth:.5},[],floor);assert.equal(isBestWalkable(farAway,[],floor),true);
+  assert.equal(JSON.stringify({floor,zone}),before);
+});
+
 const iso={cols:14,rows:8,tileW:80,tileH:28,wallH:165,ox:270,oy:185};
 const at=(col,row)=>({x:iso.ox+(col-row)*iso.tileW/2-7,y:iso.oy+(col+row)*iso.tileH/2-20});
 function fixture(){
@@ -71,5 +95,77 @@ test('children use real child cutouts and deterministic age variation instead of
     assert.match(child.className,/is-child/);assert.match(child.innerHTML,/best-person-child-ochre-20260915\.png/);
     assert.ok(Number(child.style.values['--person-scale'])<.8);assert.equal(isBestWalkable({x:parseFloat(child.style.left)/100,y:parseFloat(child.style.top)/100}),true);
     people.dispose();
+  }finally{globalThis.document=originalDocument;}
+});
+
+test('editable Matrix reads current furniture per update, preserves source state and releases every frame and node',()=>{
+  const originalDocument=globalThis.document,frames=new Map(),cancelled=[];let nextFrame=0;
+  class Element{
+    constructor(){this.children=[];this.parent=null;this.style={setProperty(){}};}
+    setAttribute(){} append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
+    remove(){if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1);this.parent=null;}
+  }
+  globalThis.document={hidden:false,createElement:()=>new Element()};
+  try{
+    const state=fixture(),before=JSON.stringify(state),container=new Element(),point=projectBestFloor(6,4);
+    const zone=Object.freeze([[point.x-.035,point.y-.035],[point.x+.035,point.y-.035],[point.x+.035,point.y+.035],[point.x-.035,point.y+.035]].map(Object.freeze));
+    let zones=Object.freeze([zone]),calls=0;
+    const people=createBestPeopleLayer({container,getState:()=>state,getFurnitureZones:scene=>{
+      calls++;assert.equal(scene.source,'xtanco-running-game');assert.notEqual(scene,state);return zones;
+    },requestFrame:callback=>{frames.set(++nextFrame,callback);return nextFrame;},cancelFrame:id=>{cancelled.push(id);frames.delete(id);}});
+    const layer=container.children.find(node=>node.className==='best-people-layer'),person=layer.children[0];
+    const coordinate=()=>({x:parseFloat(person.style.left)/100,y:parseFloat(person.style.top)/100});
+    assert.equal(calls,1);assert.equal(people.count,1);assert.ok(Math.hypot(coordinate().x-point.x,coordinate().y-point.y)>.03);
+    zones=[];people.update();
+    assert.equal(calls,2);assert.equal(layer.children[0],person);
+    assert.ok(Math.abs(coordinate().x-point.x)<.00001);assert.ok(Math.abs(coordinate().y-point.y)<.00001);
+    assert.doesNotMatch(person.className,/is-repositioning/);
+    assert.equal(person.style.zIndex,String(10+Math.round(point.y*1000)));
+    assert.equal(JSON.stringify(state),before);
+    // /mudanza already clears actors in the shared read-only snapshot.
+    state.moving=true;people.update();assert.equal(people.count,0);assert.equal(layer.children.length,0);
+    people.dispose();people.dispose();people.update();
+    assert.equal(container.children.length,0);assert.equal(frames.size,0);assert.equal(cancelled.length,1);assert.equal(calls,3);
+  }finally{globalThis.document=originalDocument;}
+});
+
+test('invalid or unavailable dynamic zones never revive photograph obstacles and logical collisions remain active',()=>{
+  const originalDocument=globalThis.document;
+  class Element{
+    constructor(){this.children=[];this.parent=null;this.style={setProperty(){}};}
+    setAttribute(){} append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
+    remove(){if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1);this.parent=null;}
+  }
+  globalThis.document={hidden:false,createElement:()=>new Element()};
+  try{
+    for(const getFurnitureZones of [()=>undefined,()=>{throw Error('loading');},()=>[null,[],[[NaN,0],[1,1],[0,1]]]]){
+      const state=fixture(),point=projectBestFloor(6,4),container=new Element();
+      const people=createBestPeopleLayer({container,getState:()=>state,getFurnitureZones,requestFrame:()=>1,cancelFrame:()=>{}});
+      const person=container.children.find(node=>node.className==='best-people-layer').children[0];
+      assert.equal(person.style.left,`${(point.x*100).toFixed(3)}%`);assert.equal(person.style.top,`${(point.y*100).toFixed(3)}%`);
+      state.hardness={cols:14,rows:8,blocked:['6,4']};people.update();
+      assert.ok(person.style.left!==`${(point.x*100).toFixed(3)}%`||person.style.top!==`${(point.y*100).toFixed(3)}%`);
+      people.dispose();assert.equal(container.children.length,0);
+    }
+  }finally{globalThis.document=originalDocument;}
+});
+
+test('a supplied floor projector drives visitor feet and transitions without pulling them back onto the legacy photograph',()=>{
+  const originalDocument=globalThis.document,calls=[];
+  class Element{
+    constructor(){this.children=[];this.parent=null;this.style={setProperty(){}};}
+    setAttribute(){} append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
+    remove(){if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1);this.parent=null;}
+  }
+  globalThis.document={hidden:false,createElement:()=>new Element()};
+  try{
+    const state=fixture(),container=new Element(),floorPolygon=[[.7,.1],[.95,.1],[.95,.3],[.7,.3]];
+    const projectFloor=(col,row,cols,rows)=>{calls.push([col,row,cols,rows]);return {x:.72+col*.012,y:.12+row*.015,depth:(col/cols+row/rows)/2};};
+    const people=createBestPeopleLayer({container,getState:()=>state,getFurnitureZones:()=>[],projectFloor,floorPolygon,requestFrame:()=>1,cancelFrame:()=>{}});
+    const person=container.children.find(node=>node.className==='best-people-layer').children[0];
+    assert.deepEqual(calls,[[6,4,14,8]]);assert.equal(person.style.left,'79.200%');assert.equal(person.style.top,'18.000%');
+    Object.assign(state.game.custs[0],at(7,4));people.update();
+    assert.deepEqual(calls.at(-1),[7,4,14,8]);assert.equal(person.style.left,'80.400%');assert.equal(person.style.top,'18.000%');assert.doesNotMatch(person.className,/is-repositioning/);
+    assert.equal(person.style.zIndex,'190');people.dispose();assert.equal(container.children.length,0);
   }finally{globalThis.document=originalDocument;}
 });

@@ -1,6 +1,6 @@
 # Mobiliario en el CLI del Xtanco
 
-Desde el menú avanzado (▤), «Inventario · Añadir / eliminar · CLI» abre el CLI y enumera los 43 modelos. En Better y Best, las piezas colocadas utilizan sus modelos Blender.
+Desde el menú avanzado (▤), «Inventario · Añadir / eliminar · CLI» abre el CLI y enumera los 43 modelos. En Better y Best, las piezas colocadas utilizan sus modelos Blender. Matrix comparte los mismos 43 modelos y comandos: Avenida Admira muestra cada pieza en una capa independiente, con cámara fija y sin cambiar de modo al añadir o retirar muebles.
 
 ```
 /inventario
@@ -10,6 +10,8 @@ Desde el menú avanzado (▤), «Inventario · Añadir / eliminar · CLI» abre 
 /inventario eliminar silla de madera
 /inventario deshacer
 ```
+
+En Matrix, pulsa un mueble para consultar su número y nombre. La vista usa recortes y renders transparentes en 2.5D; la cámara no orbita.
 
 El número siempre identifica el modelo, no la posición de una fila. Los nombres ignoran tildes, mayúsculas y signos; una coincidencia parcial única se acepta. Si «sofá» coincide con varios modelos, se muestran los números y nombres completos y no se modifica nada.
 

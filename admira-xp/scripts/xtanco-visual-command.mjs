@@ -40,13 +40,13 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
     }
   }
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Matrix shows Avenida Admira with a fixed backdrop and live visitors. /mudanza toggles an empty floor-and-walls view without changing the real layout. /mode, 8/16/32 and /mode status are also accepted.'
-    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Matrix muestra Avenida Admira con escenario fijo y visitantes en vivo. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. También se aceptan /modo, 8/16/32 y /modo estado.'};
+    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Matrix shows Avenida Admira in layers, with a fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models; use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. /mudanza toggles an empty floor-and-walls view without changing the real layout. /mode, 8/16/32 and /mode status are also accepted.'
+    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Matrix muestra Avenida Admira por capas, con cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos; usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. También se aceptan /modo, 8/16/32 y /modo estado.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
   if(command.status){
-    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit · live 3D store and people':'Best · 32-bit · tienda y personas en 3D en vivo',matrix:en?'Matrix · Avenida Admira · fixed backdrop and live visitors':'Matrix · Avenida Admira · escenario fijo y visitantes en vivo'}[mode];
+    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit · live 3D store and people':'Best · 32-bit · tienda y personas en 3D en vivo',matrix:en?'Matrix · Avenida Admira · fixed camera, editable furniture and live visitors':'Matrix · Avenida Admira · cámara fija, mobiliario editable y visitantes en vivo'}[mode];
     return {ok:!!label&&!router.error,local:true,mode,availability:router.availability,preview:mode==='best'||mode==='matrix',busy:!!router.busy,message:router.error|| (label
       ? (en?'Current local visual mode: ':'Modo visual local actual: ')+label+'.'
       : (en?'The local visual mode is not available.':'El modo visual local no está disponible.'))};
@@ -67,8 +67,8 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
       ? 'The Matrix preview is not available. Try again from Advanced (▤).'
       : 'La vista previa Matrix no está disponible. Reintenta desde Avanzado (▤).'};
     return {ok:true,local:true,mode,requested:'matrix',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Matrix · Avenida Admira: fixed backdrop and live visitors, synchronized with the same Xtanco. Type good, better or best in the Expert CLI to change view.'
-      : 'Matrix · Avenida Admira: escenario fijo y visitantes en vivo, sincronizados con el mismo Xtanco. Escribe good, better o best en el CLI experto para cambiar de vista.'};
+      ? 'Matrix · Avenida Admira: fixed camera, editable furniture and live visitors, synchronized with the same Xtanco. /inventario lists 43 shared models. Use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. Type good, better or best to change view.'
+      : 'Matrix · Avenida Admira: cámara fija, mobiliario editable y visitantes en vivo, sincronizados con el mismo Xtanco. /inventario enumera 43 modelos compartidos. Usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. Escribe good, better o best para cambiar de vista.'};
   }
   if(command.tier==='best'){
     if(router.availability!=='preview')return {ok:false,local:true,mode,requested:'best',message:en
