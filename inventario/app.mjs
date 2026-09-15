@@ -1,5 +1,5 @@
 import {preview} from './viewer.mjs?v=catalog-43';
-import {mountCounterStage} from './counter-stage.mjs';
+import {mountCounterStage} from './counter-stage.mjs?v=catalog-43';
 import {furnitureURL} from '../admira-xp/scripts/furniture-asset.mjs';
 let disposePilot,stageQueue=Promise.resolve();
 function inspectAsset(asset){
@@ -12,7 +12,7 @@ function inspectAsset(asset){
  });return stageQueue;
 }
 window.addEventListener('pagehide',()=>disposePilot?.());
-import {STOCK_URL,numberedCatalog,loadCatalog,instancesFor} from './model.mjs';
+import {STOCK_URL,numberedCatalog,loadCatalog,instancesFor} from './model.mjs?v=catalog-43';
 const $=s=>document.querySelector(s),store=window.XpaceInventory,tiers=['good','better','best'];
 let data,stock,registry,assets=[],category='Todas',selected=null,angle=0,space='xtanco',renderRevision=0;
 const cache=new Map();

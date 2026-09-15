@@ -30704,7 +30704,7 @@ window.xtAPI = (function(){
     const text=String(rawText||'').trim();
     if(/^\/?(?:inventario|eliminar)(?:@\w+)?(?:\s|$)/i.test(text)){
       try{
-        const {executeInventoryCommand}=await import('../inventario/command.mjs?v=2');
+        const {executeInventoryCommand}=await import('../inventario/command.mjs?v=catalog-43');
         const space=inventorySpace();
         const checkSpace=()=>{if(inventorySpace()!==space)throw Error('El Xpacio ha cambiado');};
         return await executeInventoryCommand(text,{

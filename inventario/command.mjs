@@ -1,4 +1,4 @@
-import {loadCatalog,instancesFor} from './model.mjs';
+import {loadCatalog,instancesFor} from './model.mjs?v=catalog-43';
 
 export function parseInventoryCommand(raw){
  const text=String(raw||'').trim();
