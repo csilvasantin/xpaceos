@@ -38,6 +38,7 @@ test('the overlay follows live actor positions, excludes outdoor traffic and dis
     const [layer,status]=container.children;
     assert.equal(people.count,2);assert.equal(layer.children.length,2);assert.match(status.textContent,/1 cliente simulado/);
     assert.equal(layer.children.some(node=>node.className.includes('passerby')),false);
+    assert.match(layer.children[0].innerHTML,/best-person-(?:male-rust|female-denim)-20260915\.png/);
     const customer=layer.children.find(node=>node.className.includes('kind-customer')),left=customer.style.left;
     Object.assign(state.game.custs[0],at(7,4));people.update();
     assert.notEqual(customer.style.left,left);assert.match(customer.className,/is-walking/);

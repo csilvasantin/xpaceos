@@ -1,5 +1,5 @@
 import {createLifeSnapshot} from './life-snapshot.mjs';
-import {createTierControls} from './visual-tier-controls.mjs?v=tiers-live-5';
+import {createTierControls} from './visual-tier-controls.mjs?v=tiers-live-6';
 
 // The expert Good/Better/Best selector owns launch, routing and preference.
 const listeners=new Set();

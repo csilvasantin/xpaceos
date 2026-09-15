@@ -91,7 +91,7 @@ test('a cancelled live command resolves even when the older opener never complet
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 function section(start,end){const from=html.indexOf(start),to=html.indexOf(end,from);assert.ok(from>=0&&to>from,`${start} source boundaries`);return html.slice(from,to);}
 const helperSource=section('  async function executeLocalVisualCommand(rawText){','  async function executeTelegramText(rawText){')
-  .replace("import('./scripts/xtanco-visual-command.mjs?v=tiers-live-5')",'loadVisualCommand()');
+  .replace("import('./scripts/xtanco-visual-command.mjs?v=tiers-live-6')",'loadVisualCommand()');
 const dispatcherSource=section('  async function executeTelegramText(rawText){','  // === Stream Deck (Corsair Galleon 100 SD) bridge');
 const composerSource=section('  async function sendComposerText(text){','  function bindDockButton(button,handler){');
 

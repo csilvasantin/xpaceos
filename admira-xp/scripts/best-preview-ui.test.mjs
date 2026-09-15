@@ -7,6 +7,7 @@ import {executeVisualCommand} from './xtanco-visual-command.mjs';
 
 const source=fs.readFileSync(new URL('./best-preview-ui.mjs',import.meta.url),'utf8');
 const controlSource=fs.readFileSync(new URL('./visual-tier-controls.mjs',import.meta.url),'utf8');
+const styleSource=fs.readFileSync(new URL('./best-preview.css',import.meta.url),'utf8');
 function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}){
   let document,releaseCount=0;
   const created=[],selected=[],liveLayers=[];
@@ -63,11 +64,13 @@ function harness({modalFailure=false,imageComplete=false,imageNaturalWidth=0}={}
 test('Best remains dormant until opened and creates a clean plate with a read-only people overlay, never GPU/media players',()=>{
   const h=harness();assert.deepEqual(h.created,[]);assert.equal(h.dialog,undefined);
   h.open({requestId:1});assert.deepEqual(h.created,['dialog','div']);assert.equal(h.dialog.open,true);assert.equal(h.releases,1);
-  assert.match(h.dialog.innerHTML,/PERSONAS EN VIVO · ESCENARIO CONCEPTUAL/);
+  assert.match(h.dialog.innerHTML,/PERSONAS EN VIVO · CARRER GRAN DE GRÀCIA/);
   assert.match(h.dialog.innerHTML,/los clientes superpuestos sí leen sus posiciones del Xtanco/);
-  assert.match(h.dialog.innerHTML,/<img[^>]+best-xtanco-cleanplate-20260915\.png/);
+  assert.match(h.dialog.innerHTML,/<img[^>]+best-xtanco-gran-de-gracia-cleanplate-20260915\.png/);
   assert.doesNotMatch(h.dialog.innerHTML,/<(?:canvas|video|audio|iframe)\b/i);
   assert.match(source,/createBestPeopleLayer/);assert.doesNotMatch(source,/createLifeRenderer|WebGL|setInterval|__xtExec/);
+  assert.match(styleSource,/\.best-person\{[^}]*width:10%;height:25\.5%/,'adult figures stay calibrated against the door and furniture');
+  assert.match(styleSource,/\.best-person-sprite\{[^}]*height:100%/,'photorealistic sprites fill the calibrated body height');
   h.dialog.querySelector('img').emit('load');assert.equal(h.liveLayers.length,1);
   assert.equal(h.liveLayers[0].options.container,h.dialog.querySelector('.best-live-scene'));
 });

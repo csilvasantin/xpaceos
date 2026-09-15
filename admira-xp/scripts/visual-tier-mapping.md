@@ -1,6 +1,6 @@
 # 01.- Un espacio, tres representaciones
 
-Release: v.15.09.2026.r3.11:55. Misión: DCL-439017bdcf3269d6b417599a.
+Release: v.15.09.2026.r4.12:07. Misión: DCL-439017bdcf3269d6b417599a.
 
 | Nivel visual | Entrada | Estado y correspondencia |
 | --- | --- | --- |
@@ -23,7 +23,7 @@ Cada entrada en Better vuelve a `mapped`. Girar, desplazar, acercar, Planta o De
 
 `../assets/best-xtanco-mapped-20260915.png` fue generada con la herramienta integrada de imagen usando una captura de Better en `mapped` como referencia geométrica y la propuesta aprobada como referencia de materiales. El prompt se conserva junto al PNG. Es una aproximación artística, no una reconstrucción3D ni un asset registrado por puntos. La propuesta original se conserva en `best-xtanco-concept-20260915.png`.
 
-La preview con personas usa `../assets/best-xtanco-cleanplate-20260915.png`, derivada de la imagen anterior eliminando únicamente sus personas fijas. `best-live-people.mjs` proyecta la cuadrícula canónica 14×8 de Good sobre cuatro anclas medidas en ese mismo suelo y no modifica la simulación.
+La preview con personas usa `../assets/best-xtanco-gran-de-gracia-cleanplate-20260915.png`, derivada de la imagen anterior eliminando sus personas fijas y recuperando la fachada de piedra y la placa «CARRER GRAN DE GRÀCIA» del concepto aprobado. `best-live-people.mjs` proyecta la cuadrícula canónica 14×8 de Good sobre cuatro anclas medidas en ese mismo suelo y no modifica la simulación. La escala CSS se calibra contra la altura visible de la puerta y el mobiliario, con corrección de profundidad para adultos y niños.
 
 Para un Best operativo, Blender/Unreal deberán consumir el mismo layout y los mismos IDs de entidades, junto al contrato de cámara; los assets deberán verificarse contra anclas y medidas. La capa actual sí sigue aproximadamente las posiciones de las personas, pero la imagen de fondo no cumple ese contrato de runtime ni permite afirmar sincronización exacta del escenario. Las30 áreas funcionales de Best siguen `planned` en `/mcp/funcionalidades.json`.
 

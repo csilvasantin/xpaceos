@@ -15,8 +15,18 @@ export function projectBestFloor(col,row,cols=DEFAULT_COLS,rows=DEFAULT_ROWS){
   return {x:blend(0),y:blend(1),depth:clamp((u+v)/2)};
 }
 
-function personMarkup(){
-  return '<i class="best-person-shadow"></i><span class="best-person-legs"><i></i><i></i></span><span class="best-person-torso"><i class="best-person-arm left"></i><i class="best-person-arm right"></i></span><span class="best-person-head"><i></i></span>';
+const PERSON_SPRITES=Object.freeze({
+  male:'assets/best-person-male-rust-20260915.png',
+  female:'assets/best-person-female-denim-20260915.png'
+});
+function spriteFor(actor){
+  if(actor.gender==='f')return PERSON_SPRITES.female;
+  if(actor.gender==='m')return PERSON_SPRITES.male;
+  const parity=String(actor.id||'').split('').reduce((sum,char)=>sum+char.charCodeAt(0),0)%2;
+  return parity?PERSON_SPRITES.female:PERSON_SPRITES.male;
+}
+function personMarkup(actor){
+  return `<i class="best-person-shadow"></i><img class="best-person-sprite" src="${spriteFor(actor)}" alt="">`;
 }
 
 export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame}={}){
@@ -37,7 +47,7 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
     const active=new Set(),actors=current.actors.filter(actor=>actor&&!actor.outside&&actor.col>=-.5&&actor.row>=-.5&&actor.col<=current.cols+.5&&actor.row<=current.rows+.5);
     for(const actor of actors){
       active.add(actor.id);let node=people.get(actor.id);
-      if(!node){node=document.createElement('span');node.className='best-person';node.innerHTML=personMarkup();layer.append(node);people.set(actor.id,node);}
+      if(!node){node=document.createElement('span');node.className='best-person';node.innerHTML=personMarkup(actor);layer.append(node);people.set(actor.id,node);}
       const point=projectBestFloor(actor.col,actor.row,current.cols,current.rows),scale=(actor.scale||1)*(.78+point.depth*.28);
       node.className=`best-person kind-${actor.kind}${actor.walking?' is-walking':''}${actor.isPlayer?' is-player':''}`;
       node.style.left=`${(point.x*100).toFixed(3)}%`;node.style.top=`${(point.y*100).toFixed(3)}%`;
