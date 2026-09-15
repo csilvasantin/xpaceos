@@ -1,5 +1,5 @@
 import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=inventari-1';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=inventari-1';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=inventario-2';
 import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=inventari-1';
 import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=inventari-1';
 

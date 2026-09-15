@@ -1,10 +1,10 @@
 {
-  "version": "v.15.09.2026.r9.16:35",
+  "version": "v.15.09.2026.r10.16:50",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Inventari: 18 modelos nativos y 25 sprites Pixeria, tres vistas interpretadas, relieves derivados, visibilidad reversible por instancia y Best editable PBR. Misión DCL-05d05f2d3c78975819d24430.",
+  "evidence": "Inventario: ruta corregida, 43 números permanentes, CLI local eliminar por número y deshacer persistente. Misión DCL-e60b74a2900b00147b614708.",
   "day": "15.09.2026",
-  "time": "16:35"
+  "time": "16:50"
 }

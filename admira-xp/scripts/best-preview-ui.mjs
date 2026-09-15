@@ -24,7 +24,7 @@ export function openBestView(options={}){
   function syncInventory(){
     if(dialog!==current||inventoryDispose)return;
     const requested=new URLSearchParams(location.search).get('inventory')==='1';
-    const hidden=Object.values(window.XpaceInventory?.read('xtanco')||{}).some(v=>v?.visible===false);
+    const hidden=Object.values(window.XpaceInventory?.read('xtanco')||{}).some(v=>v?.visible===false)||Object.keys(window.XpaceInventory?.removals?.('xtanco')?.removed||{}).length>0;
     if(!requested&&!hidden)return;
     people?.dispose();people=null;current.setAttribute('aria-label','Best · inventario editable PBR');
     inventoryDispose=mountInventoryBest(current.querySelector('.best-stage'),()=>{if(dialog===current){busy=false;announce();}});

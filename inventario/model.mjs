@@ -6,3 +6,18 @@ export function fromPixeria(item){
 }
 export function assetForInstance(item){return item.type==='custom'?'pixeria:'+(/\/stock\/asset\/([^/?]+)/.exec(item.img||'')?.[1]||item.id):'native:'+item.type;}
 export function instancesFor(asset,layout){return layout.filter(i=>assetForInstance(i)===asset.id);}
+// Numbers belong to asset identities, never to a filtered or sorted array index.
+export function numberedCatalog(native,items,registry){
+ const all=new Map(native.map(a=>[a.id,a]));
+ for(const item of items){const asset=fromPixeria(item);if(asset)all.set(asset.id,asset);}
+ return [...all.values()].filter(a=>Number.isSafeInteger(registry.numbers[a.id]))
+  .map(a=>({...a,number:registry.numbers[a.id]})).sort((a,b)=>a.number-b.number);
+}
+export async function loadCatalog(fetcher=fetch){
+ const files=['catalog.json','pixeria-cache.json','registry.json'];
+ const [data,stock,registry]=await Promise.all(files.map(async file=>{
+  const response=await fetcher(new URL(file,import.meta.url));
+  if(!response.ok)throw Error('No se pudo cargar el catálogo');return response.json();
+ }));
+ return {data,stock,registry,assets:numberedCatalog(data.native,stock.items,registry)};
+}
