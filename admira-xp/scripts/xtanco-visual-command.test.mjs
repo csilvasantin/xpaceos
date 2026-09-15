@@ -148,9 +148,9 @@ test('failure to load the local command remains a local error and cannot fall th
 test('visual feedback is labelled local while all existing bot and error labels remain unchanged',()=>{
   const source=section('  function showLastResponse(','  async function sendComposerText(text){');
   for(const lang of ['es','en']){
-    const children=[],element={classList:{remove(){},add(){}},appendChild:child=>children.push(child)};
+    const children=[],element={dataset:{},classList:{remove(){},add(){}},appendChild:child=>children.push(child)};
     Object.defineProperty(element,'innerHTML',{set(){children.length=0;}});
-    const context=vm.createContext({lang,quickActionsHidden:false,document:{getElementById:()=>element,createElement:()=>({})},clearTimeout(){},setTimeout(){return 1;}});
+    const context=vm.createContext({lang,window:{dispatchEvent(){}},Event:class{},quickActionsHidden:false,document:{getElementById:()=>element,createElement:()=>({})},clearTimeout(){},setTimeout(){return 1;}});
     vm.runInContext(source,context);
     for(const kind of ['ok','err']){
       context.showLastResponse('local result',kind,'local-visual');
@@ -158,6 +158,8 @@ test('visual feedback is labelled local while all existing bot and error labels 
     }
     context.showLastResponse('bot result','ok');assert.equal(children[0].textContent,'AdmiraXPBot →');
     context.showLastResponse('bot error','err');assert.equal(children[0].textContent,'ERROR');
+    context.showLastResponse('INVENTARIO · 43 piezas','ok','local-inventory');assert.equal(element.dataset.inventory,'list');assert.equal(children[0].textContent,'Inventario →');
+    context.showLastResponse('Añadido: 43','ok','local-inventory');assert.equal(element.dataset.inventory,'change');
   }
 });
 

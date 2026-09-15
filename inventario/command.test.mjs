@@ -72,13 +72,50 @@ test('real composer and __xtExec intercept inventory before network, bot, memory
   const forbidden=()=>{throw Error('Outbound operation must never be reached');};
   const context=vm.createContext({window:{XpaceInventory:h.options.store},inventorySpace:()=> 'xtanco',shopLayout:h.layout,composer:{value:''},
    loadInventoryCommand:async()=>{if(failure)throw Error('offline');return {executeInventoryCommand:(raw,opts)=>executeInventoryCommand(raw,{...opts,load:h.options.load})};},
-   getLayoutSlotKeys:()=>({current:'current',backup:'backup',schema:'schema'}),getLayoutStoragePrefix:()=> 'xtanco',LAYOUT_SCHEMA_VERSION:'1',walkGrid:[],localStorage:h.localStorage,buildWalkGrid(){},
+   ISO:{cols:20,rows:20},buildDynamicOccupancy:()=>new Set(),getLayoutSlotKeys:()=>({current:'current',backup:'backup',schema:'schema'}),getLayoutStoragePrefix:()=> 'xtanco',LAYOUT_SCHEMA_VERSION:'1',walkGrid:[],localStorage:h.localStorage,buildWalkGrid(){},
    hideHelpPanel(){},showLastResponse:(...v)=>responses.push(v),renderQuickActionButtons(){},
    rememberMemory:forbidden,appendTelegramLog:forbidden,telegramSend:forbidden,fetch:forbidden
   });
-  const helper=section('  async function executeLocalVisualCommand(rawText){','  async function executeTelegramText(rawText){').replace("import('../inventario/command.mjs?v=catalog-43')",'loadInventoryCommand()');
+  const helper=section('  async function executeLocalVisualCommand(rawText){','  async function executeTelegramText(rawText){').replace("import('../inventario/command.mjs?v=inventory-cli-3')",'loadInventoryCommand()');
   vm.runInContext(helper+section('  async function executeTelegramText(rawText){','  // === Stream Deck (Corsair Galleon 100 SD) bridge')+section('  async function sendComposerText(text){','  function bindDockButton(button,handler){')+'window.__xtExec=executeTelegramText;',context);
   await context.sendComposerText('/inventario');assert.equal(responses[0][2],'local-inventory');
   const answer=await context.window.__xtExec('eliminar el 1');assert.match(answer,failure?/No se pudo cargar/:/Retirado: 1\. Mostrador/);
+  const addition=await context.window.__xtExec('/inventario añadir silla de madera');assert.match(addition,failure?/No se pudo cargar/:/Añadido: 43\. Silla de madera/);
  }
+});
+
+test('add and remove accept numbers, full names, accents and unambiguous fragments',async()=>{
+ const h=harness();h.options.getRoom=()=>({cols:20,rows:20});
+ assert.deepEqual(parseInventoryCommand('/inventario añadir 43'),{action:'add',number:43});
+ assert.deepEqual(parseInventoryCommand('/inventario eliminar silla de madera'),{action:'remove',name:'silla de madera'});
+ const answer=await h.exec('/inventario añadir SILLA DE MADERA');assert.equal(answer.ok,true);assert.match(answer.message,/43\. Silla de madera/);
+ const item=h.layout.find(i=>i.label==='Silla de madera');assert.equal(item.img,assets[42].img);assert.deepEqual(item.fp,assets[42].fp);
+ assert.equal(h.options.store.retained('xtanco',[]).some(i=>i.id===item.id),true);
+ assert.equal((await h.exec('/inventario añadir 43')).ok,true);assert.equal(h.layout.filter(i=>i.label==='Silla de madera').length,2);
+ assert.equal((await h.exec('/inventario eliminar silla')).ok,true);assert.equal(h.layout.filter(i=>i.label==='Silla de madera').length,0);
+ assert.equal((await h.exec('/inventario añadir lampara')).ok,true);
+});
+test('ambiguous furniture names and full rooms never mutate state',async()=>{
+ const h=harness(),before=JSON.stringify(h.layout);h.options.getRoom=()=>({cols:1,rows:1,blocked:['0,0']});
+ const ambiguous=await h.exec('/inventario añadir sofa');assert.equal(ambiguous.ok,false);assert.match(ambiguous.message,/varias piezas/);
+ assert.equal((await h.exec('/inventario añadir 43')).ok,false);assert.equal(JSON.stringify(h.layout),before);assert.equal(h.values.size,0);
+});
+test('restore uses original identity, relocates if occupied, shows hidden pieces and undo reverses addition',async()=>{
+ const h=harness();h.options.getRoom=()=>({cols:20,rows:20});
+ const old=structuredClone(h.layout.find(i=>i.type==='counter'));h.options.store.setVisible('xtanco',old.id,false);
+ await h.exec('/inventario eliminar mostrador');h.layout.push({id:'occupier',type:'plant',col:old.col,row:old.row});
+ assert.equal((await h.exec('/inventario añadir 1')).ok,true);
+ const next=h.layout.find(i=>i.id===old.id);assert.notDeepEqual([next.col,next.row],[old.col,old.row]);assert.equal(h.options.store.visible('xtanco',old.id),true);
+ assert.equal((await h.exec('/inventario deshacer')).ok,true);assert.equal(h.layout.some(i=>i.id===old.id),false);assert.equal(h.options.store.visible('xtanco',old.id),false);
+});
+test('failed addition rolls back added ledger and visibility; per-space changes remain isolated',async()=>{
+ const h=harness();h.options.getRoom=()=>({cols:20,rows:20});h.options.applyLayout=()=>{throw Error('layout write failed');};
+ assert.equal((await h.exec('/inventario añadir 43')).ok,false);assert.equal(Object.keys(h.options.store.removals('xtanco').added||{}).length,0);assert.equal(Object.keys(h.options.store.read('xtanco')).length,0);assert.equal(h.options.store.retained('supermercado',[]).length,0);
+});
+test('cross-tab ledger merges additions, restorations and unrelated local moves',()=>{
+ const h=harness(),added={id:'new',type:'plant',col:2,row:2};
+ const first=h.options.store.applyDelta([{id:'old',type:'plant',col:9,row:9}],{removed:{}},{removed:{},added:{new:added}});
+ assert.equal(first.length,2);assert.equal(first[0].col,9);
+ first[1].col=7;const same=h.options.store.applyDelta(first,{removed:{},added:{new:{...added,col:2}}},{removed:{},added:{new:{...added,col:2}}});assert.equal(same[1].col,7);
+ const restored=h.options.store.applyDelta([],{removed:{new:{...added,col:2}}},{removed:{},added:{new:{...added,col:5}}});assert.equal(restored[0].col,5);
 });
