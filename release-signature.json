@@ -1,10 +1,10 @@
 {
-  "version": "v.15.09.2026.r14.18:05",
+  "version": "v.15.09.2026.r15.18:48",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "CLI de inventario: añadir/eliminar por número o nombre, huecos libres, persistencia, deshacer y acceso avanzado. 235 pruebas. Misión DCL-45730b4b77ac334c3c742acd.",
+  "evidence": "Visitantes humanos Best: cuatro perfiles Blender, rig y marcha por distancia, escena 3D directa y visor de personas. Misión DCL-4440a200095d09e6da0cc185.",
   "day": "15.09.2026",
-  "time": "18:05"
+  "time": "18:48"
 }

@@ -46,7 +46,7 @@ test('commands use the actual public router; Better opens once and Best opens a 
   answer=await executeVisualCommand('/modo good',f);assert.equal(answer.mode,'good');assert.match(answer.message,/Good.*8-bit/);
   answer=await executeVisualCommand('/modo best',f);assert.equal(answer.ok,true);assert.equal(answer.mode,'best');assert.equal(answer.requested,'best');
   assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');
-  assert.match(answer.message,/32-bit.*hiperrealista.*fusionado.*personas.*gemelo en vivo.*CLI experto/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
+  assert.match(answer.message,/32-bit.*tienda y personas en 3D en vivo.*mismo Xtanco.*CLI experto/);assert.equal(f.calls.open,1);assert.equal(f.calls.best,1);
 });
 
 test('/mudanza is a local reversible presentation toggle and never changes the tier router',async()=>{
@@ -70,7 +70,7 @@ test('help, invalid mode and current-mode queries do not open or close any view'
   await executeVisualCommand('/modo better',f);answer=await executeVisualCommand('/mode status',{...f,lang:'en'});
   assert.equal(answer.mode,'better');assert.match(answer.message,/Current.*Better.*16-bit/);assert.equal(f.calls.open,1);
   await executeVisualCommand('/modo best',f);answer=await executeVisualCommand('/mode status',{...f,lang:'en'});
-  assert.equal(answer.mode,'best');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/concept scene with live twin people/);
+  assert.equal(answer.mode,'best');assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');assert.match(answer.message,/live 3D store and people/);
 });
 
 test('missing or failed routing never reports a successful visual switch',async()=>{
@@ -105,7 +105,8 @@ test('a cancelled live command resolves even when the older opener never complet
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 function section(start,end){const from=html.indexOf(start),to=html.indexOf(end,from);assert.ok(from>=0&&to>from,`${start} source boundaries`);return html.slice(from,to);}
 const helperSource=section('  async function executeLocalVisualCommand(rawText){','  async function executeTelegramText(rawText){')
-  .replace("import('./scripts/xtanco-visual-command.mjs?v=inventari-1')",'loadVisualCommand()');
+  .replace(/import\('\.\/scripts\/xtanco-visual-command\.mjs(?:\?[^']*)?'\)/,'loadVisualCommand()');
+assert.ok(helperSource.includes('loadVisualCommand()'),'the test loader intercepts the shipped local visual module regardless of its cache version');
 const dispatcherSource=section('  async function executeTelegramText(rawText){','  // === Stream Deck (Corsair Galleon 100 SD) bridge');
 const composerSource=section('  async function sendComposerText(text){','  function bindDockButton(button,handler){');
 
@@ -165,7 +166,7 @@ test('visual feedback is labelled local while all existing bot and error labels 
 
 test('__xtExec runs the same visual command without remote output or command logging',async()=>{
   const h=consoleHarness();let answer=await h.exec('better');assert.match(answer,/Better.*16-bit/);assert.equal(h.router.mode,'better');
-  answer=await h.exec('best');assert.match(answer,/fusionado.*personas.*gemelo en vivo/);assert.equal(h.router.mode,'best');
+  answer=await h.exec('best');assert.match(answer,/tienda y personas en 3D en vivo.*mismo Xtanco/);assert.equal(h.router.mode,'best');
   answer=await h.exec('/modo desconocido');assert.match(answer,/Estilos visuales locales/);
   answer=await h.exec('/mudanza');assert.match(answer,/ACTIVADA/);assert.equal(h.moving,true);
   answer=await h.exec('/mudanza');assert.match(answer,/DESACTIVADA/);assert.equal(h.moving,false);

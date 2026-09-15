@@ -45,7 +45,7 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
   if(command.status){
-    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit / hyperrealistic · concept scene with live twin people':'Best · 32-bit / hiperrealista · escenario conceptual con personas del gemelo en vivo'}[mode];
+    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit · live 3D store and people':'Best · 32-bit · tienda y personas en 3D en vivo'}[mode];
     return {ok:!!label&&!router.error,local:true,mode,availability:router.availability,preview:mode==='best',busy:!!router.busy,message:router.error|| (label
       ? (en?'Current local visual mode: ':'Modo visual local actual: ')+label+'.'
       : (en?'The local visual mode is not available.':'El modo visual local no está disponible.'))};
@@ -66,8 +66,8 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
       ? 'The Best preview is not available. Interactive Best is still in preparation.'
       : 'La vista previa Best no está disponible. Best interactivo sigue en preparación.'};
     return {ok:true,local:true,mode,requested:'best',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Best · 32-bit / hyperrealistic: fused over the same Xtanco, with people moving from the live twin. Type good or better in the Expert CLI to change view.'
-      : 'Best · 32-bit / hiperrealista: fusionado sobre el mismo Xtanco, con personas que se mueven desde el gemelo en vivo. Escribe good o better en el CLI experto para cambiar de vista.'};
+      ? 'Best · 32-bit: live 3D store and people, synchronized with the same Xtanco. Type good or better in the Expert CLI to change view.'
+      : 'Best · 32-bit: tienda y personas en 3D en vivo, sincronizadas con el mismo Xtanco. Escribe good o better en el CLI experto para cambiar de vista.'};
   }
   return {ok:true,local:true,mode,availability:router.availability||'interactive',preview:false,busy:!!router.busy,message:mode==='good'
     ? (en?'Good · 8-bit: fused back to the classic twin; HUD and Expert CLI remain in place.':'Good · 8-bit: fusión de vuelta al gemelo clásico; el HUD y el CLI experto permanecen en su sitio.')

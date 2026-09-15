@@ -38,7 +38,7 @@ test('all control groups share explicit numbered labels and identify Best as a l
   assert.equal(group.attrs.role,'group');assert.equal(group.attrs['aria-label'],'Modo avanzado');
   assert.deepEqual(group.children.map(button=>button.dataset.visualMode),['good','better','best']);
   for(const [index,name]of ['Good','Better','Best'].entries())assert.match(group.children[index].textContent,new RegExp(`0${index+1}\\.- ${name}`));
-  const best=group.children[2];assert.match(best.textContent,/32 bits.*live preview/);assert.match(best.attrs.title,/escenario conceptual con personas del gemelo/);
+  const best=group.children[2];assert.match(best.textContent,/32 bits.*3D en vivo/);assert.match(best.attrs.title,/tienda y personas en 3D en vivo/);
   assert.notEqual(best.attrs['aria-disabled'],'true');assert.equal(group.attrs['aria-busy'],'false');
   assert.deepEqual(group.children.map(button=>button.attrs['aria-pressed']),['true','false','false']);
   assert.deepEqual(h.created,['div']);

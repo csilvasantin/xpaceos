@@ -1,5 +1,5 @@
 import * as T from './premium-three.mjs';
-import {createLifeScene} from './life-scene.mjs?v=catalog-43';
+import {createLifeScene} from './life-scene.mjs?v=best-people-1';
 import {mappedCameraFrame} from './life-camera.mjs';
 
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
@@ -9,7 +9,11 @@ export function createLifeRenderer({canvas,snapshot,getPlayer=()=>null,onSelect=
   renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
   renderer.setClearColor('#e7e8dc');renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   let model;
-  try{model=createLifeScene(snapshot,{loadFurniture:item=>import('./furniture-asset.mjs').then(m=>m.loadFurniture(item,assetQuality))});}catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
+  try{model=createLifeScene(snapshot,{
+    assetQuality,
+    loadFurniture:item=>import('./furniture-asset.mjs').then(m=>m.loadFurniture(item,assetQuality)),
+    loadPerson:assetQuality==='best'?actor=>import('./best-person-asset.mjs').then(m=>m.loadBestPerson(actor)):null
+  });}catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
   const camera=new T.OrthographicCamera(-15,15,10,-10,.1,200);
   const target=new T.Vector3(),raycaster=new T.Raycaster(),pointers=new Map();
   let width=1,height=1,lastMedia=-Infinity,disposed=false,gesture=null,selected=null;
@@ -93,8 +97,13 @@ export function createLifeRenderer({canvas,snapshot,getPlayer=()=>null,onSelect=
   function zoomBy(factor){desired.zoom=clamp(desired.zoom*factor,.7,3.2);changeMode('free');}
   function clearSelection(){selected=null;halo.visible=false;onSelect(null);}
   function setLighting(mode){model.setLighting(mode);renderer.setClearColor(mode==='night'?'#202d3d':mode==='sunset'?'#e9d9c4':'#e7e8dc');}
+  function peopleStatus(){
+    const result={ready:0,loading:0,fallback:0,total:0};
+    for(const actor of model.actors.children){const status=actor.userData.personAssetStatus;if(status&&Object.hasOwn(result,status)){result[status]++;result.total++;}}
+    return result;
+  }
   function dispose(){if(disposed)return;disposed=true;for(const [event,handler]of Object.entries(handlers))canvas.removeEventListener(event,handler);pointers.clear();haloGeometry.dispose();haloMaterial.dispose();halo.removeFromParent();model.dispose();renderer.dispose();renderer.forceContextLoss();}
   resize(canvas.clientWidth||1000,canvas.clientHeight||700);
   onCameraChange(cameraState());
-  return {resize,update,render,preset,rotate,zoomBy,setLighting,clearSelection,dispose,get blenderAssets(){return model.world.children.filter(o=>o.userData.assetStatus==='ready').length;},get blenderCounters(){return model.world.children.filter(o=>o.userData.type==='counter'&&o.userData.assetStatus==='ready').length;},get snapshot(){return model.snapshot;},get cameraState(){return cameraState();}};
+  return {resize,update,render,preset,rotate,zoomBy,setLighting,clearSelection,dispose,get bestPeopleCount(){return peopleStatus().ready;},get bestPeopleStatus(){return peopleStatus();},get blenderAssets(){return model.world.children.filter(o=>o.userData.assetStatus==='ready').length;},get blenderCounters(){return model.world.children.filter(o=>o.userData.type==='counter'&&o.userData.assetStatus==='ready').length;},get snapshot(){return model.snapshot;},get cameraState(){return cameraState();}};
 }

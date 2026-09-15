@@ -17,7 +17,7 @@ function normalizeLifeSnapshot(raw={}){
 
 // A presentation of Xtanco's live snapshot. This module owns neither a clock,
 // simulation, media player nor animation loop. All dimensions are grid units.
-export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createElement('canvas'),inventory=false,loadCounter=null,loadFurniture=null}={}){
+export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createElement('canvas'),inventory=false,loadCounter=null,loadFurniture=null,assetQuality='better',loadPerson=null}={}){
   let snapshot=normalizeLifeSnapshot(rawSnapshot),signature='',lighting='day',disposed=false,lastAnimationTime=null;
   const scene=new T.Scene(),world=new T.Group(),actors=new T.Group();
   world.name='life:world';actors.name='life:actors';scene.add(world,actors);
@@ -455,17 +455,39 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       for(const side of [-1,1])ellipsoid(body,side*.242,1.14,0,.097,.10,.10,palette.steel);
     }
     batch(head);
-    actorMap.set(actor.id,root);return root;
+    actorMap.set(actor.id,root);
+    if(assetQuality==='best'&&typeof loadPerson==='function'&&!actor.robot){
+      root.userData.personAssetStatus='loading';
+      // The async asset owns only its visual resources. The stable selectable
+      // actor root continues to follow the one live game snapshot and clock.
+      const isCurrent=()=>!disposed&&actorMap.get(actor.id)===root&&root.parent===actors;
+      Promise.resolve().then(()=>isCurrent()?loadPerson(actor):null).then(asset=>{
+        if(!asset){if(isCurrent())root.userData.personAssetStatus='fallback';return;}
+        if(!isCurrent()){asset.dispose?.();return;}
+        if(!asset.scene?.isObject3D||typeof asset.animate!=='function'||typeof asset.dispose!=='function'){
+          asset.dispose?.();root.userData.personAssetStatus='fallback';return;
+        }
+        const fallback=root.userData.body;
+        fallback.traverse(o=>{if(o.isInstancedMesh)o.dispose();});fallback.removeFromParent();release(root.userData.resources);
+        root.userData.body=null;root.userData.head=null;root.userData.legs=[];root.userData.arms=[];
+        root.add(asset.scene);root.userData.personAsset=asset;root.userData.personAssetStatus='ready';
+      }).catch(()=>{if(isCurrent())root.userData.personAssetStatus='fallback';});
+    }
+    return root;
+  }
+  function removeActor(root){
+    const asset=root.userData.personAsset;
+    if(asset){root.userData.personAsset=null;asset.scene.removeFromParent();asset.dispose();}
+    root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});release(root.userData.resources);root.removeFromParent();
   }
   function updateActors(){
     const ids=new Set(snapshot.actors.map(a=>a.id));
-    const remove=root=>{root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});release(root.userData.resources);root.removeFromParent();};
-    for(const [id,root]of actorMap)if(!ids.has(id)){remove(root);actorMap.delete(id);}
+    for(const [id,root]of actorMap)if(!ids.has(id)){removeActor(root);actorMap.delete(id);}
     for(const actor of snapshot.actors){
       let root=actorMap.get(actor.id);
-      const appearance=a=>JSON.stringify([a.color,a.skin,a.kind,a.hair,a.pants,a.shoes,a.gender,a.hat,a.hatColor,a.accessory,a.skirt,a.isDJ,a.bag,a.robot]);
+      const appearance=a=>JSON.stringify([a.color,a.skin,a.kind,a.hair,a.pants,a.shoes,a.gender,a.age,a.hat,a.hatColor,a.accessory,a.skirt,a.isDJ,a.bag,a.robot]);
       if(root&&appearance(root.userData.actor)!==appearance(actor)){
-        remove(root);actorMap.delete(actor.id);root=null;
+        removeActor(root);actorMap.delete(actor.id);root=null;
       }
       const fresh=!root;root=root||createActor(actor);
       const target=new T.Vector3(actor.col,0,actor.row);
@@ -527,6 +549,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
         const turn=Math.atan2(Math.sin(motion.targetHeading-motion.fromHeading),Math.cos(motion.targetHeading-motion.fromHeading));
         root.rotation.y=motion.fromHeading+turn*t;
       }
+      if(root.userData.personAsset){root.userData.personAsset.animate(time,actor,{position:root.position,heading:root.rotation.y});continue;}
       const walk=actor.walking?1:0;body.position.y=walk?Math.abs(Math.sin(phase))*.024:Math.sin(time*.0017+seed)*.006;
       body.rotation.z=walk?Math.sin(phase)*.016:0;head.rotation.y=walk?0:Math.sin(time*.0007+seed)*.075;
       legs.forEach((leg,i)=>{const stride=Math.sin(phase+i*Math.PI);leg.rotation.x=stride*.40*walk;leg.userData.knee.rotation.x=Math.max(0,-stride)*.48*walk;});
@@ -545,8 +568,8 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
   }
   function dispose(){
     if(disposed)return;disposed=true;
+    for(const root of actorMap.values())removeActor(root);
     scene.traverse(o=>{if(o.isInstancedMesh)o.dispose();});
-    for(const root of actorMap.values())release(root.userData.resources);
     release(worldResources);release(sharedResources);sun.shadow.dispose();scene.clear();actorMap.clear();fixtureLights.length=0;doors.length=0;
   }
   update(snapshot);refreshMedia(null);

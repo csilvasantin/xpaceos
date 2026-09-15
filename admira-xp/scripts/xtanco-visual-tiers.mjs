@@ -6,13 +6,13 @@ export function requestedTier(search='',storage){
 }
 
 /** Presentation router only: never imports a renderer or creates a GPU context.
- * Best is a live-people preview, not an interactive implementation of the 30 areas.
+ * Best is a live 3D presentation; the 30 operational areas retain their own status.
  * Openers receive {signal,requestId}; async view events echo that requestId.
  * Views must cancel pending work on abort/close and never reopen after abort.
  */
 export function createVisualTiers({openBetter,closeBetter,subscribeBetter,openBest,closeBest,subscribeBest,storage,onChange=()=>{},onBestRequested=()=>{}}){
   const views={better:{open:openBetter,close:closeBetter},best:{open:openBest,close:closeBest}};
-  const previewNotice='Best · escenario conceptual con personas del gemelo en vivo; interacción completa en preparación.';
+  const previewNotice='Best · tienda y personas en 3D en vivo; funciones operativas completas en preparación.';
   let mode='good',busy=false,notice='',error='',active=null,sequence=0,disposed=false;
   const snapshot=()=>({mode,busy,notice,error,availability:mode==='best'?'preview':'interactive',preview:mode==='best'});
   const publish=()=>{if(!disposed)onChange(snapshot());};

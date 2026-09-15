@@ -1,7 +1,7 @@
 import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=catalog-43';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=catalog-43';
-import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=inventari-1';
-import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=inventari-1';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=best-people-1';
+import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=best-people-1';
+import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=best-people-1';
 
 const actions=document.querySelector('#telegramDock .tg-actions');
 const advanced=document.querySelector('.quad-right');

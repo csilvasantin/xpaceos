@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLifeScene} from './life-scene.mjs';
+import {Group} from './premium-three.mjs';
 
 // Canvas drawing is procedural; these offline tests exercise ownership and
 // geometry contracts. Actual shading and composition are reviewed in WebGL.
@@ -76,4 +77,69 @@ test('Layout churn and actor appearance replacement release owned resources',()=
   const sharedGeometry=meshes(model)[0].geometry;let geometryDisposed=0;sharedGeometry.addEventListener('dispose',()=>geometryDisposed++);
   model.dispose();model.dispose();assert.equal(geometryDisposed,1);assert.equal(model.scene.children.length,0);
   assert.deepEqual(model.resources,{geometry:0,materials:0,textures:0});
+});
+
+const settled=()=>new Promise(resolve=>setImmediate(resolve));
+const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
+function personAsset(){
+  const calls=[];let disposed=0;
+  return {scene:new Group(),animate:(...args)=>calls.push(args),dispose:()=>{disposed++;},calls,get disposed(){return disposed;}};
+}
+
+test('Human assets are optional and requested only for non-robot Best actors',async()=>{
+  let loads=0;const loadPerson=()=>{loads++;return personAsset();};
+  const models=[
+    createLifeScene(input,{canvasFactory,loadPerson}),
+    createLifeScene(input,{canvasFactory,assetQuality:'better',loadPerson}),
+    createLifeScene({...input,actors:[{...input.actors[0],robot:true}]},{canvasFactory,assetQuality:'best',loadPerson})
+  ];
+  await settled();assert.equal(loads,0);
+  for(const model of models){assert.ok(model.actors.children[0].userData.body);model.animate(1000);model.dispose();}
+});
+
+test('Best async replacement retains actor selection and source interpolation, then disposes once',async()=>{
+  const pending=deferred(),asset=personAsset(),raw=structuredClone(input),original=JSON.stringify(raw);
+  const model=createLifeScene(raw,{canvasFactory,assetQuality:'best',loadPerson:()=>pending.promise});
+  const root=model.actors.children[0],body=root.userData.body;
+  assert.equal(root.userData.personAssetStatus,'loading');assert.equal(body.parent,root);
+  model.animate(1000);await settled();pending.resolve(asset);await settled();
+  assert.equal(model.actors.children[0],root);assert.equal(root.userData.actorId,'ana');assert.equal(root.userData.selectable,true);
+  assert.equal(root.userData.personAssetStatus,'ready');assert.equal(asset.scene.parent,root);assert.equal(body.parent,null);
+  assert.equal(root.userData.resources.size,0);assert.equal(root.userData.body,null);
+  model.update({...raw,actors:[{...raw.actors[0],col:2.6,row:3.4,heading:.8,walking:true}]});model.animate(1050);
+  assert.equal(model.actors.children[0],root);assert.ok(root.position.x>2&&root.position.x<2.6);
+  assert.ok(root.rotation.y>0&&root.rotation.y<.8);assert.equal(root.scale.x,.9);
+  assert.equal(asset.calls.length,1);assert.equal(asset.calls[0][0],1050);assert.equal(asset.calls[0][1],model.snapshot.actors[0]);
+  assert.equal(asset.calls[0][2].position,root.position);assert.equal(asset.calls[0][2].heading,root.rotation.y);
+  assert.equal(asset.calls[0][1].walking,true);assert.equal(model.snapshot.entries,17);assert.equal(JSON.stringify(raw),original);
+  model.update({...raw,actors:[]});assert.equal(asset.disposed,1);assert.equal(asset.scene.parent,null);
+  model.animate(1100);assert.equal(asset.calls.length,1);model.dispose();model.dispose();assert.equal(asset.disposed,1);
+  assert.deepEqual(model.resources,{geometry:0,materials:0,textures:0});
+});
+
+test('Appearance changes and scene disposal invalidate pending Best replacements',async()=>{
+  const requests=[],loadPerson=actor=>{const request={...deferred(),actor};requests.push(request);return request.promise;};
+  const model=createLifeScene(input,{canvasFactory,assetQuality:'best',loadPerson});await settled();
+  const firstRoot=model.actors.children[0],changed={...input,actors:[{...input.actors[0],age:'nino'}]};
+  model.update(changed);await settled();assert.equal(requests.length,2);
+  const stale=personAsset();requests[0].resolve(stale);await settled();
+  assert.equal(stale.disposed,1);assert.equal(stale.scene.parent,null);assert.equal(firstRoot.parent,null);
+  const activeRoot=model.actors.children[0],active=personAsset();requests[1].resolve(active);await settled();
+  assert.equal(active.scene.parent,activeRoot);assert.equal(active.disposed,0);
+  model.update({...input,actors:[{...input.actors[0],hair:'#112233'}]});await settled();
+  assert.equal(active.disposed,1);assert.equal(requests.length,3);
+  model.dispose();const late=personAsset();requests[2].resolve(late);await settled();
+  assert.equal(late.disposed,1);assert.equal(late.scene.parent,null);assert.equal(model.scene.children.length,0);
+  assert.deepEqual(model.resources,{geometry:0,materials:0,textures:0});
+});
+
+test('Failed or invalid Best loads leave the existing animated fallback and release bad assets',async()=>{
+  let invalidDisposed=0;
+  for(const loadPerson of [()=>Promise.reject(new Error('offline')),()=>{throw new Error('bad asset');},()=>({scene:new Group(),dispose(){invalidDisposed++;}})]){
+    const model=createLifeScene(input,{canvasFactory,assetQuality:'best',loadPerson}),root=model.actors.children[0],body=root.userData.body,resources=model.resources;
+    await settled();assert.equal(root.userData.personAssetStatus,'fallback');assert.equal(body.parent,root);assert.deepEqual(model.resources,resources);
+    model.update({...input,actors:[{...input.actors[0],walking:true}]});model.animate(1000);
+    assert.notEqual(root.userData.legs[0].rotation.x,0);model.dispose();
+  }
+  assert.equal(invalidDisposed,1);
 });
