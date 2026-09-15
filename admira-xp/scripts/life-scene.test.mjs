@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLifeScene} from './life-scene.mjs';
-import {Group} from './premium-three.mjs';
+import {Group,Box3} from './premium-three.mjs';
 import {VISITOR_PROFILES} from './visitor-profiles.mjs';
+import {buildCustomerNavigation} from './customer-navigation.mjs';
 
 // Canvas drawing is procedural; these offline tests exercise ownership and
 // geometry contracts. Actual shading and composition are reviewed in WebGL.
@@ -64,6 +65,33 @@ test('Pose interpolation follows snapshots without advancing source positions or
   model.animate(1100);assert.deepEqual(actor.position.toArray(),[2.6,0,3.4]);assert.equal(JSON.stringify(moved),source);
   model.update({...moved,actors:[{...moved.actors[0],col:9,row:7}]});assert.deepEqual(actor.position.toArray(),[9,0,7]);
   model.dispose();
+});
+
+test('customers in Better follow safe corners and stop their gait when an aisle is closed',()=>{
+  const raw={cols:12,rows:8,layout:[{id:'island',type:'counter',col:5,row:2,fp:[2,3]}],actors:[{...input.actors[0],id:'customer-safe',kind:'customer',col:3,row:3,scale:1}]};
+  const nav=buildCustomerNavigation(raw,{allowOutside:true}),model=createLifeScene(raw,{canvasFactory}),root=model.actors.children[0];
+  model.animate(0);model.update({...raw,actors:[{...raw.actors[0],col:9,walking:true}]});
+  let previous={col:root.position.x,row:root.position.z},detoured=false;
+  for(let time=16;time<9000;time+=16){
+    model.animate(time);const p={col:root.position.x,row:root.position.z};
+    assert.ok(nav.isWalkable(p));assert.ok(nav.segmentClear(previous,p));
+    detoured ||= p.row<1.8||p.row>5.2;previous=p;
+  }
+  assert.ok(detoured);assert.ok(Math.abs(root.position.x-9)<.01);
+  const legs=root.userData.legs.map(leg=>leg.rotation.x);model.animate(9500);
+  assert.deepEqual(root.userData.legs.map(leg=>leg.rotation.x),legs);assert.ok(legs.every(n=>n===0));
+  assert.equal(raw.actors[0].col,3);model.dispose();
+});
+
+test('Best receives the displayed movement state when a customer cannot reach a target',async()=>{
+  const raw={cols:8,rows:6,layout:[{id:'divider',type:'shelves',col:3,row:0,fp:[1,6]}],actors:[{...input.actors[0],id:'held',kind:'customer',col:1,row:2}]};
+  const asset=personAsset(),model=createLifeScene(raw,{canvasFactory,assetQuality:'best',loadPerson:()=>asset});
+  await settled();model.animate(0);
+  const target={...raw,actors:[{...raw.actors[0],col:6,walking:true}]};model.update(target);
+  for(let time=16;time<1000;time+=16)model.animate(time);
+  const root=model.actors.children[0];assert.equal(root.position.x,1);
+  assert.equal(asset.calls.at(-1)[1].walking,false);assert.equal(model.snapshot.actors[0].walking,true);
+  assert.equal(target.actors[0].col,6);model.dispose();
 });
 
 test('Layout churn and actor appearance replacement release owned resources',()=>{
@@ -190,4 +218,38 @@ test('Better interprets a missing visitor gender from the shared style without r
   assert.equal(model.snapshot.actors[0].gender,null);assert.equal(model.snapshot.actors[0].age,null);assert.equal(JSON.stringify(actor),unchanged);model.dispose();
   const malformed=createLifeScene({...input,actors:[{...actor,visitorStyle:{gender:{},age:'not-an-age'}}]},{canvasFactory});
   assert.equal(malformed.snapshot.actors[0].gender,null);malformed.dispose();
+});
+
+test('Better visitors bring their arms in beside furniture at every heading and walking phase',()=>{
+  const layout=[{id:'near-counter',type:'counter',col:3,row:2,fp:[1,2]}];
+  const overlap=b=>b.max.x>3+1e-6&&b.min.x<4-1e-6&&b.max.z>2+1e-6&&b.min.z<4-1e-6;
+  for(const profile of VISITOR_PROFILES){
+    for(const heading of [0,Math.PI/4,Math.PI/2,Math.PI*3/4,Math.PI,Math.PI*5/4,Math.PI*3/2,Math.PI*7/4]){
+      const actor={id:`arm-${profile.id}`,kind:'customer',col:2.75999,row:3,heading,walking:false,
+        color:'#334455',skin:'#c68642',visitorProfileId:profile.id,visitorStyle:profile.style};
+      const source={cols:8,rows:8,layout,actors:[actor]},unchanged=JSON.stringify(source);
+      const model=createLifeScene(source,{canvasFactory:()=>null}),root=model.actors.children[0];
+      const check=()=>{
+        root.updateWorldMatrix(true,true);
+        for(const arm of root.userData.arms)assert.equal(overlap(new Box3().setFromObject(arm)),false,`${profile.id}, heading ${heading}`);
+        assert.ok(Math.abs(root.position.x-2.75999)<1e-6,'arm posing must not move the customer through the shop');
+      };
+      check();model.animate(0);check();
+      const goal={...actor,row:3.85,walking:true};model.update({...source,actors:[goal]});
+      let walked=false;
+      for(let t=16;t<=1200;t+=16){model.animate(t);check();walked ||= root.userData.customerMotion.pose.walking;}
+      assert.ok(walked);assert.equal(JSON.stringify(source),unchanged);model.dispose();
+    }
+  }
+});
+
+test('removing the nearby furniture restores the original Better shoulder positions',()=>{
+  const actor={id:'a',kind:'customer',col:2.75999,row:3,heading:0,walking:false,color:'#334455',skin:'#c68642'};
+  const raw={cols:8,rows:8,layout:[{id:'counter',type:'counter',col:3,row:2}],actors:[actor]};
+  const model=createLifeScene(raw,{canvasFactory:()=>null}),root=model.actors.children[0];
+  model.animate(0);
+  assert.ok(root.userData.arms.some(arm=>!arm.position.equals(arm.userData.restPosition)));
+  model.update({...raw,layout:[]});model.animate(16);
+  for(const arm of root.userData.arms)assert.deepEqual(arm.position.toArray(),arm.userData.restPosition.toArray());
+  model.dispose();
 });

@@ -22,6 +22,33 @@ export const MATRIX_PHOTO_PIECES={
   turnKiosk:piece(18,[12,6],[1088,930],[.653,.877],[[[1071,681],[1132,696],[1121,788],[1127,889],[1140,908],[1140,921],[1091,939],[1033,910],[1042,895],[1047,801],[1058,769]]])
 };
 
+// Ground contacts measured on the unchanged 1600 × 1000 atlas. Visible plinth
+// corners, feet and pot bases define these supports; the occluded rear corner
+// of a rectangular plinth is inferred from its three visible corners. The
+// renderer centers and uniformly fits these supports inside the actual floor
+// footprint. It must not use the top of a cabinet, foliage or its image crop
+// as floor geometry. Wall-mounted photographs keep their original calibration.
+const GROUND_SUPPORTS={
+  counter:[[261,502],[325,531],[152,595],[88,566]],
+  shelves:[[616,352],[793,417],[750,443],[573,378]],
+  wineRack:[[828,413],[884,447],[834,465],[777,436]],
+  lottery:[[951,459],[1033,493],[1033,552],[969,552],[884,499]],
+  vending:[[1099,516],[1165,554],[1102,585],[1030,550]],
+  magazines:[[274,627],[416,699],[363,731],[211,659]],
+  manager:[[501,702],[586,741],[557,757],[496,777],[456,772],[414,749]],
+  plant1:[[509,354],[542,354],[545,366],[524,372],[507,365]],
+  plant3:[[58,518],[88,527],[77,542],[47,533]],
+  floorLamp:[[359,415],[390,428],[359,443],[329,429]],
+  metahuman:[[715,577],[796,608],[748,624],[667,593]],
+  djBooth:[[681,720],[831,782],[748,817],[598,755]],
+  turnKiosk:[[1090,884],[1135,909],[1094,934],[1034,910]]
+};
+for(const [id,ground] of Object.entries(GROUND_SUPPORTS))MATRIX_PHOTO_PIECES[id].ground=Object.freeze(ground.map(point=>Object.freeze(point)));
+// This photograph's long bay runs along the opposite isometric axis from the
+// native 1 × 2 shelving footprint. Mirror both photograph and measured supports;
+// an inventory mirror then composes with this correction rather than replacing it.
+MATRIX_PHOTO_PIECES.shelves.mirrorX=true;
+
 // Ceiling luminaires and printed wall art belong to the architectural backdrop,
 // rather than to an invented inventory instance. /mudanza hides these fixtures.
 export const MATRIX_ARCHITECTURE_DETAILS=[

@@ -1,5 +1,7 @@
 import * as T from './premium-three.mjs';
 import {FOOTPRINTS,normalizeSnapshot} from './premium-model.mjs';
+import {buildCustomerNavigation} from './customer-navigation.mjs?v=customer-motion-1';
+import {createCustomerMotion} from './customer-motion.mjs?v=customer-motion-1';
 
 // Keep the live game's appearance and selection metadata while reusing the
 // existing numeric boundary checks. The legacy normalizer alone drops these.
@@ -19,6 +21,7 @@ function normalizeLifeSnapshot(raw={}){
 // simulation, media player nor animation loop. All dimensions are grid units.
 export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createElement('canvas'),inventory=false,loadCounter=null,loadFurniture=null,assetQuality='better',loadPerson=null}={}){
   let snapshot=normalizeLifeSnapshot(rawSnapshot),signature='',lighting='day',disposed=false,lastAnimationTime=null;
+  let customerNavigation=buildCustomerNavigation(snapshot,{allowOutside:true});
   const scene=new T.Scene(),world=new T.Group(),actors=new T.Group();
   world.name='life:world';actors.name='life:actors';scene.add(world,actors);
   const geometry=new Set(),materials=new Set(),textures=new Set(),actorMap=new Map();
@@ -410,6 +413,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       const knee=group(hip,0,-.31,0);hip.userData.knee=knee;mesh(knee,capsuleGeometry,trousers,0,-.135,0,.113,.16,.12);
       box(knee,0,-.313,.054,.15,.095,.27,shoes);box(knee,0,-.356,.055,.151,.028,.268,palette.darkWood);
       const shoulder=group(body,side*.242,1.14,0);root.userData.arms.push(shoulder);shoulder.rotation.z=-side*.075;
+      shoulder.userData.restPosition=shoulder.position.clone();
       mesh(shoulder,capsuleGeometry,cloth,0,-.096,0,.142,.105,.155);
       const elbow=group(shoulder,0,-.204,0);shoulder.userData.elbow=elbow;mesh(elbow,capsuleGeometry,['jacket','knit'].includes(outfit)?cloth:skin,0,-.085,0,.095,.092,.105);
       ellipsoid(elbow,0,-.195,.008,.059,.075,.050,skin);
@@ -516,6 +520,39 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     if(asset){root.userData.personAsset=null;asset.scene.removeFromParent();asset.dispose();}
     root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});release(root.userData.resources);root.removeFromParent();
   }
+  const armBounds=new T.Box3(),armWorld=new T.Vector3(),armShifted=new T.Vector3();
+  function keepArmsClear(root){
+    const {actor,arms,body}=root.userData;
+    if(!body||actor.kind!=='customer'||!arms.length)return;
+    // A visitor gently brings the offending arm towards their body when a
+    // cabinet is close. Keep the original anatomy and free-space arm swing;
+    // only adjust the shoulder pose, never the customer's floor coordinates.
+    for(const arm of arms)arm.position.copy(arm.userData.restPosition);
+    const reach=.8*root.scale.x;
+    const furniture=customerNavigation.obstacles.filter(box=>root.position.x>=box.minCol-reach&&root.position.x<=box.maxCol+reach&&root.position.z>=box.minRow-reach&&root.position.z<=box.maxRow+reach);
+    if(!furniture.length)return;
+    root.updateWorldMatrix(true,true);
+    const margin=.018,limit=.25;
+    const intersects=(bounds,box,dx=0,dz=0)=>bounds.max.x+dx>box.minCol-margin&&bounds.min.x+dx<box.maxCol+margin&&bounds.max.z+dz>box.minRow-margin&&bounds.min.z+dz<box.maxRow+margin;
+    for(const arm of arms){
+      armBounds.setFromObject(arm);
+      const nearby=furniture.filter(box=>intersects(armBounds,box));
+      if(!nearby.length)continue;
+      const candidates=[];
+      for(const box of nearby){
+        const left=box.minCol-margin-armBounds.max.x,right=box.maxCol+margin-armBounds.min.x;
+        const back=box.minRow-margin-armBounds.max.z,front=box.maxRow+margin-armBounds.min.z;
+        candidates.push([left,0],[right,0],[0,back],[0,front],[left,back],[left,front],[right,back],[right,front]);
+      }
+      candidates.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));
+      const centerX=(armBounds.min.x+armBounds.max.x)/2-root.position.x,centerZ=(armBounds.min.z+armBounds.max.z)/2-root.position.z;
+      const distanceFromBody=Math.hypot(centerX,centerZ);
+      const shift=candidates.find(([dx,dz])=>Math.hypot(dx,dz)<=limit&&Math.hypot(centerX+dx,centerZ+dz)<=distanceFromBody+.015&&!furniture.some(box=>intersects(armBounds,box,dx,dz)));
+      if(!shift)continue;
+      arm.getWorldPosition(armWorld);armShifted.copy(armWorld);armShifted.x+=shift[0];armShifted.z+=shift[1];
+      body.worldToLocal(armShifted);arm.position.copy(armShifted);arm.updateWorldMatrix(false,true);
+    }
+  }
   function updateActors(){
     const ids=new Set(snapshot.actors.map(a=>a.id));
     for(const [id,root]of actorMap)if(!ids.has(id)){removeActor(root);actorMap.delete(id);}
@@ -527,15 +564,23 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       }
       const fresh=!root;root=root||createActor(actor);
       const target=new T.Vector3(actor.col,0,actor.row);
-      if(fresh||root.position.distanceTo(target)>3){
+      const customer=actor.kind==='customer'&&!actor.outside&&actor.col>=0&&actor.row>=0&&actor.row<=snapshot.rows&&actor.col<=snapshot.cols+1.5;
+      if(customer){
+        const track=root.userData.customerMotion ||= createCustomerMotion(actor,{navigation:customerNavigation,time:lastAnimationTime??0});
+        const pose=track.update(actor,{navigation:customerNavigation,time:lastAnimationTime??0});
+        root.visible=!!pose;root.userData.motion=null;
+        if(pose){root.position.set(pose.col,0,pose.row);root.rotation.y=pose.heading;}
+      }else if(fresh||root.position.distanceTo(target)>3){
+        root.userData.customerMotion=null;root.visible=true;
         root.position.copy(target);root.rotation.y=actor.heading;root.userData.motion=null;
       }else{
+        root.userData.customerMotion=null;root.visible=true;
         const previous=root.userData.motion;
         if(!previous||!previous.target.equals(target)||previous.targetHeading!==actor.heading){
           root.userData.motion={from:root.position.clone(),target,fromHeading:root.rotation.y,targetHeading:actor.heading,start:lastAnimationTime};
         }
       }
-      root.scale.setScalar(actor.scale);root.userData.actor=actor;
+      root.scale.setScalar(actor.scale);root.userData.actor=actor;keepArmsClear(root);
     }
   }
 
@@ -559,6 +604,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     // resize and editor zoom must never skew or rebuild genuine 3D furniture.
     const next=JSON.stringify([snapshot.cols,snapshot.rows,snapshot.wallHeight,snapshot.moving,snapshot.layout]);
     if(next!==signature){
+      customerNavigation=buildCustomerNavigation(snapshot,{allowOutside:true});
       release(worldResources);world.traverse(o=>{if(o.isInstancedMesh)o.dispose();});world.clear();fixtureLights.length=0;doors.length=0;
       if(!inventory)architecture();for(const item of snapshot.layout)furniture(item);signature=next;
       ground.visible=!inventory;ground.position.set(snapshot.cols/2,-.565,snapshot.rows/2);ground.scale.set(500,500,1);
@@ -574,7 +620,14 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     const time=Number.isFinite(timeMs)?timeMs:0;
     lastAnimationTime=time;
     for(const root of actorMap.values()){
-      const {actor,body,head,legs,arms,seed}=root.userData,phase=time*.0085+(seed%100)*.11;
+      const {actor,body,head,legs,arms,seed,customerMotion}=root.userData;
+      const customerPose=customerMotion?.advance(time);
+      if(customerMotion){
+        root.visible=!!customerPose;
+        if(!customerPose)continue;
+        root.position.set(customerPose.col,0,customerPose.row);root.rotation.y=customerPose.heading;
+      }
+      const phase=customerPose?customerPose.phase*Math.PI*2:time*.0085+(seed%100)*.11;
       // Smooth only the displayed pose between incoming snapshots. The source
       // positions, heading, clock, routes and counters are never advanced here.
       const motion=root.userData.motion;
@@ -585,11 +638,13 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
         const turn=Math.atan2(Math.sin(motion.targetHeading-motion.fromHeading),Math.cos(motion.targetHeading-motion.fromHeading));
         root.rotation.y=motion.fromHeading+turn*t;
       }
-      if(root.userData.personAsset){root.userData.personAsset.animate(time,actor,{position:root.position,heading:root.rotation.y});continue;}
-      const walk=actor.walking?1:0;body.position.y=walk?Math.abs(Math.sin(phase))*.024:Math.sin(time*.0017+seed)*.006;
+      const walking=customerPose?customerPose.walking:actor.walking;
+      if(root.userData.personAsset){root.userData.personAsset.animate(time,customerPose?{...actor,walking}:actor,{position:root.position,heading:root.rotation.y});continue;}
+      const walk=walking?1:0;body.position.y=walk?Math.abs(Math.sin(phase))*.018:Math.sin(time*.0017+seed)*.006;
       body.rotation.z=walk?Math.sin(phase)*.016:0;head.rotation.y=walk?0:Math.sin(time*.0007+seed)*.075;
       legs.forEach((leg,i)=>{const stride=Math.sin(phase+i*Math.PI);leg.rotation.x=stride*.40*walk;leg.userData.knee.rotation.x=Math.max(0,-stride)*.48*walk;});
       arms.forEach((arm,i)=>{arm.rotation.x=-Math.sin(phase+i*Math.PI)*.33*walk;arm.userData.elbow.rotation.x=-.13-Math.max(0,Math.sin(phase+i*Math.PI))*.14*walk;});
+      keepArmsClear(root);
     }
   }
   function refreshMedia(player){

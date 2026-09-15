@@ -1,4 +1,4 @@
-import {mountInventoryBest} from './inventory-best.mjs?v=visitors-24';
+import {mountInventoryBest} from './inventory-best.mjs?v=customer-motion-1';
 const listeners=new Set();
 let inventoryDispose;
 let dialog,lastFocus,requestId,removeAbort,busy=false,viewError='';

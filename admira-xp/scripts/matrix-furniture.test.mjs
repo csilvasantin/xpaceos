@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {mountMatrixFurniture,planMatrixFurniture,placementZone} from './matrix-furniture.mjs';
 import {MATRIX_ATLAS_URL,MATRIX_ATLAS_SIZE,MATRIX_PHOTO_PIECES} from './matrix-photo-pieces.mjs';
 import {isBestWalkable} from './best-live-people.mjs';
+import {buildCustomerNavigation} from './customer-navigation.mjs';
 import {projectMatrixFloor,MATRIX_FLOOR_POLYGON} from './matrix-floor.mjs';
 import {executeInventoryCommand} from '../../inventario/command.mjs';
 
@@ -60,8 +61,9 @@ test('the shared inventory identities retain distinct instances on the actual fl
   const added={...counter,id:'new-counter',col:8,row:5},input=scene([counter,added]),before=JSON.stringify(input);
   const [original,duplicate]=planMatrixFurniture(input,catalog);
   assert.deepEqual([original.id,duplicate.id],['counter','new-counter']);assert.deepEqual([original.number,duplicate.number],[1,1]);
-  assert.deepEqual(original.anchor,projectMatrixFloor(1,2));
-  assert.deepEqual(duplicate.anchor,projectMatrixFloor(8,5));
+  for(const [placement,col,row] of [[original,1.5,3],[duplicate,8.5,6]]){
+    const center=projectMatrixFloor(col,row);close(placement.anchor.x,center.x);close(placement.anchor.y,center.y);close(placement.anchor.depth,center.depth);
+  }
   const moved=planMatrixFurniture(scene([{...counter,col:2},added]),catalog);
   assert.deepEqual(moved[1],duplicate);assert.notDeepEqual(moved[0].anchor,original.anchor);
   assert.equal(JSON.stringify(input),before);
@@ -104,7 +106,67 @@ test('unsupported pieces stay explicitly unsupported while wall screens create n
   const [screen]=planMatrixFurniture(scene([{id:'screen',type:'tft',col:3,row:0,wallY:2}]),catalog);
   assert.equal(screen.wall,true);assert.equal(placementZone(screen),null);
   const [floor]=planMatrixFurniture(scene([chair()]),catalog),zone=placementZone(floor);
-  assert.equal(zone.length,4);assert.equal(isBestWalkable(floor.anchor,[zone],MATRIX_FLOOR_POLYGON),false);assert.equal(isBestWalkable(floor.anchor,[],MATRIX_FLOOR_POLYGON),true);
+  const center={x:zone.reduce((sum,p)=>sum+p[0],0)/4,y:zone.reduce((sum,p)=>sum+p[1],0)/4};
+  assert.equal(zone.length,4);assert.equal(isBestWalkable(center,[zone],MATRIX_FLOOR_POLYGON),false);assert.equal(isBestWalkable(center,[],MATRIX_FLOOR_POLYGON),true);
+});
+
+test('projected furniture footprints follow physical scale, rotation and mirror instead of sprite image size',()=>{
+  for(const rot of [0,1,2,3])for(const flipX of [false,true]){
+    const item={...chair(),col:7,row:4,rot,flipX,sx:1.4,sy:2,fp:[2,1]},input=scene([item]);
+    const [placement]=planMatrixFurniture(input,catalog),[box]=buildCustomerNavigation(input,{radius:0}).obstacles;
+    const expected=[[box.minCol,box.minRow],[box.maxCol,box.minRow],[box.maxCol,box.maxRow],[box.minCol,box.maxRow]]
+      .map(([col,row])=>{const p=projectMatrixFloor(col,row);return [p.x,p.y];});
+    assert.deepEqual(placementZone(placement),expected);
+    // Image cropping and vertical model height never widen a floor obstacle.
+    const [tall]=planMatrixFurniture(scene([{...item,ph:8}]),catalog);
+    assert.deepEqual(placementZone(tall),expected);
+  }
+  const rugs={items:[...catalog.items,{number:7,inventoryId:'native:rug',name:'Alfombra',views:views(7)}]};
+  const [rug]=planMatrixFurniture(scene([{id:'rug',type:'rug',col:4,row:4,fp:[2,2]}]),rugs);
+  assert.equal(placementZone(rug),null);
+});
+
+test('photographic ground contacts stay inside the real footprint after position, scale and mirror edits',()=>{
+  const actualCatalog=JSON.parse(fs.readFileSync(new URL('../assets/matrix-furniture/catalog/manifest.json',import.meta.url),'utf8'));
+  const inputPhotos=Object.entries(MATRIX_PHOTO_PIECES).filter(([,photo])=>!photo.wall);
+  let calibrated=0,fallback=0;
+  const inside=(zone,point)=>{
+    for(let i=0;i<zone.length;i++){
+      const a=zone[i],b=zone[(i+1)%zone.length];
+      assert.ok((b[0]-a[0])*(point[1]-a[1])-(b[1]-a[1])*(point[0]-a[0])>=-1e-10,'a photographed foot must stay within the physical floor polygon');
+    }
+  };
+  for(const [id,photo] of inputPhotos)for(const flipX of [false,true])for(const [sx,sy] of [[1,1],[.8,.8],[1.3,1.4]]){
+    const type=id.startsWith('plant')?'plant':id,item={id,type,col:6,row:3,flipX,sx,sy,rot:0};
+    const [placement]=planMatrixFurniture(scene([item]),actualCatalog),zone=placementZone(placement);
+    if(placement.kind==='sprite'){
+      assert.equal(placement.photoFallback,'orientation-fit');assert.equal(placement.view.rotation,0);assert.equal(placement.flip,flipX);fallback++;continue;
+    }
+    calibrated++;assert.equal(placement.groundSupports.length,photo.ground.length);
+    assert.ok(placement.groundScale/photo.scale>=.60,'keep photograph size or use the real 3D catalog view');
+    close(placement.width/(placement.box.width/MATRIX_ATLAS_SIZE[0]),placement.height/(placement.box.height/MATRIX_ATLAS_SIZE[1]));
+    for(let index=0;index<photo.ground.length;index++){
+      const source=photo.ground[index];
+      // Reconstruct what the SVG crop and final CSS transform actually display,
+      // independently of the helper's reported calibrated ground coordinates.
+      const localX=placement.left+placement.width*(source[0]-placement.box.x)/placement.box.width;
+      const localY=placement.top+placement.height*(source[1]-placement.box.y)/placement.box.height;
+      const displayed=[placement.anchor.x+(localX-placement.anchor.x)*sx*(placement.flip?-1:1),placement.anchor.y+(localY-placement.anchor.y)*sy];
+      inside(zone,displayed);close(displayed[0],placement.groundSupports[index][0]);close(displayed[1],placement.groundSupports[index][1]);
+    }
+    const rotated=planMatrixFurniture(scene([{...item,rot:1}]),actualCatalog)[0];
+    assert.equal(rotated.kind,'sprite');assert.equal(rotated.view.rotation,1);assert.equal(rotated.flip,flipX);
+  }
+  assert.ok(calibrated>40);assert.ok(fallback>0,'an incompatible mirrored perspective falls back without shrinking excessively');
+});
+
+test('shelving mirrors its photographic orientation declaratively and composes inventory mirroring',()=>{
+  const actualCatalog=JSON.parse(fs.readFileSync(new URL('../assets/matrix-furniture/catalog/manifest.json',import.meta.url),'utf8'));
+  for(const flipX of [false,true]){
+    const [placement]=planMatrixFurniture(scene([{id:'shelves',type:'shelves',col:6,row:3,flipX}]),actualCatalog);
+    if(!flipX){assert.equal(placement.kind,'photo');assert.equal(placement.flip,true);assert.ok(placement.groundScale/.94>.75);}
+    else{assert.equal(placement.kind,'sprite');assert.equal(placement.photoFallback,'orientation-fit');assert.equal(placement.flip,true);}
+  }
 });
 
 test('photo buttons clip the shared transparent atlas with isolated SVG IDs and preserve accessible inventory identification',async()=>{
@@ -119,6 +181,25 @@ test('photo buttons clip the shared transparent atlas with isolated SVG IDs and 
       assert.ok(node.querySelector('polygon').getAttribute('points').split(' ').length>=3);
     }
     h.buttons[1].click();assert.deepEqual(h.selections.at(-1),{id:'counter-copy',number:1,label:'Mostrador'});
+  }finally{h.cleanup();}
+});
+
+test('solid furniture occludes visitors behind its front edge while wall depth is unchanged',async()=>{
+  const layout=[counter,chair(),{id:'led',type:'led',col:2,row:0}],h=harness(state(layout));
+  try{
+    await flush();h.loaded();
+    const plan=planMatrixFurniture({cols:14,rows:8,layout},catalog);
+    for(const placement of plan){
+      const node=h.buttons.find(node=>node.dataset.instanceId===placement.id);
+      const depth=placement.wall?placement.anchor.y:Math.max(...placementZone(placement).map(point=>point[1]));
+      assert.equal(Number(node.getAttribute('data-furniture-depth-y')),depth);
+      assert.equal(node.style.zIndex,String(10+Math.round(depth*1000)));
+      if(!placement.wall){
+        assert.deepEqual(JSON.parse(node.getAttribute('data-furniture-floor-zone')),placementZone(placement));
+        const visitorBehind=10+Math.round((depth-.002)*1000),visitorAhead=10+Math.round((depth+.002)*1000);
+        assert.ok(visitorBehind<Number(node.style.zIndex));assert.ok(visitorAhead>Number(node.style.zIndex));
+      }
+    }
   }finally{h.cleanup();}
 });
 

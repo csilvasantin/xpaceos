@@ -1,6 +1,6 @@
-import {createBestPeopleLayer} from './best-live-people.mjs?v=visitors-24';
-import {mountMatrixFurniture} from './matrix-furniture.mjs?v=visitors-24';
-import {projectMatrixFloor,MATRIX_FLOOR_POLYGON} from './matrix-floor.mjs?v=matrix-furniture-1';
+import {createBestPeopleLayer} from './best-live-people.mjs?v=customer-motion-1';
+import {mountMatrixFurniture} from './matrix-furniture.mjs?v=customer-motion-1';
+import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';
 
 // Matrix keeps the Avenida Admira room as its backdrop. Furniture and visitors
 // are separate, depth-sorted layers driven by the shared Xtanco inventory.
@@ -63,7 +63,7 @@ export function openMatrixView(options={}){
         }
       });
     }catch{showError('No se pudo cargar el mobiliario de Matrix. Puedes cambiar de vista desde el menú avanzado o el CLI.');return;}
-    try{people=createBestPeopleLayer({container,getFurnitureZones:()=>furniture?.zones||[],projectFloor:projectMatrixFloor,floorPolygon:MATRIX_FLOOR_POLYGON});}
+    try{people=createBestPeopleLayer({container,projectFloor:projectMatrixFloor});}
     catch{showError('No se pudieron cargar los visitantes de Matrix. Puedes cambiar de vista desde el menú avanzado o el CLI.');return;}
     finish();
   };

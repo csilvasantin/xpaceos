@@ -1,7 +1,8 @@
 import {createLifeSnapshot} from './life-snapshot.mjs?v=visitors-24';
+import {buildCustomerNavigation} from './customer-navigation.mjs?v=customer-motion-1';
 import {assetForInstance} from '../../inventario/model.mjs?v=catalog-43';
 import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';
-import {MATRIX_ATLAS_URL,MATRIX_ATLAS_SIZE,MATRIX_ARCHITECTURE_DETAILS,photoPieceFor} from './matrix-photo-pieces.mjs?v=matrix-furniture-1';
+import {MATRIX_ATLAS_URL,MATRIX_ATLAS_SIZE,MATRIX_ARCHITECTURE_DETAILS,photoPieceFor} from './matrix-photo-pieces.mjs?v=customer-motion-1';
 
 const MANIFEST_URL=new URL('../assets/matrix-furniture/catalog/manifest.json',import.meta.url);
 const SVG='http://www.w3.org/2000/svg';
@@ -40,26 +41,60 @@ function anchorFor(item,photo,scene){
   return {x:actual.x+photo.target[0]-original.x,y:actual.y+photo.target[1]-original.y,depth:actual.depth};
 }
 
+function calibratePhotoGround(photo,placement){
+  const zone=placement.floorZone,supports=photo.ground;
+  if(placement.wall||!zone||!Array.isArray(supports)||supports.length<3)return null;
+  const center={x:zone.reduce((sum,p)=>sum+p[0],0)/zone.length,y:zone.reduce((sum,p)=>sum+p[1],0)/zone.length,depth:placement.floorCenter?.depth??placement.anchor.depth};
+  const source=[supports.reduce((sum,p)=>sum+p[0],0)/supports.length,supports.reduce((sum,p)=>sum+p[1],0)/supports.length];
+  const offsets=supports.map(p=>[(p[0]-source[0])/AW*placement.sx*(placement.flip?-1:1),(p[1]-source[1])/AH*placement.sy]);
+  let factor=photo.scale;
+  // The four projected corners form a convex floor polygon. Every support
+  // remains inside every edge half-plane after the final CSS scale/mirror.
+  const area=zone.reduce((sum,p,i)=>sum+p[0]*zone[(i+1)%zone.length][1]-zone[(i+1)%zone.length][0]*p[1],0),sign=Math.sign(area)||1;
+  for(let i=0;i<zone.length;i++){
+    const a=zone[i],b=zone[(i+1)%zone.length],dx=b[0]-a[0],dy=b[1]-a[1];
+    const room=sign*(dx*(center.y-a[1])-dy*(center.x-a[0]));
+    for(const offset of offsets){const change=sign*(dx*offset[1]-dy*offset[0]);if(change<0)factor=Math.min(factor,room/-change);}
+  }
+  factor=Math.max(0,factor*.995);
+  return {anchor:center,source,factor,supports:offsets.map(p=>[center.x+p[0]*factor,center.y+p[1]*factor])};
+}
+
 /** Pure, read-only presentation plan. IDs stay instance IDs, not array indices. */
 export function planMatrixFurniture(scene,catalog){
   if(!scene)return [];
   const byIdentity=new Map(catalog.items.map(p=>[p.inventoryId,p]));
+  const footprints=new Map(buildCustomerNavigation(scene,{radius:0}).obstacles.map(obstacle=>[obstacle.id,obstacle]));
   const placements=[];
   for(const item of scene.layout||[]){
     if(!item||!Number.isFinite(item.col)||!Number.isFinite(item.row))continue;
     const record=byIdentity.get(assetForInstance(item));
     if(!record){placements.push({id:item.id,number:null,label:item.label||item.type,unsupported:true});continue;}
-    const rot=rotation(item),photo=rot===0?photoPieceFor(item,record.number):null;
+    const rot=rotation(item);let photo=rot===0?photoPieceFor(item,record.number):null;
     const anchor=anchorFor(item,photo,scene),s=scale(item);
     const common={id:String(item.id),number:record.number,label:item.label||record.name||`Mueble ${record.number}`,anchor,
-      flip:!!item.flipX,sx:s.x,sy:s.y,wall:!!photo?.wall||['led','tft','aroma'].includes(item.type),item};
+      flip:!!item.flipX!==!!photo?.mirrorX,sx:s.x,sy:s.y,wall:!!photo?.wall||['led','tft','aroma'].includes(item.type),item};
+    const footprint=footprints.get(String(item.id));
+    common.floorZone=footprint?[[footprint.minCol,footprint.minRow],[footprint.maxCol,footprint.minRow],
+      [footprint.maxCol,footprint.maxRow],[footprint.minCol,footprint.maxRow]].map(([col,row])=>{
+        const point=projectMatrixFloor(col,row,scene.cols,scene.rows);return [point.x,point.y];
+      }):null;
+    common.floorCenter=footprint?projectMatrixFloor((footprint.minCol+footprint.maxCol)/2,(footprint.minRow+footprint.maxRow)/2,scene.cols,scene.rows):null;
+    common.depthY=!common.wall&&common.floorZone?Math.max(...common.floorZone.map(point=>point[1])):anchor.y;
+    let calibration=photo?calibratePhotoGround(photo,common):null;
+    if(calibration&&calibration.factor/photo.scale<.60){
+      // A photograph taken from an incompatible orientation must not become a
+      // miniature just to fit. The catalog already has the correct Blender view.
+      common.photoFallback='orientation-fit';common.flip=!!item.flipX;photo=null;calibration=null;
+    }
     if(photo){
-      const box=bounds(photo.polygons),factor=photo.scale;
-      placements.push({...common,kind:'photo',photo,box,
-        left:anchor.x-(photo.anchor[0]-box.x)/AW*factor,
-        top:anchor.y-(photo.anchor[1]-box.y)/AH*factor,
+      const box=bounds(photo.polygons);
+      const factor=calibration?.factor??photo.scale,source=calibration?.source??photo.anchor,groundAnchor=calibration?.anchor??anchor;
+      placements.push({...common,anchor:groundAnchor,kind:'photo',photo,box,groundSupports:calibration?.supports||null,groundScale:factor,
+        left:groundAnchor.x-(source[0]-box.x)/AW*factor,
+        top:groundAnchor.y-(source[1]-box.y)/AH*factor,
         width:box.width/AW*factor,height:box.height/AH*factor,
-        origin:[(photo.anchor[0]-box.x)/box.width,(photo.anchor[1]-box.y)/box.height]});
+        origin:[(source[0]-box.x)/box.width,(source[1]-box.y)/box.height]});
     }else{
       const view=record.views.find(v=>v.rotation===rot);
       if(!view){placements.push({...common,unsupported:true});continue;}
@@ -83,8 +118,9 @@ export function planMatrixFurniture(scene,catalog){
 
 export function placementZone(p){
   if(p.unsupported||p.wall)return null;
-  const x=p.anchor.x,y=p.anchor.y,w=Math.max(.015,p.width*.60*p.sx),h=Math.max(.012,Math.min(.06,p.height*.12*p.sy));
-  return [[x-w*.5,y-h],[x+w*.5,y-h*.5],[x+w*.4,y+h*.2],[x-w*.4,y+h*.2]];
+  // The projected inventory footprint owns collisions; sprite pixel dimensions
+  // describe a camera view, not the area occupied on the shop floor.
+  return p.floorZone||null;
 }
 function photoContent(photo,box,prefix){
   const svg=document.createElementNS(SVG,'svg');svg.setAttribute('viewBox',`${box.x} ${box.y} ${box.width} ${box.height}`);svg.setAttribute('aria-hidden','true');
@@ -94,8 +130,13 @@ function photoContent(photo,box,prefix){
   const image=document.createElementNS(SVG,'image');image.setAttribute('href',MATRIX_ATLAS_URL);image.setAttribute('width',AW);image.setAttribute('height',AH);image.setAttribute('preserveAspectRatio','none');image.setAttribute('clip-path',`url(#${prefix})`);svg.append(image);return svg;
 }
 function applyPlacement(node,p){
+  // A cabinet must cover people whose feet are behind its front ground edge.
+  // Its rear origin or photograph center would incorrectly draw them on top.
+  const depthY=p.wall?p.anchor.y:finite(p.depthY,p.anchor.y);
   Object.assign(node.style,{left:`${p.left*100}%`,top:`${p.top*100}%`,width:`${p.width*100}%`,height:`${p.height*100}%`,
-    transformOrigin:`${p.origin[0]*100}% ${p.origin[1]*100}%`,transform:`scale(${p.sx*(p.flip?-1:1)},${p.sy})`,zIndex:String(10+Math.round(p.anchor.y*1000))});
+    transformOrigin:`${p.origin[0]*100}% ${p.origin[1]*100}%`,transform:`scale(${p.sx*(p.flip?-1:1)},${p.sy})`,zIndex:String(10+Math.round(depthY*1000))});
+  node.setAttribute('data-furniture-depth-y',String(depthY));
+  if(p.floorZone)node.setAttribute('data-furniture-floor-zone',JSON.stringify(p.floorZone));
 }
 
 export function mountMatrixFurniture(container,{getState=()=>window.__xtancoVisualState?.(),requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame,onReady=()=>{},onSelect=()=>{},load=loadAssets}={}){

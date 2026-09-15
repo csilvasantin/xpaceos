@@ -4,12 +4,14 @@ import {readFileSync} from 'node:fs';
 import {BEST_HARDNESS_ZONES,isBestWalkable,projectBestFloor,resolveBestHardness,segmentCrossesBestHardness} from './best-live-people.mjs';
 import {createLifeSnapshot} from './life-snapshot.mjs';
 import {visitorProfileById} from './visitor-profiles.mjs';
+import {buildCustomerNavigation} from './customer-navigation.mjs';
+import {createCustomerMotion} from './customer-motion.mjs';
 
 // Isolate rendering from profile assignment: the original collision cases still
 // exercise the legacy fallback, while atlas cases supply a canonical snapshot.
 const source=readFileSync(new URL('./best-live-people.mjs',import.meta.url),'utf8');
-function layerFactory(snapshotFactory=createLifeSnapshot,profileLookup=()=>null){
-  return new Function('createLifeSnapshot','visitorProfileById',source.replace(/^import .*;\n/gm,'').replace(/\bexport /g,'')+'\nreturn createBestPeopleLayer;')(snapshotFactory,profileLookup);
+function layerFactory(snapshotFactory=createLifeSnapshot,profileLookup=()=>null,navigationFactory=buildCustomerNavigation,motionFactory=createCustomerMotion){
+  return new Function('createLifeSnapshot','visitorProfileById','buildCustomerNavigation','createCustomerMotion',source.replace(/^import .*;\n/gm,'').replace(/\bexport /g,'')+'\nreturn createBestPeopleLayer;')(snapshotFactory,profileLookup,navigationFactory,motionFactory);
 }
 const createBestPeopleLayer=layerFactory();
 const imagesUnder=node=>node.tag==='img'?[node]:(node.children||[]).flatMap(imagesUnder);
@@ -79,14 +81,14 @@ test('the overlay follows live actor positions, excludes outdoor traffic and dis
   globalThis.document={hidden:false,createElement:tag=>new Element(tag)};
   try{
     const state=fixture(),container=new Element('scene');
-    const people=createBestPeopleLayer({container,getState:()=>state,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:id=>cancelled.push(id)});
+    const people=createBestPeopleLayer({container,getState:()=>state,now:()=>0,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:id=>cancelled.push(id)});
     const layer=container.children.find(node=>node.className==='best-people-layer'),status=container.children.find(node=>node.className==='best-people-status');
     assert.equal(people.count,1);assert.equal(layer.children.length,1);assert.match(status.textContent,/1 cliente simulado/);
     assert.match(status.textContent,/colisiones activas/);assert.equal(container.children.filter(node=>node.className==='best-depth-occluder').length,0);
     assert.equal(layer.children.some(node=>node.className.includes('passerby')),false);
     assert.match(imagesUnder(layer.children[0])[0].src,/best-person-(?:male-rust|female-denim)-20260915\.png/);
     const customer=layer.children.find(node=>node.className.includes('kind-customer')),left=customer.style.left;
-    Object.assign(state.game.custs[0],at(7,4));people.update();
+    Object.assign(state.game.custs[0],at(7,4));people.update(100);frames.at(-1)(200);
     assert.notEqual(customer.style.left,left);assert.match(customer.className,/is-walking/);
     people.dispose();people.dispose();assert.equal(container.children.length,0);assert.equal(cancelled.length,1);
   }finally{globalThis.document=originalDocument;}
@@ -101,64 +103,38 @@ test('children use real child cutouts and deterministic age variation instead of
   }
   globalThis.document={hidden:false,createElement:tag=>new Element(tag)};
   try{
-    const state=fixture();Object.assign(state.game.custs[0].look,{age:'nino',gender:'f'});state.hardness={cols:14,rows:8,blocked:['6,4']};
-    const container=new Element('scene'),people=createBestPeopleLayer({container,getState:()=>state,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:()=>{}});
+    const state=fixture();Object.assign(state.game.custs[0].look,{age:'nino',gender:'f'});state.layout=[{id:'obstacle',type:'custom',col:5.5,row:3.5,fp:[1,1]}];
+    const container=new Element('scene'),people=createBestPeopleLayer({container,getState:()=>state,now:()=>0,requestFrame:callback=>(frames.push(callback),frames.length),cancelFrame:()=>{}});
     const child=container.children.find(node=>node.className==='best-people-layer').children[0];
     assert.match(child.className,/is-child/);assert.match(imagesUnder(child)[0].src,/best-person-child-ochre-20260915\.png/);
-    assert.ok(Number(child.style.values['--person-scale'])<.8);assert.equal(isBestWalkable({x:parseFloat(child.style.left)/100,y:parseFloat(child.style.top)/100}),true);
+    assert.ok(Number(child.style.values['--person-scale'])<.8);assert.ok(child.hidden===false);
     people.dispose();
   }finally{globalThis.document=originalDocument;}
 });
 
-test('editable Matrix reads current furniture per update, preserves source state and releases every frame and node',()=>{
+test('Matrix uses actual inventory geometry even while furniture images are unavailable and clears actors on mudanza',()=>{
   const originalDocument=globalThis.document,frames=new Map(),cancelled=[];let nextFrame=0;
   class Element{
-    constructor(){this.children=[];this.parent=null;this.style={setProperty(){}};}
-    setAttribute(){} append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
+    constructor(){this.children=[];this.parent=null;this.attrs={};this.style={setProperty(){}};}
+    setAttribute(k,v){this.attrs[k]=v;} append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
     remove(){if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1);this.parent=null;}
   }
   globalThis.document={hidden:false,createElement:()=>new Element()};
   try{
-    const state=fixture(),before=JSON.stringify(state),container=new Element(),point=projectBestFloor(6,4);
-    const zone=Object.freeze([[point.x-.035,point.y-.035],[point.x+.035,point.y-.035],[point.x+.035,point.y+.035],[point.x-.035,point.y+.035]].map(Object.freeze));
-    let zones=Object.freeze([zone]),calls=0;
-    const people=createBestPeopleLayer({container,getState:()=>state,getFurnitureZones:scene=>{
-      calls++;assert.equal(scene.source,'xtanco-running-game');assert.notEqual(scene,state);return zones;
-    },requestFrame:callback=>{frames.set(++nextFrame,callback);return nextFrame;},cancelFrame:id=>{cancelled.push(id);frames.delete(id);}});
+    const state=fixture(),container=new Element();state.layout=[{id:'solid',type:'custom',col:5.5,row:3.5,fp:[1,1]}];
+    const before=JSON.stringify(state),navigation=buildCustomerNavigation({...state,cols:14,rows:8});
+    const people=createBestPeopleLayer({container,getState:()=>state,now:()=>0,
+      requestFrame:callback=>{frames.set(++nextFrame,callback);return nextFrame;},cancelFrame:id=>{cancelled.push(id);frames.delete(id);}});
     const layer=container.children.find(node=>node.className==='best-people-layer'),person=layer.children[0];
-    const coordinate=()=>({x:parseFloat(person.style.left)/100,y:parseFloat(person.style.top)/100});
-    assert.equal(calls,1);assert.equal(people.count,1);assert.ok(Math.hypot(coordinate().x-point.x,coordinate().y-point.y)>.03);
-    zones=[];people.update();
-    assert.equal(calls,2);assert.equal(layer.children[0],person);
-    assert.ok(Math.abs(coordinate().x-point.x)<.00001);assert.ok(Math.abs(coordinate().y-point.y)<.00001);
-    assert.doesNotMatch(person.className,/is-repositioning/);
-    assert.equal(person.style.zIndex,String(10+Math.round(point.y*1000)));
+    const coordinate=()=>({col:Number(person.attrs['data-visitor-col']),row:Number(person.attrs['data-visitor-row'])});
+    assert.equal(people.count,1);assert.equal(navigation.isWalkable(coordinate()),true);
     assert.equal(JSON.stringify(state),before);
-    // /mudanza already clears actors in the shared read-only snapshot.
-    state.moving=true;people.update();assert.equal(people.count,0);assert.equal(layer.children.length,0);
+    state.layout=[];people.update(100);for(let t=116;t<1500;t+=16)frames.get(nextFrame)(t);
+    assert.ok(Math.hypot(coordinate().col-6,coordinate().row-4)<.01);
+    assert.doesNotMatch(person.className,/is-repositioning/);
+    state.moving=true;people.update(1500);assert.equal(people.count,0);assert.equal(layer.children.length,0);
     people.dispose();people.dispose();people.update();
-    assert.equal(container.children.length,0);assert.equal(frames.size,0);assert.equal(cancelled.length,1);assert.equal(calls,3);
-  }finally{globalThis.document=originalDocument;}
-});
-
-test('invalid or unavailable dynamic zones never revive photograph obstacles and logical collisions remain active',()=>{
-  const originalDocument=globalThis.document;
-  class Element{
-    constructor(){this.children=[];this.parent=null;this.style={setProperty(){}};}
-    setAttribute(){} append(...children){for(const child of children){child.parent=this;this.children.push(child);}}
-    remove(){if(this.parent)this.parent.children.splice(this.parent.children.indexOf(this),1);this.parent=null;}
-  }
-  globalThis.document={hidden:false,createElement:()=>new Element()};
-  try{
-    for(const getFurnitureZones of [()=>undefined,()=>{throw Error('loading');},()=>[null,[],[[NaN,0],[1,1],[0,1]]]]){
-      const state=fixture(),point=projectBestFloor(6,4),container=new Element();
-      const people=createBestPeopleLayer({container,getState:()=>state,getFurnitureZones,requestFrame:()=>1,cancelFrame:()=>{}});
-      const person=container.children.find(node=>node.className==='best-people-layer').children[0];
-      assert.equal(person.style.left,`${(point.x*100).toFixed(3)}%`);assert.equal(person.style.top,`${(point.y*100).toFixed(3)}%`);
-      state.hardness={cols:14,rows:8,blocked:['6,4']};people.update();
-      assert.ok(person.style.left!==`${(point.x*100).toFixed(3)}%`||person.style.top!==`${(point.y*100).toFixed(3)}%`);
-      people.dispose();assert.equal(container.children.length,0);
-    }
+    assert.equal(container.children.length,0);assert.equal(cancelled.length,1);
   }finally{globalThis.document=originalDocument;}
 });
 
@@ -173,11 +149,11 @@ test('a supplied floor projector drives visitor feet and transitions without pul
   try{
     const state=fixture(),container=new Element(),floorPolygon=[[.7,.1],[.95,.1],[.95,.3],[.7,.3]];
     const projectFloor=(col,row,cols,rows)=>{calls.push([col,row,cols,rows]);return {x:.72+col*.012,y:.12+row*.015,depth:(col/cols+row/rows)/2};};
-    const people=createBestPeopleLayer({container,getState:()=>state,getFurnitureZones:()=>[],projectFloor,floorPolygon,requestFrame:()=>1,cancelFrame:()=>{}});
+    const people=createBestPeopleLayer({container,getState:()=>state,now:()=>0,projectFloor,floorPolygon,requestFrame:()=>1,cancelFrame:()=>{}});
     const person=container.children.find(node=>node.className==='best-people-layer').children[0];
-    assert.deepEqual(calls,[[6,4,14,8]]);assert.equal(person.style.left,'79.200%');assert.equal(person.style.top,'18.000%');
-    Object.assign(state.game.custs[0],at(7,4));people.update();
-    assert.deepEqual(calls.at(-1),[7,4,14,8]);assert.equal(person.style.left,'80.400%');assert.equal(person.style.top,'18.000%');assert.doesNotMatch(person.className,/is-repositioning/);
+    assert.deepEqual(calls,[[6,4,14,8]]);near(parseFloat(person.style.left),79.2);near(parseFloat(person.style.top),18);
+    Object.assign(state.game.custs[0],at(7,4));people.update(100);for(let time=116;time<2100;time+=16)people.update(time);
+    assert.ok(Math.abs(calls.at(-1)[0]-7)<.00001);near(parseFloat(person.style.left),80.4);near(parseFloat(person.style.top),18);assert.doesNotMatch(person.className,/is-repositioning/);
     assert.equal(person.style.zIndex,'190');people.dispose();assert.equal(container.children.length,0);
   }finally{globalThis.document=originalDocument;}
 });
@@ -194,7 +170,7 @@ function withVisitorLayer(actors,run,lookup=visitorProfileById){
   globalThis.document={hidden:false,createElement:tag=>new VisitorElement(tag)};
   const scene={cols:14,rows:8,actors,hardness:{blocked:[]},source:'xtanco-running-game'};
   const create=layerFactory(()=>()=>scene,lookup);
-  const people=create({container,getState:()=>({}),getFurnitureZones:()=>[],requestFrame:()=>1,cancelFrame:id=>cancelled.push(id)});
+  const people=create({container,getState:()=>({}),now:()=>0,requestFrame:()=>1,cancelFrame:id=>cancelled.push(id)});
   const layer=container.children.find(node=>node.className==='best-people-layer'),status=container.children.find(node=>node.className==='best-people-status');
   try{return run({scene,container,people,layer,status,cancelled});}
   finally{people.dispose();globalThis.document=originalDocument;}
@@ -272,7 +248,7 @@ test('reusing an actor identity updates its appearance in place and ignores late
     assert.equal(layer.children[0],node);assert.notEqual(currentImage,previousImage);
     assert.equal(previousImage.onload,null);assert.equal(previousImage.onerror,null);assert.equal(previousImage.parent.parent,null);
     assert.equal(node.attrs['data-visitor-profile-id'],'c6');assert.match(node.className,/is-child/);
-    assert.ok(Number(node.style.values['--person-scale-x'])<0);
+    assert.ok(Math.abs(Number(node.style.values['--person-scale-x']))>0);
     lateLoad();lateError();
     assert.equal(node.attrs['data-visitor-profile-id'],'c6');assert.equal(currentImage.src,visitorProfileById('c6').sprite.atlas);
     finishImage(currentImage);assert.match(status.textContent,/1 perfil distinto/);
@@ -315,4 +291,83 @@ test('removal and disposal release all atlas callbacks and late image events can
     lateLoad();lateError();people.update();people.dispose();
     assert.equal(status.textContent,disposedStatus);assert.equal(container.children.length,0);assert.equal(cancelled.length,1);
   });
+});
+
+
+test('Matrix follows each safe leg around a counter at render rate, keeps a body margin and stops its gait on arrival',()=>{
+  const originalDocument=globalThis.document,container=new VisitorElement('scene');let callback;
+  globalThis.document={hidden:false,createElement:tag=>new VisitorElement(tag)};
+  const actor={...visitor('walker','a1'),col:2,row:4},scene={cols:14,rows:8,actors:[actor],layout:[{id:'counter',type:'custom',col:5,row:3,fp:[2,2]}],hardness:{blocked:[]}};
+  const sourceBefore=JSON.stringify(scene),navigation=buildCustomerNavigation(scene),create=layerFactory(()=>()=>scene,visitorProfileById);
+  const people=create({container,getState:()=>({}),now:()=>0,requestFrame:fn=>(callback=fn,1),cancelFrame:()=>{}});
+  try{
+    const node=container.children.find(n=>n.className==='best-people-layer').children[0];
+    const coordinate=()=>({col:Number(node.attrs['data-visitor-col']),row:Number(node.attrs['data-visitor-row'])});
+    let previous=coordinate(),detoured=false,samples=0;
+    actor.col=10;actor.walking=false;people.update(100);
+    const targetBefore=JSON.stringify(scene);
+    for(let time=116;time<5000;time+=16){
+      callback(time);const current=coordinate();
+      assert.equal(navigation.isWalkable(current),true);
+      assert.equal(navigation.segmentClear(previous,current),true,`unsafe rendered segment at ${time}ms`);
+      const projected=projectBestFloor(current.col,current.row,scene.cols,scene.rows);
+      assert.equal(parseFloat(node.style.left),projected.x*100,'CSS must preserve the navigation clearance');
+      assert.equal(parseFloat(node.style.top),projected.y*100,'CSS must preserve the navigation clearance');
+      assert.ok(Math.hypot(current.col-previous.col,current.row-previous.row)<.13,'no corner-to-corner teleport');
+      if(current.row<2.76||current.row>5.24)detoured=true;
+      assert.doesNotMatch(node.className,/is-repositioning/);previous=current;samples++;
+    }
+    assert.ok(samples>250);assert.equal(detoured,true);assert.ok(Math.hypot(previous.col-10,previous.row-4)<.01);
+    assert.equal(node.attrs['data-visitor-motion'],'standing');assert.equal(node.style.values['--visitor-bob'],'0%');
+    assert.equal(JSON.stringify(scene),targetBefore);assert.notEqual(targetBefore,sourceBefore);
+  }finally{people.dispose();globalThis.document=originalDocument;}
+});
+
+test('Matrix waits on its own side of an impassable obstacle instead of jumping to the target',()=>{
+  const originalDocument=globalThis.document,container=new VisitorElement('scene');let callback;
+  globalThis.document={hidden:false,createElement:tag=>new VisitorElement(tag)};
+  const actor={...visitor('waiting','b1'),col:2,row:4},scene={cols:14,rows:8,actors:[actor],layout:[{id:'wall',type:'custom',col:5,row:0,fp:[1,8]}]};
+  const create=layerFactory(()=>()=>scene,visitorProfileById),people=create({container,getState:()=>({}),now:()=>0,requestFrame:fn=>(callback=fn,1),cancelFrame:()=>{}});
+  try{
+    const node=container.children.find(n=>n.className==='best-people-layer').children[0];
+    actor.col=10;people.update(100);
+    for(let time=116;time<1200;time+=16)callback(time);
+    assert.equal(Number(node.attrs['data-visitor-col']),2);assert.equal(Number(node.attrs['data-visitor-row']),4);
+    assert.equal(node.attrs['data-visitor-motion'],'waiting');assert.doesNotMatch(node.className,/is-walking/);
+    assert.equal(node.style.values['--visitor-bob'],'0%');
+  }finally{people.dispose();globalThis.document=originalDocument;}
+});
+
+
+test('Matrix retains a navigation graph while geometry is unchanged and invalidates it on inventory edits',()=>{
+  const originalDocument=globalThis.document,container=new VisitorElement('scene'),seen=[];
+  globalThis.document={hidden:false,createElement:tag=>new VisitorElement(tag)};
+  const actor={...visitor('cached','a1'),col:2,row:4},scene={cols:14,rows:8,actors:[actor],layout:[]};
+  const motionFactory=(actor,options)=>{
+    seen.push(options.navigation);const actual=createCustomerMotion(actor,options);
+    return {advance:time=>actual.advance(time),update:(actor,options)=>{seen.push(options.navigation);return actual.update(actor,options);}};
+  };
+  const create=layerFactory(()=>()=>scene,visitorProfileById,buildCustomerNavigation,motionFactory);
+  const people=create({container,getState:()=>({}),now:()=>0,requestFrame:()=>1,cancelFrame:()=>{}});
+  try{
+    people.update(100);people.update(200);assert.equal(seen.length,3);assert.equal(new Set(seen).size,1);
+    scene.layout.push({id:'counter',type:'counter',col:5,row:3,fp:[1,2]});people.update(300);
+    assert.notEqual(seen[3],seen[0]);people.update(400);assert.equal(seen[4],seen[3]);
+  }finally{people.dispose();globalThis.document=originalDocument;}
+});
+
+
+test('Matrix resumes a hidden tab at its previous pose and releases the visibility listener on disposal',()=>{
+  const originalDocument=globalThis.document,container=new VisitorElement('scene'),listeners=new Map();let callback,time=0;
+  globalThis.document={hidden:false,createElement:tag=>new VisitorElement(tag),addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:(name,fn)=>{assert.equal(listeners.get(name),fn);listeners.delete(name);}};
+  const actor={...visitor('resumed','a1'),col:2,row:4},scene={cols:14,rows:8,actors:[actor],layout:[]};
+  const create=layerFactory(()=>()=>scene,visitorProfileById),people=create({container,getState:()=>({}),now:()=>time,requestFrame:fn=>(callback=fn,1),cancelFrame:()=>{}});
+  try{
+    const node=container.children.find(n=>n.className==='best-people-layer').children[0],coordinate=()=>Number(node.attrs['data-visitor-col']);
+    actor.col=10;time=100;people.update(time);time=116;callback(time);const before=coordinate();
+    document.hidden=true;listeners.get('visibilitychange')();time=60000;callback(time);assert.equal(coordinate(),before);
+    document.hidden=false;listeners.get('visibilitychange')();callback(time);assert.equal(coordinate(),before);
+    time+=16;callback(time);assert.ok(coordinate()>before);assert.ok(coordinate()-before<.03);
+    people.dispose();assert.equal(listeners.size,0);
+  }finally{people.dispose();globalThis.document=originalDocument;}
 });

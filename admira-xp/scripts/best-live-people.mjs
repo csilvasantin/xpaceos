@@ -1,5 +1,7 @@
 import {createLifeSnapshot} from './life-snapshot.mjs?v=visitors-24';
 import {visitorProfileById} from './visitor-profiles.mjs?v=visitors-24';
+import {buildCustomerNavigation} from './customer-navigation.mjs?v=customer-motion-1';
+import {createCustomerMotion} from './customer-motion.mjs?v=customer-motion-1';
 
 const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
 const DEFAULT_COLS=14,DEFAULT_ROWS=8;
@@ -74,24 +76,6 @@ export function segmentCrossesBestHardness(from,to,zones=BEST_HARDNESS_ZONES,flo
   return false;
 }
 
-function logicalPosition(actor,scene){
-  const blocked=new Set(scene.hardness?.blocked||[]),rounded=`${Math.round(actor.col)},${Math.round(actor.row)}`;
-  if(!blocked.has(rounded))return {col:actor.col,row:actor.row};
-  const wanted={col:Math.round(actor.col),row:Math.round(actor.row)};
-  for(let radius=1;radius<=Math.max(scene.cols,scene.rows);radius++){
-    let best=null;
-    for(let dc=-radius;dc<=radius;dc++)for(let dr=-radius;dr<=radius;dr++){
-      if(Math.max(Math.abs(dc),Math.abs(dr))!==radius)continue;
-      const col=wanted.col+dc,row=wanted.row+dr;
-      if(col<0||row<0||col>=scene.cols||row>=scene.rows||blocked.has(`${col},${row}`))continue;
-      const score=Math.abs(dc)+Math.abs(dr);
-      if(!best||score<best.score)best={col,row,score};
-    }
-    if(best)return best;
-  }
-  return null;
-}
-
 const PERSON_SPRITES=Object.freeze({
   male:'assets/best-person-male-rust-20260915.png',
   female:'assets/best-person-female-denim-20260915.png',
@@ -122,25 +106,15 @@ function cropFor(sprite){
   const [x,y,width,height]=crop;
   return x>=0&&y>=0&&width>0&&height>0&&x+width<=sprite.atlasWidth&&y+height<=sprite.atlasHeight?crop:null;
 }
-// Dynamic furniture presentations supply their currently visible footprints.
-// Missing/failed dynamic data adds no photographic obstacle: the simulation's
-// logical hardness still applies, and an old photo must not resurrect furniture
-// that the user has removed. Callers without this option retain the fixed plate.
-function furnitureZones(getFurnitureZones,scene){
-  if(typeof getFurnitureZones!=='function')return BEST_HARDNESS_ZONES;
-  try{
-    const zones=getFurnitureZones(scene);
-    return Array.isArray(zones)?zones.filter(zone=>Array.isArray(zone)&&zone.length>=3
-      &&zone.every(point=>Array.isArray(point)&&point.length>=2&&Number.isFinite(point[0])&&Number.isFinite(point[1]))):[];
-  }catch{return [];}
-}
-export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),getFurnitureZones,projectFloor=projectBestFloor,floorPolygon=FLOOR_POLYGON,requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame}={}){
+// Navigation is expressed in the same logical room as the simulation. Image
+// dimensions and load completion never change where a customer can walk.
+export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),projectFloor=projectBestFloor,requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame,now=()=>performance.now()}={}){
   if(!container)throw new Error('Best people layer requires a container');
-  const snapshot=createLifeSnapshot(),people=new Map(),positions=new Map(),appearances=new Map();
+  const snapshot=createLifeSnapshot(),people=new Map(),motions=new Map(),actorsById=new Map(),appearances=new Map();
   const layer=document.createElement('div');layer.className='best-people-layer';layer.setAttribute('aria-hidden','true');
   const status=document.createElement('p');status.className='best-people-status';status.setAttribute('role','status');
   container.append(layer,status);
-  let frame=0,lastUpdate=-Infinity,disposed=false;
+  let frame=0,lastUpdate=-Infinity,disposed=false,scene=null,navigation=null;
 
   function refreshStatus(){
     if(disposed)return;
@@ -224,50 +198,75 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
   }
 
   function removeMissing(active){
-    for(const [id,node] of people)if(!active.has(id)){cleanupAppearance(id);node.remove();people.delete(id);positions.delete(id);}
+    for(const [id,node] of people)if(!active.has(id)){cleanupAppearance(id);node.remove();people.delete(id);motions.delete(id);actorsById.delete(id);}
   }
-  function update(){
+  function render(time){
+    if(!scene||disposed)return;
+    for(const [id,node] of people){
+      const actor=actorsById.get(id),pose=motions.get(id)?.advance(time);
+      node.hidden=!pose;if(!pose)continue;
+      const point=projectFloor(pose.col,pose.row,scene.cols,scene.rows),child=isChild(actor);
+      const variation=child ? .88+(stableNumber(actor.id)%9)*.02 : .96+(stableNumber(actor.id)%6)*.02;
+      const scale=(actor.scale||1)*variation*(.78+point.depth*.28);
+      node.className=`best-person has-safe-motion kind-${actor.kind}${pose.walking?' is-walking':''}${actor.isPlayer?' is-player':''}${child?' is-child':''}`;
+      // Visibility-graph corners can have a subpixel clearance. Decimal
+      // formatting must not move a safe foot back onto an obstacle boundary.
+      node.style.left=`${point.x*100}%`;node.style.top=`${point.y*100}%`;
+      node.style.zIndex=String(10+Math.round(point.y*1000));
+      node.style.setProperty('--person-scale',scale.toFixed(3));
+      node.style.setProperty('--person-scale-x',(scale*(Math.cos(pose.heading||0)<0?-1:1)).toFixed(3));
+      // Small weight shifts follow distance actually travelled. No independent
+      // looping bob remains when the visitor stops or yields to an obstacle.
+      const phase=Number.isFinite(pose.phase)?pose.phase*Math.PI*2:0;
+      node.style.setProperty('--visitor-bob',`${pose.walking?(-Math.abs(Math.sin(phase))*1.0).toFixed(3):0}%`);
+      node.style.setProperty('--visitor-sway',`${pose.walking?(Math.sin(phase)*.4).toFixed(3):0}deg`);
+      node.setAttribute('data-visitor-col',String(pose.col));node.setAttribute('data-visitor-row',String(pose.row));
+      node.setAttribute('data-visitor-motion',pose.blocked?'waiting':pose.walking?'walking':'standing');
+    }
+  }
+  function update(time=now()){
     if(disposed)return;
     let current=null;
     try{current=snapshot(getState?.());}catch{}
+    scene=current;
     if(!current){
       removeMissing(new Set());status.textContent='Esperando la simulación del Xtanco…';
       status.setAttribute('data-distinct-profiles','0');status.setAttribute('data-fallback-count','0');return;
     }
-    const zones=furnitureZones(getFurnitureZones,current);
+    const nextNavigation=buildCustomerNavigation(current,{radius:.24});
+    if(navigation?.key!==nextNavigation.key)navigation=nextNavigation;
     const active=new Set(),actors=current.actors.filter(actor=>actor?.kind==='customer'&&!actor.outside&&actor.col>=0&&actor.row>=0&&actor.col<current.cols&&actor.row<current.rows);
     for(const actor of actors){
-      const logical=logicalPosition(actor,current);if(!logical)continue;
       active.add(actor.id);let node=people.get(actor.id);
       if(!node){
-        node=document.createElement('span');node.className='best-person';
+        node=document.createElement('span');node.className='best-person has-safe-motion';
         const shadow=document.createElement('i');shadow.className='best-person-shadow';node.append(shadow);
         node.setAttribute('data-actor-id',actor.id);layer.append(node);people.set(actor.id,node);
-      }
-      updateAppearance(node,actor);
-      const desired=projectFloor(logical.col,logical.row,current.cols,current.rows),point=resolveBestHardness(desired,zones,floorPolygon),previous=positions.get(actor.id);
-      const repositioning=segmentCrossesBestHardness(previous,point,zones,floorPolygon),child=isChild(actor),variation=child ? .88+(stableNumber(actor.id)%9)*.02 : .96+(stableNumber(actor.id)%6)*.02;
-      const scale=(actor.scale||1)*variation*(.78+point.depth*.28);
-      node.className=`best-person kind-${actor.kind}${actor.walking?' is-walking':''}${actor.isPlayer?' is-player':''}${child?' is-child':''}${repositioning?' is-repositioning':''}`;
-      node.style.left=`${(point.x*100).toFixed(3)}%`;node.style.top=`${(point.y*100).toFixed(3)}%`;
-      node.style.zIndex=String(10+Math.round(point.y*1000));
-      node.style.setProperty('--person-scale',scale.toFixed(3));node.style.setProperty('--person-scale-x',(scale*(Math.cos(actor.heading||0)<0?-1:1)).toFixed(3));node.style.setProperty('--person-shirt',actor.color||'#4466cc');
-      node.style.setProperty('--person-skin',actor.skin||'#c68642');node.style.setProperty('--person-hair',actor.hair||'#2a1500');
-      node.style.setProperty('--person-pants',actor.pants||'#253446');positions.set(actor.id,point);
-      // Negative, stable offsets prevent people who enter together from bobbing
-      // in lockstep; heading and movement still come from the shared simulation.
+        motions.set(actor.id,createCustomerMotion(actor,{navigation,time}));
+      }else motions.get(actor.id).update(actor,{navigation,time});
+      actorsById.set(actor.id,actor);updateAppearance(node,actor);
+      // Initial phase offsets stay stable across image fallback and view redraws.
       const gait=stableNumber(actor.id),phase=(Math.imul(gait^(gait>>>16),0x45d9f3b)>>>0)%997;
       node.style.setProperty('--visitor-walk-phase',`${-phase/997}s`);
       node.style.setProperty('--visitor-walk-duration',`${.46+(gait%9)*.025}s`);
     }
-    removeMissing(active);
-    refreshStatus();
+    removeMissing(active);render(time);refreshStatus();
   }
-  function tick(now){
+  function tick(time){
     if(disposed)return;
-    if(!document.hidden&&now-lastUpdate>=100){lastUpdate=now;update();}
+    if(!document.hidden){
+      if(time-lastUpdate>=100){lastUpdate=time;update(time);}
+      else render(time);
+    }
     frame=requestFrame(tick);
   }
+  function visibilityChanged(){
+    // A hidden tab has no rendered elapsed time. Resume from the same pose
+    // rather than spending a capped (but still visible) catch-up step at once.
+    const time=now();for(const motion of motions.values())motion.rebaseTime(time);
+    lastUpdate=-Infinity;
+  }
+  document.addEventListener?.('visibilitychange',visibilityChanged);
   update();frame=requestFrame(tick);
-  return {update,get count(){return people.size;},dispose(){if(disposed)return;disposed=true;cancelFrame(frame);for(const id of appearances.keys())cleanupAppearance(id);people.clear();positions.clear();layer.remove();status.remove();}};
+  return {update,get count(){return people.size;},dispose(){if(disposed)return;disposed=true;cancelFrame(frame);document.removeEventListener?.('visibilitychange',visibilityChanged);for(const id of appearances.keys())cleanupAppearance(id);people.clear();motions.clear();actorsById.clear();layer.remove();status.remove();}};
 }

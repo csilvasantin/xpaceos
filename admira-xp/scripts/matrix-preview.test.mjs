@@ -113,15 +113,12 @@ test('people-layer failure settles with an explicit error instead of reporting l
   assert.equal(states.at(-1).busy,false);assert.match(states.at(-1).error,/visitantes de Matrix/);assert.equal(h.layers.length,0);
 });
 
-test('readiness waits for furniture assets and visitors consult the current visible footprints',()=>{
+test('readiness waits for furniture assets and visitors share the room projection',()=>{
   const h=harness({cached:true,furniturePending:true}),states=[];h.subscribe(s=>states.push({...s}));h.open({requestId:11});
   assert.equal(states.at(-1).busy,true);assert.equal(h.layers.length,1);
   const layer=h.furnitureLayers[0],people=h.layers[0];
   assert.equal(people.container,layer.container);
-  assert.equal(people.projectFloor,projectMatrixFloor);assert.equal(people.floorPolygon,MATRIX_FLOOR_POLYGON);
-  const first=[[[.1,.2],[.3,.2],[.2,.4]]];layer.zones=first;
-  assert.equal(people.getFurnitureZones(),first);
-  const afterRemoval=[];layer.zones=afterRemoval;assert.equal(people.getFurnitureZones(),afterRemoval);
+  assert.equal(people.projectFloor,projectMatrixFloor);
   layer.onReady();layer.onReady();assert.deepEqual(states.map(s=>s.busy),[true,false]);
 });
 
