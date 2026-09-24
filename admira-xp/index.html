@@ -1340,7 +1340,7 @@
   window.AdmiraXP_KillSwitch={check, apply:applyKillSwitch};
 })();
 </script>
-<script src="xtanco-version.js?v=20260924-1156"></script>
+<script src="xtanco-version.js?v=20260924-1253"></script>
 <script src="xtanco-runtime-config.js?r=24"></script>
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
@@ -33150,6 +33150,9 @@ window.xtAPI = (function(){
       if(sep>=0){ nm=raw.slice(0,sep)||(lang==='en'?'Anonymous':'Anónimo'); try{ segData=JSON.parse(raw.slice(sep+2)); }catch(_){ segData=null; } }
       c.fanName=nm;
       c.npcSegment=segData;                   // {sex, age, desc} → ficha de cliente
+      // Persona realista de Pixeria (Anonimizador): el paquete para 16/32/64 bits
+      // lo fabrica el worker (/twin/persona) y lo pintan Better, Best y Matrix.
+      c.pixeriaPersonaId=entry&&entry.persona&&entry.id?String(entry.id):null;
       // Ack al worker EN CUANTO se crea el NPC (antes de los FX, para que un error
       // visual no impida confirmar a Pixeria que el NPC YA está en la tienda).
       if(entry&&entry.id){ try{ fetch(PIXER_WORKER+'/twin/spawn/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:entry.id,screen:screenId})}); }catch(_){} }
@@ -35078,6 +35081,6 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=gait-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=depth-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=px-1"></script>
 </body>
 </html>

@@ -1,8 +1,9 @@
-import {createLifeSnapshot} from './life-snapshot.mjs?v=visitors-24';
+import {createLifeSnapshot} from './life-snapshot.mjs?v=px-1';
 import {visitorProfileById} from './visitor-profiles.mjs?v=visitors-24';
 import {buildCustomerNavigation} from './customer-navigation.mjs?v=customer-motion-1';
 import {createCustomerMotion} from './customer-motion.mjs?v=customer-motion-1';
 import {walkSheetURL,walkFrame,walkBackgroundPosition} from './visitor-walk-sprites.mjs?v=walk-1';
+import {pixeriaWalkSheet} from './pixeria-personas.mjs?v=px-1';
 
 const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
 const DEFAULT_COLS=14,DEFAULT_ROWS=8;
@@ -160,8 +161,8 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
   }
   // Matrix opt-in: a baked multi-frame walk sheet of the same profile. If the
   // sheet cannot load, that profile falls back to its cutout and leg rig.
-  function updateWalkAppearance(node,actor,profile){
-    const url=walkSheetURL(profile.id),signature=`walk:${profile.id}:${url}`;
+  function updateWalkAppearance(node,actor,profile,sheet=null){
+    const url=sheet||walkSheetURL(profile.id),signature=`walk:${profile.id}:${url}`;
     if(appearances.get(actor.id)?.signature===signature)return true;
     cleanupAppearance(actor.id);
     const image=document.createElement('img');image.alt='';image.decoding='async';
@@ -181,6 +182,12 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
   }
   function updateAppearance(node,actor){
     const profile=profileFor(actor),sprite=profile?.sprite,crop=cropFor(sprite);
+    // Pixeria persona: its own processed sheet once ready; the cutout meanwhile.
+    const pxId=typeof actor.pixeriaPersonaId==='string'?actor.pixeriaPersonaId:null;
+    if(walkSprites&&pxId&&!walkFailed.has('px:'+pxId)){
+      const sheet=pixeriaWalkSheet(pxId);
+      if(sheet&&updateWalkAppearance(node,actor,{id:'px:'+pxId,label:actor.label||'Pixeria'},sheet))return;
+    }
     if(walkSprites&&profile&&walkSheetURL(profile.id)&&!walkFailed.has(profile.id)&&updateWalkAppearance(node,actor,profile))return;
     const legacy=spriteFor(actor),signature=profile
       ?`${profile.id}:${sprite.atlas}:${sprite.column}:${sprite.row}:${sprite.columns}:${sprite.rows}:${crop?.join(',')||''}:${sprite.atlasWidth||''}:${sprite.atlasHeight||''}:${legacy}`:`legacy:${legacy}`;

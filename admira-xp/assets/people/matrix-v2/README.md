@@ -30,3 +30,7 @@ Se comprueban reparto, estabilidad entre vistas, compatibilidad con la simulaci�
 ## Profundidad y dureza en Matrix (24-sep-2026)
 
 Los visitantes se ordenan contra cada mueble que solapan en pantalla con la regla isométrica de su caja de suelo (delante si pasan su col o fila máxima, detrás si no llegan a la mínima), no por la esquina delantera del mueble. La base dibujada de cada mueble, medida sobre las imágenes con `tools/walk-sprites/measure-hardness.js`, queda dentro de su caja lógica más la holgura de 0,24 casillas de la navegación compartida: [`../../matrix-hardness-audit.json`](../../matrix-hardness-audit.json).
+
+## Personas de Pixeria en los cuatro modos (24-sep-2026)
+
+Una persona del Anonimizador de pixeria.com entra en la tienda con su NPC 8-bit (Good). Si el envío trae además la persona realista, el worker `api.admira.store` (`/twin/persona*`) fabrica una sola vez su paquete: ficha (sexo, edad, paleta, peinado, ropa) que Better 16 y Best 32 aplican a sus cuerpos, y rejillas de caminata que visten el cuerpo base (`matrix-walk/grid-*.jpg`, `base-*.webp`) para Matrix 64. `scripts/pixeria-personas.mjs` dirige los pasos, recorta el croma y alinea cada fotograma con el cuerpo base en el navegador.
