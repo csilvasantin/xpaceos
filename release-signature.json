@@ -1,10 +1,10 @@
 {
-  "version": "v.24.09.2026.r5.12:10",
+  "version": "v.24.09.2026.r6.12:19",
   "signature": "TrinityMBP14 · MacBookProNegro14",
   "machine": "MacBookProNegro14",
   "agent": "TrinityMBP14",
   "deployer": "TrinityMBP14",
-  "evidence": "Yokup #240: Real de tienda enlazada usa pasos de sesión Xtore. 311 pruebas pasan; prueba local sintética 9/9 y Reset. Direcciones de calle, no ocupación física.",
+  "evidence": "Yokup #248: cámara de esquina activa demo player, calle, estadísticas y mostrador solo geometría. 316 tests correctos; validación visual local sintética.",
   "day": "24.09.2026",
-  "time": "12:10"
+  "time": "12:19"
 }

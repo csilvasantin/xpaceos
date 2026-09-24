@@ -3590,7 +3590,7 @@ function parseAdmiraTubeArg(arg){
 }
 
 function syncAdmiraTubeFrames(){
-  const active=G&&G.admiraTube&&G.admiraTube.active&&G.admiraTube.videoId;
+  const active=!window.__xtoreWindowPlayer?.demoActive?.()&&G&&G.admiraTube&&G.admiraTube.active&&G.admiraTube.videoId;
   const screens=active?Math.max(1,Math.min(2,Number(G.admiraTube.screens)||2)):0;
   DS_DISPLAYS.forEach((display,idx)=>{
     const frame=display.frameEl;
@@ -3649,6 +3649,7 @@ const DS_MSGS=[
 ];
 
 function renderDSCanvas(ctx,w,h,frame,displayIdx){
+  if(window.__xtoreWindowPlayer?.drawScreen?.(ctx,w,h,displayIdx===0?'player':'street'))return;
   if(displayIdx===0&&window.__xtoreWindowPlayer){window.__xtoreWindowPlayer.draw(ctx,w,h);return;}
   const display=DS_DISPLAYS[displayIdx];
   // Xtanco Club celebration takes over every screen for a few seconds.
@@ -3794,7 +3795,8 @@ function renderDSCanvas(ctx,w,h,frame,displayIdx){
 }
 
 function updateDSCanvases(){
-  if(!videoPlaying) return;
+  const demo=window.__xtoreWindowPlayer?.demoActive?.();
+  if(!videoPlaying&&!demo) return;
   dsFrame++;
   checkDSConditions();
   // Imported images don't auto-end like videos — advance after their duration
@@ -3802,7 +3804,7 @@ function updateDSCanvases(){
     nextDSVideo();
   }
   DS_DISPLAYS.forEach((display,idx)=>{
-    if(display.paused&&display.canvasEl&&display.canvasEl.style.display!=='none') return;
+    if(!demo&&display.paused&&display.canvasEl&&display.canvasEl.style.display!=='none') return;
     renderDSCanvas(display.ctx,160,90,dsFrame,idx);
   });
 }
@@ -3866,7 +3868,7 @@ function punchDsScreenHoles(){
 
 function updateVideoPosition(){
   const tubeActive=G&&G.admiraTube&&G.admiraTube.active;
-  if((!videoPlaying&&!tubeActive)||!G||state!==S.GAME){
+  if((!videoPlaying&&!tubeActive&&!window.__xtoreWindowPlayer?.demoActive?.())||!G||state!==S.GAME){
     videoEl.style.display='none';videoEl2.style.display='none';
     syncAdmiraTubeFrames();
     try{ positionGenVideoOverlay(); }catch(_){}
@@ -3887,6 +3889,8 @@ function updateVideoPosition(){
   syncAdmiraTubeFrames();
   try{ positionGenVideoOverlay(); }catch(_){}
 }
+
+window.addEventListener('xtore-demo',()=>{updateVideoPosition();updateDSCanvases();});
 
 function isDigitalSignageVisible(display){
   const el=display&&display.monitorEl;
@@ -4407,7 +4411,7 @@ function ensureGenVideoLabel(idx){
 // Clona la posición/escorzo de cada pantalla para que el rótulo quede ENCIMA.
 // Se llama por frame desde updateVideoPosition.
 function positionGenVideoOverlay(){
-  if(!GENVIDEO.on||!GENVIDEO.gender){
+  if(window.__xtoreWindowPlayer?.demoActive?.()||!GENVIDEO.on||!GENVIDEO.gender){
     ['genvideoLabel0','genvideoLabel1'].forEach(id=>{ const e=document.getElementById(id); if(e) e.style.display='none'; });
     return;
   }
@@ -10444,6 +10448,7 @@ function doAction(id){
   }
   if(id==='turnScreenClick'){ try{ openTurnFull(); }catch(_){} return; }
   if(id==='camCPMClick'){
+    if(window.__xtoreWindowPlayer){const active=window.__xtoreWindowPlayer.toggleDemo();showEv(active?'Demo zapatillas · player, calle, estadísticas y recuadros':'Demo desactivada · pantallas restauradas','#70e5be');return;}
     // Cámara de seguridad → dashboard CPM/audiencia en la TFT de la pared
     // larga (toggle). El canal cede prioridad al CCTV si hay ladrón.
     G.tftCPM=!G.tftCPM;
@@ -20518,7 +20523,7 @@ function positionWallAvatar(){
   const el=document.getElementById('wallAvatar'); if(!el) return;
   const q=window.__tftQuad;
   const fresh=!!q && (typeof tt==='undefined' || (typeof window.__tftQuadFrame==='number' && (tt-window.__tftQuadFrame)<=2));
-  if(!(avatar3dWall && fresh)){ if(el.style.display!=='none'){ el.style.display='none'; el.src='about:blank'; } return; }
+  if(window.__xtoreWindowPlayer?.demoActive?.()||!(avatar3dWall && fresh)){ if(el.style.display!=='none'){ el.style.display='none'; el.src='about:blank'; } return; }
   try{
     // La pantalla de la pared larga es un PARALELOGRAMO inclinado (perspectiva de
     // la pared), no un rectángulo. Mapeamos el iframe al paralelogramo con un
@@ -21313,7 +21318,9 @@ function drawAltadisTFT(centerCol, yPx, colsWide){
   const cX=vW/2, cY=vH/2;
   const sH=vH;
 
-  if(LIVE_CAM.active||LIVE_CAM.requesting){
+  if(window.__xtoreWindowPlayer?.drawScreen?.(cx,vW,vH,'statistics')){
+    // Demo owns this surface ahead of simulated campaigns and camera effects.
+  } else if(LIVE_CAM.active||LIVE_CAM.requesting){
     drawLiveCamScreen(vW,vH);
   } else if(G&&G.thief&&G.thief.phase!=='idle'){
     drawSecurityCCTV(vW,vH);
@@ -21755,6 +21762,7 @@ function drawTurnManager(){
   cx.lineTo(br.x,br.y);cx.lineTo(bl.x,bl.y);
   cx.closePath();cx.clip();
   cx.setTransform(ax,ay,bx,by,tl.x,tl.y);
+  if(window.__xtoreWindowPlayer?.drawScreen?.(cx,vW,vH,'anonymous')){cx.restore();cx.restore();return;}
   cx.fillStyle='#031316';cx.fillRect(0,0,vW,vH);
   cx.globalAlpha=0.18;
   cx.strokeStyle='#1e6a72';cx.lineWidth=1;
@@ -26585,7 +26593,7 @@ function loop(){
   try{updateMobileSkipButton();}catch(e){}
   try{updateEraVerticalDock();}catch(e){}
   try{syncHomeMusic();}catch(e){}
-  try{if(videoPlaying){updateVideoPosition();updateDSCanvases();}}catch(e){}
+  try{if(videoPlaying||window.__xtoreWindowPlayer?.demoActive?.()){updateVideoPosition();updateDSCanvases();}}catch(e){}
   try{updateLiveMocap();}catch(e){}
 
   // No auto-start from selection screens:
@@ -29274,6 +29282,10 @@ window.xtAPI = (function(){
   }
   function renderTurnFull(){
     const body=document.getElementById('turnFullBody'); if(!body) return;
+    if(window.__xtoreWindowPlayer?.demoActive?.()){
+      let canvas=body.querySelector('canvas');if(!canvas){body.replaceChildren();canvas=document.createElement('canvas');canvas.width=960;canvas.height=540;canvas.style.cssText='width:min(90vw,960px);height:auto';body.append(canvas);}
+      window.__xtoreWindowPlayer.drawScreen(canvas.getContext('2d'),960,540,'anonymous');return;
+    }
     const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
     const AC=window.ADMIRA_CREA||window.ADMIRA_CREA_LAST;
     let html;
@@ -35038,7 +35050,7 @@ window.xtAPI = (function(){
 </script>
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
 <link rel="stylesheet" href="scripts/xtore-window.css?v=background-2">
-<script type="module" src="scripts/xtore-window.mjs?v=session-audience-1-real-traffic-1"></script>
+<script type="module" src="scripts/xtore-window.mjs?v=demo-screens-1"></script>
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>

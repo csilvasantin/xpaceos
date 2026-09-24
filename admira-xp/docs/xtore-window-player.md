@@ -90,3 +90,7 @@ DooH dispone estadísticas antes de los previos: original a la izquierda, modifi
 ## Audiencia de sesión (24/09/2026)
 
 En el gemelo enlazado, modo Real usa `audience.counts.person` de `admira.audience-session.v1`. Total de pasos, no aforo ni enter-exit. Objetivo visual hasta 80; conserva total sin capar y muestra Sesión/Virtuales. Ajuste progresivo por transacciones en curso. Latido 4 s; sin datos, objetivo cero sin fuente alternativa. Modo Juego restaura simulación. Contrato y Help: https://admira.tv/mcp/xtore-audience-session.md · https://admira.tv/help/#xtore-audiencia. La recepción automática de sesiones en Pixeria sigue pendiente.
+
+## Demo de pantallas desde la cámara (#248)
+
+Clic en cámara de esquina = toggle local de demo, sin recargar ni perder enlace. Alternativa Player y cámara → Activar demo zapatillas. DS1 player, DS2 vídeo original, TFT estadísticas y gestor de turnos solo recuadros/categorías sobre fondo neutro. Esa última vista no recibe ni dibuja píxeles del stream. TTL y origen exacto del enlace siguen vigentes. Si desconecta, muestra sin señal; otro clic restaura las pantallas del juego. Tras recarga está apagado. Help: https://admira.tv/help/#xtore-demo-pantallas.
