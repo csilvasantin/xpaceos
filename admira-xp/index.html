@@ -2478,8 +2478,14 @@ function dsPinSurface(surfaceId,name){
 // por tag, Fase 2). Igual que dsPinSurface pero sin depender de VIDEO_FILES: usa
 // la URL directa del asset. Los pines remotos NO se persisten (los redirige el
 // poller cada ciclo desde /signage/feed). Expuesto para signageFeedScript.
+function dsMediaUrlPlayable(url){
+  // Un blob: solo existe en la pestaña que lo creó. En el feed de la Xtore
+  // llega como URL muerta y deja la pantalla en negro. FLT-100904.
+  return /^https?:\/\//i.test(String(url||''));
+}
 function dsPinSurfaceFromUrl(surfaceId,kind,url,name){
   if(!dsSurfaceById(surfaceId)||!url) return false;
+  if(!dsMediaUrlPlayable(url)) return false;
   if(kind!=='image'&&kind!=='video') return false;
   const m=dsEnsureSurfaceMedia(surfaceId);
   m.ready=false; m.kind=kind; m.name=name||url;
@@ -34774,6 +34780,7 @@ window.xtAPI = (function(){
         if(lastId[s.id]===it.id) return;           // ya aplicado
         var kind=it.kind==='video'?'video':(it.kind==='image'?'image':null);
         if(!kind||!it.url) return;                 // texto/audio: fuera de alcance de esta fase
+        if(!/^https?:\/\//i.test(String(it.url))) return; // blob: y about: no se pueden reproducir aquí
         if(window.__dsPinSurfaceFromUrl && window.__dsPinSurfaceFromUrl(s.id,kind,it.url,it.title||it.id)){
           lastId[s.id]=it.id;
           try{ if(typeof window.showEv==='function') window.showEv('📺 '+s.tag+' ← '+(it.title||'contenido')+' (admira.studio)','#7dffb5'); }catch(e){}
