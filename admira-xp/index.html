@@ -938,7 +938,7 @@
   <div class="qm-acc" data-acc>
     <button type="button" class="qm-acc-head" data-acc-head>🔢 Contador</button>
     <div class="qm-acc-body">
-      <button type="button" data-xp-do="aforoReal" title="Aforo objetivo por cámara Hikvision (ambiente)">📷 Aforo real (cámara)</button>
+      <button type="button" data-xp-do="aforoReal" title="Xtore enlazado: pasos de sesión; otras tiendas: cámara de aforo">📷 Aforo real (cámara)</button>
       <button type="button" data-xp-do="aforoExact" title="Espejo 1:1 estricto: la tienda = exactamente la cámara">🎯 Aforo exacto (1:1)</button>
       <button type="button" data-xp-do="aforoFake" title="Clientes en modo aleatorio del juego">🎲 Aforo del juego</button>
       <button type="button" data-xp-do="aforoStatus" title="Ver el estado actual del aforo">ℹ Estado</button>
@@ -5237,8 +5237,8 @@ function updateHtmlBar(){
   pe.style.color=profit>=0?'#66ee66':'#ee6666';
   document.getElementById('bbSat').textContent=(G.satisfaction|0)+'%';
   const trafficLabel=document.getElementById('bbTrafficLabel');
-  if(trafficLabel) trafficLabel.textContent=lang==='en'?'Pass/In':'Pasan/Entran';
-  document.getElementById('bbCli').textContent=exteriorPersonPassagesForDisplay()+'/'+(G.customersToday||0);
+  if(trafficLabel) trafficLabel.textContent=xtoreSessionMode()?(lang==='en'?'Session/Virtual':'Sesión/Virtuales'):(lang==='en'?'Pass/In':'Pasan/Entran');
+  document.getElementById('bbCli').textContent=xtoreSessionMode()?(xtoreSessionAudience()?.counts.person??'—')+'/'+G.custs.length:exteriorPersonPassagesForDisplay()+'/'+(G.customersToday||0);
   const se=document.getElementById('bbStatus');
   se.textContent=trimHudLabel(ops.focus.label+' · '+ops.focus.detail,38);
   se.style.color=ops.focus.color;
@@ -5408,7 +5408,11 @@ const CAM={
 };
 function camModeLabel(){ return CAM.mode==='exacto'?'EXACTO':(CAM.mode==='real'?'REAL':'FAKE'); }
 // Resumen para el "cerebro" de la tienda (contexto IA) y diagnósticos.
+function xtoreSessionMode(){return CAM.mode==='real'&&new URLSearchParams(location.search).get('virtualPlayer')==='xtore-virtual-zapatillas';}
+function xtoreSessionAudience(){return window.__xtoreWindowPlayer?.audience?.()||null;}
 function camBrainLine(){
+  if(xtoreSessionMode()){const a=xtoreSessionAudience();return a?'REAL · '+a.counts.person+' pasos de esta sesión · visitantes virtuales (no aforo físico)':'REAL · esperando audiencia de sesión Xtore';}
+
   const en=typeof lang!=='undefined'&&lang==='en';
   if(CAM.mode==='fake') return en?'FAKE (simulated customers; camera ignored)':'FAKE (clientes aleatorios del juego; cámara ignorada)';
   return camModeLabel()+' · '+(en?'Hikvision camera ':'cámara Hikvision ')+(CAM.connected
@@ -5419,6 +5423,12 @@ function updateCamHud(){
   const val=document.getElementById('bbCamVal'); if(!val) return;
   const dot=document.getElementById('bbCamDot');
   const box=document.getElementById('bbCamBox');
+  if(xtoreSessionMode()){
+    const a=xtoreSessionAudience();val.textContent=a?a.counts.person:'—';
+    if(dot)dot.style.background=a?'#33dd66':'#cc4444';
+    if(box)box.title=a?'REAL · '+a.counts.person+' pasos de sesión; hasta '+MAX_PEOPLE_OVERRIDE+' visitantes virtuales. Entran: '+a.directions.enter+' · Salen: '+a.directions.exit+'. No es aforo físico.':'REAL · esperando analizador Xtore; sin sustituirlo por datos simulados.';
+    return;
+  }
   val.textContent=CAM.connected?CAM.occupancy:'—';
   if(dot) dot.style.background=CAM.connected?'#33dd66':'#cc4444';
   const en=typeof lang!=='undefined'&&lang==='en';
@@ -5430,6 +5440,13 @@ function updateCamHud(){
     :(en?'Occupancy: camera offline  (/aforo real | /aforo exacto | /aforo fake)':'Aforo: cámara sin conexión  (/aforo real | /aforo exacto | /aforo fake)');
 }
 function camApplyToStore(){
+  if(xtoreSessionMode()){
+    if(typeof state==='undefined'||state!==S.GAME||typeof G==='undefined'||!G||!Array.isArray(G.custs))return;
+    const a=xtoreSessionAudience();
+    // Missing/stale data cannot activate the independent occupancy source or random births.
+    const n=a?Math.min(MAX_PEOPLE_OVERRIDE,a.counts.person):0;
+    camForceExact(n);return;
+  }
   if(CAM.mode==='fake'||!CAM.connected) return;
   if(typeof state==='undefined'||state!==S.GAME) return;
   if(typeof G==='undefined'||!G||!Array.isArray(G.custs)) return;
@@ -5474,6 +5491,8 @@ async function camPoll(){
   camApplyToStore();
 }
 if(CAM.enabled&&CAM.url){ camPoll(); setInterval(camPoll,CAM.pollMs); }
+window.addEventListener('xtore-statistics',()=>{if(xtoreSessionMode()){camApplyToStore();updateCamHud();}});
+setInterval(()=>{if(xtoreSessionMode()){camApplyToStore();updateCamHud();}},1000);
 
 // ── LOOK & FEEL — ajustes visuales conmutables (CLI + metahuman) ──
 // Persisten en localStorage. Cada toggle se controla por comando (/camiseta on|off)
@@ -5681,6 +5700,7 @@ function getCustomerFlowProfile(hour){
   return {cap:5,spawnMult:0.82,label:'cierre'};
 }
 function getCurrentCustomerCap(){
+  if(xtoreSessionMode())return Math.min(MAX_PEOPLE_OVERRIDE,xtoreSessionAudience()?.counts.person||0);
   // Override manual via /people store <N>: bypassea el cap horario y el ceiling
   // MAX_CUSTOMERS_IN_STORE (hasta 30 por seguridad). Para reactivar el cap
   // automatico segun hora: /people store auto.
@@ -13426,6 +13446,7 @@ function spawnCust(isVip,isSponsor,force){
   // Esto incluye los spawns automaticos hourly del wantToJoin (linea ~7833) y
   // del sponsor recurrente (linea ~7921), que tambien usan force=true.
   if(G && Number.isFinite(G.peopleOverride) && G.custs.length>=G.peopleOverride) return null;
+  if(xtoreSessionMode()&&G.custs.length>=getCurrentCustomerCap())return null;
   if(!force && G.custs.length>=getCurrentCustomerCap()) return null;
   const ci=Math.floor(Math.random()*6);
   const isSp=!!isSponsor;
@@ -27614,6 +27635,7 @@ window.xtAPI = (function(){
           CAM.mode='real'; CAM.lastApplied=null;
           try{ if(typeof camApplyToStore==='function') camApplyToStore(); }catch(e){}
           try{ if(typeof updateCamHud==='function') updateCamHud(); }catch(e){}
+          if(xtoreSessionMode())return {ok:true,message:camBrainLine(),data:{mode:'real',source:'xtore-session',audience:xtoreSessionAudience()}};
           return {ok:true,message:'Aforo REAL · la cámara Hikvision marca el objetivo de clientes ('+(CAM.connected?CAM.occupancy+' dentro':'cámara sin señal — esperando datos de ieu.ai')+')',data:{mode:'real',connected:CAM.connected,occupancy:CAM.occupancy}};
         }
         if(['fake','falso','auto','aleatorio','random','juego','off','no','stop','desconectar'].includes(sub)){
@@ -33700,7 +33722,7 @@ window.xtAPI = (function(){
     {sel:'[data-xp-do="avatarHide"]', en:'✕ Hide', es:'✕ Ocultar'},
     {sel:'[data-xp-do="avatarHide"]', attr:'title', en:'Hide presenter panel', es:'Ocultar el panel del presentador'},
     {sel:'[data-xp-do="aforoReal"]', en:'📷 Live occupancy (camera)', es:'📷 Aforo real (cámara)'},
-    {sel:'[data-xp-do="aforoReal"]', attr:'title', en:'Target occupancy from the Hikvision camera', es:'Aforo objetivo por cámara Hikvision (ambiente)'},
+    {sel:'[data-xp-do="aforoReal"]', attr:'title', en:'Target occupancy from the Hikvision camera', es:'Xtore enlazado: pasos de sesión; otras tiendas: cámara de aforo'},
     {sel:'[data-xp-do="aforoExact"]', en:'🎯 Exact occupancy (1:1)', es:'🎯 Aforo exacto (1:1)'},
     {sel:'[data-xp-do="aforoExact"]', attr:'title', en:'Strict 1:1 mirror: store occupancy equals camera occupancy', es:'Espejo 1:1 estricto: la tienda = exactamente la cámara'},
     {sel:'[data-xp-do="aforoFake"]', en:'🎲 Simulated occupancy', es:'🎲 Aforo del juego'},
@@ -35016,7 +35038,7 @@ window.xtAPI = (function(){
 </script>
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
 <link rel="stylesheet" href="scripts/xtore-window.css?v=background-2">
-<script type="module" src="scripts/xtore-window.mjs?v=real-traffic-1"></script>
+<script type="module" src="scripts/xtore-window.mjs?v=session-audience-1-real-traffic-1"></script>
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>

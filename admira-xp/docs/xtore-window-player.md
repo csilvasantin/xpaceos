@@ -86,3 +86,7 @@ por defecto y el refresco conserva canvases, foco y apertura del detalle.
 Experto → Better / Best abre una ventana 3D movible y redimensionable con cruz. Better presenta la misma geometría como wireframe; Best añade materiales y luz. El selector no cambia XTANCO_MODELS ni la partida. Snapshot de mobiliario y actores del juego; mismo player para las texturas de pantalla y contador exterior de Puerta Cam. Entrada directa `?autostart=xtanco&virtualPlayer=xtore-virtual-zapatillas&visual=best`. Arrastrar escena gira cámara; rueda acerca; Reencuadrar restaura.
 
 DooH dispone estadísticas antes de los previos: original a la izquierda, modificado con recuadros de seguimiento a la derecha. Requiere analizador actualizado para recibir los recuadros; una captura ya abierta sigue ejecutando su versión hasta recargarla y compartir de nuevo.
+
+## Audiencia de sesión (24/09/2026)
+
+En el gemelo enlazado, modo Real usa `audience.counts.person` de `admira.audience-session.v1`. Total de pasos, no aforo ni enter-exit. Objetivo visual hasta 80; conserva total sin capar y muestra Sesión/Virtuales. Ajuste progresivo por transacciones en curso. Latido 4 s; sin datos, objetivo cero sin fuente alternativa. Modo Juego restaura simulación. Contrato y Help: https://admira.tv/mcp/xtore-audience-session.md · https://admira.tv/help/#xtore-audiencia. La recepción automática de sesiones en Pixeria sigue pendiente.

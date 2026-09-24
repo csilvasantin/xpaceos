@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {AudienceSessionState} from './audience-session.mjs';
 import * as core from './xtore-window-core.mjs';
 const source=readFileSync(new URL('./xtore-window.mjs',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
 function fixture(t){
@@ -24,7 +25,7 @@ function fixture(t){
   const session='00000000-0000-0000-0000-000000000001';
   const location={origin:'https://www.xpaceos.com',search:`?virtualPlayer=${core.SCREEN}&twinOrigin=https%3A%2F%2Fadmira.tv&twinSession=${session}`};
   const window={opener:peer,addEventListener:(name,fn)=>{listeners[name]=fn;},dispatchEvent:e=>events.push(e.type)};
-  vm.runInNewContext(source,{...core,document,window,location,Date,URL,URLSearchParams,Event,ImageBitmap:class{},
+  vm.runInNewContext(source,{...core,AudienceSessionState,document,window,location,Date,URL,URLSearchParams,Event,ImageBitmap:class{},
     setInterval:fn=>timers.push(fn),movableWindow:()=>({restore(){}}),
     createExteriorProgram:({onState})=>({update(value){calls.update.push(value);onState('Estado de regla');},draw(){calls.draw++;return true;},clear(){calls.clear++;},destroy(){calls.destroy++;}})});
   let seq=0;
