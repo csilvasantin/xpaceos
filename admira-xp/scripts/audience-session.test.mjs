@@ -28,7 +28,7 @@ test('actual game Real adapter drives session target independently of physical o
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  const body=html.slice(html.indexOf('function camApplyToStore(){'),html.indexOf('// EXACTO: en CADA sondeo'));
  let audience=sample(),linked=true;const applied=[];
- const context={CAM:{mode:'real',connected:false,occupancy:700},xtoreSessionMode:()=>linked,xtoreSessionAudience:()=>audience,state:1,S:{GAME:1},G:{custs:[]},MAX_PEOPLE_OVERRIDE:80,camForceExact:n=>applied.push(n)};
+ const context={manualAudienceTarget:()=>null,CAM:{mode:'real',connected:false,occupancy:700},xtoreSessionMode:()=>linked,xtoreSessionAudience:()=>audience,state:1,S:{GAME:1},G:{custs:[]},MAX_PEOPLE_OVERRIDE:80,camForceExact:n=>applied.push(n)};
  vm.runInNewContext(body,context);context.camApplyToStore();assert.equal(applied.at(-1),9);
  audience={...sample(),counts:{...sample().counts,person:99}};context.camApplyToStore();assert.equal(applied.at(-1),80);
  audience=null;context.camApplyToStore();assert.equal(applied.at(-1),0);
