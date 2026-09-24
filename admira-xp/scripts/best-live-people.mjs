@@ -107,9 +107,31 @@ function cropFor(sprite){
   const [x,y,width,height]=crop;
   return x>=0&&y>=0&&width>0&&height>0&&x+width<=sprite.atlasWidth&&y+height<=sprite.atlasHeight?crop:null;
 }
+// Isometric paint order against standing furniture. Only pieces whose drawn
+// rectangle overlaps the visitor's matter. Along the view both +col and +row
+// come towards the camera: a visitor is in front of a floor box when past its
+// max col or max row, behind it when before its min col or min row; on a
+// diagonal corner the larger separation decides. Feet-y order is kept inside
+// the interval the overlapping pieces allow.
+export function visitorDepth(pose,point,scale,occluders=[]){
+  let z=10+Math.round(point.y*1000),lo=-Infinity,hi=Infinity;
+  const h=.255*scale,w=.1*Math.abs(scale);
+  const rect={x0:point.x-w/2,x1:point.x+w/2,y0:point.y-h*.96,y1:point.y+h*.04};
+  for(const o of occluders){
+    const b=o?.box,r=o?.rect;if(!b||!r||!Number.isFinite(o.z))continue;
+    if(rect.x1<r.x0||rect.x0>r.x1||rect.y1<r.y0||rect.y0>r.y1)continue;
+    const frontBy=Math.max(pose.col-b.maxCol,pose.row-b.maxRow),behindBy=Math.max(b.minCol-pose.col,b.minRow-pose.row);
+    if(frontBy<-1e-6&&behindBy<-1e-6)continue; // inside the box: navigation's problem, not paint order
+    if(frontBy>=behindBy)lo=Math.max(lo,o.z);else hi=Math.min(hi,o.z);
+  }
+  if(z<=lo)z=lo+1;
+  if(z>=hi)z=hi-1;
+  if(z<=lo)z=lo+1;
+  return z;
+}
 // Navigation is expressed in the same logical room as the simulation. Image
 // dimensions and load completion never change where a customer can walk.
-export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),projectFloor=projectBestFloor,requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame,now=()=>performance.now(),walkSprites=false}={}){
+export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),projectFloor=projectBestFloor,requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame,now=()=>performance.now(),walkSprites=false,getOccluders=()=>[]}={}){
   if(!container)throw new Error('Best people layer requires a container');
   const snapshot=createLifeSnapshot(),people=new Map(),motions=new Map(),actorsById=new Map(),appearances=new Map();
   // Screen-space facing per visitor (walk sheets are drawn facing right, front or back).
@@ -244,6 +266,7 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
   }
   function render(time){
     if(!scene||disposed)return;
+    let occluders=[];try{occluders=getOccluders?.()||[];}catch{}
     for(const [id,node] of people){
       const actor=actorsById.get(id),pose=motions.get(id)?.advance(time);
       node.hidden=!pose;if(!pose)continue;
@@ -254,7 +277,7 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
       // Visibility-graph corners can have a subpixel clearance. Decimal
       // formatting must not move a safe foot back onto an obstacle boundary.
       node.style.left=`${point.x*100}%`;node.style.top=`${point.y*100}%`;
-      node.style.zIndex=String(10+Math.round(point.y*1000));
+      node.style.zIndex=String(visitorDepth(pose,point,scale,occluders));
       node.style.setProperty('--person-scale',scale.toFixed(3));
       const appearance=appearances.get(id);
       let mirror=Math.cos(pose.heading||0)<0;
