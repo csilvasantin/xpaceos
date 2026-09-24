@@ -1340,7 +1340,7 @@
   window.AdmiraXP_KillSwitch={check, apply:applyKillSwitch};
 })();
 </script>
-<script src="xtanco-version.js?v=20260924-1304"></script>
+<script src="xtanco-version.js?v=20260924-1315"></script>
 <script src="xtanco-runtime-config.js?r=24"></script>
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
@@ -5528,7 +5528,7 @@ function camForceExact(n){
     const exit=(G.custs||[]).filter(c=>c&&c.st!=='queue'&&c.st!=='buy'&&c.st!=='leave')
       .sort((a,b)=>(b.dwellTicks||0)-(a.dwellTicks||0)).slice(0,cur-n);
     for(const t of exit){
-      try{ if(typeof startCustomerLeave==='function'&&t.st==='walk') startCustomerLeave(t); else t.st='leave'; }catch(e){}
+      try{ startCustomerLeave(t); }catch(e){}
     }
   }
   if(n!==CAM.lastApplied){ CAM.lastApplied=n; try{ if(typeof saveGame==='function') saveGame(); }catch(e){} }
@@ -8315,9 +8315,11 @@ function customerSpeedMult(c){
 function customerMoveSpeed(speed,c){
   const target=speed*CUSTOMER_MOVE_SPEED_SCALE*customerSpeedMult(c);
   if(!c) return target;
+  const atDoor=customerFloorPoint(c.x,c.y).col>ISO.cols-2.5;
+  if(atDoor)c.pauseTimer=0;
   if(c.pauseTimer>0){ c.pauseTimer--; c.curSpeed=(c.curSpeed||0)*0.6; return c.curSpeed<0.02?0:c.curSpeed; }
   const a=c.look&&c.look.age;
-  if((c.st==='walk'||c.st==='browse') && Math.random()<(a==='senior'?0.010:a==='nino'?0.014:0.004)){
+  if(!atDoor&&(c.st==='walk'||c.st==='browse') && Math.random()<(a==='senior'?0.010:a==='nino'?0.014:0.004)){
     c.pauseTimer = a==='nino' ? 8+Math.floor(Math.random()*14) : 16+Math.floor(Math.random()*26);
     c.curSpeed=(c.curSpeed||0)*0.5;
     return c.curSpeed;
@@ -8857,6 +8859,16 @@ function customerDoorAccess(actor){
   actor._waitingDoor=customerDoorPass?.actor!==actor;
   return !actor._waitingDoor;
 }
+function customerAvoidanceRoute(actor,current,target,navigation){
+  const layout=navigation.obstacles.map(b=>({id:b.id,type:'custom',col:b.minCol,row:b.minRow,fp:[b.maxCol-b.minCol,b.maxRow-b.minRow]}));
+  for(const other of G.custs||[]){
+    if(other===actor)continue;const p=customerFloorPoint(other.x,other.y);
+    if((Math.abs(p.col-current.col)<.48&&Math.abs(p.row-current.row)<.48)||(Math.abs(p.col-target.col)<.48&&Math.abs(p.row-target.row)<.48))continue;
+    layout.push({id:'visitor-'+other.id,type:'custom',col:p.col-.235,row:p.row-.235,fp:[.47,.47]});
+  }
+  const nav=window.XpaceCustomerNavigation.buildCustomerNavigation({cols:ISO.cols,rows:ISO.rows,doorRow:3.35,layout},{radius:.24,allowOutside:true});
+  return nav.route(current,target);
+}
 function moveCustomerTo(actor,screenX,screenY,speed){
   const navigation=getCustomerNavigation();
   if(!navigation)return 'blocked';
@@ -8897,15 +8909,85 @@ function moveCustomerTo(actor,screenX,screenY,speed){
     }
     if(!candidate){
       actor.curSpeed=(actor.curSpeed||0)*.6;
-      if(++journey.blocked>45){journey.path=null;journey.retry=8;journey.blocked=0;}
+      if(++journey.blocked>45){journey.path=customerAvoidanceRoute(actor,current,target,navigation);journey.index=0;journey.retry=8;journey.blocked=0;}
       return 'blocked';
     }
   }
-  journey.blocked=0;
+  if(Math.hypot(candidate.col-waypoint.col,candidate.row-waypoint.row)>=d-.001){
+    if(++journey.blocked>45){journey.path=customerAvoidanceRoute(actor,current,target,navigation);journey.index=0;journey.blocked=0;}
+  }else journey.blocked=0;
   const projected=toIso(candidate.col,candidate.row),oldX=actor.x;
   actor.x=projected.x-7;actor.y=projected.y-20;
   if(Math.abs(actor.x-oldX)>.001)actor.dir=actor.x<oldX?-1:1;
   return 'moving';
+}
+
+// Each visit is finite: inspect one to three different fixtures, then service/exit.
+// Targets are reserved in floor space and never occupy the entrance apron.
+function ensureCustomerVisit(c){
+  if(c.visit?.version===1)return c.visit;
+  const wanted=String(typeof prodName==='function'?prodName(c.wantsProdIdx):'').toLowerCase();
+  const preferred=/prensa|press|revista/.test(wanted)?'magazines':/loter|lott/.test(wanted)?'lottery':/vino|wine/.test(wanted)?'wineRack':/bebida|drink/.test(wanted)?'vending':'shelves';
+  const fixtures=shopLayout.filter(it=>['shelves','wineRack','magazines','vending','lottery','counter'].includes(it.type));
+  const ordered=fixtures.filter(it=>it.type===preferred).concat(fixtures.filter(it=>it.type!==preferred));
+  const count=c.persona==='curious'?3:c.persona==='impatient'||c.persona==='loyal'?1:2;
+  c.visit={version:1,goal:c.followId!=null&&c.look?.age==='nino'?'accompany':c.persona==='curious'?'compare':'find',limit:count,stops:ordered.slice(0,count+2).map(it=>({id:it.id,label:it.label||it.type})),index:0,target:null,wait:0,travel:0,total:0,done:[]};
+  return c.visit;
+}
+function customerVisitTarget(c,stop){
+  const nav=getCustomerNavigation(),box=nav?.obstacles.find(it=>it.id===String(stop.id));
+  if(!nav||!box)return null;
+  const current=customerFloorPoint(c.x,c.y),candidates=[];
+  for(let col=box.minCol-.65;col<=box.maxCol+.66;col+=.55){
+    candidates.push({col,row:box.minRow-.65},{col,row:box.maxRow+.65});
+  }
+  for(let row=box.minRow-.65;row<=box.maxRow+.66;row+=.55){
+    candidates.push({col:box.minCol-.65,row},{col:box.maxCol+.65,row});
+  }
+  const available=candidates.filter(p=>p.col<ISO.cols-2.5&&nav.isWalkable(p)&&!(G.custs||[]).some(o=>{
+    if(o===c)return false;const t=o.visit?.target||customerFloorPoint(o.x,o.y);
+    return Math.hypot(p.col-t.col,p.row-t.row)<.6;
+  }));
+  available.sort((a,b)=>Math.hypot(a.col-current.col,a.row-current.row)-Math.hypot(b.col-current.col,b.row-current.row));
+  return available.find(p=>nav.route(current,p))||null;
+}
+function finishCustomerVisit(c){
+  const v=ensureCustomerVisit(c);v.target=null;v.phase='finished';
+  if(v.goal==='accompany'){
+    const guardian=G.custs.find(o=>o.id===c.followId);
+    if(guardian&&guardian.st!=='leave')return;
+    c.followId=null;startCustomerLeave(c);return;
+  }
+  if(!v.done.length){startCustomerLeave(c);return;}
+  // Service is a real visit stage: do not book a purchase while circling shelves.
+  c.wantsTurn=true;c.ticketPicked=true;assignCustomerTurn(c);c.st='queue';c._qEnter=0;
+  c.bMsg=lang==='en'?'Ready for service':'Listo para atención';c.bTimer=100;
+}
+function tickCustomerVisit(c){
+  const v=ensureCustomerVisit(c);v.total++;
+  if(v.goal==='accompany'){
+    const guardian=G.custs.find(o=>o.id===c.followId);
+    if(!guardian||guardian.st==='leave'){c.followId=null;startCustomerLeave(c);return;}
+    const p=customerFloorPoint(guardian.x,guardian.y),here=customerFloorPoint(c.x,c.y);
+    if(Math.hypot(p.col-here.col,p.row-here.row)>.85){const q=toIso(p.col-.55,p.row+.4);moveCustomerTo(c,q.x-7,q.y-20,customerMoveSpeed(1.2,c));}
+    return;
+  }
+  if(v.done.length>=v.limit||v.index>=v.stops.length||v.total>5400){finishCustomerVisit(c);return;}
+  const stop=v.stops[v.index];
+  if(!v.target){
+    v.target=customerVisitTarget(c,stop);v.travel=0;v.wait=0;
+    if(!v.target){v.index++;return;}
+    v.phase='going';c.bMsg=(lang==='en'?'Looking for ':'Voy a ')+stop.label;c.bTimer=100;
+  }
+  const p=toIso(v.target.col,v.target.row);
+  const result=moveCustomerTo(c,p.x-7,p.y-20,customerMoveSpeed(1.3,c));
+  if(result==='arrived'){
+    v.phase='looking';
+    if(++v.wait>=120+((c.num||0)%3)*60){v.done.push(stop.id);v.index++;v.target=null;}
+  }else if(++v.travel>900){
+    // A blocked product is skipped once, never selected again in a circle.
+    v.index++;v.target=null;
+  }
 }
 
 // ── A* PATHFINDING ───────────────────────────────────────────
@@ -13085,46 +13167,7 @@ function updateGame(){
         }
       }
     } else if(c.st==='browse'){
-      // Browse dialogue: show once, 25% chance
-      if(!c.bShown&&c.bTimer<=0&&Math.random()<0.005){
-        const arr=T().custBrowse;c.bMsg=arr[Math.floor(Math.random()*arr.length)];c.bTimer=200;c.bShown=true;
-      }
-      if(c.roamPath&&c.roamIdx<c.roamPath.length){
-        const destination=c.roamPath[c.roamPath.length-1],rpIso=toIso(destination.col,destination.row);
-        const roamSpd=customerMoveSpeed(G.weather&&G.weather.type==='sun'?0.7:0.95,c);
-        const roamMovement=moveCustomerTo(c,rpIso.x-7,rpIso.y-20,roamSpd);
-        if(roamMovement==='arrived'){
-          c.roamPath=null;c.roamIdx=0;
-          c.roamCooldown=Math.round((70+Math.floor(Math.random()*120))*(c.roamMult||1));
-          if(c.indecisive&&(c.deliberations|0)<2){
-            c.deliberations=(c.deliberations|0)+1;
-            c.roamCooldown=Math.min(c.roamCooldown,18+Math.floor(Math.random()*18));
-            if((c.bTimer|0)<=0){c.bMsg='🤔';c.bTimer=85;}
-          }
-        }
-      }else if((c.roamCooldown=(c.roamCooldown|0)-1)<=0){
-        const roamTarget=getCustomerRoamAnchor(c);
-        if(roamTarget){
-          c.roamPath=[roamTarget];
-          c.roamIdx=0;
-        }
-        c.roamCooldown=Math.round((90+Math.floor(Math.random()*150))*(c.roamMult||1));
-      }
-      c.timer--;if(c.timer<=0){
-        // REGLA: un niño acompañado NO se va mientras su adulto siga en la tienda
-        // (no salir solo). Sigue deambulando hasta que el acompañante se vaya.
-        if(c.followId!=null && c.look && c.look.age==='nino'){
-          const g=G.custs.find(x=>x&&x.id===c.followId);
-          if(g && g.st!=='leave'){ c.timer=90+Math.floor(Math.random()*90); continue; }
-        }
-        const stayRemaining=(c.stayTargetTicks|0)-(c.dwellTicks|0);
-        if(stayRemaining>0){
-          const browseChunk=Math.round((45+Math.random()*120)*(G.weather&&G.weather.type==='rain'?1.25:1)*(c.persona==='curious'?1.35:(c.persona==='impulsive'?0.72:1)));
-          c.timer=Math.max(30,Math.min(stayRemaining,browseChunk));
-          continue;
-        }
-        resolveCustomerCheckout(c);
-      }
+      tickCustomerVisit(c);
     } else if(c.st==='leave'){
       // Both legs use the same swept-body route, including the vestibule.
       // Failed paths wait/replan; leaving never grants a collision bypass.
@@ -13133,7 +13176,7 @@ function updateGame(){
       if(leaveMovement==='arrived'){
           // Satisfaction tablet vote — customer stops at kiosk before leaving
           if(!c.voted){
-            c.voted=true;c.voteTimer=40; // pause 40 frames to "tap" the tablet
+            c.voted=true;c.voteTimer=2; // A passing vote must not occupy the doorway.
             const djOn=G.staff&&G.staff.some(s=>s.hired&&s.role===4);
             let voteRoll=Math.random();
             if(djOn) voteRoll-=0.15;
@@ -13148,7 +13191,7 @@ function updateGame(){
           if(c.voteTimer>0){
             c.voteTimer--;
             // At the moment of "tap" (halfway through pause)
-            if(c.voteTimer===20){
+            if(c.voteTimer===1){
               const face=c.voteFace;
               tabletVote={face,timer:80};
               if(G.reviews){
@@ -13182,6 +13225,8 @@ function updateGame(){
     for(let i=0;i<n;i++){
       const a=list[i];
       if(!a||a.st==='queue'||a.st==='buy'||a._waitingDoor) continue;
+      // Do not undo the last centimetre of a route with a repulsion step.
+      if(Math.hypot(a.x-a._motionStartX,a.y-a._motionStartY)>1e-6)continue;
       const nav=getCustomerNavigation(),from=customerFloorPoint(a.x,a.y);
       if(!nav)continue;
       let pX=0,pY=0,cnt=0;
@@ -13195,7 +13240,7 @@ function updateGame(){
       const mx=pX*separationScale,my=pY*separationScale;
       for(const [sx,sy]of [[mx,my],[mx,0],[0,my]]){
         const next={col:from.col+sx,row:from.row+sy};
-        if(nav.segmentClear(from,next)&&customerSpaceClear(a,next)){const p=toIso(next.col,next.row);a.x=p.x-7;a.y=p.y-20;break;}
+        if(nav.segmentClear(from,next)&&nav.segmentClear(customerFloorPoint(a._motionStartX,a._motionStartY),next)&&customerSpaceClear(a,next)){const p=toIso(next.col,next.row);a.x=p.x-7;a.y=p.y-20;break;}
       }
     }
   }
@@ -13498,7 +13543,7 @@ function nextCustNum(){
   if(G&&Array.isArray(G.custs)) for(const c of G.custs){ if(c&&c.num) used.add(c.num); }
   let n=1; while(used.has(n)) n++; return n;
 }
-function spawnCust(isVip,isSponsor,force,synthetic=false){
+function spawnCust(isVip,isSponsor,force,synthetic=false,withGroup=false){
   // 'force' (true) salta el limite del SPAWNER PASIVO (ej: cap horario que limita
   // a 7), usado por /sponsor /socio /devolucion etc. del CLI para invocar al
   // instante. Pero NO salta el override manual /people store <N> — ese cap es
@@ -13509,6 +13554,7 @@ function spawnCust(isVip,isSponsor,force,synthetic=false){
   if(G && Number.isFinite(G.peopleOverride) && G.custs.length>=G.peopleOverride) return null;
   if(xtoreSessionMode()&&G.custs.length>=getCurrentCustomerCap())return null;
   if(!force && G.custs.length>=getCurrentCustomerCap()) return null;
+  if(!synthetic&&!withGroup&&(G.custs||[]).some(c=>c.st==='walk'&&!c._enteredStore&&customerFloorPoint(c.x,c.y).col>ISO.cols-1.5))return null;
   const ci=Math.floor(Math.random()*6);
   const isSp=!!isSponsor;
   const isV=!!isVip||isSp; // sponsor implies VIP-tier perks
@@ -13540,6 +13586,8 @@ function spawnCust(isVip,isSponsor,force,synthetic=false){
     }
   }
   if(!entryTarget) return null;
+  // Legacy integer tiles can touch furniture edges; use the body's clearance.
+  entryTarget=getCustomerNavigation()?.resolve(entryTarget)||entryTarget;
   tCol=entryTarget.col;tRow=entryTarget.row;
   const tIso=toIso(tCol,tRow);
   const turnTarget=wantsTurn?getTurnKioskTarget():null;
@@ -13611,7 +13659,7 @@ function spawnCust(isVip,isSponsor,force,synthetic=false){
     roamPath:null,roamIdx:0,roamCooldown:45+Math.floor(Math.random()*60),
     curSpeed:0,roamMult:(cLook.age==='nino'?0.5:1),followId:null,hasKid:false,
     indecisive:indecisive,deliberations:0,
-    wantsTurn:wantsTurn,queueNumber:0,serviceTimer:0,ticketPicked:false,
+    wantsTurn:false,queueNumber:0,serviceTimer:0,ticketPicked:false,
     bTimer:cBTimer,bMsg:cBMsg,bShown:false,
     wantsProdIdx:wantsProdIdx,bought:false,loyaltyFree:false,dwellTicks:0,
     stayTargetTicks:stayTargetTicks,
@@ -13620,6 +13668,7 @@ function spawnCust(isVip,isSponsor,force,synthetic=false){
   });
   const newCust=G.custs[G.custs.length-1];
   newCust.num=nextCustNum();
+  newCust.path=[entryTarget]; // First clear the entrance, then follow a product mission.
   // KPIs por perfil (idea #12): cuenta la visita por franja de edad y por persona.
   if(G.metrics){
     const _a=cLook.age||'adulto';
@@ -13701,7 +13750,7 @@ function spawnGroup(size){
   if(!leader) return 0;
   const members=[];
   for(let k=1;k<size;k++){
-    const m=spawnCust(false,false,true);
+    const m=spawnCust(false,false,true,false,true);
     if(!m) break;
     members.push(m);
   }
@@ -14115,7 +14164,7 @@ function getQueueTarget(index=0){
       let best=null,score=Infinity;
       for(let col=.25;col<ISO.cols;col+=.5)for(let row=.25;row<ISO.rows;row+=.5){
         const p={col,row};
-        if(!navigation.isWalkable(p)||slots.some(s=>Math.hypot(s.col-col,s.row-row)<.72))continue;
+        if(col>ISO.cols-3||!navigation.isWalkable(p)||slots.some(s=>Math.hypot(s.col-col,s.row-row)<.72))continue;
         const cost=Math.hypot(col-desired.col,row-desired.row);
         if(cost<score){best=p;score=cost;}
       }
@@ -24485,6 +24534,7 @@ function fmtHireSince(since){
 }
 
 function customerStateLabel(c){
+  if(c?.st==='browse'&&c.visit){const v=c.visit,stop=v.stops[v.index];return v.goal==='accompany'?(lang==='en'?'Accompanying':'Acompañando'):stop?((v.phase==='looking'?(lang==='en'?'Looking: ':'Mirando: '):(lang==='en'?'Going to: ':'Va a: '))+stop.label):(lang==='en'?'To service':'A atención');}
   const map=lang==='es'
     ? {walk:'entra',browse:'mira',queue:'cola',buy:'atencion',leave:'sale',tablet:'vota'}
     : {walk:'enters',browse:'browses',queue:'queue',buy:'checkout',leave:'leaves',tablet:'votes'};
