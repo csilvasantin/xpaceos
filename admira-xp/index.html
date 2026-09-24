@@ -814,7 +814,7 @@
   <div class="sep"></div>
   <div class="stat"><span class="stat-label" id="bbTrafficLabel">Tráfico</span><span class="stat-val" id="bbCli">0/0</span></div>
   <div class="sep"></div>
-  <div class="stat" id="bbCamBox" title="Aforo real (cámara Hikvision)"><span class="stat-label">👁 Aforo real</span><span class="stat-val"><span id="bbCamDot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#cc4444;margin-right:4px;vertical-align:middle"></span><span id="bbCamVal">—</span></span></div>
+  <div class="stat" id="bbCamBox" title="Aforo real (cámara Hikvision)"><span class="stat-label" id="bbCamLabel">👁 Aforo real</span><span class="audience-values"><span class="audience-metric"><span class="audience-kind" id="bbPersonLabel" hidden>Personas</span><span class="stat-val"><span id="bbCamDot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#cc4444;margin-right:4px;vertical-align:middle"></span><span id="bbCamVal">—</span></span></span><span class="audience-metric" id="bbCarMetric" hidden><span class="audience-kind" id="bbCarLabel">Coches</span><span class="stat-val" id="bbCarVal">—</span></span><span class="audience-metric" id="bbMotoMetric" hidden><span class="audience-kind" id="bbMotoLabel">Motos</span><span class="stat-val" id="bbMotoVal">—</span></span><span class="audience-metric" id="bbBikeMetric" hidden><span class="audience-kind" id="bbBikeLabel">Bicis</span><span class="stat-val" id="bbBikeVal">—</span></span></span></div>
   <div class="sep"></div>
   <span id="bbStatus" style="color:#88cc88;font-size:10px">Idle</span>
   <span id="xpTopNotify" aria-live="polite"></span>
@@ -5427,8 +5427,21 @@ function updateCamHud(){
   const val=document.getElementById('bbCamVal'); if(!val) return;
   const dot=document.getElementById('bbCamDot');
   const box=document.getElementById('bbCamBox');
-  if(xtoreSessionMode()){
-    const a=xtoreSessionAudience();val.textContent=a?a.counts.person:'—';
+  const linked=xtoreSessionMode(),english=typeof lang!=='undefined'&&lang==='en';
+  document.getElementById('topBar')?.classList.toggle('xtore-session-hud',linked);
+  const label=document.getElementById('bbCamLabel');
+  if(label)label.textContent=linked?(english?'👁 Session passages':'👁 Pasos de sesión'):(english?'👁 Real audience':'👁 Aforo real');
+  const personLabel=document.getElementById('bbPersonLabel');
+  if(personLabel){personLabel.hidden=!linked;personLabel.textContent=english?'People':'Personas';}
+  const a=linked?xtoreSessionAudience():null;
+  for(const [name,key,es,en] of [['Car','car','Coches','Cars'],['Moto','motorcycle','Motos','Motorbikes'],['Bike','bicycle','Bicis','Bikes']]){
+    const metric=document.getElementById('bb'+name+'Metric'),number=document.getElementById('bb'+name+'Val'),kind=document.getElementById('bb'+name+'Label');
+    if(metric)metric.hidden=!linked;
+    if(number)number.textContent=a?a.counts[key]:'—';
+    if(kind)kind.textContent=english?en:es;
+  }
+  if(linked){
+    val.textContent=a?a.counts.person:'—';
     if(dot)dot.style.background=a?'#33dd66':'#cc4444';
     if(box)box.title=a?'REAL · '+a.counts.person+' pasos de sesión; hasta '+MAX_PEOPLE_OVERRIDE+' visitantes virtuales. Entran: '+a.directions.enter+' · Salen: '+a.directions.exit+'. No es aforo físico.':'REAL · esperando analizador Xtore; sin sustituirlo por datos simulados.';
     return;
@@ -33698,8 +33711,6 @@ window.xtAPI = (function(){
     {sel:'.stat-label', idx:1, en:'Profit', es:'Beneficio'},
     {sel:'.stat-label', idx:2, en:'Sat', es:'Sat'},
     {sel:'.stat-label', idx:3, en:'Pass/In', es:'Pasan/Entran'},
-    {sel:'.stat-label', idx:4, en:'👁 Real audience', es:'👁 Aforo real'},
-    {sel:'#bbCamBox', attr:'title', en:'Live audience (Hikvision camera)', es:'Aforo real (cámara Hikvision)'},
     {sel:'#bbStatus', en:'Idle', es:'En espera'},
     {sel:'#btnQuit', en:'⏻ Quit', es:'⏻ Salir'},
     {sel:'#btnQuit', attr:'title', en:'Close audio and video, back to main menu', es:'Cerrar audios y videos, volver al menú principal'},
@@ -34360,6 +34371,13 @@ window.xtAPI = (function(){
   #topBar .sep{height:18px;opacity:.5}
   /* Aforo real: punto de estado un pelín mayor */
   #topBar #bbCamDot{width:7px;height:7px}
+  #topBar .audience-values{display:flex;gap:12px}
+  #topBar .audience-metric{display:flex;flex-direction:column;gap:2px;min-width:30px}
+  #topBar .audience-kind{font-size:8px;color:var(--xp-muted);white-space:nowrap}
+  #topBar .audience-metric[hidden],#topBar .audience-kind[hidden]{display:none}
+  #topBar.xtore-session-hud{min-height:54px;height:auto;padding-top:5px;padding-bottom:5px;flex-wrap:wrap}
+  #topBar.xtore-session-hud #bbCamLabel{letter-spacing:.04em}
+
   /* Competencia: cajas legibles (6→8px) con acento de color de marca arriba y tamaño consistente */
   #topBar .comp-box{padding:3px 8px;min-width:52px;border-top-width:3px;border-radius:8px;gap:1px}
   #topBar .comp-name{font-size:8px;letter-spacing:.06em;color:#a8c6cf}

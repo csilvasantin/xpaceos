@@ -1,10 +1,10 @@
 {
-  "version": "v.24.09.2026.r6.12:19",
+  "version": "v.24.09.2026.r6.12:52",
   "signature": "TrinityMBP14 · MacBookProNegro14",
   "machine": "MacBookProNegro14",
   "agent": "TrinityMBP14",
   "deployer": "TrinityMBP14",
-  "evidence": "Yokup #248: cámara de esquina activa demo player, calle, estadísticas y mostrador solo geometría. 316 tests correctos; validación visual local sintética.",
+  "evidence": "Yokup #270: HUD Pasos de sesión con personas, coches, motos y bicis; 317 tests.",
   "day": "24.09.2026",
-  "time": "12:19"
+  "time": "12:52"
 }

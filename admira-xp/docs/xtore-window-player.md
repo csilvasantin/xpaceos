@@ -94,3 +94,12 @@ En el gemelo enlazado, modo Real usa `audience.counts.person` de `admira.audienc
 ## Demo de pantallas desde la cámara (#248)
 
 Clic en cámara de esquina = toggle local de demo, sin recargar ni perder enlace. Alternativa Player y cámara → Activar demo zapatillas. DS1 player, DS2 vídeo original, TFT estadísticas y gestor de turnos solo recuadros/categorías sobre fondo neutro. Esa última vista no recibe ni dibuja píxeles del stream. TTL y origen exacto del enlace siguen vigentes. Si desconecta, muestra sin señal; otro clic restaura las pantallas del juego. Tras recarga está apagado. Help: https://admira.tv/help/#xtore-demo-pantallas.
+
+## Barra de pasos de sesión
+
+En el Xtanco enlazado, la antigua etiqueta Real audience se llama Pasos de sesión / Session passages. Personas, Coches, Motos y Bicis vienen del mismo snapshot de audiencia. No son presencia instantánea ni aforo físico. Sin snapshot reciente se muestran guiones, sin tomar valores del aforo Hikvision. En otras tiendas, el indicador físico original sigue disponible y las columnas de vehículos permanecen ocultas.
+
+Los ID de trayectoria visibles en Puerta Cam no son contadores: se comparten entre categorías y pueden corresponder a trayectorias que todavía no han confirmado un paso. El total de personas del HUD debe coincidir con los pasos del analizador de la misma sesión y momento.
+
+Help: https://admira.tv/help/#xtore-audiencia
+Guía animada: https://admira.tv/apps/video/xtore-id-pasos.mp4
