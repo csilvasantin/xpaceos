@@ -1,10 +1,10 @@
 {
-  "version": "v.24.09.2026.r11.13:33",
+  "version": "v.24.09.2026.r12.13:39",
   "signature": "TrinityMBP14 · MacBookProNegro14",
   "machine": "MacBookProNegro14",
   "agent": "TrinityMBP14",
   "deployer": "TrinityMBP14",
-  "evidence": "Yokup #290: conexión en pestañas normales, acceso directo a Digital Twin y origen local preservado;337 pruebas.",
+  "evidence": "Yokup #298: controles −/+ por categoría Instore, composición manual sintética;343 pruebas.",
   "day": "24.09.2026",
-  "time": "13:33"
+  "time": "13:39"
 }

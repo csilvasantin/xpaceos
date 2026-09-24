@@ -1340,7 +1340,7 @@
   window.AdmiraXP_KillSwitch={check, apply:applyKillSwitch};
 })();
 </script>
-<script src="xtanco-version.js?v=20260924-1333"></script>
+<script src="xtanco-version.js?v=20260924-1339"></script>
 <script src="xtanco-runtime-config.js?r=24"></script>
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
@@ -5429,7 +5429,8 @@ function applyManualAudience(){
   const ids=new Set(G.custs.map(c=>c.id));
   for(const c of G.custs)if(c.followId!=null&&!ids.has(c.followId))c.followId=null;
   for(let attempt=0;G.custs.length<n&&attempt<MAX_RESET_AUDIENCE*3;attempt++){
-    const c=spawnCust(false,false,true,true);if(!c)continue;
+    const profile=window.__xtancoAvatarAudience?.missing(G.custs,G.manualAudienceProfiles);
+    const c=spawnCust(false,false,true,true,false,profile);if(!c)continue;
     // Populate walkable destinations immediately instead of stacking 100 at the door.
     c.x=c.tx;c.y=c.ty;c.st='browse';c.path=null;c.pathIdx=0;c.wantsTurn=false;
     c.timer=180;c.bTimer=0;c.bMsg='';
@@ -5440,15 +5441,36 @@ function resetAudienceCommand(argument){
   if(!G||!Array.isArray(G.custs)||state!==S.GAME)return {ok:false,message:'Entra en la tienda antes de usar /resetaudiencia.'};
   if(!arg)return {ok:true,message:'Uso: /resetaudiencia <0–100> · /resetaudiencia auto. Visitantes actuales: '+G.custs.length+'. Modo: '+(manualAudienceTarget()===null?'automático':'manual '+manualAudienceTarget())};
   if(arg==='auto'){
-    G.manualAudienceTarget=null;G.peopleOverride=null;CAM.lastApplied=null;
+    G.manualAudienceTarget=null;G.manualAudienceProfiles=null;G.peopleOverride=null;CAM.lastApplied=null;
     camApplyToStore();saveGame();updateHtmlBar();
     return {ok:true,message:'Audiencia virtual automática restaurada. '+camBrainLine(),data:{manualAudienceTarget:null,count:G.custs.length}};
   }
   if(!/^\d+$/.test(arg)||!Number.isSafeInteger(Number(arg))||Number(arg)>MAX_RESET_AUDIENCE)return {ok:false,message:'Usa un entero de 0 a 100: /resetaudiencia 0, /resetaudiencia 100 o /resetaudiencia auto.'};
   if(G.storeClosed)return {ok:false,message:'La tienda está cerrada. Ábrela con /store open antes de fijar la audiencia.'};
-  const n=Number(arg);G.manualAudienceTarget=n;
+  const n=Number(arg);G.manualAudienceProfiles=null;G.manualAudienceTarget=n;
   applyManualAudience();saveGame();updateHtmlBar();
   return {ok:true,message:'Audiencia virtual manual: '+G.custs.length+'/'+n+' visitantes. Cámara y conteos reales siguen activos. Volver: /resetaudiencia auto.',data:{manualAudienceTarget:n,count:G.custs.length}};
+}
+function adjustAvatarAudience(kind,key,delta){
+  const api=window.__xtancoAvatarAudience,profile=api?.categoryProfile(kind,key);
+  if(!profile||![-1,1].includes(delta)||!G||state!==S.GAME||G.storeClosed||!Array.isArray(G.custs))return false;
+  if(delta>0&&G.custs.length>=MAX_RESET_AUDIENCE)return false;
+  const index=delta<0?G.custs.findIndex(c=>api.matches(c,kind,key)):-1;
+  if(delta<0&&index<0)return false;
+  const previous={target:G.manualAudienceTarget,override:G.peopleOverride};
+  G.manualAudienceTarget=G.custs.length+delta;G.peopleOverride=G.manualAudienceTarget;
+  if(delta>0){
+    const c=spawnCust(false,false,true,true,false,profile);
+    if(!c){G.manualAudienceTarget=previous.target;G.peopleOverride=previous.override;return false;}
+    c.x=c.tx;c.y=c.ty;c.st='browse';c.path=null;c.pathIdx=0;c.wantsTurn=false;c.timer=180;c.bTimer=0;c.bMsg='';
+  }else{
+    const [removed]=G.custs.splice(index,1);
+    if(G.turns?.servingId===removed.id)G.turns.servingId=null;
+    if(removed.fanCustomerId)try{window.LoyaltyBridge?.clearFromScene(removed.fanCustomerId);}catch(e){}
+    for(const c of G.custs){if(c.followId===removed.id)c.followId=null;if(c.id===removed.followId)c.hasKid=false;}
+  }
+  G.manualAudienceProfiles=G.custs.map(api.profile);G.customerCapAdjustTimer=0;
+  saveGame();updateHtmlBar();return true;
 }
 function camModeLabel(){ return CAM.mode==='exacto'?'EXACTO':(CAM.mode==='real'?'REAL':'FAKE'); }
 // Resumen para el "cerebro" de la tienda (contexto IA) y diagnósticos.
@@ -13543,7 +13565,10 @@ function nextCustNum(){
   if(G&&Array.isArray(G.custs)) for(const c of G.custs){ if(c&&c.num) used.add(c.num); }
   let n=1; while(used.has(n)) n++; return n;
 }
-function spawnCust(isVip,isSponsor,force,synthetic=false,withGroup=false){
+function spawnCust(isVip,isSponsor,force,synthetic=false,withGroup=false,audienceProfile=null){
+  audienceProfile=synthetic&&window.__xtancoAvatarAudience?.validProfile(audienceProfile)?audienceProfile:null;
+  // Profile composition is replenished by the manual reconciler, not random arrivals.
+  if(!synthetic&&Number.isInteger(G?.manualAudienceTarget)&&Array.isArray(G.manualAudienceProfiles))return null;
   // 'force' (true) salta el limite del SPAWNER PASIVO (ej: cap horario que limita
   // a 7), usado por /sponsor /socio /devolucion etc. del CLI para invocar al
   // instante. Pero NO salta el override manual /people store <N> — ese cap es
@@ -13612,12 +13637,13 @@ function spawnCust(isVip,isSponsor,force,synthetic=false,withGroup=false){
     cLook={shirt:1+Math.floor(Math.random()*5),hair:Math.floor(Math.random()*6),skin:Math.floor(Math.random()*6),pants:0,shoes:0,accessory:0};
   }
   // Género marcado también en clientes (falda en ellas).
-  if(cLook.gender!=='m'&&cLook.gender!=='f') cLook.gender=Math.random()<0.5?'f':'m';
+  if(audienceProfile)cLook={...cLook,...audienceProfile};
+  if(!audienceProfile&&cLook.gender!=='m'&&cLook.gender!=='f') cLook.gender=Math.random()<0.5?'f':'m';
   cLook.skirt=(cLook.gender==='f');
   if(!cLook.age) cLook.age=ageBucketForHour(G&&G.gameTime);
   // REGLA: ningún niño entra solo. Si saldría 'nino' pero NO hay un adulto/senior
   // en la sala que pueda acompañarlo, se sube a 'adulto' (no lone kids).
-  if(cLook.age==='nino' && !(G.custs||[]).some(x=>x&&x.look&&(x.look.age==='adulto'||x.look.age==='senior')&&x.st!=='leave')){
+  if(!audienceProfile&&cLook.age==='nino' && !(G.custs||[]).some(x=>x&&x.look&&(x.look.age==='adulto'||x.look.age==='senior')&&x.st!=='leave')){
     cLook.age='adulto';
   }
   // PRODUCTO DESEADO con SESGO POR EDAD (idea #6): seniors→prensa/lotería/tabaco
@@ -28158,9 +28184,11 @@ window.xtAPI = (function(){
           }
         }
         h.style.display='flex';
-        let segment='instore',prevIn=-1;
+        let segment='instore',prevIn=-1,avatarControlNotice='';
         const render=()=>{
-          const body=document.getElementById('impBody'); if(!body) return;
+          const body=document.getElementById('impBody'); if(!body||body.querySelector('[data-avatar-adjust]:active')) return;
+          const focused=document.activeElement?.dataset;
+          const focusKey=focused?.avatarAdjust?{...focused}:null;
           for(const button of h.querySelectorAll('[data-impact-mode]')){
             const selected=button.dataset.impactMode===segment;
             button.setAttribute('aria-pressed',String(selected));
@@ -28189,7 +28217,7 @@ window.xtAPI = (function(){
           const dentro=(typeof G!=='undefined'&&G&&Array.isArray(G.custs))?G.custs.length:0;
           const flashIn=dentro!==prevIn&&prevIn>=0;prevIn=dentro;
           const marcador='<div style="background:rgba(0,0,0,.35);border:1px solid rgba(158,255,160,.35);border-radius:8px;padding:10px;text-align:center"><div style="color:#9effa0">'+(en?'🏪 IN STORE NOW':'🏪 EN TIENDA AHORA')+'</div><strong style="display:block;font-size:26px;color:'+(flashIn?'#fff':'#ffe6a8')+'">'+dentro.toLocaleString(en?'en':'es')+'</strong><div style="font-size:9px;opacity:.65">'+entran+(en?' entered today · simulation':' entran hoy · simulación')+'</div></div>';
-          const avatarAudience=window.__xtancoAvatarAudience?.render?.((typeof G!=='undefined'&&G)?G.custs:[],en)||'';
+          const avatarAudience=window.__xtancoAvatarAudience?.render?.((typeof G!=='undefined'&&G)?G.custs:[],en,true)||'';
           // Franjas horarias de Instore: solo entradas del modelo interior.
           // por hora del día → el anunciante ve CUÁNDO hay audiencia. ⭐ = prime.
           let franjas='';
@@ -28228,7 +28256,7 @@ window.xtAPI = (function(){
           }
           const t=impactsTotals('in');
           const dyn=(typeof impactsDyn==='function')?impactsDyn('in'):{cpmDyn:IMPACTS.cpm,demandMult:1,qualityMult:1,revenueDyn:t.revenue,isPrime:false};
-          body.innerHTML=marcador+avatarAudience+'<div style="margin:8px 0;font-size:9px;opacity:.7">'+(en?'TWIN MODEL · estimates below are separate from Puerta Cam':'MODELO DEL GEMELO · estimaciones separadas de Puerta Cam')+'</div>'+franjas+rows+
+          body.innerHTML=marcador+avatarAudience+(avatarControlNotice?'<p role="status" style="color:#ffe6a8">'+avatarControlNotice+'</p>':'')+'<div style="margin:8px 0;font-size:9px;opacity:.7">'+(en?'TWIN MODEL · estimates below are separate from Puerta Cam':'MODELO DEL GEMELO · estimaciones separadas de Puerta Cam')+'</div>'+franjas+rows+
             '<div style="border-top:1px dashed #8a6a2f;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between"><span>'+(en?'TOTAL impacts':'TOTAL impactos')+'</span><b>'+Math.round(t.imp).toLocaleString(en?'en':'es')+'</b></div>'+
             '<div style="display:flex;justify-content:space-between;color:#9ad8ff"><span>'+(en?'👁 Attention (views)':'👁 Atención (miran)')+'</span><b>'+Math.round(t.look).toLocaleString(en?'en':'es')+' · '+Math.round(t.att*100)+'%</b></div>'+
             '<div style="display:flex;justify-content:space-between"><span>CPM ref</span><b>'+IMPACTS.cpm.toFixed(2)+' €</b></div>'+
@@ -28238,6 +28266,15 @@ window.xtAPI = (function(){
             '<div style="display:flex;justify-content:space-between;font-size:9.5px;opacity:.75" title="'+(en?'RTB demand (occupancy+prime) × quality (attention)':'demanda RTB (ocupación+prime) × calidad (atención)')+'"><span>↳ '+(en?'demand':'demanda')+' ×'+dyn.demandMult.toFixed(2)+' · '+(en?'quality':'calidad')+' ×'+dyn.qualityMult.toFixed(2)+'</span></div>'+
             '<div style="display:flex;justify-content:space-between;color:#c9a8ff"><span>'+(en?'Dynamic revenue':'Ingreso dinámico')+'</span><b>'+dyn.revenueDyn.toFixed(2)+' €</b></div>'+
             '<div style="margin-top:5px;font-size:9.5px;opacity:.6">'+(en?'📷 measured · ~ estimated · 👁 views≠passes · ⚡ CPM by demand×quality':'📷 medido · ~ estimado · 👁 miran≠pasan · ⚡ CPM por demanda×calidad')+'<br>/cpm cpm &lt;n&gt; · /cpm reset · /cpm off</div>';
+          if(focusKey)body.querySelector('[data-avatar-kind="'+focusKey.avatarKind+'"][data-avatar-key="'+focusKey.avatarKey+'"][data-avatar-adjust="'+focusKey.avatarAdjust+'"]')?.focus();
+        };
+        const controlsBody=document.getElementById('impBody');
+        controlsBody.onclick=e=>{
+          if(segment!=='instore')return;
+          const button=e.target.closest?.('[data-avatar-adjust],[data-avatar-auto]');if(!button||button.disabled)return;
+          const changed=button.hasAttribute('data-avatar-auto')?resetAudienceCommand('auto').ok:adjustAvatarAudience(button.dataset.avatarKind,button.dataset.avatarKey,Number(button.dataset.avatarAdjust));
+          avatarControlNotice=changed?'':(en?'Could not change audience: check that the store is open and has free space.':'No se pudo cambiar la audiencia: comprueba que la tienda está abierta y tiene espacio libre.');
+          render();
         };
         h._render=render;
         for(const button of h.querySelectorAll('[data-impact-mode]'))button.onclick=()=>{segment=button.dataset.impactMode;render();};
@@ -35173,8 +35210,8 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/xtore-window.css?v=normal-tabs-1">
 <script type="module" src="scripts/xtore-window.mjs?v=normal-tabs-1"></script>
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
-<link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
-<script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
+<link rel="stylesheet" href="scripts/avatar-audience.css?v=controls-1">
+<script type="module" src="scripts/avatar-audience.mjs?v=controls-1"></script>
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=inventari-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=inventari-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
