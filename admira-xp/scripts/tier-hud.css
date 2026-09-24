@@ -65,3 +65,17 @@ dialog[data-tier-hud] .life-compass span{font-family:var(--hud-font)}
   dialog[data-tier-hud] .best-stage figcaption{display:none}
 }
 @media(prefers-reduced-motion:reduce){dialog[data-tier-hud] .tier-hud-live i{animation:none}}
+
+/* Better on phones (24-sep-2026): one compact row at the bottom instead of the
+   stacked column that covered the middle of the scene. Lights become icons;
+   the row scrolls sideways if it still does not fit. */
+@media(max-width:760px){
+  dialog[data-tier-hud] .life-toolbar{left:8px;right:8px;transform:none;bottom:calc(var(--hud-safe-bottom,0px) + 8px);flex-direction:row;flex-wrap:nowrap;gap:4px;max-width:none;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;justify-content:flex-start}
+  dialog[data-tier-hud] .life-toolbar::-webkit-scrollbar{display:none}
+  dialog[data-tier-hud] :is(.life-lights,.life-camera){flex:none;flex-wrap:nowrap;padding:3px;gap:1px;max-width:none}
+  dialog[data-tier-hud] .life-lights span{display:none}
+  dialog[data-tier-hud] .life-toolbar button{padding:7px 8px!important;min-height:30px;font-size:9px!important;letter-spacing:.04em}
+  dialog[data-tier-hud] .life-lights button{font-size:13px!important}
+  dialog[data-tier-hud] .life-compass{bottom:calc(var(--hud-safe-bottom,0px) + 52px);right:14px;transform:scale(.8)}
+  dialog[data-tier-hud] .inventory-best-controls{bottom:calc(var(--hud-safe-bottom,0px) + 8px)}
+}

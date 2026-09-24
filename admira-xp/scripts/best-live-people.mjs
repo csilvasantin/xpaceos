@@ -131,7 +131,7 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
     const appearance=appearances.get(id);
     if(!appearance)return;
     appearance.image.onload=null;appearance.image.onerror=null;
-    appearance.visual.remove();appearances.delete(id);
+    (appearance.rig||appearance.visual).remove();appearances.delete(id);
   }
   function updateAppearance(node,actor){
     const profile=profileFor(actor),sprite=profile?.sprite,crop=cropFor(sprite);
@@ -141,7 +141,7 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
     cleanupAppearance(actor.id);
     const image=document.createElement('img');image.alt='';image.decoding='async';
     const visual=profile?document.createElement('span'):image;
-    const appearance={signature,node,image,visual,ready:false,failed:false,fallback:!profile,displayedProfileId:''};
+    const appearance={signature,node,image,visual,rig:null,ready:false,failed:false,fallback:!profile,displayedProfileId:''};
     appearances.set(actor.id,appearance);
     const stillActive=()=>!disposed&&appearances.get(actor.id)===appearance;
     const identify=(id,label)=>{
@@ -200,6 +200,23 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
   function removeMissing(active){
     for(const [id,node] of people)if(!active.has(id)){cleanupAppearance(id);node.remove();people.delete(id);motions.delete(id);actorsById.delete(id);}
   }
+  // A 2.5D gait rig from the same cutout: the original visual stays first as
+  // the torso and two clipped copies become the legs, pivoting at the hip. It
+  // is built once per appearance, only after the image is ready, so atlas crops
+  // and fallbacks are cloned exactly as displayed.
+  function buildRig(appearance){
+    if(appearance.rig||!appearance.ready||typeof appearance.visual.cloneNode!=='function')return;
+    const visual=appearance.visual,image=appearance.image;
+    let aspect=parseFloat(visual.style?.getPropertyValue?.('--visitor-cell-aspect'));
+    if(!(aspect>0)&&image.naturalWidth>0&&image.naturalHeight>0)aspect=image.naturalWidth/image.naturalHeight;
+    if(!(aspect>0))return;
+    const rig=document.createElement('span');rig.className='visitor-rig';
+    rig.style.setProperty('--visitor-rig-aspect',String(aspect));
+    visual.replaceWith?.(rig);
+    if(!rig.parentNode)appearance.node.append(rig);
+    const left=visual.cloneNode(true),right=visual.cloneNode(true);
+    rig.append(visual,left,right);appearance.rig=rig;
+  }
   function render(time){
     if(!scene||disposed)return;
     for(const [id,node] of people){
@@ -220,6 +237,15 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
       const phase=Number.isFinite(pose.phase)?pose.phase*Math.PI*2:0;
       node.style.setProperty('--visitor-bob',`${pose.walking?(-Math.abs(Math.sin(phase))*1.0).toFixed(3):0}%`);
       node.style.setProperty('--visitor-sway',`${pose.walking?(Math.sin(phase)*.4).toFixed(3):0}deg`);
+      // Legs swing in counter-phase from the hip; the forward foot lifts, the
+      // planted one carries weight, and the contact shadow widens per stride.
+      const swing=pose.walking?Math.sin(phase):0,stride=child?6:8;
+      node.style.setProperty('--visitor-leg-l',`${(swing*stride).toFixed(2)}deg`);
+      node.style.setProperty('--visitor-leg-r',`${(-swing*stride).toFixed(2)}deg`);
+      node.style.setProperty('--visitor-lift-l',`${(-Math.max(0,swing)*1.6).toFixed(2)}%`);
+      node.style.setProperty('--visitor-lift-r',`${(-Math.max(0,-swing)*1.6).toFixed(2)}%`);
+      node.style.setProperty('--visitor-step',Math.abs(swing).toFixed(3));
+      const appearance=appearances.get(id);if(appearance)buildRig(appearance);
       node.setAttribute('data-visitor-col',String(pose.col));node.setAttribute('data-visitor-row',String(pose.row));
       node.setAttribute('data-visitor-motion',pose.blocked?'waiting':pose.walking?'walking':'standing');
     }
