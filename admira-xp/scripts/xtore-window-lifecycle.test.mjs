@@ -6,6 +6,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {drawAnonymous,drawStatistics,drawStreet} from './xtore-demo.mjs';
 import {AudienceSessionState} from './audience-session.mjs';
+import {DoohHistoryState,renderDoohHistory} from './dooh-history.mjs';
 import * as core from './xtore-window-core.mjs';
 const source=readFileSync(new URL('./xtore-window.mjs',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
 function fixture(t){
@@ -26,7 +27,7 @@ function fixture(t){
   const session='00000000-0000-0000-0000-000000000001';
   const location={origin:'https://www.xpaceos.com',search:`?virtualPlayer=${core.SCREEN}&twinOrigin=https%3A%2F%2Fadmira.tv&twinSession=${session}`};
   const window={opener:peer,addEventListener:(name,fn)=>{listeners[name]=fn;},dispatchEvent:e=>events.push(e.type)};
-  vm.runInNewContext(source,{...core,AudienceSessionState,drawAnonymous,drawStatistics,drawStreet,document,window,location,Date,URL,URLSearchParams,Event,ImageBitmap:class{},
+  vm.runInNewContext(source,{...core,DoohHistoryState,renderDoohHistory,AudienceSessionState,drawAnonymous,drawStatistics,drawStreet,document,window,location,Date,URL,URLSearchParams,Event,ImageBitmap:class{},
     setInterval:fn=>timers.push(fn),movableWindow:()=>({restore(){}}),
     createExteriorProgram:({onState})=>({update(value){calls.update.push(value);onState('Estado de regla');},draw(){calls.draw++;return true;},clear(){calls.clear++;},destroy(){calls.destroy++;}})});
   let seq=0;
@@ -73,4 +74,18 @@ test('demo toggle owns all four surfaces and persists on lost connection without
  assert.equal(images,0);assert.ok(texts.includes('Persona'));
  f.node('xtore-disconnect').onclick();assert.equal(api.demoActive(),true);api.drawScreen(ctx,160,90,'anonymous');assert.ok(texts.includes('Sin detecciones recientes'));
  api.toggleDemo();assert.equal(api.demoActive(),false);assert.equal(api.drawScreen(ctx,160,90,'statistics'),false);
+});
+
+test('history uses the authenticated pair, requests persisted buckets and clears on disconnect',t=>{
+ const f=fixture(t),api=f.window.__xtoreWindowPlayer;
+ const history={schema:'admira.dooh-history.v1',site:'admira-xperience-santa-rosa-19',source:'puerta-cam',timezone:'Europe/Madrid',loaded:true,busy:false,error:null,updatedAt:10000,from:0,to:11000,pending:2,lost:0,expired:0,rows:[{hour:0,kind:'person',source:'detector',total:7}]};
+ f.receive('history',{history});assert.equal(api.history(),null);
+ f.receive('ready');assert.equal(f.sent.at(-1).data.event,'history-request');
+ f.receive('history',{history},{origin:'https://evil.test'});assert.equal(api.history(),null);
+ f.receive('history',{history});assert.equal(api.history().rows[0].total,7);assert.equal(api.exterior(),null);
+ f.receive('statistics',{passages:{person:100,car:0,motorcycle:0,bicycle:0,scooter:0}});assert.equal(api.history().rows[0].total,7);
+ api.requestHistory();assert.equal(f.sent.at(-1).data.event,'history-request');
+ f.tick(4000);assert.equal(api.history(),null);
+ f.receive('ready');f.receive('history',{history});assert.equal(api.history().rows[0].total,7);
+ f.node('xtore-disconnect').onclick();assert.equal(api.history(),null);
 });

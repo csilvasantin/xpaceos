@@ -1,8 +1,10 @@
+import {DoohHistoryState,renderDoohHistory} from './dooh-history.mjs';
 import {drawAnonymous,drawStatistics,drawStreet} from './xtore-demo.mjs?v=1';
 import {AudienceSessionState} from './audience-session.mjs?v=session-audience-1';
 import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession,exteriorPassages,exteriorStatistics,PassageState,acceptsCameraFrame,TrafficState} from './xtore-window-core.mjs?v=real-traffic-1';
 import {movableWindow} from './floating-window.mjs';
 import {createExteriorProgram} from './exterior-program.mjs';
+window.__xtoreDoohHistory={render:(root,en)=>renderDoohHistory(root,{en,getSnapshot:()=>window.__xtoreWindowPlayer?.history?.(),request:()=>window.__xtoreWindowPlayer?.requestHistory?.()})};
 const qs=new URLSearchParams(location.search);
 const enabled=qs.get('virtualPlayer')===SCREEN;
 const dock=document.getElementById('telegramDock'),expert=document.getElementById('pfExpert');
@@ -25,7 +27,8 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
   function openPanel(){if(document.body.classList.contains('xp-left-hidden'))expert.click();panel.hidden=false;panelWindow.restore();}
   entry.onclick=()=>{if(panel.hidden)openPanel();else panel.hidden=true;};
   const status=panel.querySelector('#xtore-link-status'),mediaStatus=panel.querySelector('#xtore-media-status'),cameraStatus=panel.querySelector('#xtore-camera-status'),camera=panel.querySelector('canvas');
-  const audienceState=new AudienceSessionState();
+  const audienceState=new AudienceSessionState(),historyState=new DoohHistoryState();
+  let lastPeer=0;
   const passageState=new PassageState(),trafficState=new TrafficState(),originalCamera=document.createElement('canvas');
   const exteriorProgram=createExteriorProgram({document,onState:message=>{panel.querySelector('#xtore-program-status').textContent=message;}});
   function reportAudience(){
@@ -47,7 +50,7 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
   function send(event){if(peer&&!peer.closed)peer.postMessage({source:'xpace-xtore-twin',screen:SCREEN,session:token,event},origin);}
   function stopMedia(){if(element){element.pause?.();element.removeAttribute('src');element.load?.();}element=null;mediaKey='';latest=null;applied=false;lastMedia=0;mediaStatus.textContent='Player sin señal · esperando al interior';}
   function stopCamera(){camera.hidden=true;camera.width=1;camera.height=1;originalCamera.width=1;originalCamera.height=1;lastCamera=0;modifiedCamera=false;hasOriginal=false;cameraStatus.textContent='Cámara sin señal reciente';renderCameraViews();}
-  function disconnect(){send('disconnect');connected=false;peer=null;connection=null;passageState.clear();audienceState.clear();trafficState.clear();exteriorProgram.clear();reportTraffic();stopMedia();stopCamera();status.textContent='Desconectado. Las pantallas esperan al player virtual.';}
+  function disconnect(){send('disconnect');connected=false;peer=null;connection=null;passageState.clear();audienceState.clear();historyState.clear();trafficState.clear();exteriorProgram.clear();reportTraffic();stopMedia();stopCamera();status.textContent='Desconectado. Las pantallas esperan al player virtual.';}
   function bind(target,targetOrigin,session){disconnect();peer=target;origin=targetOrigin;token=session;connection=new MirrorSession({peer,origin,session});send('hello');}
   const requested=qs.get('twinOrigin'),session=qs.get('twinSession');
   if(window.opener&&allowedOrigin(requested,location.origin)&&/^[a-f0-9-]{36}$/.test(session||''))bind(window.opener,requested,session);
@@ -92,13 +95,16 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
   window.addEventListener('message',e=>{
     const d=connection?.receive(e);
     if(!d){e.data?.bitmap?.close?.();e.data?.originalBitmap?.close?.();return;}
+    lastPeer=Date.now();
     if(d.event==='hello'||d.event==='ready'){
+      const first=!connected;
       if(!connected){trafficState.clear('waiting');reportTraffic();}
       connected=true;status.textContent='Player interior enlazado · espejo interior y reglas de exterior';
-      if(d.event==='hello')send('ready');return;
+      if(d.event==='hello')send('ready');if(first)send('history-request');return;
     }
     if(!connected){d.bitmap?.close?.();d.originalBitmap?.close?.();return;}
     if(d.event==='statistics'){if(d.audience&&['person','car','motorcycle','bicycle','scooter'].every(k=>d.passages?.[k]===d.audience.counts?.[k]))audienceState.update(d.audience,d.ts);reportAudience();passageState.update(d.passages,d.ts,true);window.dispatchEvent(new Event('xtore-statistics'));}
+    else if(d.event==='history'){if(historyState.update(d.history))window.dispatchEvent(new Event('xtore-history'));}
     else if(d.event==='traffic'){
       if(trafficState.update(d.traffic)){reportTraffic();window.dispatchEvent(new Event('xtore-traffic'));}
     }
@@ -158,7 +164,7 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
     else return false;
     return true;
   }
-  window.__xtoreWindowPlayer={draw,demoActive:()=>demo,toggleDemo:()=>setDemo(!demo),drawScreen,audience:()=>audienceState.read(),traffic:()=>trafficState.read(),openCamera(){openPanel();panel.querySelector('#xtore-camera').open=true;},cameraActive:()=>Date.now()-lastCamera<1500&&lastCamera>0,exterior:()=>passageState.read()?.person??null,exteriorStatistics:()=>passageState.read(),renderCameraViews};
+  window.__xtoreWindowPlayer={history:()=>connected&&Date.now()-lastPeer<4000?historyState.read():null,requestHistory:()=>{if(connected)send('history-request');},draw,demoActive:()=>demo,toggleDemo:()=>setDemo(!demo),drawScreen,audience:()=>audienceState.read(),traffic:()=>trafficState.read(),openCamera(){openPanel();panel.querySelector('#xtore-camera').open=true;},cameraActive:()=>Date.now()-lastCamera<1500&&lastCamera>0,exterior:()=>passageState.read()?.person??null,exteriorStatistics:()=>passageState.read(),renderCameraViews};
   // Click the actual camera position already computed by the isometric renderer.
   document.addEventListener('click',e=>{
     const p=window.XPACE_MUPICAM?.pos,convert=window.__dsQuadCvToClient;

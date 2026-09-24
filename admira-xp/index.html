@@ -1340,7 +1340,7 @@
   window.AdmiraXP_KillSwitch={check, apply:applyKillSwitch};
 })();
 </script>
-<script src="xtanco-version.js?v=20260924-1315"></script>
+<script src="xtanco-version.js?v=20260924-1326"></script>
 <script src="xtanco-runtime-config.js?r=24"></script>
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
@@ -28171,7 +28171,7 @@ window.xtAPI = (function(){
             if(!body.querySelector('#dooh-view')){
               const labels=en?{person:'People passing',car:'Cars',motorcycle:'Motorcycles',bicycle:'Bicycles',scooter:'Scooters'}:{person:'Personas que han pasado',car:'Coches',motorcycle:'Motos',bicycle:'Bicis',scooter:'Patinetes'};
               const views=[['original',en?'With people · original':'Con personas · original'],['clean',en?'Without people · tracking':'Sin personas · seguimiento']];
-              body.innerHTML='<section id="dooh-view"><style>#dooh-view [hidden]{display:none!important}</style><div style="color:#8ed2ff;margin-bottom:8px">EXTERIOR · Puerta Cam</div>'+
+              body.innerHTML='<section id="dooh-view"><style>#dooh-view [hidden]{display:none!important}</style><div id="dooh-history"></div><div style="color:#8ed2ff;margin-bottom:8px">EXTERIOR · Puerta Cam · '+(en?'THIS SESSION':'ESTA SESIÓN')+'</div>'+
                 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+Object.entries(labels).map(([key,label])=>'<div data-dooh-category="'+key+'" style="'+(key==='person'?'grid-column:1 / -1;':'')+'padding:10px;border:1px solid #346071;border-radius:8px;background:#07171ecc"><div style="color:#bce5fa">'+label+'</div><strong data-dooh-value="'+key+'" style="display:block;font-size:26px;line-height:1.4">—</strong><span style="font-size:9px;opacity:.7">'+(key==='scooter'?(en?'Manual observation':'Observación manual'):(en?'Detected passages':'Pasos detectados'))+'</span></div>').join('')+'</div>'+
                 '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:12px;margin-bottom:10px">'+views.map(([kind,label])=>'<figure style="margin:0;min-width:0"><figcaption style="font-size:10px;color:#bce5fa;margin-bottom:4px">'+label+'</figcaption><div class="dooh-camera-frame" style="position:relative;aspect-ratio:4/3;overflow:hidden;background:#071117;border-radius:6px"><canvas data-xtore-camera-view="'+kind+'" width="1" height="1" hidden style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:none"></canvas><p data-xtore-camera-empty="'+kind+'" style="position:absolute;inset:0;margin:0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center">'+(en?'Waiting for camera':'Esperando cámara')+'</p></div></figure>').join('')+'</div>'+
                 '<details id="dooh-explanation" style="margin-top:10px;font-size:10px;opacity:.8"><summary style="cursor:pointer;color:#8ed2ff">'+(en?'Camera and counting details':'Detalles de cámara y conteo')+'</summary><p id="dooh-source-status" role="status"></p><p>'+(en?'Source: shoe Xtore camera · AdmiraXperience. Same cumulative people counter as the analyzer; tracking IDs (#90…) are not passage totals. Scooters are added manually. The right image uses a temporary background to hide detected people; undetected people may remain visible.':'Fuente: cámara de la Xtore de zapatillas · AdmiraXperience. Mismo acumulado de personas que en el analizador; los identificadores de seguimiento (#90…) no son el total de pasos. Los patinetes se añaden manualmente. La vista derecha usa fondo temporal para ocultar personas detectadas; pueden quedar visibles personas no detectadas.')+'</p></details></section>';
@@ -28182,6 +28182,7 @@ window.xtAPI = (function(){
             }
             body.querySelector('#dooh-source-status').textContent=counts?(en?'Counters synchronized with Xtore · this session':'Contadores sincronizados con Xtore · esta sesión'):(en?'No current counter connection':'Sin conexión reciente con los contadores');
             window.__xtoreWindowPlayer?.renderCameraViews?.(body);
+            window.__xtoreDoohHistory?.render(body.querySelector('#dooh-history'),en);
             return;
           }
           const entran=(typeof G!=='undefined'&&G)?(G.custIn|0):0;
@@ -35170,7 +35171,7 @@ window.xtAPI = (function(){
 </script>
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
 <link rel="stylesheet" href="scripts/xtore-window.css?v=background-2">
-<script type="module" src="scripts/xtore-window.mjs?v=demo-screens-1"></script>
+<script type="module" src="scripts/xtore-window.mjs?v=dooh-history-1"></script>
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=1">
 <script type="module" src="scripts/avatar-audience.mjs?v=1"></script>
