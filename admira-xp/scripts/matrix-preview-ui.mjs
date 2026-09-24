@@ -1,4 +1,4 @@
-import {createBestPeopleLayer} from './best-live-people.mjs?v=gait-1';
+import {createBestPeopleLayer} from './best-live-people.mjs?v=walk-1';
 import {mountMatrixFurniture} from './matrix-furniture.mjs?v=customer-motion-1';
 import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';
 import {mountTierHud} from './tier-hud.mjs?v=tier-hud-1';
@@ -65,7 +65,7 @@ export function openMatrixView(options={}){
         }
       });
     }catch{showError('No se pudo cargar el mobiliario de Matrix. Puedes cambiar de vista desde el menú avanzado o el CLI.');return;}
-    try{people=createBestPeopleLayer({container,projectFloor:projectMatrixFloor});}
+    try{people=createBestPeopleLayer({container,projectFloor:projectMatrixFloor,walkSprites:true});}
     catch{showError('No se pudieron cargar los visitantes de Matrix. Puedes cambiar de vista desde el menú avanzado o el CLI.');return;}
     finish();
   };

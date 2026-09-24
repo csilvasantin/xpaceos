@@ -1,4 +1,4 @@
-import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=gait-1';
+import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=walk-1';
 import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=tier-hud-1';
 import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=tier-hud-1';
 import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=matrix-furniture-1';

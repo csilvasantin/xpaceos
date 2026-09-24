@@ -22,3 +22,10 @@
 .best-person .visitor-rig>:nth-child(3){clip-path:inset(58% 0 0 50%);transform:translateY(var(--visitor-lift-r,0%)) rotate(var(--visitor-leg-r,0deg))!important}
 .best-person.has-safe-motion .best-person-shadow{opacity:.9;transform:scaleX(calc(1 + var(--visitor-step,0) * .35));transition:none}
 @media(prefers-reduced-motion:reduce){.best-person .visitor-rig{transform:translateX(-50%)}.best-person .visitor-rig>:nth-child(n+2){transform:none!important}}
+
+/* Baked walk sheets (24-sep-2026): 9 x 2 frames per visitor, chosen per frame
+   from the distance-driven gait phase and on-screen direction. The sheet frame
+   has a 6% pad above and below the body, so it is drawn 112% tall and lowered
+   6% to keep the feet exactly on the floor anchor. The gait already carries its
+   own bob, so the synthetic bob/sway is not applied. */
+.best-person .matrix-walk-sprite,.best-person.has-safe-motion .matrix-walk-sprite,.best-person.has-safe-motion.is-walking .matrix-walk-sprite{display:block;height:112%;bottom:-6%;width:auto;aspect-ratio:2/3;background-repeat:no-repeat;background-size:900% 200%;background-position:100% 0%;transform:translateX(-50%)}

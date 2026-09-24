@@ -2,6 +2,7 @@ import {createLifeSnapshot} from './life-snapshot.mjs?v=visitors-24';
 import {visitorProfileById} from './visitor-profiles.mjs?v=visitors-24';
 import {buildCustomerNavigation} from './customer-navigation.mjs?v=customer-motion-1';
 import {createCustomerMotion} from './customer-motion.mjs?v=customer-motion-1';
+import {walkSheetURL,walkFrame,walkBackgroundPosition} from './visitor-walk-sprites.mjs?v=walk-1';
 
 const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
 const DEFAULT_COLS=14,DEFAULT_ROWS=8;
@@ -108,9 +109,11 @@ function cropFor(sprite){
 }
 // Navigation is expressed in the same logical room as the simulation. Image
 // dimensions and load completion never change where a customer can walk.
-export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),projectFloor=projectBestFloor,requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame,now=()=>performance.now()}={}){
+export function createBestPeopleLayer({container,getState=()=>window.__xtancoVisualState?.(),projectFloor=projectBestFloor,requestFrame=requestAnimationFrame,cancelFrame=cancelAnimationFrame,now=()=>performance.now(),walkSprites=false}={}){
   if(!container)throw new Error('Best people layer requires a container');
   const snapshot=createLifeSnapshot(),people=new Map(),motions=new Map(),actorsById=new Map(),appearances=new Map();
+  // Screen-space facing per visitor (walk sheets are drawn facing right, front or back).
+  const facings=new Map(),walkFailed=new Set();
   const layer=document.createElement('div');layer.className='best-people-layer';layer.setAttribute('aria-hidden','true');
   const status=document.createElement('p');status.className='best-people-status';status.setAttribute('role','status');
   container.append(layer,status);
@@ -133,8 +136,30 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
     appearance.image.onload=null;appearance.image.onerror=null;
     (appearance.rig||appearance.visual).remove();appearances.delete(id);
   }
+  // Matrix opt-in: a baked multi-frame walk sheet of the same profile. If the
+  // sheet cannot load, that profile falls back to its cutout and leg rig.
+  function updateWalkAppearance(node,actor,profile){
+    const url=walkSheetURL(profile.id),signature=`walk:${profile.id}:${url}`;
+    if(appearances.get(actor.id)?.signature===signature)return true;
+    cleanupAppearance(actor.id);
+    const image=document.createElement('img');image.alt='';image.decoding='async';
+    const visual=document.createElement('span');visual.className='best-person-sprite matrix-walk-sprite';
+    visual.style.backgroundImage=`url("${url}")`;
+    const appearance={signature,node,image,visual,rig:null,walk:true,ready:false,failed:false,fallback:false,displayedProfileId:profile.id,frame:-1,row:-1};
+    appearances.set(actor.id,appearance);
+    node.setAttribute('data-visitor-profile-id',profile.id);node.setAttribute('data-visitor-profile-label',profile.label||profile.id);
+    node.setAttribute('data-visitor-requested-profile-id',profile.id);node.setAttribute('data-visitor-image-state','loading');
+    image.onload=()=>{if(disposed||appearances.get(actor.id)!==appearance)return;appearance.ready=true;node.setAttribute('data-visitor-image-state','walk');refreshStatus();};
+    image.onerror=()=>{
+      if(disposed||appearances.get(actor.id)!==appearance)return;
+      walkFailed.add(profile.id);cleanupAppearance(actor.id);updateAppearance(node,actor);refreshStatus();
+    };
+    image.src=url;node.append(visual);
+    return true;
+  }
   function updateAppearance(node,actor){
     const profile=profileFor(actor),sprite=profile?.sprite,crop=cropFor(sprite);
+    if(walkSprites&&profile&&walkSheetURL(profile.id)&&!walkFailed.has(profile.id)&&updateWalkAppearance(node,actor,profile))return;
     const legacy=spriteFor(actor),signature=profile
       ?`${profile.id}:${sprite.atlas}:${sprite.column}:${sprite.row}:${sprite.columns}:${sprite.rows}:${crop?.join(',')||''}:${sprite.atlasWidth||''}:${sprite.atlasHeight||''}:${legacy}`:`legacy:${legacy}`;
     if(appearances.get(actor.id)?.signature===signature)return;
@@ -198,14 +223,14 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
   }
 
   function removeMissing(active){
-    for(const [id,node] of people)if(!active.has(id)){cleanupAppearance(id);node.remove();people.delete(id);motions.delete(id);actorsById.delete(id);}
+    for(const [id,node] of people)if(!active.has(id)){cleanupAppearance(id);node.remove();people.delete(id);motions.delete(id);actorsById.delete(id);facings.delete(id);}
   }
   // A 2.5D gait rig from the same cutout: the original visual stays first as
   // the torso and two clipped copies become the legs, pivoting at the hip. It
   // is built once per appearance, only after the image is ready, so atlas crops
   // and fallbacks are cloned exactly as displayed.
   function buildRig(appearance){
-    if(appearance.rig||!appearance.ready||typeof appearance.visual.cloneNode!=='function')return;
+    if(appearance.walk||appearance.rig||!appearance.ready||typeof appearance.visual.cloneNode!=='function')return;
     const visual=appearance.visual,image=appearance.image;
     let aspect=parseFloat(visual.style?.getPropertyValue?.('--visitor-cell-aspect'));
     if(!(aspect>0)&&image.naturalWidth>0&&image.naturalHeight>0)aspect=image.naturalWidth/image.naturalHeight;
@@ -231,7 +256,19 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
       node.style.left=`${point.x*100}%`;node.style.top=`${point.y*100}%`;
       node.style.zIndex=String(10+Math.round(point.y*1000));
       node.style.setProperty('--person-scale',scale.toFixed(3));
-      node.style.setProperty('--person-scale-x',(scale*(Math.cos(pose.heading||0)<0?-1:1)).toFixed(3));
+      const appearance=appearances.get(id);
+      let mirror=Math.cos(pose.heading||0)<0;
+      if(appearance?.walk){
+        // Walk sheets face screen-right; pick front/back from on-screen motion
+        // and mirror for leftward travel. Standing keeps the last facing.
+        const facing=facings.get(id)||{x:point.x,y:point.y,right:true,front:true};
+        const dx=point.x-facing.x,dy=point.y-facing.y;
+        if(Math.hypot(dx,dy)>.0015){facing.right=dx>=0;facing.front=dy>=0;facing.x=point.x;facing.y=point.y;}
+        facings.set(id,facing);mirror=!facing.right;
+        const frame=walkFrame(pose.phase,pose.walking),row=facing.front?0:1;
+        if(frame!==appearance.frame||row!==appearance.row){appearance.frame=frame;appearance.row=row;appearance.visual.style.backgroundPosition=walkBackgroundPosition(frame,row);}
+      }
+      node.style.setProperty('--person-scale-x',(scale*(mirror?-1:1)).toFixed(3));
       // Small weight shifts follow distance actually travelled. No independent
       // looping bob remains when the visitor stops or yields to an obstacle.
       const phase=Number.isFinite(pose.phase)?pose.phase*Math.PI*2:0;
@@ -245,7 +282,7 @@ export function createBestPeopleLayer({container,getState=()=>window.__xtancoVis
       node.style.setProperty('--visitor-lift-l',`${(-Math.max(0,swing)*1.6).toFixed(2)}%`);
       node.style.setProperty('--visitor-lift-r',`${(-Math.max(0,-swing)*1.6).toFixed(2)}%`);
       node.style.setProperty('--visitor-step',Math.abs(swing).toFixed(3));
-      const appearance=appearances.get(id);if(appearance)buildRig(appearance);
+      if(appearance)buildRig(appearance);
       node.setAttribute('data-visitor-col',String(pose.col));node.setAttribute('data-visitor-row',String(pose.row));
       node.setAttribute('data-visitor-motion',pose.blocked?'waiting':pose.walking?'walking':'standing');
     }
