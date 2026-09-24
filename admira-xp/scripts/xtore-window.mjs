@@ -1,7 +1,7 @@
 import {DoohHistoryState,renderDoohHistory} from './dooh-history.mjs';
 import {drawAnonymous,drawStatistics,drawStreet} from './xtore-demo.mjs?v=1';
 import {AudienceSessionState} from './audience-session.mjs?v=session-audience-1';
-import {SCREEN,TTL,allowedOrigin,playbackState,targetTime,MirrorSession,exteriorPassages,exteriorStatistics,PassageState,acceptsCameraFrame,TrafficState} from './xtore-window-core.mjs?v=real-traffic-1';
+import {SCREEN,TTL,allowedOrigin,analyzerOriginFor,playbackState,targetTime,MirrorSession,exteriorPassages,exteriorStatistics,PassageState,acceptsCameraFrame,TrafficState} from './xtore-window-core.mjs?v=normal-tabs-1';
 import {movableWindow} from './floating-window.mjs';
 import {createExteriorProgram} from './exterior-program.mjs';
 window.__xtoreDoohHistory={render:(root,en)=>renderDoohHistory(root,{en,getSnapshot:()=>window.__xtoreWindowPlayer?.history?.(),request:()=>window.__xtoreWindowPlayer?.requestHistory?.()})};
@@ -18,7 +18,7 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
   document.title='Xtore · zapatillas — Player virtual · XpaceOS';
   const panel=document.createElement('section');panel.id='xtore-window-panel';panel.setAttribute('aria-label','Player virtual de zapatillas');
   panel.hidden=true;
-  panel.innerHTML='<header id="xtore-window-header" aria-label="Mover ventana Player y cámara"><strong>Xtore · zapatillas</strong><button type="button" id="xtore-close" aria-label="Cerrar Player y cámara">×</button></header><div id="xtore-window-body"><p id="xtore-link-status" role="status">Conecta el player interior para reflejarlo en las pantallas del gemelo.</p><button id="xtore-connect">Conectar player y cámara ↗</button> <button id="xtore-disconnect">Desconectar</button><button id="xtore-demo-toggle" aria-pressed="false">Activar demo zapatillas</button><p id="xtore-demo-status" role="status">Demo desactivada. Pulsa la cámara de la esquina para activar las cuatro pantallas.</p><details id="xtore-camera"><summary>Cámara del escaparate · Puerta Cam</summary><canvas width="1" height="1" hidden></canvas><p id="xtore-camera-status" role="status">Sin vídeo de cámara.</p></details><p id="xtore-session-status" role="status">Audiencia de sesión sin conectar.</p><p id="xtore-exterior-status" role="status">Exterior · esperando Puerta Cam</p><p id="xtore-media-status" role="status">Player sin señal</p><button id="xtore-sound">Activar sonido del gemelo</button><p class="xtore-note">Fuente exterior: cámara de la Xtore de zapatillas · AdmiraXperience. Pasos detectados en esta sesión. Cerrar esta ventana mantiene la reproducción.</p></div>';
+  panel.innerHTML='<header id="xtore-window-header" aria-label="Mover ventana Player y cámara"><strong>Xtore · zapatillas</strong><button type="button" id="xtore-close" aria-label="Cerrar Player y cámara">×</button></header><div id="xtore-window-body"><p id="xtore-link-status" role="status">Abre Digital Twin 360 → Store → Entrada → Puerta Cam. Después conecta el analizador en otra pestaña.</p><a class="xtore-tab-link" id="xtore-digital-twin" href="https://digitaltwin.ieu.ai/" target="_blank" rel="noopener noreferrer">Abrir Digital Twin 360 ↗</a> <button id="xtore-connect">Conectar player y cámara ↗</button> <button id="xtore-disconnect">Desconectar</button><button id="xtore-demo-toggle" aria-pressed="false">Activar demo zapatillas</button><p id="xtore-demo-status" role="status">Demo desactivada. Pulsa la cámara de la esquina para activar las cuatro pantallas.</p><details id="xtore-camera"><summary>Cámara del escaparate · Puerta Cam</summary><canvas width="1" height="1" hidden></canvas><p id="xtore-camera-status" role="status">Sin vídeo de cámara.</p></details><p id="xtore-session-status" role="status">Audiencia de sesión sin conectar.</p><p id="xtore-exterior-status" role="status">Exterior · esperando Puerta Cam</p><p id="xtore-media-status" role="status">Player sin señal</p><button id="xtore-sound">Activar sonido del gemelo</button><p class="xtore-note">Fuente exterior: cámara de la Xtore de zapatillas · AdmiraXperience. Pasos detectados en esta sesión. Cerrar esta ventana mantiene la reproducción.</p></div>';
   document.body.append(panel);
   const trafficDetails=document.createElement('details');trafficDetails.id='xtore-traffic';
   trafficDetails.innerHTML='<summary>Reglas de exterior</summary><p id="xtore-traffic-status" role="status">Trayectorias sin conectar.</p><p id="xtore-program-status" role="status">Contenido exterior en espera.</p><p class="xtore-note">Personas, coches y motos, o bicis y patinetes confirmados activan sus piezas musicales del escaparate. Sin presencia reciente vuelve el espejo del player interior. Las trayectorias se representan con sprites genéricos; un patinete requiere confirmación manual.</p>';
@@ -55,14 +55,14 @@ if(!enabled){entry.onclick=()=>{location.href='?autostart=xtanco&virtualPlayer='
   const requested=qs.get('twinOrigin'),session=qs.get('twinSession');
   if(window.opener&&allowedOrigin(requested,location.origin)&&/^[a-f0-9-]{36}$/.test(session||''))bind(window.opener,requested,session);
   panel.querySelector('#xtore-connect').onclick=()=>{
-    if(peer&&!peer.closed){send('hello');status.textContent='Comprobando el enlace con el player interior…';return;}
+    if(peer&&!peer.closed){send('hello');peer.focus?.();status.textContent='Comprobando el enlace con el player interior…';return;}
     const testOrigin=qs.get('analyzerOrigin');
-    const analyzerOrigin=/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(location.origin)&&allowedOrigin(testOrigin,location.origin)?testOrigin:'https://admira.tv';
+    const analyzerOrigin=analyzerOriginFor(location.origin,requested,testOrigin);
     const session=crypto.randomUUID(),url=new URL('/videoanalytics/xtore/',analyzerOrigin);
     url.search=new URLSearchParams({twinOrigin:location.origin,twinSession:session});
-    const target=window.open(url.href,'xtore-analyzer-'+session,'popup,width=1180,height=900');
-    if(!target){status.textContent='Permite la ventana del analizador en Chrome y vuelve a conectar.';return;}
-    bind(target,url.origin,session);status.textContent='Abre Puerta Cam y comparte su pestaña en el analizador.';
+    const target=window.open(url.href,'xtore-analyzer-'+session);
+    if(!target){status.textContent='No se pudo abrir la pestaña del analizador. Permite su apertura en el navegador y vuelve a conectar.';return;}
+    bind(target,url.origin,session);status.textContent='Analizador abierto en otra pestaña. Con Puerta Cam visible en Digital Twin 360, pulsa Arrancar cámara y análisis y comparte esa pestaña.';
   };
   panel.querySelector('#xtore-disconnect').onclick=disconnect;
   panel.querySelector('#xtore-sound').onclick=()=>{audio=!audio;if(element)element.muted=!audio;panel.querySelector('#xtore-sound').textContent=audio?'Silenciar gemelo':'Activar sonido del gemelo';};

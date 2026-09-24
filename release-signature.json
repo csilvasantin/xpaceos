@@ -1,10 +1,10 @@
 {
-  "version": "v.24.09.2026.r10.13:26",
+  "version": "v.24.09.2026.r11.13:33",
   "signature": "TrinityMBP14 · MacBookProNegro14",
   "machine": "MacBookProNegro14",
   "agent": "TrinityMBP14",
   "deployer": "TrinityMBP14",
-  "evidence": "Yokup #286: DooH real con histórico por día y hora de Madrid; 335 pruebas y revisión visual.",
+  "evidence": "Yokup #290: conexión en pestañas normales, acceso directo a Digital Twin y origen local preservado;337 pruebas.",
   "day": "24.09.2026",
-  "time": "13:26"
+  "time": "13:33"
 }
