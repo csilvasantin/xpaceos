@@ -51,7 +51,8 @@
 import { ALSEA, XTANCO, ficha, health, reponerUrl, salida } from './records.mjs';
 const pizarra = ALSEA.find((item) => item.identificador === 'alsea-menu-3');
 const planta = ALSEA.find((item) => item.identificador === 'alsea-planta');
-document.getElementById('enlaces').innerHTML = `<span class="destino">Con local y pantalla: ${reponerUrl(pizarra)}</span><br><span class="destino">Sin pantalla: ${reponerUrl(planta)}</span>`;
+const sinDatos = { identificador: 'equipo-sin-datos', modeloTienda: 'ejemplo-pantalla' };
+document.getElementById('enlaces').innerHTML = `<span class="destino">Con local y pantalla: ${reponerUrl(pizarra)}</span><br><span class="destino">Sin pantalla: ${reponerUrl(planta)}</span><br><span class="destino">Sin local ni pantalla: ${reponerUrl(sinDatos)}</span>`;
 const tables = { 't-alsea': ALSEA, 't-xtanco': XTANCO };
 const via = { reclamacion_fabricante: 'en garantía: reclamación al fabricante', incidencia_yokup: 'fuera de garantía, reparable', reponer: 'fuera de garantía, no reparable' };
 for (const [id, rows] of Object.entries(tables)) {
