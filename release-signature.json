@@ -1,10 +1,10 @@
 {
-  "version": "v.25.09.2026.r5.16:08",
+  "version": "v.25.09.2026.r6.16:30",
   "signature": "SmithMacMini · MacMini",
   "machine": "MacMini",
   "agent": "SmithMacMini",
   "deployer": "SmithMacMini",
-  "evidence": "FLT-100993 ampliado: ficha de compra y garantía. La pizarra 3 de Alsea está en rojo y se repone.",
+  "evidence": "FLT-100995: el Xpacio Star Wars sale de la nube COLMAP a un plano en metros, isométrico y 3D. No hay vídeo de Santa Rosa 19. Volver a r5 es el commit 4825b08.",
   "day": "25.09.2026",
-  "time": "16:08"
+  "time": "16:30"
 }
