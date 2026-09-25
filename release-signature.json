@@ -1,10 +1,10 @@
 {
-  "version": "v.25.09.2026.r8.16:42",
+  "version": "v.25.09.2026.r9.19:08",
   "signature": "SmithMacMini · MacMini",
   "machine": "MacMini",
   "agent": "SmithMacMini",
   "deployer": "SmithMacMini",
-  "evidence": "Ajuste del 4286: Reponer usa admira.shop/p/ejemplo-pantalla/ con origen yokup y el identificador del equipo. El modelo real lo pondrá Woz. Volver a r7 es el commit a2fd2e2.",
+  "evidence": "Reponer añade local y pantalla solo si la ficha ya los tiene. Volver a r8 es el commit 39c23d3.",
   "day": "25.09.2026",
-  "time": "16:42"
+  "time": "19:08"
 }
