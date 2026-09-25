@@ -66,9 +66,19 @@ function drawShape(view) {
     pixel(x + 4, y - 18, 92, 16, c, bits);
     pixel(x + 14, y - 2, 10, 42, '#333', bits);
     pixel(x + 76, y - 2, 10, 42, '#333', bits);
+  } else if (view.silhouette === 'sofa') {
+    pixel(x + 4, y - 28, 100, 36, c, bits);
+    pixel(x + 4, y - 58, 16, 36, c, bits);
+    pixel(x + 88, y - 58, 16, 36, c, bits);
+    pixel(x + 16, y + 8, 12, 22, '#222', bits);
+    pixel(x + 76, y + 8, 12, 22, '#222', bits);
   } else if (view.silhouette === 'lamp') {
     pixel(x + 36, y - 10, 8, 50, '#555', bits);
     pixel(x + 16, y - 48, 48, 40, c, bits);
+  } else if (view.silhouette === 'screen') {
+    pixel(x + 8, y - 62, 78, 52, '#111', bits);
+    pixel(x + 14, y - 56, 66, 40, c, bits);
+    pixel(x + 40, y - 8, 12, 28, '#333', bits);
   }
   if (bits === 16) {
     ctx.fillStyle = 'rgba(255,255,255,.28)';

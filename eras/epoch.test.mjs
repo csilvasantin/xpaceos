@@ -33,6 +33,7 @@ test('la planta testigo va siempre y abre el barrido', () => {
   assert.equal(FURNITURE.find((piece) => piece.witness).saga, 'Planta');
   assert.equal(sweepOrder(FURNITURE)[0].id, 'planta');
   assert.equal(sweepOrder(FURNITURE).length, FURNITURE.length);
+  assert.deepEqual(FURNITURE.map((piece) => piece.saga), ['Planta', 'Silla', 'Mesa', 'Sofá', 'Lámpara', 'Pantalla']);
 });
 
 test('el mismo registro vale para un gemelo de vehículo', () => {
