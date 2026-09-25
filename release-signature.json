@@ -1,10 +1,10 @@
 {
-  "version": "v.25.09.2026.r2.08:37",
+  "version": "v.25.09.2026.r3.15:52",
   "signature": "SmithMacMini · MacMini",
   "machine": "MacMini",
   "agent": "SmithMacMini",
   "deployer": "SmithMacMini",
-  "evidence": "FLT-100960: categoría Mobiliario para Xpacios, cuatro skins 8/16/32/64, planta testigo.",
+  "evidence": "FLT-100991: la sala usa los números 9, 43, 37, 39, 10 y 13 del registro. 8 y 16 son pixel del Best. 32 es el Best. 64 es el frente hiperrealista.",
   "day": "25.09.2026",
-  "time": "08:37"
+  "time": "15:52"
 }
