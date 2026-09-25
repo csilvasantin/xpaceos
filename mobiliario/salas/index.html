@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="admiranext-version" content="v.25.09.2026.r4.16:03">
+<meta name="admiranext-version" content="v.25.09.2026.r5.16:08">
 <title>Salas Disney · Alsea y Xtanco · XpaceOS</title>
 <style>
   :root { color-scheme: dark; }
@@ -14,7 +14,9 @@
   th, td { text-align: left; padding: 8px; border-bottom: 1px solid #243040; vertical-align: top; }
   button { background: #141820; color: #f4f1ea; border: 1px solid #3a4254; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
   button[aria-pressed="true"] { border-color: #9be7ff; }
-  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+  .dot, .sello { display: inline-block; vertical-align: middle; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .sello { margin-left: 6px; font: 700 11px/1 ui-monospace, monospace; letter-spacing: .03em; }
   .verde { background: #3dff9a; }
   .ambar { background: #ffb020; }
   .rojo { background: #ff5a4a; }
@@ -45,23 +47,28 @@
   <div id="laminas"></div>
 </main>
 <script type="module">
-import { ALSEA, XTANCO, health } from './records.mjs';
+import { ALSEA, XTANCO, ficha, health, reponerUrl, salida } from './records.mjs';
 const tables = { 't-alsea': ALSEA, 't-xtanco': XTANCO };
+const via = { reclamacion_fabricante: 'en garantía: reclamación al fabricante', incidencia_yokup: 'fuera de garantía, reparable', reponer: 'fuera de garantía, no reparable' };
 for (const [id, rows] of Object.entries(tables)) {
   const table = document.getElementById(id);
-  table.innerHTML = '<tr><th></th><th>Elemento</th><th>Nº</th><th>Papel</th></tr>' + rows.map((item) => `
+  table.innerHTML = '<tr><th></th><th>Elemento</th><th>Nº</th><th>Papel</th></tr>' + rows.map((item) => {
+    const card = ficha(item);
+    const path = salida(item);
+    const action = path === 'reponer'
+      ? `<p class="salida">${via[path]}</p><a class="reponer" href="${reponerUrl(item)}">Reponer</a>`
+      : path === 'incidencia_yokup'
+        ? `<p class="salida">${via[path]}</p><a href="https://www.yokup.com/incidencias">Abrir incidencia</a>`
+        : path ? `<p class="salida">${via[path]}</p>` : '';
+    return `
     <tr data-id="${item.identificador}">
-      <td><span class="dot ${health(item)}" title="${health(item)}"></span></td>
+      <td><span class="dot ${health(item)}" title="${health(item)}"></span><span class="sello">${card.garantia === 'en_garantia' ? 'en garantía' : 'fuera'}</span></td>
       <td>${item.nombre}</td>
       <td>${item.numero}</td>
       <td>${item.papel}</td>
     </tr>
-    <tr><td colspan="4"><div class="ficha"><pre>${JSON.stringify({
-      identificador: item.identificador, tipo: item.tipo, nombre: item.nombre,
-      ubicacion: item.ubicacion, huella: item.huella, aspecto: item.aspecto,
-      estado: item.estado, mantenimiento: item.mantenimiento, incidencias: item.incidencias,
-      conexion: item.conexion, papel: item.papel, pantalla: item.pantalla
-    }, null, 2)}</pre></div></td></tr>`).join('');
+    <tr><td colspan="4"><div class="ficha">${action}<pre>${JSON.stringify(card, null, 2)}</pre></div></td></tr>`;
+  }).join('');
   table.addEventListener('click', (event) => {
     const row = event.target.closest('tr[data-id]');
     if (!row) return;
@@ -87,6 +94,11 @@ function brand(name) {
 }
 document.getElementById('alsea').onclick = () => brand('alsea');
 document.getElementById('jti').onclick = () => brand('jti');
+const abierto = location.hash.slice(1);
+if (abierto) {
+  const fila = document.querySelector(`tr[data-id="${abierto}"]`);
+  if (fila) fila.classList.add('open');
+}
 </script>
 </body>
 </html>

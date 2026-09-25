@@ -1,19 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { ALSEA, FIELDS, XTANCO, health } from './records.mjs';
+import { ALSEA, FIELDS, XTANCO, ficha, garantia, health, reponerUrl, salida } from './records.mjs';
 
 const registry = JSON.parse(fs.readFileSync(new URL('../../inventario/registry.json', import.meta.url)));
 const numbers = new Set(Object.values(registry.numbers));
 
-test('cada ficha tiene los doce atributos y un número del registro', () => {
+test('cada ficha tiene los catorce atributos y un número del registro', () => {
+  assert.equal(FIELDS.length, 14);
   for (const item of [...ALSEA, ...XTANCO]) {
-    for (const field of FIELDS) assert.ok(field in item, item.identificador + ' ' + field);
+    const card = ficha(item);
+    for (const field of FIELDS) assert.ok(field in card, item.identificador + ' ' + field);
+    assert.equal(card.compra.ejemplo, true);
     assert.ok(numbers.has(item.numero), String(item.numero));
-    assert.equal(health(item), 'verde');
     if (item.tipo === 'pantalla') assert.ok(item.pantalla.circuito);
     else assert.equal(item.pantalla, null);
   }
+  const demo = ALSEA.find((item) => item.identificador === 'alsea-menu-3');
+  assert.equal(health(demo), 'rojo');
+  assert.equal(garantia(demo), 'fuera');
+  assert.equal(salida(demo), 'reponer');
+  assert.match(reponerUrl(demo), /modelo=13/);
+  assert.equal(health(ALSEA[0]), 'verde');
+  assert.equal(garantia(ALSEA[0]), 'en_garantia');
 });
 
 test('Alsea reutiliza la base Xtanco y no inventa el 44', () => {

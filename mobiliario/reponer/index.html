@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="admiranext-version" content="v.25.09.2026.r5.16:08">
+<title>Reponer · portal preparado · XpaceOS</title>
+<style>
+  body { margin: 0; background: #07080c; color: #f4f1ea; font: 16px/1.45 system-ui, sans-serif; }
+  main { width: min(640px, calc(100% - 28px)); margin: 32px auto; }
+  a { color: #9be7ff; }
+  .aviso { border: 1px solid #8a6a22; border-radius: 12px; padding: 12px 16px; }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="/mobiliario/salas/">Volver a las salas</a></p>
+  <h1>Reposición preparada</h1>
+  <p class="aviso">Este portal todavía no existe. El enlace ya trae el mismo modelo elegido. Los datos son de ejemplo.</p>
+  <pre id="pedido"></pre>
+</main>
+<script>
+const q = new URLSearchParams(location.search);
+document.getElementById('pedido').textContent = JSON.stringify({
+  ejemplo: true,
+  modelo: q.get('modelo'),
+  elemento: q.get('elemento'),
+  sala: q.get('sala'),
+  listoParaComprar: true
+}, null, 2);
+</script>
+</body>
+</html>

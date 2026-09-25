@@ -1,10 +1,10 @@
 {
-  "version": "v.25.09.2026.r4.16:03",
+  "version": "v.25.09.2026.r5.16:08",
   "signature": "SmithMacMini · MacMini",
   "machine": "MacMini",
   "agent": "SmithMacMini",
   "deployer": "SmithMacMini",
-  "evidence": "FLT-100993: cafetería Alsea y Xtanco JTI sobre el mismo registro. La lámpara colgante sigue siendo la 10.",
+  "evidence": "FLT-100993 ampliado: ficha de compra y garantía. La pizarra 3 de Alsea está en rojo y se repone.",
   "day": "25.09.2026",
-  "time": "16:03"
+  "time": "16:08"
 }
