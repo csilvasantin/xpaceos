@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="admiranext-version" content="v.25.09.2026.r8.16:42">
+<meta name="admiranext-version" content="v.25.09.2026.r9.19:08">
 <title>Reponer · portal preparado · XpaceOS</title>
 <style>
   body { margin: 0; background: #07080c; color: #f4f1ea; font: 16px/1.45 system-ui, sans-serif; }
@@ -28,6 +28,10 @@ const equipo = q.get('equipo') || q.get('elemento') || 'alsea-menu-3';
 const shop = new URL(`https://admira.shop/p/${modelo}/`);
 shop.searchParams.set('origen', 'yokup');
 shop.searchParams.set('equipo', equipo);
+for (const clave of ['local', 'pantalla']) {
+  const valor = (q.get(clave) || '').trim();
+  if (valor) shop.searchParams.set(clave, valor);
+}
 document.getElementById('tienda').href = shop.href;
 document.getElementById('pedido').textContent = JSON.stringify({
   ejemplo: true,

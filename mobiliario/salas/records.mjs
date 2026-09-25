@@ -92,12 +92,33 @@ export function slugModelo(value) {
   return slug || 'ejemplo-pantalla';
 }
 
+function dato(value) {
+  return String(value ?? '').trim();
+}
+
+/** Id o nombre del local, solo si la ficha ya lo trae. */
+function localDe(item) {
+  return dato(item.local) || dato(item.ubicacion?.local) || dato(item.ubicacion?.xpacio);
+}
+
+/** Id o nombre de la pantalla, solo si la ficha ya lo trae. */
+function pantallaDe(item) {
+  const pantalla = item.pantalla;
+  if (pantalla == null || pantalla === false) return '';
+  if (typeof pantalla === 'string') return dato(pantalla);
+  return dato(pantalla.nombre) || dato(pantalla.id) || dato(pantalla.identificador) || dato(item.nombre);
+}
+
 export function reponerUrl(item) {
   const modelo = slugModelo(item.modeloTienda);
   const query = new URLSearchParams({
     origen: 'yokup',
     equipo: item.identificador,
   });
+  const local = localDe(item);
+  const pantalla = pantallaDe(item);
+  if (local) query.set('local', local);
+  if (pantalla) query.set('pantalla', pantalla);
   return `https://admira.shop/p/${modelo}/?${query}`;
 }
 
