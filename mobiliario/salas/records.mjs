@@ -22,9 +22,11 @@ const compraEjemplo = {
   fin: '2027-09-25',
 };
 
-function piece({ id, number, tipo, nombre, xpacio, zona, casilla, orientacion, huella, papel, pantalla = null, conexion = null, estado = 'en_marcha', reparable = true, compra = null }) {
+function piece({ id, number, tipo, nombre, xpacio, zona, casilla, orientacion, huella, papel, pantalla = null, conexion = null, estado = 'en_marcha', reparable = true, compra = null, modeloTienda = null }) {
   return {
     identificador: id,
+    modeloTienda,
+    modeloEjemplo: modeloTienda == null || String(modeloTienda).startsWith('ejemplo'),
     numero: number,
     tipo,
     nombre,
@@ -46,7 +48,7 @@ export const ALSEA = [
   piece({ id: 'alsea-barra', number: 1, tipo: 'mostrador', nombre: 'Barra', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'A1', orientacion: 0, huella: [1, 2], papel: 'Atiende el pedido. Es el mostrador 1 del Xtanco, con la capa Alsea.', conexion: 'xpacio:alsea:barra' }),
   piece({ id: 'alsea-menu-1', number: 13, tipo: 'pantalla', nombre: 'Pizarra 1', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'B1', orientacion: 0, huella: [1, 1], papel: 'Primera pizarra del menú, en fila.', pantalla: { campana: 'Menú del día', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:menu-1' }),
   piece({ id: 'alsea-menu-2', number: 13, tipo: 'pantalla', nombre: 'Pizarra 2', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'B2', orientacion: 0, huella: [1, 1], papel: 'Segunda pizarra del menú, en fila.', pantalla: { campana: 'Menú del día', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:menu-2' }),
-  piece({ id: 'alsea-menu-3', number: 13, tipo: 'pantalla', nombre: 'Pizarra 3', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'B3', orientacion: 0, huella: [1, 1], papel: 'Tercera pizarra del menú, en fila. Ejemplo de avería: fuera de garantía y no reparable.', pantalla: { campana: 'Menú del día', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:menu-3', estado: 'averiado', reparable: false, compra: { serie: 'SER-EJEMPLO-013', fin: '2025-06-01', factura: 'PED-EJEMPLO-013' } }),
+  piece({ id: 'alsea-menu-3', number: 13, tipo: 'pantalla', nombre: 'Pizarra 3', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'B3', orientacion: 0, huella: [1, 1], papel: 'Tercera pizarra del menú, en fila. Ejemplo de avería: fuera de garantía y no reparable.', pantalla: { campana: 'Menú del día', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:menu-3', estado: 'averiado', reparable: false, compra: { serie: 'SER-EJEMPLO-013', fin: '2025-06-01', factura: 'PED-EJEMPLO-013' }, modeloTienda: 'ejemplo-pantalla' }),
   piece({ id: 'alsea-escaparate', number: 12, tipo: 'pantalla', nombre: 'Escaparate', xpacio: 'cafeteria-alsea', zona: 'fachada', casilla: 'C1', orientacion: 0, huella: [1, 1], papel: 'Anuncia desde la calle.', pantalla: { campana: 'Fachada', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:escaparate' }),
   piece({ id: 'alsea-mesa-1', number: 37, tipo: 'mesa', nombre: 'Mesa', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'D1', orientacion: 0, huella: [1, 1], papel: 'Mesa de sala.' }),
   piece({ id: 'alsea-mesa-2', number: 37, tipo: 'mesa', nombre: 'Mesa', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'D2', orientacion: 0, huella: [1, 1], papel: 'Segunda mesa de sala.' }),
@@ -85,17 +87,18 @@ export function salida(item, today = '2026-09-25') {
   return 'reponer';
 }
 
+export function slugModelo(value) {
+  const slug = String(value || 'ejemplo-pantalla').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return slug || 'ejemplo-pantalla';
+}
+
 export function reponerUrl(item) {
-  const compra = item.compra || {};
+  const modelo = slugModelo(item.modeloTienda);
   const query = new URLSearchParams({
-    modelo: String(item.numero),
-    serie: String(compra.serie || ''),
-    factura: String(compra.factura || ''),
-    elemento: item.identificador,
-    sala: item.ubicacion.xpacio,
-    ejemplo: compra.ejemplo ? '1' : '0',
+    origen: 'yokup',
+    equipo: item.identificador,
   });
-  return `https://admira.shop/?${query}`;
+  return `https://admira.shop/p/${modelo}/?${query}`;
 }
 
 export function ficha(item, today = '2026-09-25') {

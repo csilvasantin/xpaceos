@@ -22,11 +22,10 @@ test('cada ficha tiene los catorce atributos y un número del registro', () => {
   assert.equal(salida(demo), 'reponer');
   const shop = new URL(reponerUrl(demo));
   assert.equal(shop.origin, 'https://admira.shop');
-  assert.equal(shop.pathname, '/');
-  assert.equal(shop.searchParams.get('modelo'), '13');
-  assert.equal(shop.searchParams.get('serie'), 'SER-EJEMPLO-013');
-  assert.equal(shop.searchParams.get('factura'), 'PED-EJEMPLO-013');
-  assert.equal(shop.searchParams.get('ejemplo'), '1');
+  assert.equal(shop.pathname, '/p/ejemplo-pantalla/');
+  assert.equal(shop.searchParams.get('origen'), 'yokup');
+  assert.equal(shop.searchParams.get('equipo'), 'alsea-menu-3');
+  assert.equal(demo.modeloEjemplo, true);
   assert.equal(health(ALSEA[0]), 'verde');
   assert.equal(garantia(ALSEA[0]), 'en_garantia');
 });

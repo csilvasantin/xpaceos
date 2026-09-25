@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="admiranext-version" content="v.25.09.2026.r7.16:36">
+<meta name="admiranext-version" content="v.25.09.2026.r8.16:42">
 <title>Reponer · portal preparado · XpaceOS</title>
 <style>
   body { margin: 0; background: #07080c; color: #f4f1ea; font: 16px/1.45 system-ui, sans-serif; }
@@ -16,25 +16,25 @@
 <main>
   <p><a href="/mobiliario/salas/">Volver a las salas</a></p>
   <h1>Reposición preparada</h1>
-  <p class="aviso">La página de producto en admira.shop todavía no existe. El botón Reponer de la sala ya abre la tienda con el modelo. Esta dirección antigua sigue llevando el mismo número.</p>
-  <p><a id="tienda" href="https://admira.shop/">Abrir admira.shop</a></p>
+  <p class="aviso">El botón Reponer abre admira.shop/p/&lt;modelo&gt;/. El modelo de la pizarra es un ejemplo, ejemplo-pantalla. El identificador del equipo va en el enlace.</p>
+  <p><a id="tienda" href="https://admira.shop/p/ejemplo-pantalla/?origen=yokup&amp;equipo=alsea-menu-3">Abrir admira.shop</a></p>
   <pre id="pedido"></pre>
 </main>
 <script>
 const q = new URLSearchParams(location.search);
-const shop = new URL('https://admira.shop/');
-for (const key of ['modelo', 'serie', 'factura', 'elemento', 'sala', 'ejemplo']) {
-  const value = q.get(key);
-  if (value) shop.searchParams.set(key, value);
-}
+const raw = q.get('modelo') || '';
+const modelo = /[a-z]/i.test(raw) ? raw.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : 'ejemplo-pantalla';
+const equipo = q.get('equipo') || q.get('elemento') || 'alsea-menu-3';
+const shop = new URL(`https://admira.shop/p/${modelo}/`);
+shop.searchParams.set('origen', 'yokup');
+shop.searchParams.set('equipo', equipo);
 document.getElementById('tienda').href = shop.href;
 document.getElementById('pedido').textContent = JSON.stringify({
   ejemplo: true,
-  modelo: q.get('modelo'),
-  elemento: q.get('elemento'),
-  sala: q.get('sala'),
-  destino: shop.href,
-  listoParaComprar: true
+  modelo,
+  equipo,
+  origen: 'yokup',
+  destino: shop.href
 }, null, 2);
 </script>
 </body>
