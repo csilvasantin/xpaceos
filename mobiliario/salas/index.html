@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="admiranext-version" content="v.25.09.2026.r5.16:08">
+<meta name="admiranext-version" content="v.25.09.2026.r7.16:36">
 <title>Salas Disney · Alsea y Xtanco · XpaceOS</title>
 <style>
   :root { color-scheme: dark; }
@@ -32,7 +32,7 @@
 <main>
   <p><a href="/mobiliario/">Mobiliario</a></p>
   <h1>Dos salas, un registro</h1>
-  <p>Carlos empieza por la cafetería Alsea. El Xtanco es la base. La marca es una capa: no cambia el número ni la silueta. El semáforo es lo único que se ve; el resto sale al pulsar la fila.</p>
+  <p>Carlos empieza por la cafetería Alsea. El Xtanco es la base. La marca es una capa: no cambia el número ni la silueta. El semáforo es lo único que se ve; el resto sale al pulsar la fila. Reponer abre admira.shop con el número de inventario y la serie y la factura de la compra. La página de producto de la tienda todavía no existe: el modelo viaja en el enlace.</p>
   <p>
     <button type="button" id="alsea" aria-pressed="true">Capa Alsea</button>
     <button type="button" id="jti">Capa JTI</button>
@@ -56,7 +56,7 @@ for (const [id, rows] of Object.entries(tables)) {
     const card = ficha(item);
     const path = salida(item);
     const action = path === 'reponer'
-      ? `<p class="salida">${via[path]}</p><a class="reponer" href="${reponerUrl(item)}">Reponer</a>`
+      ? `<p class="salida">${via[path]}</p><a class="reponer" href="${reponerUrl(item)}">Reponer</a><p class="destino">${reponerUrl(item)}</p>`
       : path === 'incidencia_yokup'
         ? `<p class="salida">${via[path]}</p><a href="https://www.yokup.com/incidencias">Abrir incidencia</a>`
         : path ? `<p class="salida">${via[path]}</p>` : '';

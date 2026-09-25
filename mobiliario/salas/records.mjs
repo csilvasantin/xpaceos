@@ -86,13 +86,16 @@ export function salida(item, today = '2026-09-25') {
 }
 
 export function reponerUrl(item) {
+  const compra = item.compra || {};
   const query = new URLSearchParams({
     modelo: String(item.numero),
+    serie: String(compra.serie || ''),
+    factura: String(compra.factura || ''),
     elemento: item.identificador,
     sala: item.ubicacion.xpacio,
-    ejemplo: '1',
+    ejemplo: compra.ejemplo ? '1' : '0',
   });
-  return `/mobiliario/reponer/?${query}`;
+  return `https://admira.shop/?${query}`;
 }
 
 export function ficha(item, today = '2026-09-25') {

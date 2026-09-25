@@ -1,10 +1,10 @@
 {
-  "version": "v.25.09.2026.r6.16:30",
+  "version": "v.25.09.2026.r7.16:36",
   "signature": "SmithMacMini · MacMini",
   "machine": "MacMini",
   "agent": "SmithMacMini",
   "deployer": "SmithMacMini",
-  "evidence": "FLT-100995: el Xpacio Star Wars sale de la nube COLMAP a un plano en metros, isométrico y 3D. No hay vídeo de Santa Rosa 19. Volver a r5 es el commit 4825b08.",
+  "evidence": "Ajuste del 4283: Reponer abre admira.shop con el número de inventario y la compra. La ficha de producto aún no existe. Volver a r6 es el commit 2997f13.",
   "day": "25.09.2026",
-  "time": "16:30"
+  "time": "16:36"
 }
