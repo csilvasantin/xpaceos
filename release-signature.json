@@ -1,10 +1,10 @@
 {
-  "version": "v.25.09.2026.r3.15:52",
+  "version": "v.25.09.2026.r4.16:03",
   "signature": "SmithMacMini · MacMini",
   "machine": "MacMini",
   "agent": "SmithMacMini",
   "deployer": "SmithMacMini",
-  "evidence": "FLT-100991: la sala usa los números 9, 43, 37, 39, 10 y 13 del registro. 8 y 16 son pixel del Best. 32 es el Best. 64 es el frente hiperrealista.",
+  "evidence": "FLT-100993: cafetería Alsea y Xtanco JTI sobre el mismo registro. La lámpara colgante sigue siendo la 10.",
   "day": "25.09.2026",
-  "time": "15:52"
+  "time": "16:03"
 }

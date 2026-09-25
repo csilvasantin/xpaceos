@@ -1,0 +1,67 @@
+// Dos salas, un solo registro. La marca es una capa. El número no cambia.
+// El 44 no se da de alta: el catálogo rechaza un número sin GLB.
+
+export const FIELDS = [
+  'identificador', 'tipo', 'nombre', 'ubicacion', 'huella', 'aspecto',
+  'estado', 'mantenimiento', 'incidencias', 'conexion', 'papel', 'pantalla',
+];
+
+const care = {
+  ultima: '2026-09-25',
+  proxima: '2026-12-25',
+  responsable: 'SmithMacMini',
+};
+
+function piece({ id, number, tipo, nombre, xpacio, zona, casilla, orientacion, huella, papel, pantalla = null, conexion = null }) {
+  return {
+    identificador: id,
+    numero: number,
+    tipo,
+    nombre,
+    ubicacion: { xpacio, zona, casilla, orientacion },
+    huella,
+    aspecto: { 8: `skins/8/${String(number).padStart(2, '0')}-r0.png`, 16: `skins/16/${String(number).padStart(2, '0')}-r0.png`, 32: `catalog/${String(number).padStart(2, '0')}-r0.png`, 64: `skins/64/${String(number).padStart(2, '0')}-r0.png` },
+    estado: 'en_marcha',
+    mantenimiento: care,
+    incidencias: [],
+    conexion,
+    papel,
+    pantalla,
+  };
+}
+
+export const ALSEA = [
+  piece({ id: 'alsea-barra', number: 1, tipo: 'mostrador', nombre: 'Barra', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'A1', orientacion: 0, huella: [1, 2], papel: 'Atiende el pedido. Es el mostrador 1 del Xtanco, con la capa Alsea.', conexion: 'xpacio:alsea:barra' }),
+  piece({ id: 'alsea-menu-1', number: 13, tipo: 'pantalla', nombre: 'Pizarra 1', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'B1', orientacion: 0, huella: [1, 1], papel: 'Primera pizarra del menú, en fila.', pantalla: { campana: 'Menú del día', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:menu-1' }),
+  piece({ id: 'alsea-menu-2', number: 13, tipo: 'pantalla', nombre: 'Pizarra 2', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'B2', orientacion: 0, huella: [1, 1], papel: 'Segunda pizarra del menú, en fila.', pantalla: { campana: 'Menú del día', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:menu-2' }),
+  piece({ id: 'alsea-menu-3', number: 13, tipo: 'pantalla', nombre: 'Pizarra 3', xpacio: 'cafeteria-alsea', zona: 'barra', casilla: 'B3', orientacion: 0, huella: [1, 1], papel: 'Tercera pizarra del menú, en fila.', pantalla: { campana: 'Menú del día', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:menu-3' }),
+  piece({ id: 'alsea-escaparate', number: 12, tipo: 'pantalla', nombre: 'Escaparate', xpacio: 'cafeteria-alsea', zona: 'fachada', casilla: 'C1', orientacion: 0, huella: [1, 1], papel: 'Anuncia desde la calle.', pantalla: { campana: 'Fachada', circuito: 'Alsea Starbucks 100' }, conexion: 'xpacio:alsea:escaparate' }),
+  piece({ id: 'alsea-mesa-1', number: 37, tipo: 'mesa', nombre: 'Mesa', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'D1', orientacion: 0, huella: [1, 1], papel: 'Mesa de sala.' }),
+  piece({ id: 'alsea-mesa-2', number: 37, tipo: 'mesa', nombre: 'Mesa', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'D2', orientacion: 0, huella: [1, 1], papel: 'Segunda mesa de sala.' }),
+  piece({ id: 'alsea-silla-1', number: 43, tipo: 'silla', nombre: 'Silla', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'E1', orientacion: 0, huella: [1, 1], papel: 'Silla 43 junto a la mesa.' }),
+  piece({ id: 'alsea-silla-2', number: 43, tipo: 'silla', nombre: 'Silla', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'E2', orientacion: 2, huella: [1, 1], papel: 'Silla 43 enfrente.' }),
+  piece({ id: 'alsea-sofa', number: 39, tipo: 'sofa', nombre: 'Sofá', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'F1', orientacion: 0, huella: [1, 1], papel: 'Sofá de espera.' }),
+  piece({ id: 'alsea-lampara', number: 10, tipo: 'lampara', nombre: 'Lámpara', xpacio: 'cafeteria-alsea', zona: 'techo', casilla: 'G1', orientacion: 0, huella: [1, 1], papel: 'Alumbra la barra desde el techo. Sigue siendo la lámpara 10: el 44 no entra sin modelo.' }),
+  piece({ id: 'alsea-planta', number: 9, tipo: 'planta', nombre: 'Planta', xpacio: 'cafeteria-alsea', zona: 'sala', casilla: 'H1', orientacion: 0, huella: [1, 1], papel: 'Testigo de la sala. Es la planta 9.' }),
+];
+
+export const XTANCO = [
+  piece({ id: 'xtanco-mostrador', number: 1, tipo: 'mostrador', nombre: 'Mostrador', xpacio: 'xtanco-jti', zona: 'caja', casilla: 'A1', orientacion: 0, huella: [1, 2], papel: 'Base de la sala. Atiende al cliente.', conexion: 'xpacio:xtanco:mostrador' }),
+  piece({ id: 'xtanco-expositor', number: 2, tipo: 'expositor', nombre: 'Estantería', xpacio: 'xtanco-jti', zona: 'sala', casilla: 'B1', orientacion: 0, huella: [1, 2], papel: 'Expositor. Es la estantería 2, no un registro nuevo.' }),
+  piece({ id: 'xtanco-tablet', number: 15, tipo: 'pantalla', nombre: 'Pantalla de mostrador', xpacio: 'xtanco-jti', zona: 'caja', casilla: 'A1', orientacion: 0, huella: [1, 1], papel: 'Pantalla sobre el mostrador.', pantalla: { campana: 'Linea JTI', circuito: 'JTI Xtanco 100' }, conexion: 'xpacio:xtanco:mostrador-pantalla' }),
+  piece({ id: 'xtanco-escaparate', number: 12, tipo: 'pantalla', nombre: 'Escaparate', xpacio: 'xtanco-jti', zona: 'fachada', casilla: 'C1', orientacion: 0, huella: [1, 1], papel: 'Pantalla de escaparate.', pantalla: { campana: 'Fachada JTI', circuito: 'JTI Xtanco 100' }, conexion: 'xpacio:xtanco:escaparate' }),
+  piece({ id: 'xtanco-vending', number: 5, tipo: 'expendedora', nombre: 'Máquina expendedora', xpacio: 'xtanco-jti', zona: 'sala', casilla: 'D1', orientacion: 0, huella: [1, 1], papel: 'Expende. Es la máquina 5.' }),
+  piece({ id: 'xtanco-silla', number: 43, tipo: 'silla', nombre: 'Silla del estanquero', xpacio: 'xtanco-jti', zona: 'caja', casilla: 'E1', orientacion: 1, huella: [1, 1], papel: 'Asiento del estanquero. Es la silla 43.' }),
+  piece({ id: 'xtanco-lampara', number: 10, tipo: 'lampara', nombre: 'Lámpara', xpacio: 'xtanco-jti', zona: 'suelo', casilla: 'F1', orientacion: 0, huella: [1, 1], papel: 'Alumbra el mostrador desde el suelo.' }),
+  piece({ id: 'xtanco-planta', number: 9, tipo: 'planta', nombre: 'Planta', xpacio: 'xtanco-jti', zona: 'sala', casilla: 'G1', orientacion: 0, huella: [1, 1], papel: 'Testigo. Es la planta 9.' }),
+];
+
+export function health(item) {
+  if (item.incidencias.length) return 'rojo';
+  if (item.estado === 'revision') return 'ambar';
+  return 'verde';
+}
+
+export function sameNumber(a, b) {
+  return a.numero === b.numero;
+}
