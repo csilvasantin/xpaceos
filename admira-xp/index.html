@@ -35059,12 +35059,21 @@ window.xtAPI = (function(){
   /* El ojo "La pantalla te ve" ya NO flota sobre el Xpacio: ahora vive en el panel
      Avanzado (▤). Ocultamos el FAB flotante (!important gana al display:flex inline). */
   #percibeFab{display:none !important}
+  /* Better: Día/Atardecer/Noche y cámara viven bajo Pixeria, no sobre la escena. */
+  #advSceneControls{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+  #advSceneControls:empty{display:none}
+  #advSceneControls .life-toolbar{position:static;left:auto;right:auto;bottom:auto;transform:none;display:flex;flex-direction:column;align-items:stretch;gap:4px;max-width:none;width:100%;pointer-events:auto}
+  #advSceneControls .life-lights,#advSceneControls .life-camera{display:flex;flex-direction:column;align-items:stretch;gap:4px;width:100%;padding:0;margin:0;border:0;background:transparent;box-shadow:none;border-radius:0;backdrop-filter:none}
+  #advSceneControls .life-divider{display:none}
+  #advSceneControls .tg-quick-btn[aria-pressed=true]{border-color:#6ce6a2 !important;background:#123427 !important;color:#f0fff4 !important}
+  #advSceneControls .tg-quick-btn[aria-pressed=true] span{color:#a7e6be !important}
 </style>
 <script id="quickLaunchScript">
 (function(){
   var src=document.getElementById('telegramQuickActions'); if(!src) return;
   var panel=document.querySelector('.quad-right'); if(!panel) return;   // panel Avanzado (derecha)
   var host=document.createElement('div'); host.id='advQuickIcons'; panel.appendChild(host);
+  var scene=document.createElement('div'); scene.id='advSceneControls';
   // Botón del ojo "La pantalla te ve" — vive en el panel Avanzado (▤), ya NO flota
   // sobre el Xpacio (el #percibeFab queda oculto por CSS). Toggle del overlay.
   function makePercibe(){
@@ -35084,6 +35093,7 @@ window.xtAPI = (function(){
     });return b;
   }
   function mirror(){
+    if(scene.parentNode) scene.remove();
     var btns=[].slice.call(src.querySelectorAll('.tg-quick-btn'));
     host.innerHTML='';
     function appendAction(b){
@@ -35094,8 +35104,9 @@ window.xtAPI = (function(){
     btns.filter(function(b){return b.getAttribute('data-quick-action')!=='pixerai';}).forEach(appendAction);
     host.appendChild(makeInventory());
     host.appendChild(makePercibe());
-    // Pixeria keeps its latest-item import and is always the final advanced action.
+    // Pixeria keeps its latest-item import. Scene bars (Better) sit under it.
     btns.filter(function(b){return b.getAttribute('data-quick-action')==='pixerai';}).forEach(appendAction);
+    host.appendChild(scene);
   }
   try{ var mo=new MutationObserver(mirror); mo.observe(src,{childList:true,subtree:true,characterData:true}); }catch(e){}
   mirror();
@@ -35274,12 +35285,12 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=controls-1">
 <script type="module" src="scripts/avatar-audience.mjs?v=controls-1"></script>
-<link rel="stylesheet" href="scripts/xtanco-premium.css?v=inventari-1">
-<link rel="stylesheet" href="scripts/life-ui.css?v=inventari-1">
+<link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
+<link rel="stylesheet" href="scripts/life-ui.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=gait-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=px-2"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=panel-scene-1"></script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 {
-  "version": "v.27.09.2026.r3.14:46",
-  "signature": "NeoGrokBotBox \u00b7 GrokBotBox",
+  "version": "v.28.09.2026.r1.14:54",
+  "signature": "ArquitectoGrokBotBox · GrokBotBox",
   "machine": "GrokBotBox",
-  "agent": "NeoGrokBotBox",
-  "deployer": "NeoGrokBotBox",
-  "evidence": "Encargo #4487 \u00b7 FLT-101117: exterior (c\u00e9sped, calle, lluvia, ciudad) en 16, 32 y 64 bits y embudo pasa\u203amira\u203aentra\u203acompra (DEMO) en la cabecera de los 4 niveles. Volver atr\u00e1s: 54d5a5d.",
-  "day": "27.09.2026",
-  "time": "14:46"
+  "agent": "ArquitectoGrokBotBox",
+  "deployer": "ArquitectoGrokBotBox",
+  "evidence": "Encargo #4661 · FLT-101201: el panel Avanzado ya no repite Good/Better/Best/Matrix; Día/Atardecer/Noche y la cámara de Better viven bajo Pixeria. Volver atrás: 75bdf72.",
+  "day": "28.09.2026",
+  "time": "14:54"
 }
