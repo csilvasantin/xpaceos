@@ -9,9 +9,22 @@ const status=document.createElement('div');status.id='xtanco-best-status';
 status.setAttribute('role','status');status.hidden=true;document.body.append(status);
 let storage;try{storage=window.localStorage;}catch{}
 document.body.dataset.xtancoVisual='good'; // retired paint/operation hooks must stay inert
-const CAFETERIA_TIER_NOTICE='Cafebrería usa Good; Better, Best y Matrix están pendientes de verificación.';
+function requestedCafeteria(){
+  try{return ['cafeteria','cafebreria'].includes((new URLSearchParams(location.search).get('autostart')||'').trim().toLowerCase());}catch{return false;}
+}
 function isCafeteria(){
-  try{return window.__xtancoVisualState?.().vertical==='cafeteria';}catch{return false;}
+  const body=document.body;
+  if(body?.classList.contains('vertical-cafeteria'))return true;
+  if(body?.dataset?.xpaceVertical)return body.dataset.xpaceVertical==='cafeteria';
+  try{
+    const state=window.__xtancoVisualState?.();
+    if(state?.vertical==='cafeteria')return true;
+    if(state?.active)return false;
+  }catch{}
+  return requestedCafeteria();
+}
+function cafeteriaTierNotice(){
+  return document.documentElement.lang==='en'?'Cafebrería basic view':'Vista básica de Cafebrería';
 }
 function syncVisualSurface(){
   const canvas=document.getElementById('c');if(!canvas)return;
@@ -47,7 +60,7 @@ const tiers=createVisualTiers({openBetter:openLifeView,closeBetter:closeLifeView
   openMatrix:openMatrixView,closeMatrix:closeMatrixView,subscribeMatrix:subscribeMatrixView,storage,
   onChange(state){
     syncVisualSurface();document.body.dataset.xtancoTier=state.mode;updateTierControls(state);
-    status.textContent=state.error||(isCafeteria()?CAFETERIA_TIER_NOTICE:(state.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
+    status.textContent=state.error||(isCafeteria()?cafeteriaTierNotice():(state.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
   }
 });
 const chooseDirect=tiers.choose.bind(tiers);let transitionActive=false;
@@ -98,8 +111,15 @@ function syncCafeteriaTierControls(){
     button.disabled=blocked;
     button.setAttribute('aria-disabled',String(blocked));
   }
+  if(unavailable&&tiers.mode!=='good')void tiers.choose('good');
+  status.textContent=tiers.error||(unavailable?cafeteriaTierNotice():(tiers.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
 }
 syncCafeteriaTierControls();
+try{
+  if(window.MutationObserver){
+    new window.MutationObserver(syncCafeteriaTierControls).observe(document.body,{attributes:true,attributeFilter:['class','data-xpace-vertical']});
+  }
+}catch{}
 window.__xtancoPremiumView={
   begin:()=>false,paint:()=>{},operationContext:()=>null,
   open:(mode='better')=>tiers.choose(mode),close:()=>tiers.choose('good'),get mode(){return 'good';}

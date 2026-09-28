@@ -5351,7 +5351,8 @@ function drawMobileControls(){
   if(G.saca&&G.saca.phase!=='idle'){
     const saBadgeRow=(G.holiday&&G.holiday.active?1:0)+(G.weather&&G.weather.type?1:0)+(G.supplierDeal&&G.supplierDeal.active?1:0)+(G.escaparate&&G.escaparate.boost>0?1:0);
     const say=30+saBadgeRow*16;
-    const saLabel=G.saca.phase==='unloading'?(lang==='en'?'🚚 unloading':'🚚 descargando'):G.saca.phase==='outgoing'?(lang==='en'?'🚚 leaving':'🚚 saliendo'):(lang==='en'?'🚚 Delivery!':'🚚 La Saca!');
+    const cafeDelivery=isCafeteriaClient();
+    const saLabel=G.saca.phase==='unloading'?(lang==='en'?'🚚 restocking':'🚚 reponiendo'):G.saca.phase==='outgoing'?(lang==='en'?'🚚 leaving':'🚚 saliendo'):(cafeDelivery?(lang==='en'?'🚚 Coffee delivery':'🚚 Reposición de café'):(lang==='en'?'🚚 Delivery!':'🚚 La Saca!'));
     r(2,say,82,14,'#1a1000');rx(2,say,82,14,'#ffcc00',1);
     tx(saLabel,4,say+11,'#ffee66',6);
   }
@@ -9311,7 +9312,10 @@ function initGame(){
   try{ window.XPACE_BOOTH=getActiveClient().id; }catch(e){}
   DEFAULT_LAYOUT=JSON.parse(JSON.stringify(FACTORY_LAYOUTS[getActiveClient().id]||FACTORY_LAYOUTS.xtanco));
   loadLayout();
-  try{ document.body.classList.toggle('vertical-cafeteria',isCafeteriaClient()); }catch(e){}
+  try{
+    document.body.dataset.xpaceVertical=getActiveClient().id;
+    document.body.classList.toggle('vertical-cafeteria',isCafeteriaClient());
+  }catch(e){}
   const models=getActiveModels();
   const M=models[activeModel] || models[0];
   if(!M) return;
@@ -12848,7 +12852,7 @@ function updateGame(){
         saca.x=startX; saca.y=startY;
         saca.boxes=6; saca.aFrame=0; saca.aTimer=0;
         G.doorOpen=9999;
-        showEv('🚚 '+(lang==='es'?'¡Llega La Saca!':'Delivery arriving!'),'#cc7700');
+        showEv('🚚 '+(isCafeteriaClient()?(lang==='es'?'Llega reposición de café':'Coffee delivery arriving'):(lang==='es'?'¡Llega La Saca!':'Delivery arriving!')),'#cc7700');
         SFX.restockThud();
       }
     } else if(saca.phase==='incoming'){
@@ -12879,7 +12883,7 @@ function updateGame(){
         // Replenish products
         for(const p of G.prods) p.stock=Math.min((p.stock||0)+8,20);
         G.satisfaction=Math.min(100,G.satisfaction+2);
-        showEv('🚚 '+(lang==='es'?'¡La Saca! Tabaco repuesto':'La Saca! Stock replenished'),'#cc8800');
+        showEv('🚚 '+(isCafeteriaClient()?(lang==='es'?'Café y despensa repuestos':'Coffee and pantry restocked'):(lang==='es'?'¡La Saca! Tabaco repuesto':'La Saca! Stock replenished')),'#cc8800');
         SFX.restockThud();
       }
     } else if(saca.phase==='outgoing'){
@@ -35573,6 +35577,6 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=gait-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=panel-scene-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=cafeteria-tier-2"></script>
 </body>
 </html>
