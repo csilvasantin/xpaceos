@@ -206,7 +206,7 @@ test('same-request retries await fresh readiness and can still cancel immediatel
 
 const selectorSource=fs.readFileSync(new URL('./xtanco-premium-ui.mjs',import.meta.url),'utf8');
 const controlsSource=fs.readFileSync(new URL('./visual-tier-controls.mjs',import.meta.url),'utf8');
-function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false}={}){
+function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false,vertical='xtanco'}={}){
   const created=[],queries=[],good=lifeFixture(),life=lifeFixture(),best=lifeFixture(),matrix=lifeFixture(),windowEvents={};
   class Element {
     constructor(tag){this.tag=tag;this.dataset={};this.attrs={};this.children=[];this.listeners={};this.hidden=false;this.textContent='';
@@ -237,7 +237,7 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
       const find=node=>(node.id||node.attrs.id)===id?node:node.children.map(find).find(Boolean);
       return find(body)??null;
     }};
-  const window={addEventListener(type,fn){(windowEvents[type]??=[]).push(fn);}};Object.defineProperty(window,'localStorage',{get(){if(storageBlocked)throw Error('denied');return storage;}});
+  const window={addEventListener(type,fn){(windowEvents[type]??=[]).push(fn);},__xtancoVisualState:()=>({vertical})};Object.defineProperty(window,'localStorage',{get(){if(storageBlocked)throw Error('denied');return storage;}});
   const context=vm.createContext({document,window,location:{search},createVisualTiers,requestedTier,...life,
     openGoodView:good.openLifeView,closeGoodView:good.closeLifeView,subscribeGoodView:good.subscribeLifeView,
     openBestView:best.openLifeView,closeBestView:best.closeLifeView,subscribeBestView:best.subscribeLifeView,
@@ -270,6 +270,16 @@ test('the floating status stays silent on success and is reserved for loading or
   assert.equal(h.body.children.filter(node=>node.id==='xtanco-best-status').length,1);
   await h.window.__xtancoVisualTiers.choose('good');assert.equal(status.hidden,true);
   h.button('best').click();assert.equal(status.hidden,true);assert.equal(h.status,status);
+});
+
+test('Cafebrería stays in verified Good and disables the unreviewed visual tiers',async()=>{
+  const h=selectorHarness({search:'?quality=best',vertical:'cafeteria'});
+  assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.best.calls.open,0);
+  for(const tier of ['better','best','matrix']){
+    assert.equal(h.button(tier).disabled,true);assert.equal(h.button(tier).attrs['aria-disabled'],'true');
+  }
+  assert.match(h.status.textContent,/Cafebrería usa Good/);assert.equal(h.status.hidden,false);
+  await h.window.__xtancoVisualTiers.choose('matrix');assert.equal(h.matrix.calls.open,0);assert.equal(h.body.dataset.xtancoTier,'good');
 });
 
 test('/mudanza toggles an independent presentation class without changing quality or persistence',()=>{

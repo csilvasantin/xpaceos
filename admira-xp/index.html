@@ -21149,8 +21149,15 @@ function getTabletPos(){
 // Both segments share a single offset so text flows seamlessly.
 let ledUnifiedOffset=0;
 
+function activeLedMessages(){
+  if(isCafeteriaClient()) return lang==='en'
+    ? ['★ CAFEBRERÍA ★','COFFEE · BOOKS · SLOW MOMENTS','YOUR CAFÉ AND BOOKSHOP','ADMIRA · DIGITAL SPACES']
+    : ['★ CAFEBRERÍA ★','CAFÉ · LIBROS · TIEMPO PARA TI','TU CAFÉ Y LIBRERÍA','ADMIRA · ESPACIOS DIGITALES'];
+  return T().ledMsgs;
+}
+
 function _getLedParams(){
-  const msgs=T().ledMsgs;
+  const msgs=activeLedMessages();
   const comunicado=(G&&G.comunicadoMsg)
     ? `  📢  COMUNICADO: ${G.comunicadoMsg.toUpperCase()}  📢  `
     : '';

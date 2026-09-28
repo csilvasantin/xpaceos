@@ -9,6 +9,10 @@ const status=document.createElement('div');status.id='xtanco-best-status';
 status.setAttribute('role','status');status.hidden=true;document.body.append(status);
 let storage;try{storage=window.localStorage;}catch{}
 document.body.dataset.xtancoVisual='good'; // retired paint/operation hooks must stay inert
+const CAFETERIA_TIER_NOTICE='Cafebrería usa Good; Better, Best y Matrix están pendientes de verificación.';
+function isCafeteria(){
+  try{return window.__xtancoVisualState?.().vertical==='cafeteria';}catch{return false;}
+}
 function syncVisualSurface(){
   const canvas=document.getElementById('c');if(!canvas)return;
   const rect=canvas.getBoundingClientRect(),root=document.documentElement.style;
@@ -43,7 +47,7 @@ const tiers=createVisualTiers({openBetter:openLifeView,closeBetter:closeLifeView
   openMatrix:openMatrixView,closeMatrix:closeMatrixView,subscribeMatrix:subscribeMatrixView,storage,
   onChange(state){
     syncVisualSurface();document.body.dataset.xtancoTier=state.mode;updateTierControls(state);
-    status.textContent=state.error||(state.busy?'Fusionando vista…':'');status.hidden=!status.textContent;
+    status.textContent=state.error||(isCafeteria()?CAFETERIA_TIER_NOTICE:(state.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
   }
 });
 const chooseDirect=tiers.choose.bind(tiers);let transitionActive=false;
@@ -74,6 +78,10 @@ function fuseWithoutNative(mode){
 tiers.choose=mode=>{
   ensureExpertDock();
   syncVisualSurface();
+  if(mode!=='good'&&isCafeteria()){
+    syncCafeteriaTierControls();
+    return chooseDirect('good');
+  }
   if(typeof document.startViewTransition!=='function'||transitionActive)return fuseWithoutNative(mode);
   let outcome;transitionActive=true;
   try{
@@ -83,6 +91,15 @@ tiers.choose=mode=>{
 };
 const expertControls=createTierControls({context:'Calidad visual · modo experto',choose:mode=>tiers.choose(mode)});
 expertControls.element.id='xtanco-visual-quality';actions?.prepend(expertControls.element);
+function syncCafeteriaTierControls(){
+  const unavailable=isCafeteria();
+  for(const button of expertControls.element.querySelectorAll('[data-visual-mode]')){
+    const blocked=unavailable&&button.dataset.visualMode!=='good';
+    button.disabled=blocked;
+    button.setAttribute('aria-disabled',String(blocked));
+  }
+}
+syncCafeteriaTierControls();
 window.__xtancoPremiumView={
   begin:()=>false,paint:()=>{},operationContext:()=>null,
   open:(mode='better')=>tiers.choose(mode),close:()=>tiers.choose('good'),get mode(){return 'good';}
