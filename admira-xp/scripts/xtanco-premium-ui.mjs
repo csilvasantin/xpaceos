@@ -9,6 +9,23 @@ const status=document.createElement('div');status.id='xtanco-best-status';
 status.setAttribute('role','status');status.hidden=true;document.body.append(status);
 let storage;try{storage=window.localStorage;}catch{}
 document.body.dataset.xtancoVisual='good'; // retired paint/operation hooks must stay inert
+function requestedCafeteria(){
+  try{return ['cafeteria','cafebreria'].includes((new URLSearchParams(location.search).get('autostart')||'').trim().toLowerCase());}catch{return false;}
+}
+function isCafeteria(){
+  const body=document.body;
+  if(body?.classList.contains('vertical-cafeteria'))return true;
+  if(body?.dataset?.xpaceVertical)return body.dataset.xpaceVertical==='cafeteria';
+  try{
+    const state=window.__xtancoVisualState?.();
+    if(state?.vertical==='cafeteria')return true;
+    if(state?.active)return false;
+  }catch{}
+  return requestedCafeteria();
+}
+function cafeteriaTierNotice(){
+  return document.documentElement.lang==='en'?'Cafebrería basic view':'Vista básica de Cafebrería';
+}
 function syncVisualSurface(){
   const canvas=document.getElementById('c');if(!canvas)return;
   const rect=canvas.getBoundingClientRect(),root=document.documentElement.style;
@@ -43,7 +60,7 @@ const tiers=createVisualTiers({openBetter:openLifeView,closeBetter:closeLifeView
   openMatrix:openMatrixView,closeMatrix:closeMatrixView,subscribeMatrix:subscribeMatrixView,storage,
   onChange(state){
     syncVisualSurface();document.body.dataset.xtancoTier=state.mode;updateTierControls(state);
-    status.textContent=state.error||(state.busy?'Fusionando vista…':'');status.hidden=!status.textContent;
+    status.textContent=state.error||(isCafeteria()?cafeteriaTierNotice():(state.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
   }
 });
 const chooseDirect=tiers.choose.bind(tiers);let transitionActive=false;
@@ -74,6 +91,10 @@ function fuseWithoutNative(mode){
 tiers.choose=mode=>{
   ensureExpertDock();
   syncVisualSurface();
+  if(mode!=='good'&&isCafeteria()){
+    syncCafeteriaTierControls();
+    return chooseDirect('good');
+  }
   if(typeof document.startViewTransition!=='function'||transitionActive)return fuseWithoutNative(mode);
   let outcome;transitionActive=true;
   try{
@@ -83,6 +104,22 @@ tiers.choose=mode=>{
 };
 const expertControls=createTierControls({context:'Calidad visual · modo experto',choose:mode=>tiers.choose(mode)});
 expertControls.element.id='xtanco-visual-quality';actions?.prepend(expertControls.element);
+function syncCafeteriaTierControls(){
+  const unavailable=isCafeteria();
+  for(const button of expertControls.element.querySelectorAll('[data-visual-mode]')){
+    const blocked=unavailable&&button.dataset.visualMode!=='good';
+    button.disabled=blocked;
+    button.setAttribute('aria-disabled',String(blocked));
+  }
+  if(unavailable&&tiers.mode!=='good')void tiers.choose('good');
+  status.textContent=tiers.error||(unavailable?cafeteriaTierNotice():(tiers.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
+}
+syncCafeteriaTierControls();
+try{
+  if(window.MutationObserver){
+    new window.MutationObserver(syncCafeteriaTierControls).observe(document.body,{attributes:true,attributeFilter:['class','data-xpace-vertical']});
+  }
+}catch{}
 window.__xtancoPremiumView={
   begin:()=>false,paint:()=>{},operationContext:()=>null,
   open:(mode='better')=>tiers.choose(mode),close:()=>tiers.choose('good'),get mode(){return 'good';}

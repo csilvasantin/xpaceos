@@ -206,11 +206,12 @@ test('same-request retries await fresh readiness and can still cancel immediatel
 
 const selectorSource=fs.readFileSync(new URL('./xtanco-premium-ui.mjs',import.meta.url),'utf8');
 const controlsSource=fs.readFileSync(new URL('./visual-tier-controls.mjs',import.meta.url),'utf8');
-function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false}={}){
-  const created=[],queries=[],good=lifeFixture(),life=lifeFixture(),best=lifeFixture(),matrix=lifeFixture(),windowEvents={};
+function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false,vertical='xtanco'}={}){
+  const created=[],queries=[],observers=[],good=lifeFixture(),life=lifeFixture(),best=lifeFixture(),matrix=lifeFixture(),windowEvents={};
+  const notify=(node,attribute)=>{for(const observer of observers)if(observer.node===node&&observer.options.attributes&&observer.options.attributeFilter.includes(attribute))observer.callback();};
   class Element {
     constructor(tag){this.tag=tag;this.dataset={};this.attrs={};this.children=[];this.listeners={};this.hidden=false;this.textContent='';
-      const classes=new Set();this.classList={add:value=>classes.add(value),remove:value=>classes.delete(value),contains:value=>classes.has(value)};}
+      const classes=new Set();this.classList={add:value=>{classes.add(value);notify(this,'class');},remove:value=>{classes.delete(value);notify(this,'class');},contains:value=>classes.has(value)};}
     setAttribute(key,value){this.attrs[key]=String(value);}
     set innerHTML(value){
       this.markup=value;this.children=[];
@@ -237,8 +238,10 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
       const find=node=>(node.id||node.attrs.id)===id?node:node.children.map(find).find(Boolean);
       return find(body)??null;
     }};
-  const window={addEventListener(type,fn){(windowEvents[type]??=[]).push(fn);}};Object.defineProperty(window,'localStorage',{get(){if(storageBlocked)throw Error('denied');return storage;}});
-  const context=vm.createContext({document,window,location:{search},createVisualTiers,requestedTier,...life,
+  class MutationObserver {constructor(callback){this.callback=callback;}observe(node,options){this.node=node;this.options=options;observers.push(this);}}
+  const window={addEventListener(type,fn){(windowEvents[type]??=[]).push(fn);},MutationObserver,__xtancoVisualState:()=>({vertical})};Object.defineProperty(window,'localStorage',{get(){if(storageBlocked)throw Error('denied');return storage;}});
+  document.documentElement={lang:'es'};
+  const context=vm.createContext({document,window,location:{search},URLSearchParams,createVisualTiers,requestedTier,...life,
     openGoodView:good.openLifeView,closeGoodView:good.closeLifeView,subscribeGoodView:good.subscribeLifeView,
     openBestView:best.openLifeView,closeBestView:best.closeLifeView,subscribeBestView:best.subscribeLifeView,
     openMatrixView:matrix.openLifeView,closeMatrixView:matrix.closeLifeView,subscribeMatrixView:matrix.subscribeLifeView});
@@ -248,7 +251,8 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
   return {body,actions,advanced,controls,document,window,storage,good,life,best,matrix,created,queries,
     get status(){return document.getElementById('xtanco-best-status');},
     pagehide(){for(const fn of windowEvents.pagehide||[])fn({persisted:false});},
-    button:(tier,group=controls)=>group.querySelectorAll('[data-visual-mode]').find(node=>node.dataset.visualMode===tier)};
+    button:(tier,group=controls)=>group.querySelectorAll('[data-visual-mode]').find(node=>node.dataset.visualMode===tier),
+    setVertical(next){vertical=next;body.dataset.xpaceVertical=next;notify(body,'data-xpace-vertical');if(next==='cafeteria')body.classList.add('vertical-cafeteria');else body.classList.remove('vertical-cafeteria');}};
 }
 
 test('Expert keeps the version selector and Advanced no longer repeats it',()=>{
@@ -270,6 +274,24 @@ test('the floating status stays silent on success and is reserved for loading or
   assert.equal(h.body.children.filter(node=>node.id==='xtanco-best-status').length,1);
   await h.window.__xtancoVisualTiers.choose('good');assert.equal(status.hidden,true);
   h.button('best').click();assert.equal(status.hidden,true);assert.equal(h.status,status);
+});
+
+test('Cafebrería stays in verified Good and disables the unreviewed visual tiers',async()=>{
+  const h=selectorHarness({search:'?quality=best',vertical:'cafeteria'});
+  assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.best.calls.open,0);
+  for(const tier of ['better','best','matrix']){
+    assert.equal(h.button(tier).disabled,true);assert.equal(h.button(tier).attrs['aria-disabled'],'true');
+  }
+  assert.match(h.status.textContent,/Vista básica de Cafebrería/);assert.equal(h.status.hidden,false);
+  await h.window.__xtancoVisualTiers.choose('matrix');assert.equal(h.matrix.calls.open,0);assert.equal(h.body.dataset.xtancoTier,'good');
+});
+
+test('Cafebrería reacts when the async client selection enters and leaves its vertical',async()=>{
+  const h=selectorHarness({search:'?autostart=cafeteria'});
+  assert.equal(h.button('best').disabled,true,'the direct URL blocks persisted quality before the client resolves');
+  h.setVertical('xtanco');assert.equal(h.button('best').disabled,false);
+  await h.window.__xtancoVisualTiers.choose('best');assert.equal(h.best.calls.open,1);
+  h.setVertical('cafeteria');assert.equal(h.button('best').disabled,true);assert.equal(h.body.dataset.xtancoTier,'good');
 });
 
 test('/mudanza toggles an independent presentation class without changing quality or persistence',()=>{
