@@ -1,14 +1,14 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.30.09.2026.r23.00:03",
+  "version": "v.30.09.2026.r24.00:18",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.9.0",
+    "version": "2.10.0",
     "health": "https://mcp.admira.store/",
-    "tool_count": 33
+    "tool_count": 34
   },
   "auth": {
     "lectura": "none",
@@ -159,6 +159,10 @@
     {
       "name": "playlist_play",
       "description": "Saltar al principio de un contenido guardado y continuar la playlist / Jump to saved content and continue playlist. Shared virtual devices; fleet authentication and expected_revision required."
+    },
+    {
+      "name": "matrix_preview",
+      "description": "Previsualizar vídeo en dispositivos virtuales seleccionados o recargar su playlist guardada desde el inicio en bucle. Authenticated preview/reload, Matrix expected_revision; no saved playlist mutation."
     }
   ],
   "ecosystem": {
@@ -425,5 +429,14 @@
   "assign_content": {
     "es": "ES: En Matrix, pulsa Asignar contenidos, elige una pantalla o el TPV y Añadir vídeo. Hay un único campo: título, #hashtag o número de Pixeria, por ejemplo #1329. Enter, Buscar en Pixeria o salir del campo inicia la búsqueda. Una coincidencia única se aplica directamente; si hay varias, elige un resultado. La elección guarda la playlist, la asigna al dispositivo seleccionado y reproduce ese contenido. La URL HTTPS se resuelve internamente. Los dispositivos que comparten la playlist siguen su reloj común. Los errores conservan el borrador; las filas vacías se ignoran y las búsquedas pendientes deben resolverse. No se añaden todos los resultados de un hashtag. Los duplicados se avisan.",
     "en": "EN: In Matrix, click Assign content, select a screen or POS and Add video. Use the single field for a Pixeria title, #hashtag or number such as #1329. Enter, Search Pixeria or leaving the field starts the lookup. A unique match applies directly; otherwise choose a result. Choosing saves the playlist, assigns it to the selected device and plays that content. The HTTPS URL is resolved internally. Devices sharing the playlist follow their common clock. Errors preserve drafts; empty rows are ignored and pending searches must be resolved. Hashtag results are not bulk-added. Duplicates are reported."
+  },
+  "playlist_drop": {
+    "guide": "https://www.xpaceos.com/admira-xp/docs/playlist-drop.md",
+    "tool": "matrix_preview",
+    "actions": [
+      "preview",
+      "reload"
+    ],
+    "scope": "Open virtual Matrix clients; no physical publishing"
   }
 }

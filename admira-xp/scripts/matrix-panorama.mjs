@@ -1,11 +1,12 @@
+import {previewSlice} from './device-preview-layout.mjs?v=drop-1';
 import {DEMO_WALL,DEMO_CHRISTMAS,DEMO_TPV,DEMO_IA,DEMO_MUSIC} from './starbucks-demo.mjs?v=devices-2';
 import {mountIncidentPanel} from './starbucks-incidents.mjs?v=devices-2';
 import {createSincroIA} from './sincro-ia.mjs?v=devices-2';
-import {mountDeviceEditor} from './device-editor.mjs?v=assign-2';
-import {createDevicePlayback} from './device-playback.mjs?v=playlist-play-1';
+import {mountDeviceEditor} from './device-editor.mjs?v=drop-1';
+import {createDevicePlayback} from './device-playback.mjs?v=drop-1';
 import {DEVICE_IDS,assignedPlaylist,emptyDeviceLayout} from './device-layout.mjs?v=devices-2';
 import {createAnnouncement,ANNOUNCEMENT_SPEAKER,CLOSING_ANNOUNCEMENT} from './starbucks-announcement.mjs?v=closing-1';
-import {watchMatrixState} from './matrix-remote.mjs?v=devices-2';
+import {watchMatrixState} from './matrix-remote.mjs?v=drop-1';
 import {STARBUCKS_TPV_PLAYLIST,STARBUCKS_TPV_MAPPING,STARBUCKS_TPV_VIEW,withStarbucksTPV} from './starbucks-tpv.mjs?v=tpv-1';
 import {getScreenDisplayMode,setScreenDisplayMode,subscribeScreenDisplay,screenSlice,screenNumber,screenGroup,getScreenNumbersVisible,setScreenNumbersVisible,subscribeScreenNumbers} from './screen-display.mjs?v=number-layout-1';
 import {STARBUCKS_SCREEN_PLAYLIST,STARBUCKS_WALL_MAPPING,STARBUCKS_WALL_VIEW} from './starbucks-screens.mjs?v=number-layout-1';
@@ -51,7 +52,10 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  function applyScreenLayout(mode=getScreenDisplayMode()){
   layoutSelect.value=mode;
   for(const [id,media] of previews){
-   if(!media.dataset.wallVideo)continue;
+   if(!media.dataset.wallVideo&&!media.dataset.tpvVideo)continue;
+   const temporary=previewSlice(id,runtime.previewIds,key=>{const p=model.players.find(p=>p.id===key);return (p?.width||640)/(p?.height||360);});
+   if(temporary){Object.assign(media.style,{width:temporary.width+'%',left:temporary.left+'%',right:'auto',objectFit:temporary.fit});media.dataset.screenGroup=temporary.group;continue;}
+   if(media.dataset.tpvVideo){Object.assign(media.style,{width:'100%',left:'0%',objectFit:'contain'});delete media.dataset.screenGroup;continue;}
    let slice=screenSlice(id,demoMode==='ia'?'individual':mode);if(!slice)continue;const config=deviceEditor?.config||emptyDeviceLayout();const members=STARBUCKS_WALL_MAPPING.players.filter(p=>slice.group.split('-').map(Number).includes(screenNumber(p.id)));if(members.some(p=>assignedPlaylist(config,p.id)!==assignedPlaylist(config,id)))slice=screenSlice(id,'individual');
    Object.assign(media.style,{width:slice.width+'%',left:slice.left+'%',right:'auto',objectFit:slice.fit});
    media.dataset.screenGroup=slice.group;
@@ -71,7 +75,9 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  function ensurePlaylistMedia(pid){for(const p of model.players){if(!DEVICE_IDS.includes(p.id)||!nodes.has(p.id))continue;const config=deviceEditor?.config||emptyDeviceLayout();if(pid?assignedPlaylist(config,p.id)!==pid:!config.assignments[p.id])continue;const kind=p.id===tpvId?'tpvVideo':'wallVideo';if(!previews.get(p.id)?.dataset[kind])mediaFor(p,kind);}}
  function updateRuntime(){ensurePlaylistMedia();runtime.update({devices:[...previews].filter(([id,v])=>DEVICE_IDS.includes(id)&&!incidents?.off.has(id)&&!(demoMode==='ia'&&wallIds.has(id))&&v.tagName==='VIDEO'&&(v.dataset.wallVideo||v.dataset.tpvVideo)).map(([id,video])=>({id,video})),config:deviceEditor?.config||emptyDeviceLayout(),catalog:catalog()});applyScreenLayout();}
  function updateDeviceLabels(){for(const [id,badge] of numberNodes){const pid=assignedPlaylist(deviceEditor.config,id);badge.querySelector('small').textContent=deviceEditor.config.playlists[pid]?.title||(pid==='tpv'?t('Publicidad local','Local advertising'):screenGroup(screenNumber(id))?t('Grupo ','Group ')+screenGroup(screenNumber(id)):t('Sola','Standalone'));}}
- deviceEditor=mountDeviceEditor({root,surface,lang,nameFor:id=>playerName(model.players.find(p=>p.id===id)||{id,name:id}),catalog,onPlay:async(pid,track)=>{if(demoMode==='ia')await setDemoMode('linear');ensurePlaylistMedia(pid);updateRuntime();return runtime.jump(pid,track);},onChange:()=>{updateRuntime();updateDeviceLabels();}});deviceEditor.enable(getScreenNumbersVisible());
+ async function previewDevices(ids,track){if(demoMode==='ia')await setDemoMode('linear');for(const id of ids){const p=model.players.find(p=>p.id===id);if(p&&nodes.has(id)&&!previews.get(id)?.dataset[id===tpvId?'tpvVideo':'wallVideo'])mediaFor(p,id===tpvId?'tpvVideo':'wallVideo');}updateRuntime();const result=await runtime.preview(ids,track);applyScreenLayout();return result;}
+ async function reloadDevices(ids){if(demoMode==='ia')await setDemoMode('linear');updateRuntime();const result=await runtime.reload(ids);applyScreenLayout();return result;}
+ deviceEditor=mountDeviceEditor({root,surface,lang,nameFor:id=>playerName(model.players.find(p=>p.id===id)||{id,name:id}),catalog,onPlay:async(pid,track)=>{if(demoMode==='ia')await setDemoMode('linear');ensurePlaylistMedia(pid);updateRuntime();const result=await runtime.jump(pid,track);applyScreenLayout();return result;},onPreview:previewDevices,onReload:reloadDevices,onChange:()=>{updateRuntime();updateDeviceLabels();}});deviceEditor.enable(getScreenNumbersVisible());
  const controller=ids=>({play(){if(demoMode==='ia'&&ids.length>1)void iaPlayback?.play();runtime.setPlaying(ids,true);},pause(){if(demoMode==='ia'&&ids.length>1)iaPlayback?.pause();runtime.setPlaying(ids,false);},state:()=>demoMode==='ia'&&ids.length>1?iaPlayback?.state()||{playing:false}:runtime.state(ids),replaceTracks(){updateRuntime();}});
  function stopWall(){runtime.setPlaying([...wallIds],false);wallPlayback=null;}
  function stopTPV(){runtime.setPlaying([tpvId],false);tpvPlayback=null;}
@@ -210,7 +216,11 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
    if(remoteState&&(state.announcementNext||0)>(remoteState.announcementNext||0))void announcement.play();
    if(remoteState&&state.playlistJump&&state.playlistJump.revision!==remoteState.playlistJump?.revision){
     const command=state.playlistJump;
-    void (async()=>{try{const track=command.playlistId==='wall'?wallTracks.find(t=>t.id===command.trackId):null;if(command.playlistId==='wall')await setDemoMode(track?.condition==='/navidad'?'christmas':'linear');else if(demoMode==='ia')await setDemoMode('linear');updateRuntime();await runtime.jump(command.playlistId,command.trackId);}catch(error){message(t('No se pudo saltar al contenido: ','Could not jump to content: ')+error.message);}})();
+    void (async()=>{try{const track=command.playlistId==='wall'?wallTracks.find(t=>t.id===command.trackId):null;if(command.playlistId==='wall')await setDemoMode(track?.condition==='/navidad'?'christmas':'linear');else if(demoMode==='ia')await setDemoMode('linear');updateRuntime();await runtime.jump(command.playlistId,command.trackId);applyScreenLayout();}catch(error){message(t('No se pudo saltar al contenido: ','Could not jump to content: ')+error.message);}})();
+   }
+   if(remoteState&&state.previewCommand&&state.previewCommand.revision!==remoteState.previewCommand?.revision){
+    const command=state.previewCommand;
+    void (command.action==='preview'?previewDevices(command.deviceIds,command.track):deviceEditor.reload(command.deviceIds)).then(result=>{message(result?.error?t('Vista previa: no se pudo reproducir','Preview: playback failed'):command.action==='preview'?t('Vista previa MCP · Recargar playlist restaura la programación','MCP preview · Reload playlist restores the schedule'):t('Playlist original en bucle','Original playlist on repeat'));}).catch(error=>message(error.message));
    }
    deviceEditor.refresh();remoteState=state;
   },onStatus:state=>{if(disposed)return;toolbar.querySelector('.matrix-remote-status').textContent=state.error?t('MCP sin conexión · se conserva el último estado','MCP offline · keeping last state'):t('MCP conectado · revisión ','MCP connected · revision ')+state.revision;}});

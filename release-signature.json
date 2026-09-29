@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r23.00:03",
+  "version": "v.30.09.2026.r24.00:18",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #283: Asignar contenidos, campo único Pixeria y guardado/reproducción automática; mapa antiguo, avance y móvil verificados; documentación ES/EN.",
+  "evidence": "Yokup DCL-7f062d1cf53ff977065769cb: arrastre a pantalla, previo multiselección y Reload en bucle; MCP matrix_preview y docs ES/EN.",
   "day": "30.09.2026",
-  "time": "00:03"
+  "time": "00:18"
 }
