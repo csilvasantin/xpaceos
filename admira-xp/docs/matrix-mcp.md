@@ -70,3 +70,19 @@ matrix_device_layout: save_playlist {playlist_id:"playlist-local",title:"Local",
 [Guide](https://www.xpaceos.com/admira-xp/docs/device-playlists.md)
 
 ES: En Yokup, resolve:true registra la recuperación del recurso; el cierre definitivo requiere verificación en Yokup. EN: In Yokup, resolve:true records resource recovery; final ticket closure requires verification in Yokup.
+
+## 25 · Pixeria · Añadir vídeos por título, hashtag o número / Add videos by title, hashtag or number
+
+ES: En Matrix, escribe /layout, pulsa una pantalla o el TPV y Añadir vídeo. En el campo Título, #hashtag o #1329 escribe el título, un hashtag exacto (por ejemplo #good) o un número de Stock (#1329 o 1329). Pulsa Enter o Buscar en Pixeria. Un número también se resuelve al salir del campo si la URL está vacía. Si hay una coincidencia exacta o única, se rellenan título y URL; si hay varias, elige una. Guarda la playlist para aplicar el borrador a los dispositivos seleccionados. Una coincidencia no inicia una emisión física. No se añade automáticamente todo un hashtag ni se crea una suscripción dinámica. La entrada manual de título y URL sigue disponible. Los vídeos duplicados se avisan sin añadir otra fila.
+
+EN: In Matrix, enter /layout, click a screen or POS and Add video. In Title, #hashtag or #1329 enter a title, an exact hashtag (for example #good), or a Stock number (#1329 or 1329). Press Enter or Search Pixeria. A number also resolves when leaving the field if its URL is empty. An exact or unique match fills the title and URL; otherwise choose a result. Save playlist applies the draft to selected devices. Resolving content does not publish to physical devices. Hashtags do not bulk-add their contents or create a dynamic subscription. Manual title and URL entry remains available. Duplicate videos are reported without adding another entry.
+
+### MCP y fuente / MCP and source
+
+pixeria_search {query:"#1329",limit:20} is a public read. Accepted queries: title words (case/accent insensitive), exact hashtag, stable Stock number or asset id. Returns {query,total,items:[{id,num,title,url,tags,type,exact}]}; only published videos with direct HTTPS URLs. Default limit 20, maximum 50. Stock numbers use the catalog num field, never the position in the list. Public UI endpoint: https://mcp.admira.store/pixeria/search?query=%231329&limit=20. Upstream catalog: https://pub-bf043a4daa3b43b7a0b769617729d074.r2.dev/stock/index.json, the same public library used by Pixeria. Short cache (up to 30 seconds); failures remain visible and do not overwrite a playlist.
+
+playlist_add {playlist:"tpv",stockId:"#1329",expected_revision:N} adds the resolved video to a shared base playlist. playlist aliases: hilo, pantallas, tpv, sincro-ia. Existing demo assets remain supported; new Pixeria lookup returns videos only. Ambiguous titles/hashtags fail with no write: use pixeria_search, select an id/number and retry with a fresh revision. Removal/reorder use IDs or Stock numbers already stored in that playlist. For a custom device playlist, read matrix_state, resolve via pixeria_search, then matrix_device_layout save_playlist with the complete ordered array of {id,title,url}; assign only the intended device_ids. Writes require each agent’s own fleet key and expected_revision. UI edits remain local; authenticated MCP changes are shared. Never put a fleet key in browser code.
+
+Verified example: Stock #1329 = 1790711463701-yxy150, “Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2”. #1329 is a stable reference, not a promise that it is always the latest upload.
+
+Docs: https://www.xpaceos.com/admira-xp/docs/pixeria-playlists.md

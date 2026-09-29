@@ -1,14 +1,14 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.29.09.2026.r16.22:28",
+  "version": "v.29.09.2026.r18.23:19",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.6.0",
+    "version": "2.7.0",
     "health": "https://mcp.admira.store/",
-    "tool_count": 31
+    "tool_count": 32
   },
   "auth": {
     "lectura": "none",
@@ -122,7 +122,7 @@
     },
     {
       "name": "playlist_add",
-      "description": "Add published Stock 1308–1322 to a Starbucks playlist; position is zero-based; optional condition /navidad or /sincro IA. Fleet key and expected_revision required."
+      "description": "Añade un contenido Stock/Pixeria por número, título, hashtag o id; coincidencias ambiguas requieren elegir con pixeria_search. Escritura autenticada y revisionada."
     },
     {
       "name": "playlist_remove",
@@ -151,6 +151,10 @@
     {
       "name": "incident_open",
       "description": "Open a MANUAL Starbucks Yokup field incident with unique resource. Returns real INC id. Authenticated fleet key required."
+    },
+    {
+      "name": "pixeria_search",
+      "description": "Lectura pública: vídeos publicados de Pixeria por título, hashtag exacto, número Stock (#1329) o asset id. Devuelve coincidencias, no publica."
     }
   ],
   "ecosystem": {

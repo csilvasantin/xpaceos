@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r17.22:59",
+  "version": "v.29.09.2026.r18.23:19",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #252, FLT-101280 y FLT-101281: playlists por dispositivo con Ctrl/Cmd, incidencias reales, programación Starbucks, sincro IA y MCP 2.6 con 31 herramientas.",
+  "evidence": "Yokup #266: búsqueda Pixeria por título, hashtag y Stock #1329 desde playlists; MCP 2.7, help y tutorial ES/EN.",
   "day": "29.09.2026",
-  "time": "22:59"
+  "time": "23:19"
 }

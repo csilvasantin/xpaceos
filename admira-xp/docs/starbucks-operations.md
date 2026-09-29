@@ -6,7 +6,7 @@ Starbucks demo: outside /layout, click screen 1 for Unplug/Plug in; it turns bla
 
 ## MCP
 
-MCP endpoint: https://mcp.admira.store/mcp. playlist_list is public; playlist_add, playlist_remove, playlist_reorder, hotspot_bind, sincro_set, screen_unplug, screen_plug and incident_open require each agent’s own fleet key. All state writes use expected_revision from matrix_state; incident_open creates a ticket directly and does not need a state revision. Existing matrix_playlist_update accepts other published HTTPS media. Stock convenience aliases currently resolve IDs 1308–1322. Never send credentials in chat or URLs.
+MCP endpoint: https://mcp.admira.store/mcp. playlist_list is public; playlist_add, playlist_remove, playlist_reorder, hotspot_bind, sincro_set, screen_unplug, screen_plug and incident_open require each agent’s own fleet key. All state writes use expected_revision from matrix_state; incident_open creates a ticket directly and does not need a state revision. Existing matrix_playlist_update accepts other published HTTPS media. playlist_add resolves other published Pixeria videos by title, exact hashtag or Stock number, including #1329; use pixeria_search to choose ambiguous matches. Never send credentials in chat or URLs.
 
 Store: starbucks-alsea-paseo-de-gracia. Playlist aliases: hilo, pantallas, tpv, sincro-ia. position is zero-based. Every write reads the current revision first.
 
