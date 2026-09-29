@@ -1212,7 +1212,7 @@
     <div id="telegramSignagePanel" aria-label="Playlist Digital Signage"></div>
     <div class="expert-workspace">
     <div class="tg-cli-row">
-      <textarea id="telegramComposer" placeholder="Write to @AdmiraXPBot... Enter sends, Shift+Enter newline"></textarea>
+      <textarea id="telegramComposer" placeholder="/sincro on"></textarea>
     </div>
     <div class="expert-divider" data-expert-divider="0" role="separator" aria-orientation="vertical" tabindex="0"></div>
       <div class="tg-actions">
@@ -25017,7 +25017,7 @@ function syncDockLanguage(){
   if(tgHeads[0]) tgHeads[0].textContent=isEs?'Control Xtore desde Telegram / WhatsApp':'Xtore control from Telegram / WhatsApp';
   if(tgHeads[1]) tgHeads[1].textContent=isEs?'Conversacion':'Conversation';
   const composer=document.getElementById('telegramComposer');
-  if(composer) composer.placeholder=isEs?'Escribe para @AdmiraXPBot... Enter envia, Shift+Enter salto':'Write to @AdmiraXPBot... Enter sends, Shift+Enter newline';
+  if(composer){if(window.XpaceExpertComposer)window.XpaceExpertComposer.refresh();else composer.placeholder='/sincro on';}
   const sendBtn=document.getElementById('telegramSendBtn');
   const hideBtn=document.getElementById('telegramHideBtn');
   if(sendBtn) sendBtn.textContent=isEs?'Enviar':'Send';
@@ -35601,13 +35601,14 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=controls-1">
 <script type="module" src="scripts/avatar-audience.mjs?v=controls-1"></script>
-<link rel="stylesheet" href="scripts/matrix-panorama.css?v=mcp-1">
+<link rel="stylesheet" href="scripts/matrix-panorama.css?v=closing-1">
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=expert-hud-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=mcp-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=closing-1"></script>
+<script type="module" src="scripts/expert-composer.mjs?v=closing-1"></script>
 </body>
 </html>

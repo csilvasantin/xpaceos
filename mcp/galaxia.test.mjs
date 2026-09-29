@@ -26,12 +26,12 @@ test("el relevo conserva identificadores y un flujo comprobable", () => {
   assert.match(flow.steps.join(" "), /yokup_task_update/);
 });
 
-test("manifest, página MCP y ayuda humana anuncian el mismo contrato v2.3", () => {
-  assert.equal(manifest.server.version, "2.3.0");
-  assert.equal(manifest.server.tool_count, 20);
+test("manifest, página MCP y ayuda humana anuncian el mismo contrato v2.4", () => {
+  assert.equal(manifest.server.version, "2.4.0");
+  assert.equal(manifest.server.tool_count, 21);
   assert.ok(manifest.tools.some((tool) => tool.name === "galaxy"));
   assert.ok(manifest.resources.some((resource) => resource.uri === "xpaceos://galaxy"));
-  assert.match(mcpPage, /20 en v2\.3\.0/);
+  assert.match(mcpPage, /21 en v2\.4\.0/);
   assert.match(mcpPage, /xpaceos:\/\/galaxy/);
   assert.match(helpPage, /id="galaxia"/);
   assert.match(helpPage, /'sg\.h':'Connect the Admira Galaxy'/);
@@ -54,7 +54,7 @@ test("el catálogo funcional se descubre por HTTP sin inventar herramientas ni r
   assert.equal(manifest.static_catalog.number_format, "01.-");
   assert.match("XP-F01", new RegExp(manifest.static_catalog.id_pattern));
   assert.equal(manifest.resources.length, 5);
-  assert.equal(manifest.tools.length, 20);
+  assert.equal(manifest.tools.length, 21);
   assert.ok(!manifest.resources.some((resource) => resource.uri === "xpaceos://funcionalidades"));
   assert.ok(!manifest.tools.some((tool) => tool.name === "funcionalidades"));
   assert.match(mcpPage, /href="\/mcp\/funcionalidades\.json"/);

@@ -48,3 +48,13 @@ Use `galaxy {element:"admira-live"}` to discover https://mcp.admira.live/mcp. Wi
 Persistence: Cloudflare D1 `xpaceos-matrix`, single atomic revision with last 50 signed changes. Bootstrap source: xpaceos-mcp/src/matrix-defaults.mjs. UI: matrix-remote.mjs, matrix-panorama.mjs; interval 5s after each completed request (8s timeout). Offline keeps last known state; initial unavailability uses bundled playlists. No bearer secret is delivered to browsers. Black border covers capture edge without changing stored anchor coordinates.
 
 Yokup #232. ES/EN.
+
+## Aviso de cierre / Closing announcement
+
+El altavoz negro junto a la escalera reproduce el aviso: «Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.». Primera voz gratuita: Mónica de macOS. La música continúa avanzando con volumen cero durante el aviso y recupera su volumen y estado de silencio al terminar, cancelar o fallar. Una segunda pulsación detiene el aviso. En Control Xtore, /sin autocompleta /sincro on o /sincro off según el estado contrario al actual; Enter ejecuta y Tab acepta. El texto sugerido se puede editar. Los paneles inferiores ocultan las barras de scroll y conservan desplazamiento y tiradores de tamaño.
+
+The black speaker beside the staircase plays the Spanish closing announcement: “Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.” Initial free voice: macOS Mónica. Music keeps advancing at zero volume during the announcement; its volume and mute state are restored on completion, cancellation or failure. Click again to stop. In Control Xtore, /sin completes /sincro on or /sincro off, targeting the opposite current state; Enter runs it and Tab accepts. Suggested text remains editable. Bottom panels hide scrollbars while preserving scrolling and resize handles.
+
+matrix_announcement {expected_revision:N} increments announcementNext. Read matrix_state first. Authenticated fleet key required. Open Matrix pages apply new events once; newly opened pages do not replay old announcements. Browser audio permission is required: if blocked, click the speaker locally. Saved is not playback acknowledgement. The music playlist is unchanged.
+
+[Guide](https://www.xpaceos.com/admira-xp/docs/starbucks-announcement.md)

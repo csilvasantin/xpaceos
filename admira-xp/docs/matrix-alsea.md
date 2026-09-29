@@ -131,3 +131,13 @@ ES: Estos controles operan los players virtuales de Matrix. El audio se activa c
 EN: Controls operate virtual Matrix players. Sound activation requires a local click. Local controls remain available; a new remote change to the same control takes precedence. reset:true releases shared controls while retaining the current local choice. Agent communication and assignments use the Admira.live MCP (agora_decir, agente_encargar, encargo_estado); no test assignment was sent. New capabilities require implementation and deployment: matrix_configure accepts only the listed controls, not arbitrary code. Corner mapping remains in Map players; no hardware receipt is implied.
 
 Guide: https://www.xpaceos.com/admira-xp/docs/matrix-mcp.md
+
+## Aviso de cierre / Closing announcement
+
+El altavoz negro junto a la escalera reproduce el aviso: «Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.». Primera voz gratuita: Mónica de macOS. La música continúa avanzando con volumen cero durante el aviso y recupera su volumen y estado de silencio al terminar, cancelar o fallar. Una segunda pulsación detiene el aviso. En Control Xtore, /sin autocompleta /sincro on o /sincro off según el estado contrario al actual; Enter ejecuta y Tab acepta. El texto sugerido se puede editar. Los paneles inferiores ocultan las barras de scroll y conservan desplazamiento y tiradores de tamaño.
+
+The black speaker beside the staircase plays the Spanish closing announcement: “Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.” Initial free voice: macOS Mónica. Music keeps advancing at zero volume during the announcement; its volume and mute state are restored on completion, cancellation or failure. Click again to stop. In Control Xtore, /sin completes /sincro on or /sincro off, targeting the opposite current state; Enter runs it and Tab accepts. Suggested text remains editable. Bottom panels hide scrollbars while preserving scrolling and resize handles.
+
+matrix_announcement {expected_revision:N} increments announcementNext. Read matrix_state first. Authenticated fleet key required. Open Matrix pages apply new events once; newly opened pages do not replay old announcements. Browser audio permission is required: if blocked, click the speaker locally. Saved is not playback acknowledgement. The music playlist is unchanged.
+
+[Guide](https://www.xpaceos.com/admira-xp/docs/starbucks-announcement.md)

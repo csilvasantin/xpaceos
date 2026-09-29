@@ -44,3 +44,10 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 @media(max-width:650px){.matrix-screen-number{padding:3px 5px;gap:0}.matrix-screen-number strong{font-size:14px}.matrix-screen-number small{display:none}}
 
 #telegramDock .matrix-remote-status{font:9px/1.4 monospace;color:#a8dbc9;overflow-wrap:anywhere}
+
+.matrix-announcement{position:absolute;z-index:4;width:36px;height:40px;transform:translate(-50%,-50%);border:1px solid #ddd8;border-radius:5px;background:#151515b8;color:#fff;cursor:pointer;font:20px/1 system-ui;touch-action:manipulation}
+.matrix-announcement[hidden]{display:none}.matrix-announcement:focus-visible{outline:2px solid white}.matrix-announcement[aria-pressed="true"]{background:#965900;color:white}
+#telegramDock .matrix-announcement-status{font:10px/1.4 monospace;color:#ffde9e;overflow-wrap:anywhere}
+/* Keep wheel/touch/keyboard access and resizing; remove visible scrollbar chrome. */
+#telegramDock,#telegramDock *,#characterDock,#characterDock *{scrollbar-width:none!important}
+#telegramDock::-webkit-scrollbar,#telegramDock *::-webkit-scrollbar,#characterDock::-webkit-scrollbar,#characterDock *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}

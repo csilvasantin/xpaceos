@@ -24,11 +24,11 @@ export function musicTracks(value){
 export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fetch(STARBUCKS_FEED,{cache:'no-store'})}={}){
   const published=musicTracks(publishedTracks);
   let tracks=[...published],index=0,started=false,loading=false,error='',request=null,disposed=false;
-  let managed=false;
+  let managed=false,suppressions=0,restoreVolume=audio.volume;
   let playVersion=0,revision=0,reason='initial',lastClockEmit=0;
   const listeners=new Set(),failed=new Set();
   audio.preload='metadata';audio.loop=false;audio.muted=true;audio.volume=.35;
-  const state=()=>({schemaVersion:1,store:STARBUCKS_STORE,managed,tracks:tracks.length,index,title:tracks[index]?.title||'',url:tracks[index]?.url||'',position:Number.isFinite(audio.currentTime)?audio.currentTime:0,playing:started&&!audio.paused,started,muted:audio.muted,loading,error,revision,reason,updatedAt:Date.now()});
+  const state=()=>({schemaVersion:1,store:STARBUCKS_STORE,managed,suppressed:suppressions>0,tracks:tracks.length,index,title:tracks[index]?.title||'',url:tracks[index]?.url||'',position:Number.isFinite(audio.currentTime)?audio.currentTime:0,playing:started&&!audio.paused,started,muted:audio.muted,loading,error,revision,reason,updatedAt:Date.now()});
   const emit=()=>{for(const fn of listeners)fn(state());};
   async function play(){
     const version=++playVersion;
@@ -54,6 +54,10 @@ export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fet
   audio.addEventListener('ended',ended);audio.addEventListener('error',mediaError);audio.addEventListener('timeupdate',clock);
   return {
     state,
+    suppress(){
+      if(suppressions++===0){restoreVolume=audio.volume;audio.volume=0;}emit();let released=false;
+      return ()=>{if(released)return;released=true;suppressions=Math.max(0,suppressions-1);if(!suppressions&&!disposed)audio.volume=restoreVolume;emit();};
+    },
     replaceTracks(incoming){
       managed=true;const next=musicTracks(incoming),current=tracks[index]?.url,wasStarted=started;
       const kept=next.findIndex(t=>t.url===current);tracks=next;failed.clear();error='';

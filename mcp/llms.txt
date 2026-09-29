@@ -1,6 +1,6 @@
 # XpaceOS · MCP — conecta con la red de retail media
 
-> Servidor MCP de XpaceOS (v2.3.0): el puente para que agentes (silicio) y personas (carbono)
+> Servidor MCP de XpaceOS (v2.4.0): el puente para que agentes (silicio) y personas (carbono)
 > se conecten al sistema operativo del comercio físico — la red de pantallas (flota, emisión en
 > vivo, audiencia, proof-of-play, alta, publicar), el catálogo de 8.775 gemelos digitales,
 > XpaceScan (3D desde el móvil), el motor de reglas XPL y la ayuda para humanos.
@@ -54,7 +54,7 @@ Repo: https://github.com/csilvasantin/xpaceos
   Se puede descubrir mediante galaxy({element:"xpaceos"}) o xpaceos://llms.txt; para leer
   el archivo completo, el cliente necesita acceso HTTP ordinario a la URL publicada.
 - Esto no añade herramientas ni registra xpaceos://funcionalidades. El servidor sigue
-  ofreciendo 20 herramientas y 5 recursos. tools/list y resources/list son la referencia
+  ofreciendo 21 herramientas y 5 recursos. tools/list y resources/list son la referencia
   para saber qué se puede invocar realmente en la conexión.
 - La herramienta help y xpaceos://help conservan la guía embebida en el Worker hasta que
   se actualice ese backend. xpaceos://llms.txt y galaxy leen sus archivos web con caché;
@@ -298,3 +298,7 @@ ES: Estos controles operan los players virtuales de Matrix. El audio se activa c
 EN: Controls operate virtual Matrix players. Sound activation requires a local click. Local controls remain available; a new remote change to the same control takes precedence. reset:true releases shared controls while retaining the current local choice. Agent communication and assignments use the Admira.live MCP (agora_decir, agente_encargar, encargo_estado); no test assignment was sent. New capabilities require implementation and deployment: matrix_configure accepts only the listed controls, not arbitrary code. Corner mapping remains in Map players; no hardware receipt is implied.
 
 Guide: https://www.xpaceos.com/admira-xp/docs/matrix-mcp.md
+
+El altavoz negro junto a la escalera reproduce el aviso: «Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.». Primera voz gratuita: Mónica de macOS. La música continúa avanzando con volumen cero durante el aviso y recupera su volumen y estado de silencio al terminar, cancelar o fallar. Una segunda pulsación detiene el aviso. En Control Xtore, /sin autocompleta /sincro on o /sincro off según el estado contrario al actual; Enter ejecuta y Tab acepta. El texto sugerido se puede editar. Los paneles inferiores ocultan las barras de scroll y conservan desplazamiento y tiradores de tamaño.
+The black speaker beside the staircase plays the Spanish closing announcement: “Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.” Initial free voice: macOS Mónica. Music keeps advancing at zero volume during the announcement; its volume and mute state are restored on completion, cancellation or failure. Click again to stop. In Control Xtore, /sin completes /sincro on or /sincro off, targeting the opposite current state; Enter runs it and Tab accepts. Suggested text remains editable. Bottom panels hide scrollbars while preserving scrolling and resize handles.
+matrix_announcement {expected_revision:N} increments announcementNext. Read matrix_state first. Authenticated fleet key required. Open Matrix pages apply new events once; newly opened pages do not replay old announcements. Browser audio permission is required: if blocked, click the speaker locally. Saved is not playback acknowledgement. The music playlist is unchanged.

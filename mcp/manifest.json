@@ -1,18 +1,18 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.29.09.2026.r14.22:11",
+  "version": "v.29.09.2026.r15.22:25",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "health": "https://mcp.admira.store/",
-    "tool_count": 20
+    "tool_count": 21
   },
   "auth": {
     "lectura": "none",
-    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset, matrix_playlist_update, matrix_configure, matrix_music_next)",
+    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset, matrix_playlist_update, matrix_configure, matrix_music_next, matrix_announcement)",
     "identidad": "https://www.admiranext.com/mcp/identidad-flota.mjs",
     "directorio": "https://www.admiranext.com/mcp/#directorio"
   },
@@ -107,6 +107,10 @@
     {
       "name": "matrix_music_next",
       "description": "Shared Matrix playlists and functions; see matrix_mcp guide"
+    },
+    {
+      "name": "matrix_announcement",
+      "description": "matrix_announcement {expected_revision:N} increments announcementNext. Read matrix_state first. Authenticated fleet key required. Open Matrix pages apply new events once; newly opened pages do not replay old announcements. Browser audio permission is required: if blocked, click the speaker locally. Saved is not playback acknowledgement. The music playlist is unchanged."
     }
   ],
   "ecosystem": {
@@ -353,5 +357,11 @@
       "agente_encargar",
       "encargo_estado"
     ]
+  },
+  "closing_announcement": {
+    "es": "El altavoz negro junto a la escalera reproduce el aviso: «Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.». Primera voz gratuita: Mónica de macOS. La música continúa avanzando con volumen cero durante el aviso y recupera su volumen y estado de silencio al terminar, cancelar o fallar. Una segunda pulsación detiene el aviso. En Control Xtore, /sin autocompleta /sincro on o /sincro off según el estado contrario al actual; Enter ejecuta y Tab acepta. El texto sugerido se puede editar. Los paneles inferiores ocultan las barras de scroll y conservan desplazamiento y tiradores de tamaño.",
+    "en": "The black speaker beside the staircase plays the Spanish closing announcement: “Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.” Initial free voice: macOS Mónica. Music keeps advancing at zero volume during the announcement; its volume and mute state are restored on completion, cancellation or failure. Click again to stop. In Control Xtore, /sin completes /sincro on or /sincro off, targeting the opposite current state; Enter runs it and Tab accepts. Suggested text remains editable. Bottom panels hide scrollbars while preserving scrolling and resize handles.",
+    "docs": "https://www.xpaceos.com/admira-xp/docs/starbucks-announcement.md",
+    "audio": "https://www.xpaceos.com/admira-xp/assets/audio/starbucks-cierre-22h.m4a"
   }
 }
