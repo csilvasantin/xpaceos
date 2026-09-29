@@ -2353,5 +2353,14 @@
       "default": "individual",
       "storage": "xpaceos.starbucks.wall-display.v1"
     }
+  },
+  "starbucks_exit": {
+    "es": "En Matrix · Starbucks, pulsa la señal EXIT de la pared, junto al altavoz, para pasar a la siguiente canción. Experto → Altavoz lleva la cámara a ambos controles; también hay un botón Siguiente canción en Experto. El avance es circular y conserva sonido/mute. Si aún no había empezado, inicia la pista siguiente en silencio; el altavoz activa el sonido. Con una sola pista, EXIT vuelve al inicio de esa pista. No cambia la playlist de las seis pantallas. El estado local de la canción se publica para el puente de PlayerTaza; la recepción en la taza física aún no está verificada.",
+    "en": "In Matrix · Starbucks, click the wall EXIT sign beside the speaker to skip to the next track. Expert → Speaker brings both controls into view; Expert also has a Next track button. The playlist wraps and preserves sound/mute. If playback has not started, it starts the next track silently; the speaker enables sound. With only one track, EXIT restarts that track. It does not change the six-screen video playlist. Local track state is published for the PlayerTaza bridge; reception on the physical mug has not been verified yet.",
+    "api": "window.XpaceStarbucksMusic",
+    "event": "xpaceos:starbucks-music",
+    "scope": "local page only",
+    "physical_mug_verified": false,
+    "guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-playlist.md"
   }
 }

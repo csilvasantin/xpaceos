@@ -5,6 +5,7 @@ export const STARBUCKS_PLAYLIST={
   id:'starbucks-alsea-paseo-de-gracia',
   title:'Starbucks Alsea · Paseo de Gracia · hiloMusical',
   playback:{order:'sequential',repeat:'all',screenMuted:true,audioOwner:'XpaceOS speaker',crossDeviceSync:false},
+  localState:{api:'window.XpaceStarbucksMusic',event:'xpaceos:starbucks-music',scope:'local-page',schemaVersion:1,physicalMugVerified:false},
   tracks:[{
   stockId:'1790706121644-y5mqrq',
   title:'Bad Times Deep House',

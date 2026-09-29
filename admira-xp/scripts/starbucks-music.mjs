@@ -1,8 +1,10 @@
-import {STARBUCKS_PUBLISHED_TRACKS} from './starbucks-playlist.mjs?v=first-track-1';
+import {STARBUCKS_PUBLISHED_TRACKS} from './starbucks-playlist.mjs?v=exit-next-1';
 export const STARBUCKS_STORE='starbucks-alsea-paseo-de-gracia';
 export const STARBUCKS_FEED=`https://api.admira.store/hilomusical/next?store=${STARBUCKS_STORE}&since=0`;
 // Physical wall speaker, above and to the left of the emergency-exit sign.
 export const STARBUCKS_SPEAKER={yaw:-126.12658,pitch:9.74027};
+export const STARBUCKS_EXIT={yaw:-129.314172,pitch:7.892714};
+export const STARBUCKS_MUSIC_EVENT='xpaceos:starbucks-music';
 
 export function musicTracks(value){
   if(!Array.isArray(value))return [];
@@ -22,18 +24,24 @@ export function musicTracks(value){
 export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fetch(STARBUCKS_FEED,{cache:'no-store'})}={}){
   const published=musicTracks(publishedTracks);
   let tracks=[...published],index=0,started=false,loading=false,error='',request=null,disposed=false;
-  let playVersion=0;
+  let playVersion=0,revision=0,reason='initial',lastClockEmit=0;
   const listeners=new Set(),failed=new Set();
   audio.preload='metadata';audio.loop=false;audio.muted=true;audio.volume=.35;
-  const state=()=>({tracks:tracks.length,index,title:tracks[index]?.title||'',started,muted:audio.muted,loading,error});
+  const state=()=>({schemaVersion:1,store:STARBUCKS_STORE,tracks:tracks.length,index,title:tracks[index]?.title||'',url:tracks[index]?.url||'',position:Number.isFinite(audio.currentTime)?audio.currentTime:0,playing:started&&!audio.paused,started,muted:audio.muted,loading,error,revision,reason,updatedAt:Date.now()});
   const emit=()=>{for(const fn of listeners)fn(state());};
   async function play(){
     const version=++playVersion;
     try{await audio.play();if(disposed||version!==playVersion)return;error='';emit();}
     catch{if(disposed||version!==playVersion)return;started=false;audio.muted=true;error='play';emit();}
   }
-  function select(next){index=next;audio.src=tracks[index].url;audio.load();}
-  function next(){if(!started||!tracks.length||disposed)return;select((index+1)%tracks.length);void play();emit();}
+  function select(next,cause='select'){index=next;revision++;reason=cause;audio.src=tracks[index].url;audio.load();}
+  function advance(manual=false){
+    if(disposed||!tracks.length||(!manual&&!started))return false;
+    if(manual){failed.clear();error='';started=true;}
+    select((index+1)%tracks.length,manual?'next':'ended');void play();emit();return true;
+  }
+  const ended=()=>advance(false);
+  const clock=()=>{const now=Date.now();if(!disposed&&now-lastClockEmit>=1000){lastClockEmit=now;emit();}};
   function mediaError(){
     if(disposed||!tracks.length)return;
     failed.add(tracks[index].url);
@@ -42,9 +50,10 @@ export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fet
     else{++playVersion;started=false;audio.muted=true;error='media';}
     emit();
   }
-  audio.addEventListener('ended',next);audio.addEventListener('error',mediaError);
+  audio.addEventListener('ended',ended);audio.addEventListener('error',mediaError);audio.addEventListener('timeupdate',clock);
   return {
     state,
+    next:()=>advance(true),
     subscribe(fn){listeners.add(fn);fn(state());return ()=>listeners.delete(fn);},
     refresh(){
       if(request||disposed)return request;
@@ -72,11 +81,11 @@ export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fet
       if(started){audio.muted=!audio.muted;emit();return;}
       const retry=!!error;failed.clear();started=true;error='';audio.muted=false;
       // Called synchronously by a real click so browsers can grant audio.
-      if(retry||audio.src!==tracks[index].url)select(index);
+      if(retry||audio.src!==tracks[index].url)select(index,'start');
       void play();emit();
     },
     mute(){audio.muted=true;emit();},
-    dispose(){disposed=true;++playVersion;audio.pause();audio.removeAttribute('src');audio.load();audio.removeEventListener('ended',next);audio.removeEventListener('error',mediaError);listeners.clear();}
+    dispose(){disposed=true;++playVersion;audio.pause();audio.removeAttribute('src');audio.load();audio.removeEventListener('ended',ended);audio.removeEventListener('timeupdate',clock);audio.removeEventListener('error',mediaError);listeners.clear();}
   };
 }
 
@@ -85,6 +94,9 @@ export function starbucksMusic(){
   if(!shared){
     const audio=new Audio();audio.id='starbucksMusic';audio.hidden=true;document.body.append(audio);
     shared=createStarbucksMusic({audio,publishedTracks:STARBUCKS_PUBLISHED_TRACKS});
+    // Local contract for the PlayerTaza bridge; no remote/hardware acknowledgement implied.
+    window.XpaceStarbucksMusic=Object.freeze({getState:shared.state,subscribe:fn=>shared.subscribe(fn),next:()=>shared.next()});
+    shared.subscribe(state=>window.dispatchEvent(new CustomEvent(STARBUCKS_MUSIC_EVENT,{detail:state})));
     window.addEventListener('pagehide',()=>shared.mute());
   }
   return shared;

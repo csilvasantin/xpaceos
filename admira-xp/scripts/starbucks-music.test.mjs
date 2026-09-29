@@ -52,3 +52,15 @@ test('published Stock selection survives an empty/expired feed and remains playa
  feed=[songs[0],songs[1]];await music.refresh();assert.equal(music.state().tracks,2);assert.equal(audio.currentTime,70);
  music.toggle();audio.dispatchEvent(new Event('ended'));await tick();assert.equal(audio.src,songs[1].url);assert.equal(audio.muted,true);music.dispose();
 });
+
+test('EXIT advances manually, preserves mute and emits the selected track for the mug bridge',async()=>{
+ const {audio,music}=setup();await music.refresh();const events=[];const unsub=music.subscribe(s=>events.push(s));
+ assert.equal(music.next(),true);await tick();assert.equal(audio.src,songs[1].url);assert.equal(audio.muted,true);assert.equal(music.state().reason,'next');assert.equal(music.state().position,0);assert.equal(music.state().playing,true);
+ music.toggle();audio.currentTime=23;const before=music.state().revision;music.next();await tick();assert.equal(audio.src,songs[2].url);assert.equal(audio.muted,false);assert.ok(music.state().revision>before);assert.ok(events.some(s=>s.url===songs[2].url&&s.position===0&&s.reason==='next'));
+ music.next();await tick();assert.equal(audio.src,songs[0].url);assert.equal(audio.muted,false);
+ unsub();music.dispose();assert.equal(music.next(),false);
+});
+test('single-track next restarts and increments revision; empty next cannot pretend to play',async()=>{
+ const {audio,music,setFeed}=setup();setFeed([]);await music.refresh();assert.equal(music.next(),false);assert.equal(music.state().started,false);
+ setFeed([songs[0]]);await music.refresh();music.toggle();await tick();audio.currentTime=123;const revision=music.state().revision;music.next();await tick();assert.equal(audio.src,songs[0].url);assert.equal(audio.currentTime,0);assert.equal(music.state().revision,revision+1);music.dispose();
+});
