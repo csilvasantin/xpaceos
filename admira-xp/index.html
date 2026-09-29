@@ -5421,6 +5421,34 @@ const CAM={
   mode:['fake','real','exacto'].includes(OCC_CONFIG.mode)?OCC_CONFIG.mode:(OCC_CONFIG.drive===false?'fake':'real'),
   connected:false, occupancy:0, enter:0, leave:0, peak:0, lastApplied:null,
 };
+// Visibility is presentation only: preserve roster, visitors, sales and camera counts.
+function peopleGroupVisible(group){
+  return !G||G.peopleVisibility?.[group]!==false;
+}
+function executePeopleVisibilityCommand(raw){
+  const match=String(raw||'').trim().match(/^\/?(gente|personal|clientes)(?:@\w+)?\s+(on|off)(.*)$/i);
+  if(!match)return null;
+  if(match[3].trim())return {ok:false,local:true,message:'Uso: /'+match[1].toLowerCase()+' on | off'};
+  if(!G)return {ok:false,local:true,message:'Abre un Xpacio para mostrar u ocultar sus personas.'};
+  const group=match[1].toLowerCase(),on=match[2].toLowerCase()==='on';
+  const next={staff:peopleGroupVisible('staff'),customers:peopleGroupVisible('customers')};
+  if(group==='gente'||group==='personal')next.staff=on;
+  if(group==='gente'||group==='clientes')next.customers=on;
+  G.peopleVisibility=next;
+  // Drop stale click targets immediately, even while the canvas awaits its next frame.
+  if(typeof BTNS!=='undefined')for(const key of Object.keys(BTNS)){
+    if((!next.staff&&key.startsWith('staffClick'))||(!next.customers&&key.startsWith('custClick')))delete BTNS[key];
+  }
+  if(typeof npcEdOpen!=='undefined'&&npcEdOpen&&
+      ((npcEdKind==='staff'&&!next.staff)||(npcEdKind==='customer'&&!next.customers)))closeNPCEditor();
+  saveGame();
+  const en=typeof lang!=='undefined'&&lang==='en';
+  const label=group==='gente'?(en?'Staff and customers':'Personal y clientes'):
+    group==='personal'?(en?'Staff':'Personal'):(en?'Customers':'Clientes');
+  return {ok:true,local:true,message:label+' '+(on?'ON':'OFF')+' · '+
+    (en?(on?'visible':'hidden'):(on?'visibles':'ocultos')),data:{...next}};
+}
+
 // Manual demo population is separate from measured camera passages.
 const MAX_RESET_AUDIENCE=100;
 function manualAudienceTarget(){
@@ -17262,6 +17290,7 @@ const HELP_PAGES={
     '  xtAPI.command("/pantallateve")  → momento «LA PANTALLA TE VE»: audiencia (real o simulada) → creativo se adapta en vivo · demo-proof · →/espacio siguiente · L cámara real · off',
     '  xtAPI.command("/targetPublicity aforo|genero")  → publicidad segmentada (genero=sexo+edad por LiveCam on-device) · off para parar',
     '  xtAPI.command("/generovideo")  → las 2 pantallas siguen el sexo de la cámara: 👨→Money For Nothing · 👩→Take On Me · off para parar',
+    '  xtAPI.command("/gente on|off"), /personal on|off, /clientes on|off → visibilidad de ambos grupos o de cada uno',
     '  xtAPI.command("/resetaudiencia 0|100|auto") → fija visitantes virtuales (0–100); auto devuelve control a la cámara/juego',
     '  xtAPI.command("/aforo real")  → la cámara Hikvision (ieu.ai) marca el objetivo de clientes (ambiente)',
     '  xtAPI.command("/aforo exacto")  → espejo ESTRICTO 1:1: la tienda = exactamente lo que dice la cámara; cada entrada/salida entra/sale',
@@ -23465,6 +23494,7 @@ function drawNovahMocap(s){
 }
 
 function drawIsoStaff(s){
+  if(!peopleGroupVisible('staff'))return;
   // Auto-curación: si la posición se corrompió a NaN (p.ej. un destino indefinido en la
   // navegación), recolócala en su tile de casa. Sin esto el NaN es permanente y tumba
   // todo el render de la tienda (chibi→createRadialGradient lanza → drawShop aborta).
@@ -23748,6 +23778,7 @@ function drawSponsorScrooge(x,y,dir,frame,tick){
 }
 
 function drawIsoCust(c){
+  if(!peopleGroupVisible('customers')&&!(G.passersby||[]).includes(c))return;
   // Auto-curación: una posición NaN en un cliente también rompe el dibujado; lo mandamos
   // a la puerta a salir limpio en vez de tumbar la escena.
   if(c&&(!isFinite(c.x)||!isFinite(c.y))){ try{ const _d=toIso(ISO.cols-1,3); c.x=_d.x-7; c.y=_d.y-20; }catch(_){ c.x=0; c.y=0; } c.path=null; c.pathIdx=0; c.st='leave'; }
@@ -27786,6 +27817,8 @@ window.xtAPI = (function(){
 
     command: function(input){
       const raw=String(input||'').trim();
+      const visibility=executePeopleVisibilityCommand(raw);
+      if(visibility)return visibility;
       if(!raw) return {ok:false,message:'Indica un comando. Ejemplo: /music, /ladron on, /sol off'};
       const normalized=raw.startsWith('/')?raw.slice(1):raw;
       const parts=normalized.split(/\s+/).filter(Boolean);
@@ -30693,6 +30726,7 @@ window.xtAPI = (function(){
   function helpSections(){
     // Orden actual = orden alfabético/legado. Pendiente: reordenar por uso real.
     return [
+      {title:'Personas visibles',items:['/gente on','/gente off','/personal on','/personal off','/clientes on','/clientes off']},
       {title:'Consulta',items:['/status','/staff','/stock','/turno']},
       {title:'Turnos (pantalla pared larga)',items:['/turno on','/turno off','/turno next','/turno previous','/turno 15','/turno auto']},
       {title:'Equipo y stock',items:['/hire 1','/hire dj','/hire all','/train 1','/train all','/restock 2','/restock all','/restock prensa']},
@@ -31240,6 +31274,8 @@ window.xtAPI = (function(){
 
   async function executeLocalVisualCommand(rawText){
     const text=String(rawText||'').trim();
+    const visibility=executePeopleVisibilityCommand(text);
+    if(visibility)return visibility;
     if(/^\/?(?:inventario|eliminar|añadir|anadir)(?:@\w+)?(?:\s|$)/i.test(text)){
       try{
         const {executeInventoryCommand}=await import('../inventario/command.mjs?v=inventory-cli-3');
@@ -35577,6 +35613,6 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=gait-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=cafeteria-tier-2"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=people-visibility-1"></script>
 </body>
 </html>

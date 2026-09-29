@@ -112,8 +112,8 @@ export function createLifeSnapshot(){
     }
     const actors=[];
     if(!editor&&!input.moving){
-      for(const value of list(game.staff))if(value?.hired)actors.push(actor(value,'staff'));
-      for(const value of list(game.custs))actors.push(actor(value,'customer'));
+      for(const value of list(game.staff))if(value?.hired&&game.peopleVisibility?.staff!==false)actors.push(actor(value,'staff'));
+      for(const value of list(game.custs))if(game.peopleVisibility?.customers!==false)actors.push(actor(value,'customer'));
       if(!realTrafficActive)for(const value of list(game.passersby))actors.push(actor(value,'passerby'));
       for(const kind of Object.keys(SPECIAL_NAMES)){
         const value=game[kind];if(value&&value.phase!=='idle')actors.push(actor(value,kind));

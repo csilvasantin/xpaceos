@@ -144,7 +144,7 @@ function consoleHarness({failLoad=false,lang='es'}={}){
   let moving=false;
   const composer={value:'pending'},window={__xtancoVisualTiers:f.router,__xtancoMudanza:{toggle(){moving=!moving;return moving;}},xtAPI:{},AdmiraXP_SessionLog:{logCommand:input=>sessionCommands.push(input)}};
   let renders=0,helpClosed=0;
-  const context=vm.createContext({window,lang,composer,renderMode:'8bit',
+  const context=vm.createContext({window,lang,composer,renderMode:'8bit',G:{staff:[{hired:true}],custs:[{id:1}]},BTNS:{staffClick0:{},custClick0:{},furniture:{}},saveGame(){},
     async loadVisualCommand(){loads.push(true);if(failLoad)throw Error('offline');return {executeVisualCommand};},
     rememberMemory:(...args)=>memory.push(args),appendTelegramLog:(...args)=>logs.push(args),showLastResponse:(...args)=>responses.push(args),
     hideHelpPanel:()=>helpClosed++,renderQuickActionButtons:()=>renders++,
@@ -152,7 +152,7 @@ function consoleHarness({failLoad=false,lang='es'}={}){
     fetch(){throw Error('visual commands must never issue a network request');},
     formatStatus:()=> 'legacy status',setRenderMode:mode=>{context.renderMode=mode;},commandHelp:()=> 'legacy help'
   });
-  vm.runInContext(helperSource+dispatcherSource+composerSource,context);
+  vm.runInContext(section('function peopleGroupVisible(group){','const MAX_RESET_AUDIENCE=')+helperSource+dispatcherSource+composerSource,context);
   const exported=html.match(/window\.__xtExec=executeTelegramText;/)?.[0];assert.ok(exported);vm.runInContext(exported,context);
   return {...f,context,composer,sent,memory,logs,sessionCommands,responses,loads,
     get renders(){return renders;},get helpClosed(){return helpClosed;},get moving(){return moving;},send:input=>context.sendComposerText(input),exec:input=>window.__xtExec(input)};
@@ -220,4 +220,27 @@ test('embedded help lists local visual commands separately from all existing leg
   assert.deepEqual(Array.from(visual.items),['good','better','best','matrix','/mudanza','/modo estado']);
   const legacy=sections.find(section=>section.items.includes('/render 8bit'));
   assert.notEqual(visual,legacy);assert.deepEqual(Array.from(legacy.items),['/render 8bit','/render 16bit','/render habbo','/render real']);
+});
+
+
+test('expert composer and __xtExec keep people controls local and independently reversible',async()=>{
+ const h=consoleHarness();
+ for(const [command,expected] of [
+  ['/gente OFF',{staff:false,customers:false}],
+  ['/personal ON',{staff:true,customers:false}],
+  ['/clientes On',{staff:true,customers:true}],
+  ['/personal off',{staff:false,customers:true}],
+  ['/gente on',{staff:true,customers:true}]
+ ]){
+  await h.send(command);
+  assert.deepEqual({...h.context.G.peopleVisibility},expected);
+  assert.equal(h.responses.at(-1)[2],'local-visual');
+ }
+ assert.match(await h.exec('/CLIENTES@AdmiraXPBot OFF'),/Clientes OFF/);
+ assert.deepEqual({...h.context.G.peopleVisibility},{staff:true,customers:false});
+ assert.deepEqual(h.sent,[]);assert.deepEqual(h.memory,[]);assert.deepEqual(h.sessionCommands,[]);
+ assert.equal(h.context.G.staff.length,1);assert.equal(h.context.G.custs.length,1);
+ assert.deepEqual(Object.keys(h.context.BTNS),['furniture']);
+ const before=JSON.stringify(h.context.G);
+ assert.match(await h.exec('/gente off extra'),/Uso:/);assert.equal(JSON.stringify(h.context.G),before);
 });

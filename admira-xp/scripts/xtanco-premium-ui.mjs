@@ -1,6 +1,6 @@
-import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=px-2';
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=panel-scene-1';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=px-2';
+import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=people-visibility-1';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=people-visibility-1';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=people-visibility-1';
 import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=matrix-furniture-1';
 import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=tier-hud-1';
 

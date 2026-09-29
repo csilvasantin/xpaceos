@@ -97,3 +97,18 @@ test('presentation metadata copies existing customer fields without assigning nu
   assert.equal(actor.number,null);assert.equal(actor.bubble,'Hola');assert.equal(actor.emote,'👋');assert.equal(actor.clubMember,true);assert.equal(actor.bag,true);
   assert.equal(JSON.stringify(customer),before);
 });
+
+
+test('people visibility hides each group across tiers without mutating actors or measured counts',()=>{
+ const input=fixture(),snapshot=createLifeSnapshot(),initial=snapshot(input);
+ for(const [staff,customers] of [[false,false],[true,false],[false,true],[true,true]]){
+  input.game.peopleVisibility={staff,customers};
+  const before=JSON.stringify(input.game),scene=snapshot(input);
+  assert.equal(scene.actors.some(a=>a.kind==='staff'),staff);
+  assert.equal(scene.actors.some(a=>a.kind==='customer'),customers);
+  assert.ok(scene.actors.some(a=>a.kind==='passerby'));
+  assert.equal(scene.inside,initial.inside);assert.equal(scene.entries,initial.entries);
+  assert.equal(JSON.stringify(input.game),before);
+  if(customers)assert.equal(scene.actors.find(a=>a.kind==='customer').id,initial.actors.find(a=>a.kind==='customer').id);
+ }
+});
