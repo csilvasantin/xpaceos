@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r20.23:36",
+  "version": "v.29.09.2026.r21.23:45",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #274: miniaturas y Play por contenido, salto de playlist sincronizado, MCP playlist_play 2.8 y documentación ES/EN.",
+  "evidence": "Yokup #277: acciones en tercera columna Experto, altavoz sólo hover/foco y arrastre de miniaturas; ayuda, tutorial y MCP ES/EN.",
   "day": "29.09.2026",
-  "time": "23:36"
+  "time": "23:45"
 }
