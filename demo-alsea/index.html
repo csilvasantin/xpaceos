@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Cafebrería · demo Alsea</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body data-brand="alsea" data-tier="good" data-view="alta">
+  <header class="top">
+    <div>
+      <p class="kicker">admira.store · xpaceos · preview</p>
+      <h1>Cafebrería</h1>
+    </div>
+    <div class="brand-lockup" aria-hidden="true"><span>alsea</span></div>
+    <div class="top-actions">
+      <button type="button" id="brand" aria-pressed="true">Metaestilo Alsea</button>
+      <span class="ej">EJEMPLO</span>
+    </div>
+  </header>
+  <p class="banner" id="banner">Datos de demostración. La analítica y el tiempo de la sala están simulados. La pieza es Stock ya publicado.</p>
+
+  <main id="alta">
+    <ol class="steps" id="steps">
+      <li class="on" data-step="1">Sistema</li>
+      <li data-step="2">Reproductor</li>
+      <li data-step="3">Playlist</li>
+      <li data-step="4">Excel</li>
+    </ol>
+
+    <section data-panel="1">
+      <h2>Hardware elegible</h2>
+      <p class="note">La ficha se completa igual en los cinco sistemas. Esta sesión corre en el navegador de este Mac.</p>
+      <div class="choices" id="sistemas">
+        <button type="button" data-os="Windows">Windows</button>
+        <button type="button" data-os="Linux">Linux</button>
+        <button type="button" data-os="macOS">macOS</button>
+        <button type="button" data-os="Android">Android</button>
+        <button type="button" data-os="iOS">iOS</button>
+      </div>
+      <p id="os-estado" class="note">Elige un sistema para dejar el alta listo.</p>
+    </section>
+
+    <section data-panel="2" hidden>
+      <h2>Atributos del reproductor</h2>
+      <label>Tipo <select id="tipo"><option>pantalla</option><option>tablet</option><option>telefono</option></select></label>
+      <label>Sistema <input id="so" value="macOS" readonly></label>
+      <label>Resolución <input id="resolucion" value="1920x1080"></label>
+      <label>Formato <select id="formato"><option>horizontal</option><option>vertical</option><option value="anamorfico">anamórfico</option></select></label>
+      <label>Reproducción <select id="reproduccion"><option>lineal</option><option>aleatoria</option><option>sincronizada</option></select></label>
+    </section>
+
+    <section data-panel="3" hidden>
+      <h2>Criterios de la playlist</h2>
+      <label>Ubicación <input id="ubicacion" value="Ciudad de México"></label>
+      <label>Idioma <select id="idioma"><option value="es">español</option><option value="en">inglés</option></select></label>
+      <label>Horario de arranque <input id="arranque" type="time" value="07:00"></label>
+      <p class="note" id="reloj"></p>
+    </section>
+
+    <section data-panel="4" hidden>
+      <h2>Importar desde Excel</h2>
+      <p class="note">La plantilla trae tres reproductores de ejemplo. Al importarla, el alta usa la primera fila y enseña el resto.</p>
+      <p class="row">
+        <a class="btn" href="plantilla-cafeteria.xlsx" download>Descargar plantilla</a>
+        <label class="btn file">Importar Excel <input id="excel" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+      </p>
+      <p id="excel-estado" class="note">Todavía no hay archivo.</p>
+      <table id="excel-tabla" hidden>
+        <thead><tr><th>Nombre</th><th>Tipo</th><th>SO</th><th>Formato</th><th>Arranque</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <p class="nav">
+      <button type="button" id="atras" disabled>Atrás</button>
+      <button type="button" id="seguir">Seguir</button>
+      <button type="button" id="abrir" hidden>Abrir supervisión</button>
+    </p>
+  </main>
+
+  <main id="split" hidden>
+    <section class="control">
+      <p class="kicker">Control</p>
+      <h2 id="player-nombre">Pizarra de barra</h2>
+      <p class="note" id="player-ficha"></p>
+      <div class="choices" id="modos">
+        <button type="button" data-tier="good" class="on">Good</button>
+        <button type="button" data-tier="better">Better</button>
+        <button type="button" data-tier="best">Best</button>
+      </div>
+      <h3>Cartelera</h3>
+      <div class="choices" id="cartelera">
+        <button type="button" data-pieza="menu" class="on">Menú</button>
+        <button type="button" data-pieza="promo">Promo</button>
+        <button type="button" data-pieza="video">Pieza de Stock</button>
+      </div>
+      <h3>Hilo y locución</h3>
+      <p class="row">
+        <button type="button" id="hilo">Poner hilo · Tu pausa</button>
+        <button type="button" id="locucion">Locución de sala</button>
+      </p>
+      <p class="note">Vídeo 1790609061411-86drpb · hilo 1790608402098-xubtdh</p>
+      <h3>Videoanalítica <span class="sim">SIMULADO</span></h3>
+      <p class="row">
+        <button type="button" id="entra">Entra gente</button>
+        <span id="visitas">0 en sala</span>
+      </p>
+      <h3>Objetos <span class="sim">SIMULADO</span></h3>
+      <div class="choices" id="objetos">
+        <button type="button" data-objeto="taza">Taza</button>
+        <button type="button" data-objeto="vitrina">Vitrina</button>
+        <button type="button" data-objeto="cartel">Cartel</button>
+      </div>
+      <h3>Registro</h3>
+      <ol id="registro"></ol>
+      <p><button type="button" id="volver">Volver al alta</button></p>
+    </section>
+    <section class="escena" id="escena" aria-label="Xperience de la Cafebrería">
+      <p class="kicker">Xperience</p>
+      <div class="sala" id="sala">
+        <button type="button" class="hot vitrina" data-objeto="vitrina">Vitrina</button>
+        <button type="button" class="hot taza" data-objeto="taza">Taza</button>
+        <button type="button" class="hot cartel" data-objeto="cartel">Cartel</button>
+        <div class="pantalla" id="pantalla">
+          <video id="video" playsinline muted loop></video>
+          <div id="cartel-txt">
+            <strong id="cartel-titulo">Menú del día</strong>
+            <span id="cartel-detalle">Café y bollería</span>
+          </div>
+        </div>
+        <p class="barra">Barra</p>
+      </div>
+      <p class="hud"><span id="modo-hud">Good</span><span id="gente-hud">Sala en calma</span></p>
+    </section>
+  </main>
+  <audio id="audio" preload="none"></audio>
+  <script src="demo.js"></script>
+</body>
+</html>

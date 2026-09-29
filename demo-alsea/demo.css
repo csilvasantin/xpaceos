@@ -1,0 +1,84 @@
+:root {
+  --bg: #f4efe4;
+  --ink: #1c1914;
+  --mut: #5c564c;
+  --card: #fffaf3;
+  --line: #e4d8c4;
+  --brand: #0e7a45;
+  --brand-ink: #f3fff6;
+  --accent: #c4552a;
+  font: 16px/1.4 "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+body[data-brand="xpace"] {
+  --bg: #071018;
+  --ink: #e7f7f6;
+  --mut: #8eb0b4;
+  --card: #10202a;
+  --line: #1d3a44;
+  --brand: #3ee0d2;
+  --brand-ink: #04221f;
+  --accent: #f0c14a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, select, input, a.btn { font: inherit; }
+.top, main, .banner { width: min(1180px, calc(100% - 28px)); margin: 0 auto; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0 8px; }
+.kicker { margin: 0; color: var(--brand); letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }
+h1 { margin: 0; font-size: 34px; }
+h2, h3 { margin: 14px 0 8px; }
+.brand-lockup { font-weight: 800; letter-spacing: -.04em; font-size: 28px; color: var(--brand); }
+.brand-lockup span { border-bottom: 3px solid var(--accent); }
+.top-actions, .row, .choices, .nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.banner { background: #fff4d2; color: #5a4308; border-radius: 12px; padding: 10px 12px; }
+body[data-brand="xpace"] .banner { background: #2a2412; color: #f0d78a; }
+.ej, .sim { border: 1px solid currentColor; border-radius: 999px; padding: 2px 8px; font-size: 12px; letter-spacing: .06em; }
+.ej { color: #8a5a00; }
+.sim { color: var(--accent); }
+button, .btn, select, input {
+  background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px;
+}
+button.on, button[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.file input { display: none; }
+.steps { display: flex; gap: 8px; padding: 0; list-style: none; }
+.steps li { padding: 6px 10px; border-radius: 999px; background: var(--card); color: var(--mut); }
+.steps li.on { background: var(--brand); color: var(--brand-ink); }
+label { display: grid; gap: 4px; margin: 8px 0; max-width: 420px; }
+.note { color: var(--mut); }
+table { width: 100%; border-collapse: collapse; background: var(--card); }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
+#split { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 16px; padding: 12px 0 28px; }
+#split[hidden], #alta[hidden], #excel-tabla[hidden] { display: none; }
+.control, .escena { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+.sala { position: relative; min-height: 520px; border-radius: 16px; overflow: hidden; background: #d7c3a4; }
+body[data-tier="good"] .sala { background: #c4a574; image-rendering: pixelated; }
+body[data-tier="better"] .sala { background: linear-gradient(#f2e2c4, #c9a27a); }
+body[data-tier="best"] .sala { background: radial-gradient(circle at 50% 20%, #fff6e8, #b88962 70%); }
+.pantalla {
+  position: absolute; left: 18%; right: 18%; top: 28px; height: 230px;
+  background: #1b140f; color: #fff8ee; border: 8px solid #3a2a1c; display: grid; place-items: center; text-align: center;
+}
+body[data-tier="good"] .pantalla { border-width: 4px; border-color: #000; box-shadow: 6px 6px 0 #000; }
+body[data-tier="best"] .pantalla { height: 300px; border-color: #f2d7b0; }
+#cartel-txt { padding: 12px; }
+#cartel-titulo { display: block; font-size: 28px; }
+video { width: 100%; height: 100%; object-fit: cover; display: none; background: #000; }
+body[data-video="on"] video { display: block; }
+body[data-video="on"] #cartel-txt { position: absolute; left: 12px; right: 12px; bottom: 12px; background: rgba(0,0,0,.55); }
+.hot { position: absolute; border-radius: 12px; background: rgba(255,250,240,.88); }
+.vitrina { left: 16px; top: 280px; width: 110px; height: 90px; }
+.taza { left: 46%; bottom: 86px; }
+.cartel { right: 16px; top: 280px; width: 90px; height: 120px; }
+.hot.on { outline: 3px solid var(--accent); }
+.barra { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 14px; background: #6b4226; color: #fff4e8; }
+body[data-tier="good"] .barra { background: #5a3218; }
+.hud { display: flex; justify-content: space-between; }
+#registro { padding-left: 18px; max-height: 160px; overflow: auto; }
+body[data-gente="on"] .sala { box-shadow: inset 0 0 0 4px var(--accent); }
+@media (max-width: 800px) {
+  #split { grid-template-columns: 1fr; }
+  .sala { min-height: 420px; }
+  .vitrina, .cartel { top: 250px; }
+}
