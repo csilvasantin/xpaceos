@@ -35470,24 +35470,10 @@ window.xtAPI = (function(){
   // ancho) y el hint largo se recorta feo. En modo experto usamos una pista corta;
   // fuera del experto se respeta el placeholder original (localizado ES/EN).
   function fitPlaceholder(){
-    try{
-      var dock=document.getElementById('telegramDock');
-      var ta=document.getElementById('telegramComposer');
-      if(!dock||!ta) return;
-      if(dock.classList.contains('compose-start')){
-        if(!ta.hasAttribute('data-ph-orig')){
-          ta.setAttribute('data-ph-orig', ta.placeholder||'');
-        }
-        // Idioma robusto: el botón Enviar/Send lo fija la MISMA función de i18n que el
-        // placeholder original, así que es la señal fiable (window.lang es de módulo y
-        // documentElement.lang no rastrea el idioma del juego).
-        var sb=document.getElementById('telegramSendBtn');
-        var isEs=sb? /enviar/i.test(sb.textContent||'') : (typeof window.lang!=='undefined'? window.lang : (document.documentElement.lang||'es'))!=='en';
-        ta.placeholder=isEs?'Comando…':'Command…';
-      }else if(ta.hasAttribute('data-ph-orig')){
-        ta.placeholder=ta.getAttribute('data-ph-orig');
-      }
-    }catch(e){}
+    var ta=document.getElementById('telegramComposer');
+    if(!ta)return;
+    if(window.XpaceExpertComposer)window.XpaceExpertComposer.refresh();
+    else ta.placeholder='/sincro on';
   }
   fitPlaceholder();
   window.addEventListener('inventory-cli-response',function(){requestAnimationFrame(function(){fitDock();syncDockClear();});});

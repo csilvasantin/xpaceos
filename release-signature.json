@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r15.22:25",
+  "version": "v.29.09.2026.r16.22:28",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
   "evidence": "Yokup #244: cuña gratuita de cierre, prioridad audio con restauración, /sin autocompleta estado contrario, paneles sin barras visibles, MCP y help/tutorial ES/EN.",
   "day": "29.09.2026",
-  "time": "22:25"
+  "time": "22:28"
 }
