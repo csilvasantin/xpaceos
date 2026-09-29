@@ -1,6 +1,6 @@
 import {createSharedPlaylists,playlistReference} from './shared-playlists.mjs?v=registry-1';
 import {mountPlaylistReorder} from './playlist-reorder.mjs?v=drag-hover-1';
-import {mountPixeriaPicker} from './pixeria-picker.mjs?v=assign-1';
+import {mountPixeriaPicker} from './pixeria-picker.mjs?v=assign-2';
 import {DEVICE_IDS,emptyDeviceLayout,validateDeviceLayout,changeDeviceLayout,assignedPlaylist} from './device-layout.mjs?v=devices-1';
 export const DEVICE_STORAGE='xpaceos.starbucks.device-layout.v1';
 export function mountDeviceEditor({root,surface,lang='es',nameFor,catalog,onChange,onPlay}){
