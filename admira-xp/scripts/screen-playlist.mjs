@@ -31,5 +31,12 @@ export function createScreenPlaylist({videos,tracks,initialURL,onState=()=>{}}){
   for(const v of videos){v.pause();if(tracks.length)v.src=tracks[index].url;else v.removeAttribute('src');v.load();}
   playing=false;error=false;if(wasPlaying&&tracks.length)void play();else emit();
  }
- return {play,pause,replaceTracks,state:()=>({playing,error,index}),dispose(){disposed=true;++generation;clearInterval(timer);videos[0]?.removeEventListener('ended',ended);for(const v of videos){v.removeEventListener('error',failed);v.pause();}}};
+ async function jump(trackId){
+  const target=tracks.findIndex(t=>t.id===trackId||t.stockId===trackId);
+  if(target<0)throw Error('Unknown track');
+  pause();index=target;error=false;
+  for(const v of videos){v.src=tracks[index].url;v.load();}
+  await play();return {playing,error,index};
+ }
+ return {play,pause,jump,replaceTracks,state:()=>({playing,error,index}),dispose(){disposed=true;++generation;clearInterval(timer);videos[0]?.removeEventListener('ended',ended);for(const v of videos){v.removeEventListener('error',failed);v.pause();}}};
 }

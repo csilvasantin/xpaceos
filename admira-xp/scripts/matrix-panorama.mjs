@@ -1,8 +1,8 @@
 import {DEMO_WALL,DEMO_CHRISTMAS,DEMO_TPV,DEMO_IA,DEMO_MUSIC} from './starbucks-demo.mjs?v=devices-2';
 import {mountIncidentPanel} from './starbucks-incidents.mjs?v=devices-2';
 import {createSincroIA} from './sincro-ia.mjs?v=devices-2';
-import {mountDeviceEditor} from './device-editor.mjs?v=pixeria-1';
-import {createDevicePlayback} from './device-playback.mjs?v=devices-2';
+import {mountDeviceEditor} from './device-editor.mjs?v=playlist-play-1';
+import {createDevicePlayback} from './device-playback.mjs?v=playlist-play-1';
 import {DEVICE_IDS,assignedPlaylist,emptyDeviceLayout} from './device-layout.mjs?v=devices-2';
 import {createAnnouncement,ANNOUNCEMENT_SPEAKER,CLOSING_ANNOUNCEMENT} from './starbucks-announcement.mjs?v=closing-1';
 import {watchMatrixState} from './matrix-remote.mjs?v=devices-2';
@@ -70,7 +70,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const catalog=()=>({wall:{title:t('Pared · Starbucks','Wall · Starbucks'),tracks:wallTracks.filter(t=>demoMode==='christmas'?t.condition==='/navidad':!t.condition)},tpv:{title:t('TPV · Publicidad local','POS · Local advertising'),tracks:tpvTracks}});
  function updateRuntime(){runtime.update({devices:[...previews].filter(([id,v])=>DEVICE_IDS.includes(id)&&!incidents?.off.has(id)&&!(demoMode==='ia'&&wallIds.has(id))&&v.tagName==='VIDEO'&&(v.dataset.wallVideo||v.dataset.tpvVideo)).map(([id,video])=>({id,video})),config:deviceEditor?.config||emptyDeviceLayout(),catalog:catalog()});applyScreenLayout();}
  function updateDeviceLabels(){for(const [id,badge] of numberNodes){const pid=assignedPlaylist(deviceEditor.config,id);badge.querySelector('small').textContent=deviceEditor.config.playlists[pid]?.title||(pid==='tpv'?t('Publicidad local','Local advertising'):screenGroup(screenNumber(id))?t('Grupo ','Group ')+screenGroup(screenNumber(id)):t('Sola','Standalone'));}}
- deviceEditor=mountDeviceEditor({root,surface,lang,nameFor:id=>playerName(model.players.find(p=>p.id===id)||{id,name:id}),catalog,onChange:()=>{updateRuntime();updateDeviceLabels();}});deviceEditor.enable(getScreenNumbersVisible());
+ deviceEditor=mountDeviceEditor({root,surface,lang,nameFor:id=>playerName(model.players.find(p=>p.id===id)||{id,name:id}),catalog,onPlay:async(pid,track)=>{if(demoMode==='ia')await setDemoMode('linear');updateRuntime();return runtime.jump(pid,track);},onChange:()=>{updateRuntime();updateDeviceLabels();}});deviceEditor.enable(getScreenNumbersVisible());
  const controller=ids=>({play(){if(demoMode==='ia'&&ids.length>1)void iaPlayback?.play();runtime.setPlaying(ids,true);},pause(){if(demoMode==='ia'&&ids.length>1)iaPlayback?.pause();runtime.setPlaying(ids,false);},state:()=>demoMode==='ia'&&ids.length>1?iaPlayback?.state()||{playing:false}:runtime.state(ids),replaceTracks(){updateRuntime();}});
  function stopWall(){runtime.setPlaying([...wallIds],false);wallPlayback=null;}
  function stopTPV(){runtime.setPlaying([tpvId],false);tpvPlayback=null;}
@@ -207,6 +207,10 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
    }
    if(remoteState&&state.musicNext>remoteState.musicNext)for(let i=remoteState.musicNext;i<state.musicNext;i++)music.next();
    if(remoteState&&(state.announcementNext||0)>(remoteState.announcementNext||0))void announcement.play();
+   if(remoteState&&state.playlistJump&&state.playlistJump.revision!==remoteState.playlistJump?.revision){
+    const command=state.playlistJump;
+    void (async()=>{try{const track=command.playlistId==='wall'?wallTracks.find(t=>t.id===command.trackId):null;if(command.playlistId==='wall')await setDemoMode(track?.condition==='/navidad'?'christmas':'linear');else if(demoMode==='ia')await setDemoMode('linear');updateRuntime();await runtime.jump(command.playlistId,command.trackId);}catch(error){message(t('No se pudo saltar al contenido: ','Could not jump to content: ')+error.message);}})();
+   }
    deviceEditor.refresh();remoteState=state;
   },onStatus:state=>{if(disposed)return;toolbar.querySelector('.matrix-remote-status').textContent=state.error?t('MCP sin conexión · se conserva el último estado','MCP offline · keeping last state'):t('MCP conectado · revisión ','MCP connected · revision ')+state.revision;}});
   message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();

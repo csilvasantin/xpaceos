@@ -47,3 +47,13 @@ playlist_add {playlist:"tpv",stockId:"#1329",expected_revision:N} adds the resol
 Verified example: Stock #1329 = 1790711463701-yxy150, “Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2”. #1329 is a stable reference, not a promise that it is always the latest upload.
 
 Docs: https://www.xpaceos.com/admira-xp/docs/pixeria-playlists.md
+
+## Playlist · Previo y Play / Preview and Play
+
+ES: En Matrix → /layout → dispositivo, cada fila muestra un previo silencioso junto al número. El botón ▶ está a la derecha de × y salta al inicio de ese contenido. Todos los dispositivos virtuales activos que usan esa playlist cambian juntos, reanudando los pausados; después continúa el orden normal. Las otras playlists y el hilo musical no cambian. Para cambios sin guardar, guarda primero la playlist. Los dispositivos apagados permanecen apagados. El previo no reproduce audio. Si falla el vídeo, se indica el error y Play permite reintentar.
+
+EN: In Matrix → /layout → device, each row shows a silent preview beside its number. The ▶ button is immediately to the right of × and jumps to the beginning of that content. All active virtual devices using that playlist switch together, resuming paused members; normal playlist order continues afterwards. Other playlists and background music are unaffected. Save draft changes before playing. Powered-off devices stay off. Previews never play audio. Failed videos show an error and Play retries.
+
+MCP: playlist_play {playlist_id, track_id, expected_revision}. Read matrix_state first. playlist_id is wall, tpv or a shared playlist-<id>. track_id is the saved content ID, not its row number. Authenticated fleet key required. First share browser-only custom playlists and assignments with matrix_device_layout. The UI Play action remains local to the current browser. MCP commands reach already-open Matrix clients at the next poll (approximately 5 seconds); old commands are not replayed when entering Matrix. Each browser synchronizes its assigned devices locally; this does not guarantee frame accuracy between browsers or publish to physical players. Selecting a regular video exits AI sync. An acknowledgement records the command, not successful playback.
+
+ES: Los agentes pueden leer, editar y saltar a contenido compartido por MCP. EN: Agents can read, edit and jump to shared content through MCP. Endpoint: https://mcp.admira.store/mcp. Example: read matrix_state, then playlist_play with playlist_id="wall", track_id from state.playlists.wall.tracks and the current expected_revision.

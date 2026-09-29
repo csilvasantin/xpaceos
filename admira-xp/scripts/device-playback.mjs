@@ -1,4 +1,4 @@
-import {createScreenPlaylist} from './screen-playlist.mjs?v=devices-1';
+import {createScreenPlaylist} from './screen-playlist.mjs?v=playlist-play-1';
 import {assignedPlaylist,emptyDeviceLayout} from './device-layout.mjs?v=devices-1';
 // One local playback clock per playlist. Pause partitions keep wall/POS controls independent.
 export function createDevicePlayback({onState=()=>{}}={}){
@@ -14,6 +14,15 @@ export function createDevicePlayback({onState=()=>{}}={}){
  return {
   update({devices=entries,config=layout,catalog=defaults}={}){entries=devices;layout=config;defaults=catalog;reconcile();},
   setPlaying(ids,value){for(const id of ids)value?paused.delete(id):paused.add(id);reconcile();if(value)for(const b of buckets.values())if(b.entries.some(e=>ids.includes(e.id))&&!b.player.state().playing)void b.player.play();},
+  async jump(playlistId,trackId){
+   const tracks=(layout.playlists[playlistId]||defaults[playlistId])?.tracks||[];
+   if(!tracks.some(t=>t.id===trackId||t.stockId===trackId))throw Error('Unknown track');
+   const members=entries.filter(e=>assignedPlaylist(layout,e.id)===playlistId);
+   if(!members.length)throw Error('No active devices use this playlist');
+   for(const e of members)paused.delete(e.id);reconcile();
+   const bucket=buckets.get(playlistId+':playing');
+   return bucket.player.jump(trackId);
+  },
   state(ids){const chosen=[...buckets.values()].filter(b=>b.entries.some(e=>ids.includes(e.id)));return {playing:chosen.some(b=>b.player.state().playing),error:chosen.some(b=>b.player.state().error),count:entries.filter(e=>ids.includes(e.id)).length};},
   dispose(){disposed=true;for(const b of buckets.values())b.player.dispose();buckets.clear();}
  };

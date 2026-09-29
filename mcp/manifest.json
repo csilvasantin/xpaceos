@@ -1,18 +1,18 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.29.09.2026.r19.23:27",
+  "version": "v.29.09.2026.r20.23:36",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.7.0",
+    "version": "2.8.0",
     "health": "https://mcp.admira.store/",
-    "tool_count": 32
+    "tool_count": 33
   },
   "auth": {
     "lectura": "none",
-    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset, matrix_playlist_update, matrix_configure, matrix_music_next, matrix_announcement, matrix_device_layout, playlist_add, playlist_remove, playlist_reorder, hotspot_bind, sincro_set, screen_unplug, screen_plug, incident_open)",
+    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset, matrix_playlist_update, matrix_configure, matrix_music_next, matrix_announcement, matrix_device_layout, playlist_play, playlist_add, playlist_remove, playlist_reorder, hotspot_bind, sincro_set, screen_unplug, screen_plug, incident_open)",
     "identidad": "https://www.admiranext.com/mcp/identidad-flota.mjs",
     "directorio": "https://www.admiranext.com/mcp/#directorio"
   },
@@ -155,6 +155,10 @@
     {
       "name": "pixeria_search",
       "description": "Lectura pública: vídeos publicados de Pixeria por título, hashtag exacto, número Stock (#1329) o asset id. Devuelve coincidencias, no publica."
+    },
+    {
+      "name": "playlist_play",
+      "description": "Saltar al principio de un contenido guardado y continuar la playlist / Jump to saved content and continue playlist. Shared virtual devices; fleet authentication and expected_revision required."
     }
   ],
   "ecosystem": {

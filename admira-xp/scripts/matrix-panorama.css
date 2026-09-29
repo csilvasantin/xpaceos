@@ -77,3 +77,8 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-incident-editor a{color:#9dffcf}.matrix-incident-editor{z-index:8}
 
 .pixeria-results{display:grid;gap:5px;margin:6px 0}.device-tracks .pixeria-results button{text-align:left;white-space:normal;overflow-wrap:anywhere;width:100%}.pixeria-status,.pixeria-hint{color:#afd8cb;font-size:11px}.pixeria-status:empty,.pixeria-results:empty{display:none}.device-tracks .pixeria-find{margin-top:4px}
+
+/* Number, silent preview and editable content remain readable in narrow panels. */
+.device-tracks li{position:relative;padding-left:52px;min-height:76px}
+.device-preview{position:absolute;left:0;top:0;width:44px;height:64px;object-fit:contain;background:#020b0d;border:1px solid #52736b;border-radius:4px;pointer-events:none}
+.device-preview[hidden]{display:none}.device-track-play:focus-visible{outline:2px solid #86ffe6;outline-offset:2px}
