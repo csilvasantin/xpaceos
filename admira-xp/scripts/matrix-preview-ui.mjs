@@ -1,4 +1,4 @@
-import {mountMatrixPanorama} from './matrix-panorama.mjs?v=wall-1';
+import {mountMatrixPanorama} from './matrix-panorama.mjs?v=sincro-1';
 import {mountTierHud} from './tier-hud.mjs?v=expert-hud-1';
 const listeners=new Set();
 let dialog,dispose,controller,hud,requestId,lastFocus,busy=false,viewError='';

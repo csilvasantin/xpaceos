@@ -4,6 +4,41 @@
   "store": "starbucks-alsea-paseo-de-gracia",
   "muted": true,
   "repeat": "all",
+  "display": {
+    "default": "individual",
+    "order": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "groups": [
+      [
+        1,
+        2,
+        3
+      ],
+      [
+        4
+      ],
+      [
+        5,
+        6
+      ]
+    ],
+    "total": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "fit": "cover for spans; contain for individual screens",
+    "storageKey": "xpaceos.starbucks.wall-display.v1"
+  },
   "tracks": [
     {
       "stockId": "1790708784283-yvy7w9",

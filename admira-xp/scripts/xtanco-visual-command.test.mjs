@@ -217,7 +217,7 @@ test('embedded help lists local visual commands separately from all existing leg
   const context=vm.createContext({});vm.runInContext(section('  function helpSections(){','  function showHelpPanel(){'),context);
   const sections=context.helpSections(),visual=sections.find(section=>section.items.includes('better'));
   assert.ok(visual);assert.match(visual.title,/CLI experto.*__xtExec/);assert.match(visual.title,/Best.*32-bit/);
-  assert.deepEqual(Array.from(visual.items),['good','better','best','matrix','/mudanza','/modo estado']);
+  assert.deepEqual(Array.from(visual.items),['good','better','best','matrix','/sincro','/sincrototal','/sincro off','/sync','/synctotal','/sync off','/mudanza','/modo estado']);
   const legacy=sections.find(section=>section.items.includes('/render 8bit'));
   assert.notEqual(visual,legacy);assert.deepEqual(Array.from(legacy.items),['/render 8bit','/render 16bit','/render habbo','/render real']);
 });
@@ -261,4 +261,17 @@ test('English people aliases share Spanish state, localized replies and local ro
 test('new games default to nobody visible and staff can be enabled independently',async()=>{
  const h=consoleHarness({lang:'en'});assert.equal(h.context.peopleGroupVisible('staff'),false);assert.equal(h.context.peopleGroupVisible('customers'),false);
  await h.send('/staff ON');assert.deepEqual({...h.context.G.peopleVisibility},{staff:true,customers:false});
+});
+
+test('sync commands stay local in the Expert composer, open Matrix and preserve aliases',async()=>{
+ const h=consoleHarness();
+ for(const input of ['/SINCRO','/sync on','/sincrototal','/synctotal','/sincro off']){
+  await h.send(input);assert.equal(h.router?.mode||h.context.window.__xtancoVisualTiers.mode,'matrix');
+ }
+ assert.equal(h.sent.length,0);assert.equal(h.sessionCommands.length,0);
+ assert.match(await h.exec('/sincrototal extra'),/Uso:/);
+ assert.match(await h.exec('/sync nonsense'),/Uso:/);
+ const f=publicRouter();const total=await executeVisualCommand('/synctotal',{...f,lang:'en'});assert.equal(total.screenLayout,'total');assert.match(total.message,/one video across screens 1–6/);
+ const individual=await executeVisualCommand('/sync off',f);assert.equal(individual.screenLayout,'individual');
+ assert.equal((await executeVisualCommand('/sincro',{router:{choose:async()=>({cancelled:true}),mode:'better'}})).ok,false);
 });

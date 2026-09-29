@@ -2315,6 +2315,43 @@
     "playlist": "https://www.xpaceos.com/admira-xp/starbucks-screen-playlist.json",
     "mapping": "https://www.xpaceos.com/admira-xp/starbucks-wall-mapping.json",
     "stock": "https://www.pixeria.com/stock.html?highlight=1790708784283-yvy7w9",
-    "physical_players_bound": false
+    "physical_players_bound": false,
+    "sync": {
+      "es": "En Experto, el selector Vídeo ofrece Individual, Sincro (1–3 / 4 / 5–6) y Sincro total (1–6). /sincro o /sync reparte una imagen entre las pantallas 1–3, otra en la 4 y otra entre la 5–6; /sincrototal o /synctotal reparte una imagen entre las seis; /sincro off o /sync off restaura el vídeo completo en cada pantalla. Numeración de izquierda a derecha. Los comandos abren Matrix. Cambiar la distribución conserva el instante y el estado de reproducción/pausa; la selección se guarda en este navegador. Los conjuntos llenan su superficie mediante recorte centrado, sin deformar la imagen; los vídeos verticales pierden parte superior e inferior al extenderse. El hilo musical es independiente.",
+      "en": "In Expert, the Video selector offers Individual, Sync (1–3 / 4 / 5–6) and Total sync (1–6). /sync or /sincro spans one image over screens 1–3, another on screen 4 and another over 5–6; /synctotal or /sincrototal spans one image over all six; /sync off or /sincro off restores the full video on each screen. Screens are numbered left to right. Commands open Matrix. Switching layouts preserves playback time and play/pause state; the selection is saved in this browser. Spans fill their surface using a centered crop without stretching; portrait videos lose top and bottom areas when spanning. Speaker music is independent.",
+      "groups": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "total": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "commands": [
+        "/sincro",
+        "/sincrototal",
+        "/sincro off",
+        "/sync",
+        "/synctotal",
+        "/sync off"
+      ],
+      "fit": "centered cover per span; contain per individual screen",
+      "default": "individual",
+      "storage": "xpaceos.starbucks.wall-display.v1"
+    }
   }
 }

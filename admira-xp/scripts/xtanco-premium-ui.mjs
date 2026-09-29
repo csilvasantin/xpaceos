@@ -1,4 +1,4 @@
-import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=wall-1';
+import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=sincro-1';
 import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=expert-hud-1';
 import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=expert-hud-1';
 import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=alsea-1';
@@ -91,6 +91,7 @@ function fuseWithoutNative(mode){
 tiers.choose=mode=>{
   ensureExpertDock();
   syncVisualSurface();
+  if(mode===tiers.mode)return chooseDirect(mode); // Same-view commands must not clone media for a transition.
   if(mode!=='good'&&mode!=='matrix'&&isCafeteria()){
     syncCafeteriaTierControls();
     return chooseDirect('good');

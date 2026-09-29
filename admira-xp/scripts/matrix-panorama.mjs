@@ -1,4 +1,5 @@
-import {STARBUCKS_SCREEN_PLAYLIST,STARBUCKS_WALL_MAPPING,STARBUCKS_WALL_VIEW} from './starbucks-screens.mjs?v=wall-1';
+import {getScreenDisplayMode,setScreenDisplayMode,subscribeScreenDisplay,screenSlice} from './screen-display.mjs?v=sincro-1';
+import {STARBUCKS_SCREEN_PLAYLIST,STARBUCKS_WALL_MAPPING,STARBUCKS_WALL_VIEW} from './starbucks-screens.mjs?v=sincro-1';
 import {createScreenPlaylist} from './screen-playlist.mjs?v=wall-1';
 import {starbucksMusic,STARBUCKS_SPEAKER} from './starbucks-music.mjs?v=first-track-1';
 import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=wall-1';
@@ -11,7 +12,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  let model=validateMapping(STARBUCKS_WALL_MAPPING);
  try{const saved=localStorage.getItem(MAPPING_KEY);if(saved)model=validateMapping(JSON.parse(saved));}catch{}
  root.innerHTML=`<div class="matrix-panorama" tabindex="0" aria-label="Starbucks Alsea 360°"><div class="matrix-player-layer"></div><svg class="matrix-markers" aria-hidden="true"></svg><button class="matrix-speaker" type="button" hidden data-music-toggle aria-pressed="false">♫</button></div>
- <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-map="wall">${t('6 pantallas','6 screens')}</button><button data-map="playlist" aria-pressed="false">${t('Reproducir pantallas','Play screens')}</button><span class="matrix-screen-status" role="status"></span><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><span class="matrix-music-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
+ <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-map="wall">${t('6 pantallas','6 screens')}</button><button data-map="playlist" aria-pressed="false">${t('Reproducir pantallas','Play screens')}</button><label class="matrix-screen-layout">${t('Vídeo','Video')} <select data-screen-layout aria-label="${t('Distribución del vídeo','Video layout')}"><option value="individual">${t('Individual · 1 por pantalla','Individual · 1 per screen')}</option><option value="groups">${t('Sincro · 1–3 / 4 / 5–6','Sync · 1–3 / 4 / 5–6')}</option><option value="total">${t('Sincro total · 1–6','Total sync · 1–6')}</option></select></label><span class="matrix-screen-status" role="status"></span><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><span class="matrix-music-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
  <section class="matrix-map-panel" aria-label="${t('Mapeo de players','Player mapping')}" hidden>
  <header><strong>Starbucks · Alsea</strong><button data-map="close" aria-label="${t('Cerrar','Close')}">×</button></header>
  <p>${t('Marca cada pantalla en orden: arriba izquierda, arriba derecha, abajo derecha, abajo izquierda.','Mark each screen in order: top left, top right, bottom right, bottom left.')}</p>
@@ -30,14 +31,28 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const surface=root.querySelector('.matrix-panorama'),layer=root.querySelector('.matrix-player-layer'),markers=root.querySelector('.matrix-markers'),panel=root.querySelector('.matrix-map-panel'),status=root.querySelector('.matrix-map-status'),list=root.querySelector('.matrix-map-list'),form=root.querySelector('form');
  const controls=new AbortController(),options={signal:controls.signal},previews=new Map(),nodes=new Map();
  let wallPlayback=null;
+ const layoutSelect=root.querySelector('[data-screen-layout]');
+ function applyScreenLayout(mode=getScreenDisplayMode()){
+  layoutSelect.value=mode;
+  for(const [id,media] of previews){
+   if(!media.dataset.wallVideo)continue;
+   const slice=screenSlice(id,mode);if(!slice)continue;
+   Object.assign(media.style,{width:slice.width+'%',left:slice.left+'%',right:'auto',objectFit:slice.fit});
+   media.dataset.screenGroup=slice.group;
+  }
+ }
+ layoutSelect.value=getScreenDisplayMode();
+ layoutSelect.addEventListener('change',()=>setScreenDisplayMode(layoutSelect.value),options);
+ const unsubscribeLayout=subscribeScreenDisplay(applyScreenLayout);
  const wallIds=new Set(STARBUCKS_WALL_MAPPING.players.map(p=>p.id));
  const screenStatus=root.querySelector('.matrix-screen-status'),screenButton=root.querySelector('[data-map=playlist]');
  function stopWall(){wallPlayback?.dispose();wallPlayback=null;screenStatus.textContent=t('Pantallas en pausa','Screens paused');screenButton.setAttribute('aria-pressed','false');screenButton.textContent=t('Reproducir pantallas','Play screens');}
  function startWall(){
   stopWall();const videos=[];
   for(const p of model.players.filter(p=>wallIds.has(p.id)&&p.type==='video'&&p.url===STARBUCKS_SCREEN_PLAYLIST.tracks[0].url)){
-   destroyPreview(p.id);const v=document.createElement('video');v.className='matrix-player-media';v.setAttribute('aria-label',p.name);nodes.get(p.id).prepend(v);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,v);videos.push(v);
+   destroyPreview(p.id);const v=document.createElement('video');v.className='matrix-player-media';v.dataset.wallVideo='true';v.setAttribute('aria-label',p.name);nodes.get(p.id).prepend(v);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,v);videos.push(v);
   }
+  applyScreenLayout();
   if(!videos.length){screenStatus.textContent=t('Sin pantallas de esta playlist; usa 6 pantallas para añadirlas.','No playlist screens; use 6 screens to add them.');return;}
   wallPlayback=createScreenPlaylist({videos,tracks:STARBUCKS_SCREEN_PLAYLIST.tracks,onState:state=>{screenButton.setAttribute('aria-pressed',String(state.playing));screenButton.textContent=state.playing?t('Pausar pantallas','Pause screens'):t('Reproducir pantallas','Play screens');screenStatus.textContent=state.error?t('Vídeo no disponible · pulsa para reintentar','Video unavailable · click to retry'):state.count+'/6 · '+(state.playing?t('reproduciendo sin audio','playing muted'):t('en pausa','paused'))+' · '+state.title;}});void wallPlayback.play();
  }
@@ -102,7 +117,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const toolbar=root.querySelector('.matrix-map-toolbar');
  for(const type of ['click','keydown','keyup','keypress','pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])toolbar.addEventListener(type,e=>e.stopPropagation(),options);
  document.querySelector('#telegramDock .tg-actions')?.append(toolbar);
- const dispose=()=>{if(disposed)return;disposed=true;stopWall();controls.abort();clearInterval(musicPoll);unsubscribeMusic();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
+ const dispose=()=>{if(disposed)return;disposed=true;stopWall();controls.abort();clearInterval(musicPoll);unsubscribeMusic();unsubscribeLayout();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
  let observer;
  signal?.addEventListener('abort',dispose,{once:true});
  try{
