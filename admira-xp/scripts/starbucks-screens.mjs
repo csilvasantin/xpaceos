@@ -5,7 +5,7 @@ export const STARBUCKS_SCREEN_PLAYLIST={
   "store": "starbucks-alsea-paseo-de-gracia",
   "muted": true,
   "repeat": "all",
-  "display": {"default":"individual","order":[1,2,3,4,5,6],"groups":[[1,2,3],[4],[5,6]],"total":[1,2,3,4,5,6],"fit":"cover for spans; contain for individual screens","storageKey":"xpaceos.starbucks.wall-display.v1"},
+  "display": {"default":"individual","order":[1,2,3,4,5,6],"numbering":"from street entrance; wall view left to right: 6,5,4,3,2,1","screenNumbersById":{"starbucks-wall-01":6,"starbucks-wall-02":5,"starbucks-wall-03":4,"starbucks-wall-04":3,"starbucks-wall-05":2,"starbucks-wall-06":1},"spatialOrder":[6,5,4,3,2,1],"groups":[[1,2,3],[4],[5,6]],"total":[1,2,3,4,5,6],"fit":"cover for spans; contain for individual screens","storageKey":"xpaceos.starbucks.wall-display.v1"},
   "tracks": [
     {
       "stockId": "1790708784283-yvy7w9",
@@ -29,7 +29,7 @@ export const STARBUCKS_WALL_MAPPING={
   "players": [
     {
       "id": "starbucks-wall-01",
-      "name": "Starbucks · 01",
+      "name": "Starbucks · 6",
       "playerId": "",
       "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
       "type": "video",
@@ -56,7 +56,7 @@ export const STARBUCKS_WALL_MAPPING={
     },
     {
       "id": "starbucks-wall-02",
-      "name": "Starbucks · 02",
+      "name": "Starbucks · 5",
       "playerId": "",
       "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
       "type": "video",
@@ -83,7 +83,7 @@ export const STARBUCKS_WALL_MAPPING={
     },
     {
       "id": "starbucks-wall-03",
-      "name": "Starbucks · 03",
+      "name": "Starbucks · 4",
       "playerId": "",
       "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
       "type": "video",
@@ -110,7 +110,7 @@ export const STARBUCKS_WALL_MAPPING={
     },
     {
       "id": "starbucks-wall-04",
-      "name": "Starbucks · 04",
+      "name": "Starbucks · 3",
       "playerId": "",
       "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
       "type": "video",
@@ -137,7 +137,7 @@ export const STARBUCKS_WALL_MAPPING={
     },
     {
       "id": "starbucks-wall-05",
-      "name": "Starbucks · 05",
+      "name": "Starbucks · 2",
       "playerId": "",
       "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
       "type": "video",
@@ -164,7 +164,7 @@ export const STARBUCKS_WALL_MAPPING={
     },
     {
       "id": "starbucks-wall-06",
-      "name": "Starbucks · 06",
+      "name": "Starbucks · 1",
       "playerId": "",
       "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
       "type": "video",

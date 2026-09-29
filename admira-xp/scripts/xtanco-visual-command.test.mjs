@@ -217,7 +217,7 @@ test('embedded help lists local visual commands separately from all existing leg
   const context=vm.createContext({});vm.runInContext(section('  function helpSections(){','  function showHelpPanel(){'),context);
   const sections=context.helpSections(),visual=sections.find(section=>section.items.includes('better'));
   assert.ok(visual);assert.match(visual.title,/CLI experto.*__xtExec/);assert.match(visual.title,/Best.*32-bit/);
-  assert.deepEqual(Array.from(visual.items),['good','better','best','matrix','/sincro','/sincrototal','/sincro off','/sync','/synctotal','/sync off','/mudanza','/modo estado']);
+  assert.deepEqual(Array.from(visual.items),['good','better','best','matrix','/layout','/layout off','/sincro','/sincrototal','/sincro off','/sync','/synctotal','/sync off','/mudanza','/modo estado']);
   const legacy=sections.find(section=>section.items.includes('/render 8bit'));
   assert.notEqual(visual,legacy);assert.deepEqual(Array.from(legacy.items),['/render 8bit','/render 16bit','/render habbo','/render real']);
 });
@@ -274,4 +274,14 @@ test('sync commands stay local in the Expert composer, open Matrix and preserve 
  const f=publicRouter();const total=await executeVisualCommand('/synctotal',{...f,lang:'en'});assert.equal(total.screenLayout,'total');assert.match(total.message,/one video across screens 1–6/);
  const individual=await executeVisualCommand('/sync off',f);assert.equal(individual.screenLayout,'individual');
  assert.equal((await executeVisualCommand('/sincro',{router:{choose:async()=>({cancelled:true}),mode:'better'}})).ok,false);
+});
+
+test('layout composer toggles screen numbers locally and never reaches furniture reset',async()=>{
+ const h=consoleHarness();
+ assert.match(await h.exec('/layout on'),/Números de pantalla ON/);
+ assert.match(await h.exec('/layoiut'),/Números de pantalla OFF/);
+ await h.send('/layout');assert.equal(h.sent.length,0);assert.equal(h.sessionCommands.length,0);
+ assert.match(await h.exec('/layout typo'),/Uso:/);
+ assert.equal(parseVisualCommand('/layout save'),null);assert.equal(parseVisualCommand('/layout factory'),null);
+ const f=publicRouter();assert.match((await executeVisualCommand('/layout off',{...f,lang:'en'})).message,/Screen numbers OFF/);
 });

@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r11.21:29",
+  "version": "v.29.09.2026.r12.21:38",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #213: EXIT siguiente canción, API/evento local PlayerTaza, avance circular y mute conservado; ayuda/documentación ES/EN.",
+  "evidence": "Yokup #216: números desde entrada 6-5 | 4 | 3-2-1, grupos físicos corregidos, /layout y /layoiut, mapas conservados, ayuda ES/EN.",
   "day": "29.09.2026",
-  "time": "21:29"
+  "time": "21:38"
 }

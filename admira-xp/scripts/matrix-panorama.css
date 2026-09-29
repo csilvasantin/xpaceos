@@ -33,3 +33,12 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 
 .matrix-exit-next{position:absolute;z-index:4;width:30px;height:26px;transform:translate(-50%,-50%);display:grid;place-items:center;padding:0;border:1px solid #a6efbc88;border-radius:3px;background:#063a20a6;color:#effff4;font:19px/1 system-ui;cursor:pointer;touch-action:manipulation}
 .matrix-exit-next[hidden]{display:none}.matrix-exit-next:hover,.matrix-exit-next:focus-visible{outline:2px solid #9dffcf;outline-offset:2px;background:#126b3d}.matrix-exit-next:disabled{opacity:.45;cursor:default}
+
+.matrix-screen-numbers{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}.matrix-screen-numbers[hidden],.matrix-screen-number[hidden]{display:none}
+.matrix-screen-number{position:absolute;transform:translate(-50%,-100%);border:1px solid #c4ffe1;border-radius:5px;padding:5px 8px;background:#032b23f2;color:#fff;font:700 14px/1.25 monospace;white-space:nowrap;box-shadow:0 2px 6px #0009}
+[data-screen-numbers][aria-pressed="true"]{background:#9dffcf!important;color:#032b28!important}
+@media(max-width:650px){.matrix-screen-number{font-size:10px;padding:3px 4px}}
+
+.matrix-screen-number{display:grid;justify-items:center;gap:2px;font-size:10px}.matrix-screen-number strong{font-size:20px;line-height:1}.matrix-screen-number small{font:inherit}
+
+@media(max-width:650px){.matrix-screen-number{padding:3px 5px;gap:0}.matrix-screen-number strong{font-size:14px}.matrix-screen-number small{display:none}}

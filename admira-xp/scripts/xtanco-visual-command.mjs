@@ -1,4 +1,4 @@
-import {parseScreenDisplayCommand,setScreenDisplayMode} from './screen-display.mjs?v=sincro-1';
+import {parseScreenDisplayCommand,setScreenDisplayMode,parseScreenLayoutCommand,setScreenNumbersVisible} from './screen-display.mjs?v=number-layout-1';
 // Visual modes affect only this browser. This command has no bot, network,
 // game-state or legacy /render dependency: the public tier router owns the view.
 const aliases=new Map([
@@ -10,6 +10,7 @@ const aliases=new Map([
 
 export function parseVisualCommand(input){
   const text=String(input||'').trim();
+  const labels=parseScreenLayoutCommand(text);if(labels)return labels.legacy?null:{labels};
   const screen=parseScreenDisplayCommand(text);if(screen)return {screen};
   if(/^\/mudanza(?:@\w+)?$/i.test(text))return {moving:true};
   const direct=text.toLowerCase();if(['good','better','best','matrix'].includes(direct))return {tier:direct};
@@ -28,6 +29,15 @@ export function parseVisualCommand(input){
 export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
   const command=parseVisualCommand(input);if(!command)return null;
   const en=lang==='en';
+  if(command.labels){
+    if(command.labels.invalid)return {ok:false,local:true,message:en?'Usage: /layout [on|off] shows screen numbers. /layoiut is also accepted.':'Uso: /layout [on|off] muestra los números de pantalla. También se acepta /layoiut.'};
+    try{
+      const outcome=await router?.choose('matrix');
+      if(!router||outcome?.ok===false||outcome?.cancelled||router.mode!=='matrix'||router.error||router.busy)throw Error();
+      const visible=setScreenNumbersVisible(command.labels.visible);
+      return {ok:true,local:true,mode:'matrix',screenNumbers:visible,message:(en?'Screen numbers ':'Números de pantalla ')+(visible?'ON':'OFF')+' · '+(en?'From the street entrance: 1–3 group 1; 4 standalone; 5–6 group 2.':'Desde la entrada: 1–3 grupo 1; 4 sola; 5–6 grupo 2.')};
+    }catch{return {ok:false,local:true,message:en?'Could not open Matrix. Retry.':'No se pudo abrir Matrix. Reintenta.'};}
+  }
   if(command.screen){
     if(command.screen.invalid)return {ok:false,local:true,message:en?'Usage: /sync [on|off], /synctotal. Groups: 1–3 / 4 / 5–6.':'Uso: /sincro [on|off], /sincrototal. Grupos: 1–3 / 4 / 5–6.'};
     if(typeof router?.choose!=='function')return {ok:false,local:true,message:en?'The visual selector is not ready. Retry.':'El selector visual no está listo. Reintenta.'};
@@ -53,8 +63,8 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
     }
   }
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Best shows Avenida Admira in layers, with a fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models; use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. /mudanza toggles an empty floor-and-walls view without changing the real layout. Matrix opens the Starbucks Alsea 360° capture and local screen/player mapping. /sync spans groups 1–3 / 4 / 5–6, /synctotal spans all six, /sync off restores individual screens. /mode, 8/16/32 and /mode status are also accepted.'
-    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Best muestra Avenida Admira por capas, con cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos; usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. Matrix abre la captura 360° del Starbucks Alsea y el mapeo local de pantallas/players. /sincro extiende por grupos 1–3 / 4 / 5–6, /sincrototal entre las seis y /sincro off restaura pantallas individuales. También se aceptan /modo, 8/16/32 y /modo estado.'};
+    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Best shows Avenida Admira in layers, with a fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models; use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. /mudanza toggles an empty floor-and-walls view without changing the real layout. Matrix opens the Starbucks Alsea 360° capture and local screen/player mapping. /layout toggles screen numbers from the street entrance (6–5 | 4 | 3–2–1 in the wall view). /sync spans groups 1–3 / 4 / 5–6, /synctotal spans all six, /sync off restores individual screens. /mode, 8/16/32 and /mode status are also accepted.'
+    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Best muestra Avenida Admira por capas, con cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos; usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. Matrix abre la captura 360° del Starbucks Alsea y el mapeo local de pantallas/players. /layout muestra u oculta números desde la entrada (6–5 | 4 | 3–2–1 mirando la pared). /sincro extiende por grupos 1–3 / 4 / 5–6, /sincrototal entre las seis y /sincro off restaura pantallas individuales. También se aceptan /modo, 8/16/32 y /modo estado.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
