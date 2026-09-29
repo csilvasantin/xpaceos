@@ -85,6 +85,9 @@
     <a href="#soporte"><span class="n">08</span><span data-i18n="toc.8">Método y soporte</span></a>
   </div>
 
+  <section id="expert-layout"><h2 data-i18n="expert.h">Tutorial · Panel experto ajustable</h2><p data-i18n="expert.body">Arrastra el tirador superior para ajustar la altura. Los dos separadores verticales reparten el ancho entre comandos, Good/Better/Best y Local view. Se guardan las medidas en este navegador. Con el separador enfocado usa las flechas; doble clic o Inicio restablece los anchos. Ocultar/Mostrar controla Local view.</p></section>
+  <section id="people-tutorial"><h2 data-i18n="people.h">Tutorial · Mostrar y ocultar personas</h2><p data-i18n-html="people.intro">Abre <b>Experto (⌘)</b> en la cafebrería. <code>/gente</code> = <code>/people</code>, <code>/personal</code> = <code>/staff</code> y <code>/clientes</code> = <code>/customers</code>. Añade <code>on</code> para mostrar o <code>off</code> para ocultar.</p><ol><li data-i18n-html="people.one"><code>/gente off</code>: oculta personal y clientes.</li><li data-i18n-html="people.two"><code>/personal on</code>: muestra solo trabajadores.</li><li data-i18n-html="people.three"><code>/clientes on</code>: muestra también los clientes.</li><li data-i18n-html="people.four"><code>/gente on</code>: deja ambos grupos visibles.</li></ol><p data-i18n="people.note">Por defecto: /gente OFF hasta activarlo. Recuerda tu elección guardada. Acepta mayúsculas. Cambia la visibilidad local; conserva plantilla, visitantes, simulación y aforo. Los viandantes exteriores y actores especiales mantienen sus controles propios.</p><p><a href="/help/cli/" data-i18n="people.link">Ver todos los comandos ES/EN</a></p></section>
+
   <section id="que-es">
     <h2><span class="n">00</span><span data-i18n="s0.h">Qué es XpaceOS</span></h2>
     <p class="k" data-i18n="s0.k">tres capas · cuatro productos · un mismo dato</p>
@@ -264,6 +267,17 @@ ENTONCES showAd(botas-de-agua) · screenTone(calm)</pre>
 
 <script>
 const I18N={en:{
+"expert.h":"Tutorial \u00b7 Resizable expert panel",
+"expert.body":"Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view.",
+"people.h":"Tutorial · Show and hide people",
+"people.intro":"Open <b>Expert (⌘)</b> in the coffee shop. <code>/people</code> = <code>/gente</code>, <code>/staff</code> = <code>/personal</code> and <code>/customers</code> = <code>/clientes</code>. Add <code>on</code> to show or <code>off</code> to hide.",
+"people.one":"<code>/people off</code>: hide staff and customers.",
+"people.two":"<code>/staff on</code>: show workers only.",
+"people.three":"<code>/customers on</code>: show customers too.",
+"people.four":"<code>/people on</code>: leave both groups visible.",
+"people.note":"Default: /people OFF until enabled. Remembers your saved choice. Case-insensitive. Changes local visibility; preserves staff, visitors, simulation and audience counts. Outdoor passersby and special actors keep their own controls.",
+"people.link":"See all ES/EN commands",
+
  help:'HELP','nav.try':'Try the twin','nav.scan':'Scan','nav.cli':'CLI commands','nav.functions':'Functions','nav.method':'Method',
  h1:'How to use <span>XpaceOS</span>',
  lede:'XpaceOS turns every store, shop window or booth into an intelligent advertising medium. This help is for people: what it is, what you can do today and where to start. AI agents have documentation at /mcp and an embedded guide through the help tool.',

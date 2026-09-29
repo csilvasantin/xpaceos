@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r1.19:01",
+  "version": "v.29.09.2026.r2.19:21",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup DCL-44f4acbe2054dd3a0bd435e2: controles expertos de visibilidad de personal y clientes. Base cafebrería 279a5f3 preservada.",
+  "evidence": "Yokup DCL-0166cf641d75ffb6afb7deb0: comandos ES/EN, Help/MCP/tutorial, experto con altura y tres columnas ajustables, gente OFF por defecto.",
   "day": "29.09.2026",
-  "time": "19:01"
+  "time": "19:21"
 }

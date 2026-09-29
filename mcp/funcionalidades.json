@@ -12,7 +12,11 @@
   "view_navigation": {
     "menu": "Avanzado (▤)",
     "selector_inside_views": true,
-    "labels": { "good": "Good · 8 bits", "better": "Better · 16 bits", "best": "Best · 32 bits" },
+    "labels": {
+      "good": "Good · 8 bits",
+      "better": "Better · 16 bits",
+      "best": "Best · 32 bits"
+    },
     "style_note": "8/16/32 bits son nombres artísticos, no profundidad de color.",
     "better_camera": {
       "comparison": "Cámara mapped alineada con la proyección de Good para comparar la representación; no garantiza siluetas idénticas ni paridad de controles.",
@@ -25,7 +29,11 @@
       "people_live": true,
       "operational": false,
       "command": "/modo best",
-      "success_result": { "ok": true, "preview": true, "availability": "preview" },
+      "success_result": {
+        "ok": true,
+        "preview": true,
+        "availability": "preview"
+      },
       "scope": "Escenario conceptual fijo con personas proyectadas desde el estado vivo; la cámara, el mobiliario y las 30 áreas Best no son interactivos."
     },
     "mcp": "La navegación pertenece al navegador del gemelo; no registra herramientas ni recursos MCP."
@@ -2203,5 +2211,65 @@
         }
       ]
     }
-  ]
+  ],
+  "people_visibility": {
+    "updated_at": "2026-09-29",
+    "entrypoints": [
+      "Expert composer",
+      "window.__xtExec",
+      "window.xtAPI.command"
+    ],
+    "commands": [
+      {
+        "es": "/gente on|off",
+        "en": "/people on|off",
+        "target": "staff_and_customers"
+      },
+      {
+        "es": "/personal on|off",
+        "en": "/staff on|off",
+        "target": "staff"
+      },
+      {
+        "es": "/clientes on|off",
+        "en": "/customers on|off",
+        "target": "customers"
+      }
+    ],
+    "case_insensitive": true,
+    "scope": {
+      "es": "Visibilidad local; conserva personas, simulación y aforo. No es una herramienta MCP de control remoto.",
+      "en": "Local visibility; preserves people, simulation and audience counts. Not a remote-control MCP tool."
+    },
+    "example": {
+      "es": [
+        "/gente off",
+        "/personal on",
+        "/clientes on",
+        "/gente on"
+      ],
+      "en": [
+        "/people off",
+        "/staff on",
+        "/customers on",
+        "/people on"
+      ]
+    },
+    "help_topic": "people",
+    "tutorial": "https://www.xpaceos.com/help/#people-tutorial",
+    "default": {
+      "staff": false,
+      "customers": false
+    },
+    "startup": {
+      "es": "Por defecto las tiendas empiezan con /gente OFF: personal y clientes ocultos hasta activarlos. Se conserva una elección explícita guardada en la partida.",
+      "en": "Stores default to /people OFF: staff and customers stay hidden until enabled. An explicit choice saved in the game is preserved."
+    }
+  },
+  "expert_layout": {
+    "es": "Arrastra el tirador superior para ajustar la altura. Los dos separadores verticales reparten el ancho entre comandos, Good/Better/Best y Local view. Se guardan las medidas en este navegador. Con el separador enfocado usa las flechas; doble clic o Inicio restablece los anchos. Ocultar/Mostrar controla Local view.",
+    "en": "Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view.",
+    "tutorial": "https://www.xpaceos.com/help/#expert-layout",
+    "help_topic": "expert"
+  }
 }

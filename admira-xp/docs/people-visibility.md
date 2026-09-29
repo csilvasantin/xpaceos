@@ -27,3 +27,32 @@ zonas de clic y snapshot de actores. 385 de 386 pruebas generales pasan;
 reproducido sin los cambios sobre `279a5f3`.
 
 Seguimiento: Yokup `DCL-44f4acbe2054dd3a0bd435e2` · OraculoMacMini.
+
+## English commands and documentation
+
+`/people on|off` controls both staff and customers; `/staff on|off` controls only
+workers; `/customers on|off` controls only customers. These are exact aliases of
+`/gente`, `/personal` and `/clientes`, including uppercase ON/OFF. Replies and
+validation messages follow the twin language. Old commands keep their behavior.
+
+Try `/people off`, then `/staff on` (staff only), `/customers on` (both),
+and `/people on` (restore both). This changes local visibility and preserves
+people, simulation and audience counts. Passersby and special actors keep their
+own controls.
+
+Bilingual documentation: `/help/cli/`, `/help/#people-tutorial`, in-game `/help`
+and manual, onboarding tutorial, `/mcp/` and `/mcp/llms.txt`. MCP embedded help:
+`help({"topic":"people"})` or `help({"topic":"personas"})`, resource `xpaceos://help`.
+No additional remote-control MCP tools are registered.
+
+Tracking: `DCL-0166cf641d75ffb6afb7deb0` · OraculoMacMini.
+
+## Panel experto / Expert panel
+
+Arrastra el tirador superior para ajustar la altura. Los dos separadores verticales reparten el ancho entre comandos, Good/Better/Best y Local view. Se guardan las medidas en este navegador. Con el separador enfocado usa las flechas; doble clic o Inicio restablece los anchos. Ocultar/Mostrar controla Local view.
+
+Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view.
+
+Por defecto las tiendas empiezan con /gente OFF: personal y clientes ocultos hasta activarlos. Se conserva una elección explícita guardada en la partida.
+
+Stores default to /people OFF: staff and customers stay hidden until enabled. An explicit choice saved in the game is preserved.

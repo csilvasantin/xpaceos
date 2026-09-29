@@ -1210,18 +1210,22 @@
     <div class="tg-head"><span>Xtore control from Telegram / WhatsApp</span><a class="tg-site-link" id="dockSiteLink" href="https://csilvasantin.github.io/omnipublicity/" target="_blank" rel="noopener" title="Abrir OmniPublicity — modulo programatico del Xpace OS">↗ SITE <span class="tg-site-ver" id="dockSiteVer">v—</span></a><span class="tg-status" id="telegramSendStatus" style="display:none">AdmiraXPBot</span></div>
     <div id="telegramHelpPanel" aria-label="Comandos disponibles"></div>
     <div id="telegramSignagePanel" aria-label="Playlist Digital Signage"></div>
+    <div class="expert-workspace">
     <div class="tg-cli-row">
       <textarea id="telegramComposer" placeholder="Write to @AdmiraXPBot... Enter sends, Shift+Enter newline"></textarea>
+    </div>
+    <div class="expert-divider" data-expert-divider="0" role="separator" aria-orientation="vertical" tabindex="0"></div>
       <div class="tg-actions">
         <button type="button" class="primary" id="telegramSendBtn">Send</button>
         <!-- El botón /help se quitó de la barra (2-ago-2026, Carlos: «eliminar
              /help para tener más espacio»). El comando SIGUE existiendo: se
              escribe /help en el compositor, y la ayuda completa vive en
              xpaceos.com/help. El panel se cierra con su propia ✕. -->
-        <button type="button" id="telegramHideBtn" title="Mostrar/ocultar la respuesta del CLI (mitad derecha)">Hide</button>
+        <button type="button" id="telegramHideBtn" title="Mostrar/ocultar Local view">Hide</button>
       </div>
-    </div>
+    <div class="expert-divider" data-expert-divider="1" role="separator" aria-orientation="vertical" tabindex="0"></div>
     <div id="telegramLastResponse" class="tg-last-response" hidden aria-live="polite"></div>
+    </div>
     <div class="tg-quick-actions" id="telegramQuickActions" aria-label="Acciones rápidas de escena"></div>
   </div>
   <div class="tg-pane conversation">
@@ -1888,20 +1892,7 @@ function resizeCanvas(){
     if(!composeStart) dock.style.display='';
     dock.style.left=dockLeft+'px';
     if(inGameplay&&!telegramDockHidden){
-      var sendPane=dock.querySelector('.tg-pane.send');
-      var panelOpen=sendPane&&(sendPane.classList.contains('help-open')||sendPane.classList.contains('signage-open'));
-      if(composeStart&&!panelOpen){
-        // Modo experto (fila input|output SIN panel): la altura la decide fitDock según
-        // el CONTENIDO (~44px), NUNCA gameplayDockHeight. Así el dock queda compacto y el
-        // Xpacio recupera toda la banda inferior (antes el dock se estiraba a la altura
-        // arrastrada y tapaba media pantalla). Fallback bajo si aún no tiene altura.
-        var inventoryResponse=dock.querySelector('#telegramLastResponse');
-        if(inventoryResponse?.dataset.inventory&&!dock.classList.contains('cli-out-hidden'))dock.style.height=(inventoryResponse.dataset.inventory==='list'?Math.min(260,innerHeight*.36):100)+'px';
-        else if(!dock.style.height||parseInt(dock.style.height,10)>72)dock.style.height='44px';
-      } else {
-        // Dock normal, o con panel /help /signage abierto → altura completa para leerlo.
-        dock.style.height=dockRenderH+'px';
-      }
+      dock.style.height=dockRenderH+'px';
     }
     dock.style.top='auto';
     dock.style.bottom='0px';
@@ -1995,12 +1986,24 @@ function setupDockResizers(){
     document.removeEventListener('pointercancel',end);
   };
   handles.forEach(handle=>{
+    handle.removeAttribute('aria-hidden');
+    handle.setAttribute('role','separator');
+    handle.setAttribute('aria-orientation','horizontal');
+    handle.tabIndex=0;
+    handle.setAttribute('aria-label','Altura del panel / Panel height');
+    handle.addEventListener('keydown',e=>{
+      if(!['ArrowUp','ArrowDown'].includes(e.key))return;
+      e.preventDefault();e.stopPropagation();
+      gameplayDockHeight=clampGameplayDockHeight(gameplayDockHeight+(e.key==='ArrowUp'?20:-20));
+      resizeCanvas();
+      try{localStorage.setItem(DOCK_HEIGHT_KEY,String(gameplayDockHeight));}catch(_){}
+    });
     handle.addEventListener('pointerdown',e=>{
-      if(!isGameplayUiState(state)) return;
+      if(e.button!==0||!isGameplayUiState(state)) return;
       e.preventDefault();
       e.stopPropagation();
       handle.classList.add('is-dragging');
-      drag={y:e.clientY,h:gameplayDockHeight};
+      drag={y:e.clientY,h:handle.parentElement.getBoundingClientRect().height};
       try{handle.setPointerCapture(e.pointerId);}catch(err){}
       document.addEventListener('pointermove',move,{passive:false});
       document.addEventListener('pointerup',end,{passive:false});
@@ -5423,14 +5426,16 @@ const CAM={
 };
 // Visibility is presentation only: preserve roster, visitors, sales and camera counts.
 function peopleGroupVisible(group){
-  return !G||G.peopleVisibility?.[group]!==false;
+  return !!G&&G.peopleVisibility?.[group]===true;
 }
 function executePeopleVisibilityCommand(raw){
-  const match=String(raw||'').trim().match(/^\/?(gente|personal|clientes)(?:@\w+)?\s+(on|off)(.*)$/i);
+  const match=String(raw||'').trim().match(/^\/?(gente|people|personal|staff|clientes|customers)(?:@\w+)?\s+(on|off)(.*)$/i);
   if(!match)return null;
-  if(match[3].trim())return {ok:false,local:true,message:'Uso: /'+match[1].toLowerCase()+' on | off'};
-  if(!G)return {ok:false,local:true,message:'Abre un Xpacio para mostrar u ocultar sus personas.'};
-  const group=match[1].toLowerCase(),on=match[2].toLowerCase()==='on';
+  const en=typeof lang!=='undefined'&&lang==='en';
+  if(match[3].trim())return {ok:false,local:true,message:(en?'Usage: /':'Uso: /')+match[1].toLowerCase()+' on | off'};
+  if(!G)return {ok:false,local:true,message:en?'Open an Xpace to show or hide its people.':'Abre un Xpacio para mostrar u ocultar sus personas.'};
+  const aliases={people:'gente',staff:'personal',customers:'clientes'};
+  const name=match[1].toLowerCase(),group=aliases[name]||name,on=match[2].toLowerCase()==='on';
   const next={staff:peopleGroupVisible('staff'),customers:peopleGroupVisible('customers')};
   if(group==='gente'||group==='personal')next.staff=on;
   if(group==='gente'||group==='clientes')next.customers=on;
@@ -5442,7 +5447,6 @@ function executePeopleVisibilityCommand(raw){
   if(typeof npcEdOpen!=='undefined'&&npcEdOpen&&
       ((npcEdKind==='staff'&&!next.staff)||(npcEdKind==='customer'&&!next.customers)))closeNPCEditor();
   saveGame();
-  const en=typeof lang!=='undefined'&&lang==='en';
   const label=group==='gente'?(en?'Staff and customers':'Personal y clientes'):
     group==='personal'?(en?'Staff':'Personal'):(en?'Customers':'Clientes');
   return {ok:true,local:true,message:label+' '+(on?'ON':'OFF')+' · '+
@@ -6736,6 +6740,9 @@ const LANGS={
       {title:'BIENVENIDO A XTANCO',lines:['Gestiona tu estanco durante 5 años.','Alcanza el objetivo de ventas cada año','para avanzar y construir tu negocio.','¡Contrata personal, repón stock y fideliza clientes!']},
       {title:'GESTIÓN DE PERSONAL',lines:['Contrata empleados en la pestaña PERSONAL.','Cada empleado genera ventas automáticamente.','Fórmalos para subir su nivel (máx. 5)','y aumentar su productividad y salario.']},
       {title:'EVENTOS ESPECIALES',lines:['⚡ HORA PUNTA: ventas x2.4 durante un tiempo.','🔍 INSPECCIÓN: mantén stock y personal o penalización.','📦 Repón stock regularmente (pestaña STOCK).','👁 Vigila la barra de OBJETIVO del año en el HUD.']},
+      {"title": "PERSONAS · MODO EXPERTO", "lines": ["Inicio: gente OFF. on muestra, off oculta.", "/gente = /people: ambos grupos.", "/personal = /staff: solo trabajadores.", "/clientes = /customers: solo clientes.", "Aceptan ON/OFF en ambos idiomas."]},
+      {"title": "AJUSTA EL MODO EXPERTO", "lines": ["Arrastra arriba para cambiar la altura.", "Separa comandos, calidad y Local view.", "Arrastra los dos separadores verticales.", "Las medidas se guardan en el navegador.", "Doble clic en separador: anchos iniciales."]},
+      {"title": "PRUEBA LOS GRUPOS", "lines": ["/gente off: oculta ambos grupos.", "/personal on: muestra solo trabajadores.", "/clientes on: vuelve a mostrar clientes.", "/gente on: muestra ambos grupos.", "No borra personas ni cambia el aforo."]},
     ],
     tutNext:'SIGUIENTE →',tutStart:'¡EMPEZAR!',
     tabs:['VENTAS','PERSONAL','CON','LOCAL'],
@@ -6821,6 +6828,9 @@ const LANGS={
       {title:'WELCOME TO XTANCO',lines:['Manage your shop for 5 years.','Reach the annual sales target','to progress and grow your business.','Hire staff, restock and keep customers happy!']},
       {title:'STAFF MANAGEMENT',lines:['Hire employees in the STAFF tab.','Each employee generates sales automatically.','Train them to raise their level (max 5)','and increase their productivity and salary.']},
       {title:'SPECIAL EVENTS',lines:['⚡ RUSH HOUR: sales x2.4 for a period.','🔍 INSPECTION: keep stock & staff or get fined.','📦 Restock products regularly (STOCK tab).','👁 Watch the OBJECTIVE bar in the HUD.']},
+      {"title": "PEOPLE · EXPERT MODE", "lines": ["Default: people OFF. on shows, off hides.", "/people = /gente: both groups.", "/staff = /personal: workers only.", "/customers = /clientes: customers only.", "Uppercase ON/OFF works in both languages."]},
+      {"title": "RESIZE EXPERT MODE", "lines": ["Drag the top handle to change height.", "Split commands, quality and Local view.", "Drag the two vertical dividers.", "Sizes are saved in this browser.", "Double-click a divider to reset widths."]},
+      {"title": "TRY THE GROUPS", "lines": ["/people off: hide both groups.", "/staff on: show workers only.", "/customers on: show customers again.", "/people on: show both groups.", "People and audience counts are preserved."]},
     ],
     tutNext:'NEXT →',tutStart:'LET\'S GO!',
     tabs:['SALES','STAFF','CON','STORE'],
@@ -17163,6 +17173,8 @@ function drawEraClientMiniMap(originX,originY,w,h){
 // ── HELP / MANUAL SCREEN ─────────────────────────────────────
 const HELP_PAGES={
   es:[
+  {"title": "PANEL EXPERTO AJUSTABLE", "lines": ["Arrastra el tirador superior: altura.", "Dos separadores: comandos, calidad, Local view.", "Las medidas se guardan en este navegador.", "Flechas: ajustar. Doble clic: anchos iniciales.", "Ocultar/Mostrar controla Local view."]},
+  {"title": "PERSONAS VISIBLES · EXPERTO", "lines": ["Inicio: /gente OFF. Actívalo en Experto (⌘).", "/gente on|off = /people on|off", "/personal on|off = /staff on|off", "/clientes on|off = /customers on|off", "on muestra; off oculta. Acepta ON/OFF.", "/gente off → /personal on: solo personal.", "/gente on: vuelven ambos grupos.", "Visibilidad local; conserva personas y aforo."]},
   { title:'ADMIRA XP // THE XPACE OS — XTANCO', lines:[
     '','Bienvenido a Admira XP // The Xpace OS,',
     'la plataforma viva de experiencias operativas.','',
@@ -17299,6 +17311,8 @@ const HELP_PAGES={
   ]},
   ],
   en:[
+  {"title":"RESIZABLE EXPERT PANEL","lines":["Drag the top handle to change height.","Drag the dividers between commands, quality","and Local view to distribute the width.","Sizes are saved in this browser.","Arrow keys resize; double-click resets widths."]},
+  {"title": "PEOPLE VISIBILITY · EXPERT", "lines": ["Default: /people OFF. Enable in Expert (⌘).", "/people on|off = /gente on|off", "/staff on|off = /personal on|off", "/customers on|off = /clientes on|off", "on shows; off hides. ON/OFF also works.", "/people off → /staff on: workers only.", "/people on: both groups are visible again.", "Local visibility; keeps people and counts."]},
   { title:'ADMIRA XP // THE XPACE OS — XTANCO', lines:[
     '','Welcome to Admira XP // The Xpace OS,',
     'the living platform for operational experiences.','',
@@ -30726,7 +30740,7 @@ window.xtAPI = (function(){
   function helpSections(){
     // Orden actual = orden alfabético/legado. Pendiente: reordenar por uso real.
     return [
-      {title:'Personas visibles',items:['/gente on','/gente off','/personal on','/personal off','/clientes on','/clientes off']},
+      {title:typeof lang!=='undefined'&&lang==='en'?'People visibility · ES / EN':'Personas visibles · ES / EN',items:['/gente on','/gente off','/people on','/people off','/personal on','/personal off','/staff on','/staff off','/clientes on','/clientes off','/customers on','/customers off']},
       {title:'Consulta',items:['/status','/staff','/stock','/turno']},
       {title:'Turnos (pantalla pared larga)',items:['/turno on','/turno off','/turno next','/turno previous','/turno 15','/turno auto']},
       {title:'Equipo y stock',items:['/hire 1','/hire dj','/hire all','/train 1','/train all','/restock 2','/restock all','/restock prensa']},
@@ -30763,6 +30777,7 @@ window.xtAPI = (function(){
     // única forma de cerrarlo y la ayuda se quedaba abierta para siempre.
     helpPanel.innerHTML='<div class="tg-help-top"><strong>Comandos de control</strong>'
       +'<button type="button" class="tg-help-close" data-help-close title="Cerrar la ayuda">✕</button></div>'
+      +'<p class="tg-help-layout">'+(lang==='en'?'Drag the top handle for height and the two dividers to resize commands, quality and Local view. Sizes are saved. Double-click a divider to reset widths.':'Arrastra el tirador superior para la altura y los dos separadores para repartir comandos, calidad y Local view. Se guardan las medidas. Doble clic en un separador restablece los anchos.')+'</p>'
       +'<div class="tg-help-grid">'
       +sections.map((section,si)=>'<div class="tg-help-section"><h4>'+(si+1)+'. '+section.title+'</h4>'
         +section.items.map((cmd,ci)=>'<button type="button" class="tg-help-cmd" data-help-cmd="'+cmd.replace(/"/g,'&quot;')+'"><span class="tg-help-num">'+(si+1)+'.'+(ci+1)+'</span> '+cmd+'</button>').join('')
@@ -34314,7 +34329,7 @@ window.xtAPI = (function(){
     {sel:'#characterDockActions', attr:'aria-label', en:'Contextual actions for the active tab', es:'Acciones contextuales del tab activo'},
     {sel:'#telegramHelpPanel', attr:'aria-label', en:'Available commands', es:'Comandos disponibles'},
     {sel:'#telegramQuickActions', attr:'aria-label', en:'Quick scene actions', es:'Acciones rápidas de escena'},
-    {sel:'#telegramHideBtn', attr:'title', en:'Show/hide the CLI response (right half)', es:'Mostrar/ocultar la respuesta del CLI (mitad derecha)'},
+    {sel:'#telegramHideBtn', attr:'title', en:'Show/hide Local view', es:'Mostrar/ocultar Local view'},
     {sel:'#dockSiteLink', attr:'title', en:'Open OmniPublicity — XpaceOS programmatic module', es:'Abrir OmniPublicity — modulo programatico del Xpace OS'},
     {sel:'#demoOverlay', en:'▶ DEMO MODE · no human intervention', es:'▶ MODO DEMO · sin intervención humana'}
   ];
@@ -35334,30 +35349,24 @@ window.xtAPI = (function(){
   /* CLI aún más limpio: fuera la barra superior del dock (título + versión "SITE v…");
      el rótulo "CONTROL XTORE" pasa al inicio de la propia caja de texto. */
   #telegramDock.compose-start .tg-pane.send .tg-head{display:none !important}
-  /* Alinear rótulo e input por la BASELINE del texto (evita que "/info" salga por
-     encima del rótulo cuando el textarea crece al escribir). */
-  #telegramDock.compose-start .tg-cli-row{align-items:baseline}
-  #telegramDock.compose-start .tg-cli-row::before{
-    content:'CONTROL XTORE';
-    align-self:baseline;flex:0 0 auto;white-space:nowrap;
-    color:var(--xp-cyan,#78f3ff);font:bold 10px/1.35 monospace;letter-spacing:.12em;
-    padding-right:9px;margin-right:2px;border-right:1px solid rgba(120,243,255,.28)}
-  #telegramDock.compose-start .tg-cli-row .tg-actions{align-self:center}
-  /* Experto: el textarea NUNCA crece al escribir (ni con .typing) → dock estable como
-     al desplegarlo. Los botones tampoco se ocultan. */
-  #telegramDock.compose-start .tg-cli-row #telegramComposer{height:28px !important;max-height:28px !important}
-  #telegramDock.compose-start .tg-pane.send.typing .tg-cli-row .tg-actions{display:flex !important}
-  /* Una sola fila: INPUT (mitad izquierda) | OUTPUT (mitad derecha) → dock aún más
-     estrecho. El input baja a la izquierda y la respuesta va a la otra mitad. */
-  #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open){flex-direction:row;align-items:stretch;gap:0}
-  #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open) .tg-cli-row{flex:1 1 50%;min-width:0}
-  #telegramDock.compose-start .tg-pane.send:not(.help-open):not(.signage-open) #telegramLastResponse{display:block !important;flex:1 1 50%;min-width:0;
-    max-height:none;margin:0;border:0;border-left:1px solid rgba(120,243,255,.22);
-    padding:6px 12px;overflow:auto;align-self:stretch}
-  /* Feedback del CLI oculto (botón Ocultar/Mostrar): la mitad derecha desaparece y el
-     input ocupa todo el ancho → máximo espacio para escribir. Oculto por defecto. */
-  #telegramDock.compose-start.cli-out-hidden .tg-pane.send:not(.help-open):not(.signage-open) #telegramLastResponse{display:none !important}
-  #telegramDock.compose-start.cli-out-hidden .tg-pane.send:not(.help-open):not(.signage-open) .tg-cli-row{flex:1 1 100% !important}
+  .expert-workspace{display:flex;flex-direction:column;min-height:0;flex:1}
+  .expert-divider{display:none}
+  #telegramDock.compose-start .tg-pane.send{flex-direction:column;gap:0}
+  #telegramDock.compose-start .expert-workspace{display:grid;grid-template-columns:minmax(0,var(--expert-input,32fr)) 12px minmax(0,var(--expert-controls,38fr)) 12px minmax(0,var(--expert-output,30fr));overflow:hidden;min-width:0}
+  #telegramDock.compose-start .tg-cli-row{display:flex;flex-direction:column;align-items:stretch;min-width:0;min-height:0;padding:6px;gap:3px;overflow:hidden}
+  #telegramDock.compose-start .tg-cli-row::before{content:'CONTROL XTORE';color:var(--xp-cyan,#78f3ff);font:bold 9px/1.2 monospace;letter-spacing:.1em;flex:0 0 auto}
+  #telegramDock.compose-start .tg-cli-row #telegramComposer{width:100%;height:100%!important;max-height:none!important;min-height:0;flex:1;padding:4px;box-sizing:border-box;overflow:auto}
+  #telegramDock.compose-start #xtanco-visual-quality{flex-wrap:wrap;max-width:100%;box-sizing:border-box}
+  #telegramDock.compose-start .expert-workspace>.tg-actions{display:flex!important;align-content:flex-start;align-items:flex-start;justify-content:flex-start;flex-wrap:wrap;gap:5px;padding:6px 2px;min-width:0;min-height:0;margin:0;overflow:auto}
+  #telegramDock.compose-start .expert-workspace #telegramLastResponse{display:block!important;min-width:0;min-height:0;max-height:none;margin:0;border:0;padding:6px;overflow:auto;align-self:stretch;overflow-wrap:anywhere}
+  #telegramDock.compose-start #telegramLastResponse:empty::before{content:"LOCAL VIEW";color:#78f3ff;font:10px monospace;letter-spacing:.08em}
+  #telegramDock.compose-start .expert-divider{display:block;position:relative;cursor:col-resize;touch-action:none;min-height:0;outline-offset:-2px}
+  .expert-divider::before{content:'';position:absolute;top:5px;bottom:5px;left:5px;width:2px;background:rgba(120,243,255,.3);border-radius:2px}
+  .expert-divider:hover::before,.expert-divider:focus-visible::before,.expert-divider.is-dragging::before{background:#78f3ff}
+  #telegramDock.compose-start.cli-out-hidden .expert-workspace{grid-template-columns:minmax(0,var(--expert-input,32fr)) 12px minmax(0,var(--expert-controls,38fr))}
+  #telegramDock.compose-start.cli-out-hidden #telegramLastResponse,#telegramDock.compose-start.cli-out-hidden [data-expert-divider="1"]{display:none!important}
+  #telegramDock.compose-start .help-open .expert-workspace,#telegramDock.compose-start .signage-open .expert-workspace{flex:0 0 90px}
+  #telegramDock.compose-start .dock-resize-handle{z-index:10}
   /* Modo AVANZADO (▤) = los iconos ocupan el panel derecho, en lugar del texto
      EQUIPO CARBONO. Reusa la posición del panel .quad-right (derecha, bajo la barra,
      ancho = margen, con su animación de despliegue). */
@@ -35390,6 +35399,7 @@ window.xtAPI = (function(){
   #advSceneControls .tg-quick-btn[aria-pressed=true]{border-color:#6ce6a2 !important;background:#123427 !important;color:#f0fff4 !important}
   #advSceneControls .tg-quick-btn[aria-pressed=true] span{color:#a7e6be !important}
 </style>
+<script src="scripts/expert-dock.js?v=expert-dock-1"></script>
 <script id="quickLaunchScript">
 (function(){
   var src=document.getElementById('telegramQuickActions'); if(!src) return;
@@ -35436,25 +35446,7 @@ window.xtAPI = (function(){
   // su contenido (header + caja + respuesta), eliminando el espacio negro sobrante
   // entre la caja de escritura y el resultado.
   function fitDock(){
-    try{
-      var dock=document.getElementById('telegramDock');
-      if(!dock || !dock.classList.contains('compose-start')) return;
-      var top=dock.getBoundingClientRect().top, h=0;
-      var help=document.getElementById('telegramHelpPanel');
-      var sig=document.getElementById('telegramSignagePanel');
-      var ta=document.getElementById('telegramComposer');
-      // Con help/signage abiertos, el dock se ajusta a ese panel; si no, a la fila
-      // input|output → su altura la marca el textarea (que NO se estira), y el output
-      // (mitad derecha) se estira a juego.
-      if(help && getComputedStyle(help).display!=='none'){ h=Math.ceil(help.getBoundingClientRect().bottom-top)+4; }
-      else if(sig && getComputedStyle(sig).display!=='none'){ h=Math.ceil(sig.getBoundingClientRect().bottom-top)+4; }
-      else if(ta && ta.getBoundingClientRect().height){ h=Math.ceil(ta.getBoundingClientRect().height)+16; }
-      var response=document.getElementById('telegramLastResponse');
-      if(response?.dataset.inventory&&!dock.classList.contains('cli-out-hidden'))h=Math.max(h,response.dataset.inventory==='list'?Math.min(260,innerHeight*.36):100);
-      if(h>28 && Math.abs(dock.getBoundingClientRect().height-h)>2){
-        dock.style.height=h+'px';                            // ajusta el dock al contenido real
-      }
-    }catch(e){}
+    // resizeCanvas owns the persisted height; never overwrite a user's resize.
   }
   // Los paneles laterales (Opciones ☰ / Avanzado ▤) llegan a bottom:0 y taparían el
   // dock inferior del modo experto. Publicamos la altura del dock VISIBLE en la var
@@ -35603,7 +35595,7 @@ window.xtAPI = (function(){
 </script>
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
 <link rel="stylesheet" href="scripts/xtore-window.css?v=normal-tabs-1">
-<script type="module" src="scripts/xtore-window.mjs?v=normal-tabs-1"></script>
+<script type="module" src="scripts/xtore-window.mjs?v=expert-dock-1"></script>
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=controls-1">
 <script type="module" src="scripts/avatar-audience.mjs?v=controls-1"></script>
@@ -35613,6 +35605,6 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=gait-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=people-visibility-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=people-visibility-2"></script>
 </body>
 </html>

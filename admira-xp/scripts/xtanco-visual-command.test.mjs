@@ -244,3 +244,21 @@ test('expert composer and __xtExec keep people controls local and independently 
  const before=JSON.stringify(h.context.G);
  assert.match(await h.exec('/gente off extra'),/Uso:/);assert.equal(JSON.stringify(h.context.G),before);
 });
+
+test('English people aliases share Spanish state, localized replies and local routing',async()=>{
+ for(const lang of ['es','en']){
+  const h=consoleHarness({lang});
+  for(const [command,staff,customers] of [['/PEOPLE off',false,false],['/STAFF@AdmiraXPBot ON',true,false],['/customers on',true,true],['/personal off',false,true]]){
+   await h.send(command);assert.deepEqual({...h.context.G.peopleVisibility},{staff,customers});
+  }
+  assert.match(await h.exec('/customers OFF'),lang==='en'?/Customers OFF/:/Clientes OFF/);
+  assert.match(await h.exec('/people off extra'),lang==='en'?/Usage:/:/Uso:/);
+  for(const cmd of ['/clientes 10','/personal dashboard','/people store 3'])assert.equal(h.context.executePeopleVisibilityCommand(cmd),null);
+  assert.deepEqual(h.sent,[]);assert.deepEqual(h.memory,[]);assert.deepEqual(h.sessionCommands,[]);
+ }
+});
+
+test('new games default to nobody visible and staff can be enabled independently',async()=>{
+ const h=consoleHarness({lang:'en'});assert.equal(h.context.peopleGroupVisible('staff'),false);assert.equal(h.context.peopleGroupVisible('customers'),false);
+ await h.send('/staff ON');assert.deepEqual({...h.context.G.peopleVisibility},{staff:true,customers:false});
+});

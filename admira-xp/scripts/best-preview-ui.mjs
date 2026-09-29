@@ -1,4 +1,4 @@
-import {mountInventoryBest} from './inventory-best.mjs?v=people-visibility-1';
+import {mountInventoryBest} from './inventory-best.mjs?v=people-visibility-2';
 import {mountTierHud} from './tier-hud.mjs?v=tier-hud-1';
 const listeners=new Set();
 let inventoryDispose;
