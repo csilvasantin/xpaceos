@@ -91,3 +91,5 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .device-preview-handle .device-preview[hidden]{display:none}
 
 .device-reference{overflow-wrap:anywhere;color:#8affdc;font-family:monospace;user-select:all}
+
+.device-tracks input[type="hidden"]{display:none!important}

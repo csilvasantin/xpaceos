@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r22.23:55",
+  "version": "v.30.09.2026.r23.00:03",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #280: filas vacías omitidas, Play guarda y asigna, IDs compartidos #playlist UUID y append MCP; documentación ES/EN.",
-  "day": "29.09.2026",
-  "time": "23:55"
+  "evidence": "Yokup #283: Asignar contenidos, campo único Pixeria y guardado/reproducción automática; mapa antiguo, avance y móvil verificados; documentación ES/EN.",
+  "day": "30.09.2026",
+  "time": "00:03"
 }
