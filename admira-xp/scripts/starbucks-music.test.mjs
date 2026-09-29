@@ -42,3 +42,13 @@ test('failed tracks skip without an infinite loop when every URL fails',async()=
  for(let i=0;i<3;i++){audio.dispatchEvent(new Event('error'));await tick();}
  assert.equal(audio.playCalls,3);assert.equal(music.state().started,false);assert.equal(music.state().error,'media');assert.equal(audio.muted,true);music.dispose();
 });
+
+test('published Stock selection survives an empty/expired feed and remains playable when offline',async()=>{
+ const audio=new AudioStub();let feed=null;
+ const music=createStarbucksMusic({audio,publishedTracks:[songs[0]],fetchFeed:async()=>{if(feed===null)throw Error('offline');return {ok:true,json:async()=>({playlist:feed})};}});
+ assert.equal(music.state().tracks,1);assert.equal(audio.playCalls,0);await music.refresh();
+ music.toggle();await tick();assert.equal(audio.src,songs[0].url);assert.equal(audio.muted,false);
+ audio.currentTime=70;feed=[];await music.refresh();assert.equal(audio.currentTime,70);assert.equal(music.state().tracks,1);
+ feed=[songs[0],songs[1]];await music.refresh();assert.equal(music.state().tracks,2);assert.equal(audio.currentTime,70);
+ music.toggle();audio.dispatchEvent(new Event('ended'));await tick();assert.equal(audio.src,songs[1].url);assert.equal(audio.muted,true);music.dispose();
+});

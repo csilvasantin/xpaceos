@@ -1,4 +1,4 @@
-import {starbucksMusic,STARBUCKS_SPEAKER} from './starbucks-music.mjs?v=starbucks-1';
+import {starbucksMusic,STARBUCKS_SPEAKER} from './starbucks-music.mjs?v=first-track-1';
 import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=alsea-1';
 
 export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}={}){
@@ -34,7 +34,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   const action=audible?t('Silenciar','Mute'):t('Escuchar','Listen');
   let label=!state.tracks?t('Playlist pendiente · 3 instrumentales Suno de Morfeo','Playlist pending · 3 Suno instrumentals from Morfeo')
    :state.started?(state.muted?t('Silenciado · la playlist continúa','Muted · playlist continues'):t('Sonando','Playing'))+' · '+state.title
-   :state.tracks+' '+t('piezas · pulsa el altavoz para escuchar','tracks · click the speaker to listen');
+   :state.tracks+' '+(state.tracks===1?t('pieza','track'):t('piezas','tracks'))+' · '+state.title+' · '+t('pulsa el altavoz para escuchar','click the speaker to listen');
   if(state.error==='play')label=t('Pulsa para reintentar el audio','Click to retry audio');
   if(state.error==='media')label=t('Audio no disponible · pulsa para reintentar','Audio unavailable · click to retry');
   if(state.error==='feed'&&!state.tracks)label=t('No se pudo cargar la playlist · pulsa para reintentar','Could not load playlist · click to retry');

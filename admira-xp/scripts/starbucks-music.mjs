@@ -1,3 +1,4 @@
+import {STARBUCKS_PUBLISHED_TRACKS} from './starbucks-playlist.mjs?v=first-track-1';
 export const STARBUCKS_STORE='starbucks-alsea-paseo-de-gracia';
 export const STARBUCKS_FEED=`https://api.admira.store/hilomusical/next?store=${STARBUCKS_STORE}&since=0`;
 // Physical wall speaker, above and to the left of the emergency-exit sign.
@@ -18,8 +19,9 @@ export function musicTracks(value){
 
 // One transport per page. Mute changes audibility, never transport position.
 // Kept separate from the game's bgMusic, whose mute action pauses playback.
-export function createStarbucksMusic({audio,fetchFeed=()=>fetch(STARBUCKS_FEED,{cache:'no-store'})}={}){
-  let tracks=[],index=0,started=false,loading=false,error='',request=null,disposed=false;
+export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fetch(STARBUCKS_FEED,{cache:'no-store'})}={}){
+  const published=musicTracks(publishedTracks);
+  let tracks=[...published],index=0,started=false,loading=false,error='',request=null,disposed=false;
   let playVersion=0;
   const listeners=new Set(),failed=new Set();
   audio.preload='metadata';audio.loop=false;audio.muted=true;audio.volume=.35;
@@ -51,7 +53,7 @@ export function createStarbucksMusic({audio,fetchFeed=()=>fetch(STARBUCKS_FEED,{
         try{
           const response=await fetchFeed();if(!response.ok)throw Error('feed');
           const data=await response.json();if(data.ok===false)throw Error('feed');
-          const incoming=musicTracks(data.playlist);if(disposed)return;
+          const incoming=musicTracks([...published,...musicTracks(data.playlist)]);if(disposed)return;
           // An empty/transient response must not cut off a playing song.
           if(incoming.length){
             const current=tracks[index]?.url,kept=incoming.findIndex(t=>t.url===current);
@@ -82,7 +84,7 @@ let shared;
 export function starbucksMusic(){
   if(!shared){
     const audio=new Audio();audio.id='starbucksMusic';audio.hidden=true;document.body.append(audio);
-    shared=createStarbucksMusic({audio});
+    shared=createStarbucksMusic({audio,publishedTracks:STARBUCKS_PUBLISHED_TRACKS});
     window.addEventListener('pagehide',()=>shared.mute());
   }
   return shared;
