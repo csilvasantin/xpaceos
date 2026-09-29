@@ -186,5 +186,16 @@
     "en": "Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view.",
     "tutorial": "https://www.xpaceos.com/help/#expert-layout",
     "help_topic": "expert"
+  },
+  "visual_tiers": {
+    "good": "Classic twin",
+    "better": "Live 3D twin",
+    "best": "Avenida Admira · editable inventory and live visitors",
+    "matrix": "Starbucks Alsea · 360° panorama and local player mapping",
+    "es": "Good conserva el gemelo clásico; Better muestra su versión 3D. Best es ahora la anterior Matrix: Avenida Admira con cámara fija, muebles editables y visitantes del gemelo. Matrix abre la captura 360° del Starbucks de Alsea. En «Mapear players», marca las cuatro esquinas de la pantalla, anota el ID del player real y una URL HTTPS de vista previa. Aplica los datos y guarda el mapa en este navegador; puedes exportarlo o importarlo. Un ID anotado no verifica conexión ni publica contenido en equipos reales. La captura disponible es un panorama equirectangular, no un modelo Gaussian Splatting.",
+    "en": "Good keeps the classic twin; Better shows its 3D version. Best is now the former Matrix: Avenida Admira with a fixed camera, editable furniture and live visitors. Matrix opens the Starbucks Alsea 360° capture. In “Map players”, mark the four screen corners, enter the real player ID and an HTTPS preview URL. Apply the data and save the map in this browser; maps can be exported or imported. Entering an ID does not verify a connection or publish content to real devices. The available capture is an equirectangular panorama, not a Gaussian Splatting model.",
+    "source": "https://panorama-viewer-d8j.pages.dev/",
+    "tutorial": "https://www.xpaceos.com/help/#matrix-alsea",
+    "real_player_connections_verified": false
   }
 }

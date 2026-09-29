@@ -1,8 +1,8 @@
-import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=people-visibility-2';
+import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=alsea-1';
 import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=people-visibility-2';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=people-visibility-2';
-import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=matrix-furniture-1';
-import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=tier-hud-1';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=alsea-1';
+import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=alsea-1';
+import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=alsea-1';
 
 const actions=document.querySelector('#telegramDock .tg-actions');
 const status=document.createElement('div');status.id='xtanco-best-status';
@@ -60,7 +60,7 @@ const tiers=createVisualTiers({openBetter:openLifeView,closeBetter:closeLifeView
   openMatrix:openMatrixView,closeMatrix:closeMatrixView,subscribeMatrix:subscribeMatrixView,storage,
   onChange(state){
     syncVisualSurface();document.body.dataset.xtancoTier=state.mode;updateTierControls(state);
-    status.textContent=state.error||(isCafeteria()?cafeteriaTierNotice():(state.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
+    status.textContent=state.error||(isCafeteria()&&state.mode!=='matrix'?cafeteriaTierNotice():(state.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
   }
 });
 const chooseDirect=tiers.choose.bind(tiers);let transitionActive=false;
@@ -91,7 +91,7 @@ function fuseWithoutNative(mode){
 tiers.choose=mode=>{
   ensureExpertDock();
   syncVisualSurface();
-  if(mode!=='good'&&isCafeteria()){
+  if(mode!=='good'&&mode!=='matrix'&&isCafeteria()){
     syncCafeteriaTierControls();
     return chooseDirect('good');
   }
@@ -107,12 +107,12 @@ expertControls.element.id='xtanco-visual-quality';actions?.prepend(expertControl
 function syncCafeteriaTierControls(){
   const unavailable=isCafeteria();
   for(const button of expertControls.element.querySelectorAll('[data-visual-mode]')){
-    const blocked=unavailable&&button.dataset.visualMode!=='good';
+    const blocked=unavailable&&!['good','matrix'].includes(button.dataset.visualMode);
     button.disabled=blocked;
     button.setAttribute('aria-disabled',String(blocked));
   }
-  if(unavailable&&tiers.mode!=='good')void tiers.choose('good');
-  status.textContent=tiers.error||(unavailable?cafeteriaTierNotice():(tiers.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
+  if(unavailable&&!['good','matrix'].includes(tiers.mode))void tiers.choose('good');
+  status.textContent=tiers.error||(unavailable&&tiers.mode!=='matrix'?cafeteriaTierNotice():(tiers.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
 }
 syncCafeteriaTierControls();
 try{

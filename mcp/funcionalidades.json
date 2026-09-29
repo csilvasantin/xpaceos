@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "title": "Catálogo funcional del Xpacio · Good / Better / Best",
-  "updated_at": "2026-09-15",
+  "updated_at": "2026-09-29",
   "audit": {
     "basis": "Revisión estática del código del gemelo; inventario MCP contrastado con tools/list y resources/list públicos. No se ejecutaron operaciones físicas, envíos, compras ni generación de pago.",
     "source_commit": "a7b8d62eacfcbb166d2ddc1e3a6758bec0fdc178",
@@ -15,7 +15,8 @@
     "labels": {
       "good": "Good · 8 bits",
       "better": "Better · 16 bits",
-      "best": "Best · 32 bits"
+      "best": "Best · 32 bits",
+      "matrix": "Matrix · 64 bits"
     },
     "style_note": "8/16/32 bits son nombres artísticos, no profundidad de color.",
     "better_camera": {
@@ -34,9 +35,17 @@
         "preview": true,
         "availability": "preview"
       },
-      "scope": "Escenario conceptual fijo con personas proyectadas desde el estado vivo; la cámara, el mobiliario y las 30 áreas Best no son interactivos."
+      "scope": "Avenida Admira con inventario editable y personas proyectadas desde el estado vivo. Cámara fija. La navegación no acredita paridad de las 30 áreas operativas.",
+      "furniture_editable": true
     },
-    "mcp": "La navegación pertenece al navegador del gemelo; no registra herramientas ni recursos MCP."
+    "mcp": "La navegación pertenece al navegador del gemelo; no registra herramientas ni recursos MCP.",
+    "matrix": {
+      "availability": "preview",
+      "capture": "Starbucks Alsea · panorama equirectangular 360°",
+      "command": "/modo matrix",
+      "mapping": "Cuatro anclajes por pantalla, ID real y URL de vista previa; guardado local e importación/exportación.",
+      "real_connections_verified": false
+    }
   },
   "numbering": {
     "format": "NN.- Nombre",
@@ -79,7 +88,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -178,7 +187,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -253,7 +262,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -316,7 +325,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -367,7 +376,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -438,7 +447,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -507,7 +516,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -564,7 +573,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -646,7 +655,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -720,7 +729,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -794,7 +803,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -862,7 +871,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -931,7 +940,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1000,7 +1009,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1075,7 +1084,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1156,7 +1165,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1225,7 +1234,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1306,7 +1315,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1388,7 +1397,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1464,7 +1473,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1539,7 +1548,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1609,7 +1618,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [],
       "mcp": {
@@ -1666,7 +1675,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1741,7 +1750,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1799,7 +1808,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1886,7 +1895,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -1905,7 +1914,7 @@
           "text": "/modo best",
           "entrypoint": "__xtExec",
           "status": "source_verified",
-          "note": "Abre un escenario conceptual fijo con personas del gemelo en vivo. Cuando la apertura tiene éxito devuelve ok:true y preview:true; no abre un Best terminado ni habilita sus funciones operativas."
+          "note": "Abre Avenida Admira con mobiliario editable y personas del gemelo en vivo. Cuando la apertura tiene éxito devuelve ok:true y preview:true; no abre un Best terminado ni habilita sus funciones operativas."
         },
         {
           "text": "/render 16bit",
@@ -1960,7 +1969,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -2012,7 +2021,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -2088,7 +2097,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -2163,7 +2172,7 @@
       },
       "best": {
         "status": "planned",
-        "detail": "Esta función operativa de Best sigue en preparación. El selector abre un escenario conceptual fijo con personas del gemelo en vivo; no reproduce esta función ni hace interactivos la cámara o el mobiliario."
+        "detail": "Esta función operativa de Best sigue en preparación. El selector abre Avenida Admira con inventario editable, cámara fija y personas del gemelo en vivo; la apertura no demuestra la implementación de esta función operativa."
       },
       "commands": [
         {
@@ -2271,5 +2280,16 @@
     "en": "Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view.",
     "tutorial": "https://www.xpaceos.com/help/#expert-layout",
     "help_topic": "expert"
+  },
+  "visual_tiers": {
+    "good": "Classic twin",
+    "better": "Live 3D twin",
+    "best": "Avenida Admira · editable inventory and live visitors",
+    "matrix": "Starbucks Alsea · 360° panorama and local player mapping",
+    "es": "Good conserva el gemelo clásico; Better muestra su versión 3D. Best es ahora la anterior Matrix: Avenida Admira con cámara fija, muebles editables y visitantes del gemelo. Matrix abre la captura 360° del Starbucks de Alsea. En «Mapear players», marca las cuatro esquinas de la pantalla, anota el ID del player real y una URL HTTPS de vista previa. Aplica los datos y guarda el mapa en este navegador; puedes exportarlo o importarlo. Un ID anotado no verifica conexión ni publica contenido en equipos reales. La captura disponible es un panorama equirectangular, no un modelo Gaussian Splatting.",
+    "en": "Good keeps the classic twin; Better shows its 3D version. Best is now the former Matrix: Avenida Admira with a fixed camera, editable furniture and live visitors. Matrix opens the Starbucks Alsea 360° capture. In “Map players”, mark the four screen corners, enter the real player ID and an HTTPS preview URL. Apply the data and save the map in this browser; maps can be exported or imported. Entering an ID does not verify a connection or publish content to real devices. The available capture is an equirectangular panorama, not a Gaussian Splatting model.",
+    "source": "https://panorama-viewer-d8j.pages.dev/",
+    "tutorial": "https://www.xpaceos.com/help/#matrix-alsea",
+    "real_player_connections_verified": false
   }
 }

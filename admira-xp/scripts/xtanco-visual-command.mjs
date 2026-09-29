@@ -40,13 +40,13 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
     }
   }
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Matrix shows Avenida Admira in layers, with a fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models; use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. /mudanza toggles an empty floor-and-walls view without changing the real layout. /mode, 8/16/32 and /mode status are also accepted.'
-    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Matrix muestra Avenida Admira por capas, con cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos; usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. También se aceptan /modo, 8/16/32 y /modo estado.'};
+    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Best shows Avenida Admira in layers, with a fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models; use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. /mudanza toggles an empty floor-and-walls view without changing the real layout. Matrix opens the Starbucks Alsea 360° capture and local screen/player mapping. /mode, 8/16/32 and /mode status are also accepted.'
+    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Best muestra Avenida Admira por capas, con cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos; usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. Matrix abre la captura 360° del Starbucks Alsea y el mapeo local de pantallas/players. También se aceptan /modo, 8/16/32 y /modo estado.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
   if(command.status){
-    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit · live 3D store and people':'Best · 32-bit · tienda y personas en 3D en vivo',matrix:en?'Matrix · Avenida Admira · fixed camera, editable furniture and live visitors':'Matrix · Avenida Admira · cámara fija, mobiliario editable y visitantes en vivo'}[mode];
+    const mode=router.mode,label={good:'Good · 8-bit',better:'Better · 16-bit',best:en?'Best · 32-bit · Avenida Admira · editable furniture and live visitors':'Best · 32-bit · Avenida Admira · mobiliario editable y visitantes en vivo',matrix:en?'Matrix · Starbucks Alsea · 360° capture and local player mapping':'Matrix · Starbucks Alsea · captura 360° y mapeo local de players'}[mode];
     return {ok:!!label&&!router.error,local:true,mode,availability:router.availability,preview:mode==='best'||mode==='matrix',busy:!!router.busy,message:router.error|| (label
       ? (en?'Current local visual mode: ':'Modo visual local actual: ')+label+'.'
       : (en?'The local visual mode is not available.':'El modo visual local no está disponible.'))};
@@ -67,16 +67,16 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
       ? 'The Matrix preview is not available. Try again from Advanced (▤).'
       : 'La vista previa Matrix no está disponible. Reintenta desde Avanzado (▤).'};
     return {ok:true,local:true,mode,requested:'matrix',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Matrix · Avenida Admira: fixed camera, editable furniture and live visitors, synchronized with the same Xtanco. /inventario lists 43 shared models. Use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. Type good, better or best to change view.'
-      : 'Matrix · Avenida Admira: cámara fija, mobiliario editable y visitantes en vivo, sincronizados con el mismo Xtanco. /inventario enumera 43 modelos compartidos. Usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. Escribe good, better o best para cambiar de vista.'};
+      ? 'Matrix · Starbucks Alsea: 360° panorama. Map players lets you mark each screen with four corners, enter its real player ID and preview URL, and save or export a local map. Real player connections are not verified.'
+      : 'Matrix · Starbucks Alsea: panorama 360°. Mapear players permite marcar las cuatro esquinas de cada pantalla, anotar su ID real y URL de vista previa, y guardar o exportar el mapa local. Las conexiones reales no están verificadas.'};
   }
   if(command.tier==='best'){
     if(router.availability!=='preview')return {ok:false,local:true,mode,requested:'best',message:en
       ? 'The Best preview is not available. Interactive Best is still in preparation.'
       : 'La vista previa Best no está disponible. Best interactivo sigue en preparación.'};
     return {ok:true,local:true,mode,requested:'best',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Best · 32-bit: live 3D store and people, synchronized with the same Xtanco. Type good, better or matrix in the Expert CLI to change view.'
-      : 'Best · 32-bit: tienda y personas en 3D en vivo, sincronizadas con el mismo Xtanco. Escribe good, better o matrix en el CLI experto para cambiar de vista.'};
+      ? 'Best · 32-bit: Avenida Admira, fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models. Type good, better or matrix in the Expert CLI to change view.'
+      : 'Best · 32-bit: Avenida Admira, cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos. Escribe good, better o matrix en el CLI experto para cambiar de vista.'};
   }
   return {ok:true,local:true,mode,availability:router.availability||'interactive',preview:false,busy:!!router.busy,message:mode==='good'
     ? (en?'Good · 8-bit: fused back to the classic twin; HUD and Expert CLI remain in place.':'Good · 8-bit: fusión de vuelta al gemelo clásico; el HUD y el CLI experto permanecen en su sitio.')

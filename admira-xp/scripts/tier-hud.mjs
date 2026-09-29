@@ -5,8 +5,8 @@
 // and selection that each surface already publishes, in one place and one style.
 export const TIER_HUD={
   better:{index:'02',name:'BETTER',bits:16,caption:'Gemelo 3D · cámara alineada con Good'},
-  best:{index:'03',name:'BEST',bits:32,caption:'Tienda y personas en 3D en vivo'},
-  matrix:{index:'04',name:'MATRIX',bits:64,caption:'Avenida Admira · mobiliario editable'}
+  best:{index:'03',name:'BEST',bits:32,caption:'Avenida Admira · mobiliario editable'},
+  matrix:{index:'04',name:'MATRIX',bits:64,caption:'Starbucks Alsea · captura 360° y players'}
 };
 export function tierPlate(mode){
   const tier=TIER_HUD[mode];
