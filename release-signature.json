@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r24.00:18",
+  "version": "v.30.09.2026.r25.00:27",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup DCL-7f062d1cf53ff977065769cb: arrastre a pantalla, previo multiselección y Reload en bucle; MCP matrix_preview y docs ES/EN.",
+  "evidence": "Yokup #4: entrada Matrix Starbucks sin arcade/precarga ni transición, reintento en error y Abrir incidencia; ayuda ES/EN actualizada.",
   "day": "30.09.2026",
-  "time": "00:18"
+  "time": "00:27"
 }

@@ -335,7 +335,7 @@ test('selector boots safely with denied storage or stale legacy Best and never i
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
   const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./matrix-preview-ui.mjs?v=drop-1','./life-ui.mjs?v=expert-view-1','./best-preview-ui.mjs?v=expert-view-1','./xtanco-visual-tiers.mjs?v=alsea-1','./visual-tier-controls.mjs?v=alsea-1']);
+  assert.deepEqual(imports,['./matrix-preview-ui.mjs?v=entry-1','./life-ui.mjs?v=expert-view-1','./best-preview-ui.mjs?v=expert-view-1','./xtanco-visual-tiers.mjs?v=entry-1','./visual-tier-controls.mjs?v=alsea-1']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);
@@ -372,4 +372,7 @@ test('Matrix stays on the expert selector and reports missing initialization hon
   h.button('matrix').click();assert.equal(h.matrix.calls.open,2);
   const result=await routerFixture({openMatrix:undefined}).tiers.choose('matrix');
   assert.equal(result.ok,false);assert.equal(result.mode,'good');assert.match(result.error,/Matrix no disponible/);
+});
+test('Starbucks Paseo de Gracia defaults to Matrix before saved preferences and keeps explicit view choices',()=>{
+ const storage={getItem:()=> 'better'};assert.equal(requestedTier('?loc=alsea-sbux-021',storage),'matrix');assert.equal(requestedTier('?loc=alsea-sbux-021&visual=good',storage),'good');assert.equal(requestedTier('?loc=another',storage),'better');assert.equal(requestedTier('?loc=ALSEA-SBUX-021',storage),'matrix');
 });

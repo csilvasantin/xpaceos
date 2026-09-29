@@ -3,6 +3,7 @@ export function requestedTier(search='',storage){
   const params=new URLSearchParams(search);
   const requested=params.get('visual')??params.get('quality');
   if(requested!==null)return requested==='life'?'better':['good','better','best','matrix'].includes(requested)?requested:'good';
+  if((params.get('loc')||'').trim().toLowerCase()==='alsea-sbux-021')return 'matrix';
   try{const saved=storage?.getItem(TIER_STORAGE_KEY);return ['better','best','matrix'].includes(saved)?saved:'good';}catch{return 'good';}
 }
 

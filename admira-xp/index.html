@@ -7,11 +7,34 @@
   <meta http-equiv="Pragma" content="no-cache"/>
   <meta http-equiv="Expires" content="0"/>
   <title>XpaceOS.com the Operative System of Retailers</title>
+  <script>
+  // Resolve the Starbucks entry before the first paint; never reveal the arcade on a timer.
+  (function(){
+    var q=new URLSearchParams(location.search),visual=q.get('visual')??q.get('quality');
+    var saved='';try{saved=localStorage.getItem('xtanco_visual_tier_v2')||'';}catch(e){}
+    var matrix=visual==='matrix'||(visual===null&&((q.get('loc')||'').trim().toLowerCase()==='alsea-sbux-021'||saved==='matrix'));
+    if(!matrix)return;
+    window.__xpaceMatrixEntry=true;document.documentElement.classList.add('matrix-entry','matrix-boot');
+    var ready=false,failed=false,timer;
+    function fail(){if(ready)return;failed=true;var box=document.getElementById('matrixEntryStatus');if(!box)return;box.hidden=false;box.replaceChildren();var es=document.documentElement.lang==='es',text=document.createElement('p'),retry=document.createElement('button');text.textContent=es?'No se pudo abrir Starbucks. Vuelve a intentarlo.':'Could not open Starbucks. Please try again.';retry.textContent=es?'Reintentar Matrix':'Retry Matrix';retry.onclick=function(){location.reload();};box.append(text,retry);}
+    window.__xpaceMatrixBoot={ready:function(){ready=true;clearTimeout(timer);document.documentElement.classList.remove('matrix-boot','adm-direct');document.getElementById('matrixEntryStatus')?.remove();},fail:fail};
+    document.addEventListener('DOMContentLoaded',function(){if(ready)return;var box=document.createElement('section');box.id='matrixEntryStatus';box.hidden=true;box.setAttribute('role','alert');document.body.append(box);if(failed)fail();timer=setTimeout(fail,25000);},{once:true});
+  })();
+  </script>
+  <style>
+  html.matrix-entry,html.matrix-entry body{background:#05080d}
+  html.matrix-entry body::after{display:none!important}
+  html.matrix-boot body *{visibility:hidden!important}
+  html.matrix-boot #matrixEntryStatus,html.matrix-boot #matrixEntryStatus *{visibility:visible!important}
+  #matrixEntryStatus{position:fixed;inset:0;z-index:100000;background:#05080d;color:#ccebe6;align-content:center;text-align:center;font:15px/1.6 system-ui;padding:24px}
+  #matrixEntryStatus[hidden]{display:none}
+  #matrixEntryStatus button{margin-top:14px;padding:10px 20px;border:1px solid #7dcabb;border-radius:8px;background:#12342f;color:#e8fff8;cursor:pointer}
+  </style>
   <script>/* Entrada directa al Xtanco: cortina desde el primer paint — sin flash del arcade (misma
      condicion que el autostart por defecto; safety de 6s para no quedarse nunca en negro). */
   (function(){try{var q=new URLSearchParams(location.search);var as=(q.get('autostart')||'').toLowerCase();
   var direct=as?(as!=='0'&&as!=='off'):(q.get('arcade')!=='1'&&!q.get('view')&&!q.get('distro')&&!q.get('present')&&!q.get('preview'));
-  if(direct){document.documentElement.classList.add('adm-direct');
+  if(direct&&!window.__xpaceMatrixEntry){document.documentElement.classList.add('adm-direct');
   setTimeout(function(){document.documentElement.classList.remove('adm-direct');},6000);}}catch(e){}})();</script>
   <style>
   body::after{content:'';position:fixed;inset:0;z-index:99999;background:#05080d;pointer-events:none;opacity:0;transition:opacity .45s ease}
@@ -1573,9 +1596,9 @@ let clientColumnWidths=(()=>{
   return CLIENT_COL_DEFAULTS.slice();
 })();
 let teamColumnWidths=TEAM_COL_DEFAULTS.slice();
-bootVideoEl.src=PRELOAD_VIDEO_SRC;
+if(!window.__xpaceMatrixEntry)bootVideoEl.src=PRELOAD_VIDEO_SRC;
 bootVideoEl.loop=false;
-bootVideoEl.preload='auto';
+bootVideoEl.preload=window.__xpaceMatrixEntry?'none':'auto';
 bootVideoEl.setAttribute('playsinline','');
 bootVideoEl.setAttribute('webkit-playsinline','');
 
@@ -6740,7 +6763,7 @@ const LANGS={
       {title:'BIENVENIDO A XTANCO',lines:['Gestiona tu estanco durante 5 años.','Alcanza el objetivo de ventas cada año','para avanzar y construir tu negocio.','¡Contrata personal, repón stock y fideliza clientes!']},
       {title:'GESTIÓN DE PERSONAL',lines:['Contrata empleados en la pestaña PERSONAL.','Cada empleado genera ventas automáticamente.','Fórmalos para subir su nivel (máx. 5)','y aumentar su productividad y salario.']},
       {title:'EVENTOS ESPECIALES',lines:['⚡ HORA PUNTA: ventas x2.4 durante un tiempo.','🔍 INSPECCIÓN: mantén stock y personal o penalización.','📦 Repón stock regularmente (pestaña STOCK).','👁 Vigila la barra de OBJETIVO del año en el HUD.']},
-      {"title": "BEST Y MATRIX", "lines": ["Best: Avenida Admira, muebles y personas.", "Matrix: captura 360° del Starbucks Alsea.", "Mapear players: marca las cuatro esquinas.", "Anota ID real y URL; aplica y guarda mapa.", "Guardar mapa no publica en players reales."]},
+      {"title": "BEST Y MATRIX", "lines": ["Best: Avenida Admira, muebles y personas.", "Matrix: captura 360° del Starbucks Alsea.", "Abrir incidencia: informa de un problema.", "Asignar contenidos: elige pantalla y playlist.", "Guardar mapa no publica en players reales."]},
       {"title": "PERSONAS · MODO EXPERTO", "lines": ["Inicio: gente OFF. on muestra, off oculta.", "/gente = /people: ambos grupos.", "/personal = /staff: solo trabajadores.", "/clientes = /customers: solo clientes.", "Aceptan ON/OFF en ambos idiomas."]},
       {"title": "AJUSTA EL MODO EXPERTO", "lines": ["Arrastra arriba para cambiar la altura.", "Separa comandos, calidad y Local view.", "Arrastra los dos separadores verticales.", "Las medidas se guardan en el navegador.", "Doble clic en separador: anchos iniciales."]},
       {"title": "PRUEBA LOS GRUPOS", "lines": ["/gente off: oculta ambos grupos.", "/personal on: muestra solo trabajadores.", "/clientes on: vuelve a mostrar clientes.", "/gente on: muestra ambos grupos.", "No borra personas ni cambia el aforo."]},
@@ -6829,7 +6852,7 @@ const LANGS={
       {title:'WELCOME TO XTANCO',lines:['Manage your shop for 5 years.','Reach the annual sales target','to progress and grow your business.','Hire staff, restock and keep customers happy!']},
       {title:'STAFF MANAGEMENT',lines:['Hire employees in the STAFF tab.','Each employee generates sales automatically.','Train them to raise their level (max 5)','and increase their productivity and salary.']},
       {title:'SPECIAL EVENTS',lines:['⚡ RUSH HOUR: sales x2.4 for a period.','🔍 INSPECTION: keep stock & staff or get fined.','📦 Restock products regularly (STOCK tab).','👁 Watch the OBJECTIVE bar in the HUD.']},
-      {"title": "BEST AND MATRIX", "lines": ["Best: Avenida Admira, furniture and people.", "Matrix: Starbucks Alsea 360° capture.", "Map players: mark the four screen corners.", "Enter real ID and URL; apply and save map.", "Saving a map does not publish to devices."]},
+      {"title": "BEST AND MATRIX", "lines": ["Best: Avenida Admira, furniture and people.", "Matrix: Starbucks Alsea 360° capture.", "Open incident: report a device problem.", "Assign content: select a screen and playlist.", "Saving a map does not publish to devices."]},
       {"title": "PEOPLE · EXPERT MODE", "lines": ["Default: people OFF. on shows, off hides.", "/people = /gente: both groups.", "/staff = /personal: workers only.", "/customers = /clientes: customers only.", "Uppercase ON/OFF works in both languages."]},
       {"title": "RESIZE EXPERT MODE", "lines": ["Drag the top handle to change height.", "Split commands, quality and Local view.", "Drag the two vertical dividers.", "Sizes are saved in this browser.", "Double-click a divider to reset widths."]},
       {"title": "TRY THE GROUPS", "lines": ["/people off: hide both groups.", "/staff on: show workers only.", "/customers on: show customers again.", "/people on: show both groups.", "People and audience counts are preserved."]},
@@ -9541,8 +9564,7 @@ function quickStartXtanco(clientIdx,toEditor){
   tran={active:false,from:null,to:null,timer:0,dur:30};
   state=toEditor?S.EDITOR:S.GAME;
   if(toEditor){ edSelIdx=-1; edStaffSelIdx=-1; edMode='furniture'; }
-  try{ startVideo(); }catch(_){}
-  try{ startMusic(); }catch(_){}
+  if(!window.__xpaceMatrixEntry||!document.documentElement.classList.contains('matrix-boot')){try{ startVideo(); }catch(_){}try{ startMusic(); }catch(_){}}
 }
 if(mobileSkipBtn){
   ['keydown','keyup','keypress','mousedown','mouseup','click','touchstart','touchend','wheel'].forEach(ev=>{
@@ -27083,6 +27105,7 @@ function drawDemoCountdown(){
 function loop(){
   requestAnimationFrame(loop);
   tt++;
+  if(window.__xpaceMatrixEntry&&![S.GAME,S.PAUSE,S.EDITOR].includes(state)&&document.documentElement.classList.contains('matrix-boot'))return;
   // Modo Demo — ejecutar siguiente comando de la secuencia ciclica
   try{ if(typeof tickDemoMode==='function') tickDemoMode(); }catch(e){}
   resetSpeechOverlay();
@@ -27165,6 +27188,7 @@ function loop(){
     else { REC._slowAcc+=spd; if(REC._slowAcc>=1){ REC._slowAcc-=1; try{updateGame();}catch(e){} } }
     try{ recSnapshot(); }catch(e){}
   }
+  if(document.body.dataset.xtancoTier==='matrix'&&document.querySelector('.matrix-panorama-dialog[open]'))return;
   r(0,0,W,H,P.bg);
   // Each render wrapped in save/restore to prevent clip leaks on crash
   cx.save();try{drawCityBg();}catch(e){}cx.restore();
@@ -27256,7 +27280,7 @@ try {
   } else if(playParam){
     // Pequeño delay para que initGame encuentre todo listo
     setTimeout(()=>{ _dismissSplash(); try{ autoEnterVertical(playParam); }catch(e){ console.warn('autoEnterVertical failed:',e); } }, 50);
-  } else if(locParam){
+  } else if(locParam&&!window.__xpaceMatrixEntry){
     // ?loc=<id> = punto de admira.app: entra DIRECTO a su tienda (twin del
     // punto). Cualquier id dado de alta en el mapa abre su gemelo — no hay
     // tiendas hardcodeadas. Mapeamos el tipo de punto al vertical más adecuado
@@ -34175,8 +34199,13 @@ window.xtAPI = (function(){
       const _cmap={xtanco:0,loterias:1,supermercado:2,shoptalk:3,creator:4,cafeteria:5,cafebreria:5};
       const _ci=Object.prototype.hasOwnProperty.call(_cmap,_as)?_cmap[_as]:0;
       const _ed=(_qs.get('editor')==='1'||_qs.get('editor')==='true');
-      chooseJugar();   // oculta el splash
-      setTimeout(()=>{ try{ quickStartXtanco(_ci,_ed); setTimeout(function(){try{document.documentElement.classList.remove('adm-direct');}catch(e){}},1200); }catch(e){ console.warn('autostart failed',e); } }, 200);
+      if(window.__xpaceMatrixEntry){
+        hideSplash();document.body.classList.remove('entering-twin');
+        try{quickStartXtanco(_ci,false);}catch(e){window.__xpaceMatrixBoot?.fail();}
+      }else{
+        chooseJugar();
+        setTimeout(()=>{ try{ quickStartXtanco(_ci,_ed); setTimeout(function(){try{document.documentElement.classList.remove('adm-direct');}catch(e){}},1200); }catch(e){ console.warn('autostart failed',e); } }, 200);
+      }
     }
   }catch(e){}
   splash.addEventListener('click', (e)=>{
@@ -35591,14 +35620,14 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=controls-1">
 <script type="module" src="scripts/avatar-audience.mjs?v=controls-1"></script>
-<link rel="stylesheet" href="scripts/matrix-panorama.css?v=drop-1">
+<link rel="stylesheet" href="scripts/matrix-panorama.css?v=entry-1">
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=expert-hud-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=drop-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=entry-1"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=closing-1"></script>
 </body>
 </html>
