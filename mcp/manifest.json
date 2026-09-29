@@ -6,13 +6,13 @@
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.4.0",
+    "version": "2.6.0",
     "health": "https://mcp.admira.store/",
-    "tool_count": 21
+    "tool_count": 31
   },
   "auth": {
     "lectura": "none",
-    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset, matrix_playlist_update, matrix_configure, matrix_music_next, matrix_announcement)",
+    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset, matrix_playlist_update, matrix_configure, matrix_music_next, matrix_announcement, matrix_device_layout, playlist_add, playlist_remove, playlist_reorder, hotspot_bind, sincro_set, screen_unplug, screen_plug, incident_open)",
     "identidad": "https://www.admiranext.com/mcp/identidad-flota.mjs",
     "directorio": "https://www.admiranext.com/mcp/#directorio"
   },
@@ -111,6 +111,46 @@
     {
       "name": "matrix_announcement",
       "description": "matrix_announcement {expected_revision:N} increments announcementNext. Read matrix_state first. Authenticated fleet key required. Open Matrix pages apply new events once; newly opened pages do not replay old announcements. Browser audio permission is required: if blocked, click the speaker locally. Saved is not playback acknowledgement. The music playlist is unchanged."
+    },
+    {
+      "name": "matrix_device_layout",
+      "description": "matrix_device_layout: save_playlist {playlist_id:\"playlist-local\",title:\"Local\",tracks:[{id:\"clip\",title:\"Promotion\",url:\"https://stock.admira.store/stock/ID/asset.mp4\"}]}; assign {device_ids:[\"starbucks-wall-06\",\"starbucks-tpv-01\"],playlist_id:\"playlist-local\"}; reset {device_ids:[...]}; remove_playlist {playlist_id:\"playlist-local\"}. Every call requires action and a fresh expected_revision from matrix_state. deviceLayout contains custom playlists and assignments; deviceLayoutRevision controls delivery. Maximum 24 custom playlists, 100 clips each. Only the seven documented virtual screen IDs are supported. No physical-device publication or cross-browser playback clock."
+    },
+    {
+      "name": "playlist_list",
+      "description": "Read Starbucks playlists, conditions and screen assignments. Leer playlists de hilo, pantallas, TPV y sincro-ia."
+    },
+    {
+      "name": "playlist_add",
+      "description": "Add published Stock 1308–1322 to a Starbucks playlist; position is zero-based; optional condition /navidad or /sincro IA. Fleet key and expected_revision required."
+    },
+    {
+      "name": "playlist_remove",
+      "description": "Remove a Stock entry from a playlist without deleting its media."
+    },
+    {
+      "name": "playlist_reorder",
+      "description": "Reorder every Stock entry exactly once; use numeric Stock IDs or stable asset IDs."
+    },
+    {
+      "name": "hotspot_bind",
+      "description": "Bind the Starbucks EXIT hotspot to next-track. Preserves music mute; only this supported binding is allowed."
+    },
+    {
+      "name": "sincro_set",
+      "description": "Set six distinct Stock assets for screens 1–6. Activated separately by /sincro IA or matrix_configure demoMode=ia. Fleet key and revision required."
+    },
+    {
+      "name": "screen_unplug",
+      "description": "Starbucks virtual unplug/plug demo: open/resolve the matching Yokup field incident and update screen state. No physical power action. Fleet key and revision required."
+    },
+    {
+      "name": "screen_plug",
+      "description": "Starbucks virtual unplug/plug demo: open/resolve the matching Yokup field incident and update screen state. No physical power action. Fleet key and revision required."
+    },
+    {
+      "name": "incident_open",
+      "description": "Open a MANUAL Starbucks Yokup field incident with unique resource. Returns real INC id. Authenticated fleet key required."
     }
   ],
   "ecosystem": {
@@ -207,8 +247,8 @@
     }
   },
   "expert_layout": {
-    "es": "Arrastra el tirador superior para ajustar la altura. Los dos separadores verticales reparten el ancho entre comandos, Good/Better/Best y Local view. Se guardan las medidas en este navegador. Con el separador enfocado usa las flechas; doble clic o Inicio restablece los anchos. Ocultar/Mostrar controla Local view. La información de Better, Best y Matrix (vista, cámara, estado y reloj) aparece en el bloque central de Experto, debajo del selector de calidad. Los rótulos, brújula y marcos permanentes desaparecen del Xpacio. En Matrix, Mapear players y Vista inicial también están en Experto; el editor se abre al solicitarlo.",
-    "en": "Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view. Better, Best and Matrix information (view, camera, status and clock) appears in the middle Expert pane, below the quality selector. Permanent labels, compass and frames no longer cover the Xpacio. In Matrix, Map players and Reset view also live in Expert; the editor opens on demand.",
+    "es": "Arrastra el tirador superior para ajustar la altura. Los dos separadores verticales reparten el ancho entre comandos, Good/Better/Best y Local view. Se guardan las medidas en este navegador. Con el separador enfocado usa las flechas; doble clic o Inicio restablece los anchos. Ocultar/Mostrar controla Local view. La información de Better, Best y Matrix (vista, cámara, estado y reloj) aparece en el bloque central de Experto, debajo del selector de calidad. Los rótulos, brújula y marcos permanentes desaparecen del Xpacio. En Matrix, Recalibrar mapa y Vista inicial también están en Experto; el editor se abre al solicitarlo.",
+    "en": "Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view. Better, Best and Matrix information (view, camera, status and clock) appears in the middle Expert pane, below the quality selector. Permanent labels, compass and frames no longer cover the Xpacio. In Matrix, Recalibrate map and Reset view also live in Expert; the editor opens on demand.",
     "tutorial": "https://www.xpaceos.com/help/#expert-layout",
     "help_topic": "expert"
   },
@@ -217,8 +257,8 @@
     "better": "Live 3D twin",
     "best": "Avenida Admira · editable inventory and live visitors",
     "matrix": "Starbucks Alsea · 360° panorama and local player mapping",
-    "es": "Good conserva el gemelo clásico; Better muestra su versión 3D. Best es ahora la anterior Matrix: Avenida Admira con cámara fija, muebles editables y visitantes del gemelo. Matrix abre la captura 360° del Starbucks de Alsea. En «Mapear players», marca las cuatro esquinas de la pantalla, anota el ID del player real y una URL HTTPS de vista previa. Aplica los datos y guarda el mapa en este navegador; puedes exportarlo o importarlo. Un ID anotado no verifica conexión ni publica contenido en equipos reales. La captura disponible es un panorama equirectangular, no un modelo Gaussian Splatting.",
-    "en": "Good keeps the classic twin; Better shows its 3D version. Best is now the former Matrix: Avenida Admira with a fixed camera, editable furniture and live visitors. Matrix opens the Starbucks Alsea 360° capture. In “Map players”, mark the four screen corners, enter the real player ID and an HTTPS preview URL. Apply the data and save the map in this browser; maps can be exported or imported. Entering an ID does not verify a connection or publish content to real devices. The available capture is an equirectangular panorama, not a Gaussian Splatting model.",
+    "es": "Good conserva el gemelo clásico; Better muestra su versión 3D. Best es ahora la anterior Matrix: Avenida Admira con cámara fija, muebles editables y visitantes del gemelo. Matrix abre la captura 360° del Starbucks de Alsea. En «Recalibrar mapa», marca las cuatro esquinas de la pantalla, anota el ID del player real y una URL HTTPS de vista previa. Aplica los datos y guarda el mapa en este navegador; puedes exportarlo o importarlo. Un ID anotado no verifica conexión ni publica contenido en equipos reales. La captura disponible es un panorama equirectangular, no un modelo Gaussian Splatting.",
+    "en": "Good keeps the classic twin; Better shows its 3D version. Best is now the former Matrix: Avenida Admira with a fixed camera, editable furniture and live visitors. Matrix opens the Starbucks Alsea 360° capture. In “Recalibrate map”, mark the four screen corners, enter the real player ID and an HTTPS preview URL. Apply the data and save the map in this browser; maps can be exported or imported. Entering an ID does not verify a connection or publish content to real devices. The available capture is an equirectangular panorama, not a Gaussian Splatting model.",
     "source": "https://panorama-viewer-d8j.pages.dev/",
     "tutorial": "https://www.xpaceos.com/help/#matrix-alsea",
     "real_player_connections_verified": false
@@ -241,8 +281,8 @@
     "en": "In admira.app, search for “Starbucks Paseo de Gracia” and open the profile at Paseo de Gracia 103, Barcelona. Click “Visit the Digital Twin” beside “Tour DOOH” to open the Starbucks in XpaceOS Matrix directly. Tour DOOH keeps its map tour."
   },
   "starbucks_screens": {
-    "es": "Matrix · Starbucks: las seis pantallas grandes de la pared reproducen la playlist de vídeo de Stock 1311, «A Coffee Moment Worth Remembering» (10 s), en bucle y sin audio. Experto → 6 pantallas centra la cámara y añade los seis anclajes que falten, conservando los mapas guardados. Reproducir/Pausar pantallas controla el grupo; el hilo musical del altavoz es independiente. Mapear players permite recalibrar y guardar las esquinas. Los players son virtuales: sus IDs físicos siguen sin vincular.",
-    "en": "Matrix · Starbucks: the six large wall screens play the Stock 1311 video playlist, “A Coffee Moment Worth Remembering” (10 s), looping without audio. Expert → 6 screens centers the camera and adds missing wall anchors while preserving saved maps. Play/Pause screens controls the group; the speaker music playlist is independent. Map players allows corner recalibration and saving. These players are virtual; physical player IDs remain unbound.",
+    "es": "Matrix · Starbucks: las seis pantallas grandes de la pared reproducen la playlist de vídeo de Stock 1311, «A Coffee Moment Worth Remembering» (10 s), en bucle y sin audio. Experto → 6 pantallas centra la cámara y añade los seis anclajes que falten, conservando los mapas guardados. Reproducir/Pausar pantallas controla el grupo; el hilo musical del altavoz es independiente. Recalibrar mapa permite recalibrar y guardar las esquinas. Los players son virtuales: sus IDs físicos siguen sin vincular.",
+    "en": "Matrix · Starbucks: the six large wall screens play the Stock 1311 video playlist, “A Coffee Moment Worth Remembering” (10 s), looping without audio. Expert → 6 screens centers the camera and adds missing wall anchors while preserving saved maps. Play/Pause screens controls the group; the speaker music playlist is independent. Recalibrate map allows corner recalibration and saving. These players are virtual; physical player IDs remain unbound.",
     "playlist": "https://www.xpaceos.com/admira-xp/starbucks-screen-playlist.json",
     "mapping": "https://www.xpaceos.com/admira-xp/starbucks-wall-mapping.json",
     "stock": "https://www.pixeria.com/stock.html?highlight=1790708784283-yvy7w9",
@@ -314,8 +354,8 @@
     "guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-playlist.md"
   },
   "starbucks_tpv": {
-    "es": "En Matrix · Starbucks, Experto → TPV / POS centra la cámara en la pantalla del terminal orientada al cliente. Reproduce la playlist de publicidad local: Stock 1329, «Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2» (30 s), en bucle y sin audio. Pausar/Reproducir TPV actúa solo sobre ese player. Las seis pantallas de pared, /sincro, /sincrototal y el hilo musical son independientes. /layout identifica el terminal como TPV, sin cambiar los números 1–6. Mapear players permite recalibrar y guardar las cuatro esquinas.",
-    "en": "In Matrix · Starbucks, Expert → TPV / POS centers the camera on the customer-facing terminal screen. It plays the local advertising playlist: Stock 1329, “Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2” (30 s), looping without audio. Pause/Play POS affects only that player. The six wall screens, /sync, /synctotal and speaker music remain independent. /layout labels the terminal as TPV without changing numbers 1–6. Map players allows recalibrating and saving its four corners.",
+    "es": "En Matrix · Starbucks, Experto → TPV / POS centra la cámara en la pantalla del terminal orientada al cliente. Reproduce la playlist de publicidad local: Stock 1329, «Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2» (30 s), en bucle y sin audio. Pausar/Reproducir TPV actúa solo sobre ese player. Las seis pantallas de pared, /sincro, /sincrototal y el hilo musical son independientes. /layout identifica el terminal como TPV, sin cambiar los números 1–6. Recalibrar mapa permite recalibrar y guardar las cuatro esquinas.",
+    "en": "In Matrix · Starbucks, Expert → TPV / POS centers the camera on the customer-facing terminal screen. It plays the local advertising playlist: Stock 1329, “Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2” (30 s), looping without audio. Pause/Play POS affects only that player. The six wall screens, /sync, /synctotal and speaker music remain independent. /layout labels the terminal as TPV without changing numbers 1–6. Recalibrate map allows recalibrating and saving its four corners.",
     "playlist_id": "starbucks-alsea-paseo-de-gracia-tpv",
     "virtual_player_id": "starbucks-tpv-01",
     "playlist": "https://www.xpaceos.com/admira-xp/starbucks-tpv-playlist.json",
@@ -363,5 +403,15 @@
     "en": "The black speaker beside the staircase plays the Spanish closing announcement: “Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.” Initial free voice: macOS Mónica. Music keeps advancing at zero volume during the announcement; its volume and mute state are restored on completion, cancellation or failure. Click again to stop. In Control Xtore, /sin completes /sincro on or /sincro off, targeting the opposite current state; Enter runs it and Tab accepts. Suggested text remains editable. Bottom panels hide scrollbars while preserving scrolling and resize handles.",
     "docs": "https://www.xpaceos.com/admira-xp/docs/starbucks-announcement.md",
     "audio": "https://www.xpaceos.com/admira-xp/assets/audio/starbucks-cierre-22h.m4a"
+  },
+  "device_playlists": {
+    "es": "En Matrix · Starbucks, /layout activa los números y la selección de las seis pantallas y el TPV. Pulsa el dispositivo o su número para editar su playlist. Ctrl + clic, Cmd + clic en Mac o Selección múltiple permiten añadir o quitar dispositivos de la selección. Unir seleccionados les asigna una playlist común y un reloj de reproducción local. Puedes añadir vídeos por URL HTTPS directa, quitarlos, ordenarlos, guardar, usar otra playlist, separar dispositivos o restaurar su playlist original. Editar una playlist compartida afecta a todos sus miembros, indicados en el editor. Al editar una playlist original se crea una copia para los seleccionados. Los cambios del panel se guardan en este navegador; las operaciones MCP autenticadas comparten asignaciones entre clientes abiertos. Salir de /layout cierra el editor y devuelve el arrastre de cámara.",
+    "en": "In Matrix · Starbucks, /layout enables labels and selection for the six wall screens and POS. Click the device or its number to edit its playlist. Ctrl + click, Cmd + click on Mac or Multiple selection adds/removes devices from the selection. Group selected assigns one shared playlist and a local playback clock. Add direct HTTPS video URLs, remove/reorder clips, save, use another playlist, ungroup devices or restore their original playlist. Editing a shared playlist affects every member listed in the editor. Editing a base playlist creates a copy for the selected devices. Panel edits are saved in this browser; authenticated MCP operations share assignments with open clients. Leaving /layout closes the editor and restores camera dragging.",
+    "docs": "https://www.xpaceos.com/admira-xp/docs/device-playlists.md"
+  },
+  "starbucks_operations": {
+    "es": "Demo Starbucks: fuera de /layout, pulsa la pantalla 1 para Desenchufar/Enchufar; queda negra y se abre una incidencia real en Yokup, que se resuelve al enchufar. Mapear players muestra los nombres y el formulario manual de incidencias: equipo, problema y gravedad (alta por defecto). Cada ticket manual tiene un recurso único; un fallo conserva el texto para reintentar. Recalibrar mapa conserva el editor de esquinas. Hilo musical: Stock 1308 → 1309, EXIT avanza conservando mute. Pared normal: 1310, 1312, 1314; /navidad activa 1313, /navidad off vuelve a la programación normal. TPV: 1315 → 1317. /sincro IA usa P1=1316, P2=1318, P3=1319, P4=1320, P5=1321, P6=1322, con carga coordinada, reloj local común, bucle y vídeo silenciado. /sincro off sale de IA. Son controles de la demo virtual, no de la alimentación física.",
+    "en": "Starbucks demo: outside /layout, click screen 1 for Unplug/Plug in; it turns black and opens a real Yokup incident, resolved when plugged back in. Map players shows device names and the manual incident form: device, problem and severity (high by default). Each manual ticket has a unique resource; failures preserve the text for retry. Recalibrate map retains the corner editor. Music: Stock 1308 → 1309; EXIT advances while preserving mute. Normal wall: 1310, 1312, 1314; /christmas activates 1313 and /christmas off returns to normal. POS: 1315 → 1317. /sync AI uses P1=1316, P2=1318, P3=1319, P4=1320, P5=1321, P6=1322 with a load barrier, shared local clock, looping and muted video. /sync off exits AI. These are virtual demo controls, not physical power switching.",
+    "docs": "https://www.xpaceos.com/admira-xp/docs/starbucks-operations.md"
   }
 }

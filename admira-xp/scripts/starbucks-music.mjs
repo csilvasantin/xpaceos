@@ -1,4 +1,4 @@
-import {STARBUCKS_PUBLISHED_TRACKS} from './starbucks-playlist.mjs?v=exit-next-1';
+import {STARBUCKS_PUBLISHED_TRACKS} from './starbucks-playlist.mjs?v=devices-1';
 export const STARBUCKS_STORE='starbucks-alsea-paseo-de-gracia';
 export const STARBUCKS_FEED=`https://api.admira.store/hilomusical/next?store=${STARBUCKS_STORE}&since=0`;
 // Physical wall speaker, above and to the left of the emergency-exit sign.

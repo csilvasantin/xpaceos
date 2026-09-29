@@ -1,3 +1,4 @@
+import {DEMO_WALL,DEMO_CHRISTMAS} from './starbucks-demo.mjs?v=devices-1';
 // Canonical shared wall playlist and calibrated virtual players. Real player IDs remain unbound.
 export const STARBUCKS_SCREEN_PLAYLIST={
   "schemaVersion": 1,
@@ -6,17 +7,7 @@ export const STARBUCKS_SCREEN_PLAYLIST={
   "muted": true,
   "repeat": "all",
   "display": {"default":"individual","order":[1,2,3,4,5,6],"numbering":"from street entrance; wall view left to right: 6,5,4,3,2,1","screenNumbersById":{"starbucks-wall-01":6,"starbucks-wall-02":5,"starbucks-wall-03":4,"starbucks-wall-04":3,"starbucks-wall-05":2,"starbucks-wall-06":1},"spatialOrder":[6,5,4,3,2,1],"groups":[[1,2,3],[4],[5,6]],"total":[1,2,3,4,5,6],"fit":"cover for spans; contain for individual screens","storageKey":"xpaceos.starbucks.wall-display.v1"},
-  "tracks": [
-    {
-      "stockId": "1790708784283-yvy7w9",
-      "stockNumber": 1311,
-      "title": "A Coffee Moment Worth Remembering ☕ | Starbucks Cinematic Ad 2026",
-      "sourceUrl": "https://www.youtube.com/shorts/nkhc9OnjbV8",
-      "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
-      "duration": 10,
-      "mimeType": "video/mp4"
-    }
-  ]
+  "tracks": [...DEMO_WALL,...DEMO_CHRISTMAS]
 };
 export const STARBUCKS_WALL_VIEW={
   "yaw": 16.4651749580645,

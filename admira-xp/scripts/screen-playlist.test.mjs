@@ -12,7 +12,7 @@ const flush=()=>new Promise(r=>setImmediate(r));
 test('six-screen public contracts match runtime, keep portrait proportions and no physical player IDs',async()=>{
  for(const [file,value]of [['starbucks-screen-playlist.json',playlist],['starbucks-wall-mapping.json',mapping]])assert.deepEqual(JSON.parse(await readFile(new URL('../'+file,import.meta.url))),value);
  const clean=validateMapping(mapping);assert.equal(clean.players.length,6);assert.equal(new Set(clean.players.map(p=>p.id)).size,6);
- assert.ok(clean.players.every(p=>p.width===360&&p.height===640&&p.playerId===''&&p.url===playlist.tracks[0].url));
+ assert.ok(clean.players.every(p=>p.width===360&&p.height===640&&p.playerId===''&&new URL(p.url).protocol==='https:'));
  assert.throws(()=>validateMapping({...mapping,players:[{...mapping.players[0],width:0}]}));
 });
 test('all six screens play muted, pause/resume without resetting and loop together',async()=>{

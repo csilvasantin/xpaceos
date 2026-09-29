@@ -57,7 +57,7 @@ test('Matrix opens the Alsea capture through the public router and describes loc
   let answer=await executeVisualCommand('matrix',f);
   assert.equal(answer.ok,true);assert.equal(answer.local,true);assert.equal(answer.mode,'matrix');assert.equal(answer.requested,'matrix');
   assert.equal(answer.preview,true);assert.equal(answer.availability,'preview');
-  assert.match(answer.message,/Matrix.*Starbucks Alsea.*panorama 360°.*Mapear players/);
+  assert.match(answer.message,/Matrix.*Starbucks Alsea.*panorama 360°.*Recalibrar mapa/);
   answer=await executeVisualCommand('/mode matrix',{...f,lang:'en'});
   assert.match(answer.message,/360° panorama/);assert.equal(f.calls.matrix,1);
   assert.match(answer.message,/Real player connections are not verified/);
@@ -198,7 +198,7 @@ test('visual feedback is labelled local while all existing bot and error labels 
 test('__xtExec runs the same visual command without remote output or command logging',async()=>{
   const h=consoleHarness();let answer=await h.exec('better');assert.match(answer,/Better.*16-bit/);assert.equal(h.router.mode,'better');
   answer=await h.exec('best');assert.match(answer,/Avenida Admira.*mobiliario editable.*visitantes en vivo/);assert.equal(h.router.mode,'best');
-  answer=await h.exec('matrix');assert.match(answer,/Starbucks Alsea.*panorama 360°.*Mapear players/);assert.equal(h.router.mode,'matrix');
+  answer=await h.exec('matrix');assert.match(answer,/Starbucks Alsea.*panorama 360°.*Recalibrar mapa/);assert.equal(h.router.mode,'matrix');
   answer=await h.exec('/modo desconocido');assert.match(answer,/Estilos visuales locales/);
   answer=await h.exec('/mudanza');assert.match(answer,/ACTIVADA/);assert.equal(h.moving,true);
   answer=await h.exec('/mudanza');assert.match(answer,/DESACTIVADA/);assert.equal(h.moving,false);

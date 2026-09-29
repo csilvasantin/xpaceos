@@ -51,3 +51,22 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 /* Keep wheel/touch/keyboard access and resizing; remove visible scrollbar chrome. */
 #telegramDock,#telegramDock *,#characterDock,#characterDock *{scrollbar-width:none!important}
 #telegramDock::-webkit-scrollbar,#telegramDock *::-webkit-scrollbar,#characterDock::-webkit-scrollbar,#characterDock *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+
+/* Layout is the only surface that intercepts clicks on a mapped screen. */
+.device-layout-active .matrix-mapped-player[data-device-id]{pointer-events:auto;cursor:pointer}
+.device-layout-active .matrix-mapped-player[data-device-id] .matrix-player-media{pointer-events:none}
+.matrix-screen-number{pointer-events:auto;cursor:pointer;max-width:180px}.matrix-screen-number small{max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.device-layout-active .matrix-mapped-player.device-selected{outline:8px solid #ffd45f;outline-offset:-8px}
+.matrix-screen-number.device-selected{background:#ffd45f;color:#071a1a;border-color:#ffd45f}
+.matrix-device-editor{position:absolute;z-index:7;top:12px;right:12px;width:340px;max-width:calc(100% - 48px);max-height:calc(100% - var(--hud-safe-bottom,120px) - 48px);overflow:auto;scrollbar-width:none;padding:14px;background:#071c20f5;border:1px solid #7dad9f;border-radius:9px;color:#e6fff4;font:12px/1.4 system-ui}
+.matrix-device-editor[hidden]{display:none}.matrix-device-editor header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.matrix-device-editor label{display:grid;gap:4px;margin:9px 0}.matrix-device-editor .device-multiple{display:flex;align-items:center}
+.matrix-device-editor input,.matrix-device-editor select{box-sizing:border-box;min-width:0;max-width:100%;padding:7px;background:#102c30;border:1px solid #528a83;color:#f1fff9;border-radius:4px}
+.matrix-device-editor button{padding:6px 9px;border:1px solid #62998c;border-radius:4px;background:#123a3b;color:#edfff6;cursor:pointer}.matrix-device-editor button:disabled{opacity:.4;cursor:default}
+.device-tracks{padding-left:20px}.device-tracks li{margin:10px 0}.device-tracks input{display:block;width:100%;margin-bottom:5px}.device-tracks button{margin-right:5px}
+.device-save-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.device-notice{color:#ffdf86}.device-shared,.matrix-device-editor small{color:#a5c6bb;overflow-wrap:anywhere}
+@media(max-width:650px){.matrix-device-editor{top:8px;right:8px;width:290px;padding:10px;max-height:calc(100% - var(--hud-safe-bottom,120px) - 32px)}}
+.matrix-mapped-player[data-device-id="starbucks-wall-06"]{pointer-events:auto;cursor:pointer}
+.matrix-mapped-player.device-off .matrix-player-media{visibility:hidden}.matrix-mapped-player.device-off{background:#000}
+.matrix-incident-editor textarea{box-sizing:border-box;width:100%;background:#102c30;border:1px solid #528a83;color:#fff;border-radius:4px;padding:7px;resize:vertical}
+.matrix-incident-editor a{color:#9dffcf}.matrix-incident-editor{z-index:8}

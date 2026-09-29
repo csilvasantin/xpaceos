@@ -7,8 +7,8 @@ import {validateMapping,quadTransform} from './matrix-mapping.mjs';
 import {screenSlice} from './screen-display.mjs';
 test('published POS contracts match runtime; separate local advert on a valid portrait quad',async()=>{
  for(const [name,value] of [['starbucks-tpv-playlist.json',playlist],['starbucks-tpv-mapping.json',mapping]])assert.deepEqual(JSON.parse(await readFile(new URL('../'+name,import.meta.url))),value);
- assert.equal(playlist.tracks[0].sourceUrl,'https://www.youtube.com/shorts/vtOoHibZTug');assert.equal(playlist.tracks[0].stockNumber,1329);
- const [p]=validateMapping(mapping).players;assert.equal(p.playerId,'');assert.equal(p.url,playlist.tracks[0].url);assert.equal(p.width/p.height,360/640);assert.ok(quadTransform(p.corners.map(c=>({x:c.yaw,y:c.pitch}))));
+ assert.deepEqual(playlist.tracks.map(t=>t.stockNumber),[1315,1317]);
+ const [p]=validateMapping(mapping).players;assert.equal(p.playerId,'');assert.equal(new URL(p.url).protocol,'https:');assert.equal(p.width/p.height,360/640);assert.ok(quadTransform(p.corners.map(c=>({x:c.yaw,y:c.pitch}))));
  for(const mode of ['individual','groups','total'])assert.equal(screenSlice(p.id,mode),null);
 });
 test('seeding TPV preserves user wall data, does not duplicate a customized TPV and respects capacity',()=>{

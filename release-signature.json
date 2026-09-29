@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r16.22:28",
+  "version": "v.29.09.2026.r17.22:59",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #244: cuña gratuita de cierre, prioridad audio con restauración, /sin autocompleta estado contrario, paneles sin barras visibles, MCP y help/tutorial ES/EN.",
+  "evidence": "Yokup #252, FLT-101280 y FLT-101281: playlists por dispositivo con Ctrl/Cmd, incidencias reales, programación Starbucks, sincro IA y MCP 2.6 con 31 herramientas.",
   "day": "29.09.2026",
-  "time": "22:28"
+  "time": "22:59"
 }

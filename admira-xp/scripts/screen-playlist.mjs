@@ -1,14 +1,19 @@
 // All virtual screens follow the first video's clock; no audio output or physical writes.
-export function createScreenPlaylist({videos,tracks,onState=()=>{}}){
- let index=0,disposed=false,playing=false,error=false,generation=0;
+export function createScreenPlaylist({videos,tracks,initialURL,onState=()=>{}}){
+ let index=Math.max(0,tracks.findIndex(t=>t.url===initialURL)),disposed=false,playing=false,error=false,generation=0;
  const emit=()=>onState({playing,error,index,count:videos.length,title:tracks[index]?.title||''});
  for(const v of videos){v.muted=true;v.playsInline=true;v.loop=false;v.preload='auto';}
  const sync=()=>{const lead=videos[0];if(!playing||!lead||lead.readyState<2)return;for(const v of videos.slice(1)){if(v.readyState>=2&&Math.abs(v.currentTime-lead.currentTime)>.2)v.currentTime=lead.currentTime;}};
  const timer=setInterval(sync,500);
  async function play(){
   if(disposed||!tracks.length||!videos.length)return;
-  const ticket=++generation;error=false;
+  const ticket=++generation;error=false;playing=false;
   for(const v of videos)if(v.getAttribute('src')!==tracks[index].url){v.src=tracks[index].url;v.load();}
+  if(videos.some(v=>v.readyState<3)){
+   const ready=await Promise.allSettled(videos.map(v=>v.readyState>=3?Promise.resolve():new Promise((resolve,reject)=>{const done=e=>{clearTimeout(timeout);v.removeEventListener('canplay',loaded);v.removeEventListener('error',failed);e?reject(e):resolve();};const loaded=()=>done(),failed=()=>done(Error('Video unavailable')),timeout=setTimeout(()=>done(Error('Video timeout')),20000);v.addEventListener('canplay',loaded,{once:true});v.addEventListener('error',failed,{once:true});})));
+   if(disposed||ticket!==generation)return;if(ready.some(r=>r.status==='rejected')){error=true;videos.forEach(v=>v.pause());emit();return;}
+  }
+  const time=videos[0].currentTime;for(const v of videos.slice(1))if(Math.abs(v.currentTime-time)>.04)v.currentTime=time;
   const results=await Promise.allSettled(videos.map(v=>v.play()));
   if(disposed||ticket!==generation)return;
   error=results.some(r=>r.status==='rejected');playing=!error;

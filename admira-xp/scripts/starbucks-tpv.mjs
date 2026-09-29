@@ -1,3 +1,4 @@
+import {DEMO_TPV} from './starbucks-demo.mjs?v=devices-1';
 // Separate local-advertising playlist for the customer-facing virtual POS screen.
 export const STARBUCKS_TPV_PLAYLIST={
   "schemaVersion": 1,
@@ -6,17 +7,7 @@ export const STARBUCKS_TPV_PLAYLIST={
   "purpose": "local-advertising",
   "muted": true,
   "repeat": "all",
-  "tracks": [
-    {
-      "stockId": "1790711463701-yxy150",
-      "stockNumber": 1329,
-      "title": "Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2",
-      "sourceUrl": "https://www.youtube.com/shorts/vtOoHibZTug",
-      "url": "https://stock.admira.store/stock/1790711463701-yxy150/asset.mp4",
-      "duration": 30,
-      "mimeType": "video/mp4"
-    }
-  ]
+  "tracks": DEMO_TPV
 };
 export const STARBUCKS_TPV_MAPPING={
   "version": 1,

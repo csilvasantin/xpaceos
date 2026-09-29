@@ -1,22 +1,28 @@
+import {DEMO_WALL,DEMO_CHRISTMAS,DEMO_TPV,DEMO_IA,DEMO_MUSIC} from './starbucks-demo.mjs?v=devices-1';
+import {mountIncidentPanel} from './starbucks-incidents.mjs?v=devices-1';
+import {createSincroIA} from './sincro-ia.mjs?v=devices-1';
+import {mountDeviceEditor} from './device-editor.mjs?v=devices-1';
+import {createDevicePlayback} from './device-playback.mjs?v=devices-1';
+import {DEVICE_IDS,assignedPlaylist,emptyDeviceLayout} from './device-layout.mjs?v=devices-1';
 import {createAnnouncement,ANNOUNCEMENT_SPEAKER,CLOSING_ANNOUNCEMENT} from './starbucks-announcement.mjs?v=closing-1';
-import {watchMatrixState} from './matrix-remote.mjs?v=mcp-1';
+import {watchMatrixState} from './matrix-remote.mjs?v=devices-1';
 import {STARBUCKS_TPV_PLAYLIST,STARBUCKS_TPV_MAPPING,STARBUCKS_TPV_VIEW,withStarbucksTPV} from './starbucks-tpv.mjs?v=tpv-1';
 import {getScreenDisplayMode,setScreenDisplayMode,subscribeScreenDisplay,screenSlice,screenNumber,screenGroup,getScreenNumbersVisible,setScreenNumbersVisible,subscribeScreenNumbers} from './screen-display.mjs?v=number-layout-1';
 import {STARBUCKS_SCREEN_PLAYLIST,STARBUCKS_WALL_MAPPING,STARBUCKS_WALL_VIEW} from './starbucks-screens.mjs?v=number-layout-1';
-import {createScreenPlaylist} from './screen-playlist.mjs?v=mcp-1';
-import {starbucksMusic,STARBUCKS_SPEAKER,STARBUCKS_EXIT} from './starbucks-music.mjs?v=closing-1';
+import {starbucksMusic,STARBUCKS_SPEAKER,STARBUCKS_EXIT} from './starbucks-music.mjs?v=devices-1';
 import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=wall-1';
 
 export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}={}){
  const en=lang==='en',t=(es,english)=>en?english:es;
  let disposed=false,renderer,texture,geometry,material,frame=0,drag=null,marking=null,selected='',dirty=false;
+ let deviceEditor=null,incidents=null,iaPlayback=null,demoMode='linear',iaTracks=DEMO_IA;
  let recalibrating='',mapRevision=0,renderKey='';
  let yaw=STARBUCKS_WALL_VIEW.yaw,pitch=STARBUCKS_WALL_VIEW.pitch,fov=STARBUCKS_WALL_VIEW.fov;
  let model=validateMapping(STARBUCKS_WALL_MAPPING);
  try{const saved=localStorage.getItem(MAPPING_KEY);if(saved)model=validateMapping(JSON.parse(saved));}catch{}
  model=withStarbucksTPV(model);
  root.innerHTML=`<div class="matrix-panorama" tabindex="0" aria-label="Starbucks Alsea 360°"><div class="matrix-player-layer"></div><div class="matrix-screen-numbers" hidden></div><svg class="matrix-markers" aria-hidden="true"></svg><button class="matrix-announcement" type="button" hidden data-announcement aria-label="${t('Emitir aviso de cierre','Play closing announcement')}">📣</button><button class="matrix-speaker" type="button" hidden data-music-toggle aria-pressed="false">♫</button><button class="matrix-exit-next" type="button" hidden data-music-next aria-label="${t('EXIT · Siguiente canción','EXIT · Next track')}">⏭</button></div>
- <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-screen-numbers type="button" aria-pressed="false">${t('Layout · números','Layout · numbers')}</button><button data-map="wall">${t('6 pantallas','6 screens')}</button><button data-map="playlist" aria-pressed="false">${t('Reproducir pantallas','Play screens')}</button><label class="matrix-screen-layout">${t('Vídeo','Video')} <select data-screen-layout aria-label="${t('Distribución del vídeo','Video layout')}"><option value="individual">${t('Individual · 1 por pantalla','Individual · 1 per screen')}</option><option value="groups">${t('Sincro · 1–3 / 4 / 5–6','Sync · 1–3 / 4 / 5–6')}</option><option value="total">${t('Sincro total · 1–6','Total sync · 1–6')}</option></select></label><span class="matrix-screen-status" role="status"></span><button data-map="tpv">TPV / POS</button><button data-map="tpv-playlist" aria-pressed="false">${t('Reproducir TPV','Play POS')}</button><span class="matrix-tpv-status" role="status"></span><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><button data-music-next type="button">${t('Siguiente canción','Next track')}</button><button data-map="announcement">${t('Altavoz avisos','Announcement speaker')}</button><button data-announcement type="button">${t('Aviso de cierre','Closing announcement')}</button><span class="matrix-announcement-status" role="status"></span><span class="matrix-music-status" role="status"></span><span class="matrix-remote-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
+ <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-map="geometry">${t('Recalibrar mapa','Recalibrate map')}</button><button data-screen-numbers type="button" aria-pressed="false">${t('Layout · números','Layout · numbers')}</button><button data-map="wall">${t('6 pantallas','6 screens')}</button><button data-map="playlist" aria-pressed="false">${t('Reproducir pantallas','Play screens')}</button><label class="matrix-screen-layout">${t('Vídeo','Video')} <select data-screen-layout aria-label="${t('Distribución del vídeo','Video layout')}"><option value="individual">${t('Individual · 1 por pantalla','Individual · 1 per screen')}</option><option value="groups">${t('Sincro · 1–3 / 4 / 5–6','Sync · 1–3 / 4 / 5–6')}</option><option value="total">${t('Sincro total · 1–6','Total sync · 1–6')}</option></select></label><span class="matrix-screen-status" role="status"></span><button data-map="tpv">TPV / POS</button><button data-map="tpv-playlist" aria-pressed="false">${t('Reproducir TPV','Play POS')}</button><span class="matrix-tpv-status" role="status"></span><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><button data-music-next type="button">${t('Siguiente canción','Next track')}</button><button data-map="announcement">${t('Altavoz avisos','Announcement speaker')}</button><button data-announcement type="button">${t('Aviso de cierre','Closing announcement')}</button><span class="matrix-announcement-status" role="status"></span><span class="matrix-music-status" role="status"></span><span class="matrix-remote-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
  <section class="matrix-map-panel" aria-label="${t('Mapeo de players','Player mapping')}" hidden>
  <header><strong>Starbucks · Alsea</strong><button data-map="close" aria-label="${t('Cerrar','Close')}">×</button></header>
  <p>${t('Marca cada pantalla en orden: arriba izquierda, arriba derecha, abajo derecha, abajo izquierda.','Mark each screen in order: top left, top right, bottom right, bottom left.')}</p>
@@ -37,16 +43,16 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const numberLayer=root.querySelector('.matrix-screen-numbers'),numberButton=root.querySelector('[data-screen-numbers]'),numberNodes=new Map();
  const numberLabel=n=>n+' · '+(screenGroup(n)?t('Grupo ','Group ')+screenGroup(n):t('Sola','Standalone'));
  const playerName=p=>screenNumber(p.id)?numberLabel(screenNumber(p.id)):p.name;
- function showNumbers(visible){numberLayer.hidden=!visible;numberButton.setAttribute('aria-pressed',String(visible));}
+ function showNumbers(visible){deviceEditor?.enable(visible);numberLayer.hidden=!visible;numberButton.setAttribute('aria-pressed',String(visible));}
  showNumbers(getScreenNumbersVisible());const unsubscribeNumbers=subscribeScreenNumbers(showNumbers);
  numberButton.addEventListener('click',()=>setScreenNumbersVisible(null),options);
- let wallPlayback=null,wallTracks=STARBUCKS_SCREEN_PLAYLIST.tracks,tpvTracks=STARBUCKS_TPV_PLAYLIST.tracks;
+ let wallPlayback=null,wallTracks=[...DEMO_WALL,...DEMO_CHRISTMAS],tpvTracks=DEMO_TPV;
  const layoutSelect=root.querySelector('[data-screen-layout]');
  function applyScreenLayout(mode=getScreenDisplayMode()){
   layoutSelect.value=mode;
   for(const [id,media] of previews){
    if(!media.dataset.wallVideo)continue;
-   const slice=screenSlice(id,mode);if(!slice)continue;
+   let slice=screenSlice(id,demoMode==='ia'?'individual':mode);if(!slice)continue;const config=deviceEditor?.config||emptyDeviceLayout();const members=STARBUCKS_WALL_MAPPING.players.filter(p=>slice.group.split('-').map(Number).includes(screenNumber(p.id)));if(members.some(p=>assignedPlaylist(config,p.id)!==assignedPlaylist(config,id)))slice=screenSlice(id,'individual');
    Object.assign(media.style,{width:slice.width+'%',left:slice.left+'%',right:'auto',objectFit:slice.fit});
    media.dataset.screenGroup=slice.group;
   }
@@ -56,26 +62,27 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const unsubscribeLayout=subscribeScreenDisplay(applyScreenLayout);
  const wallIds=new Set(STARBUCKS_WALL_MAPPING.players.map(p=>p.id));
  const screenStatus=root.querySelector('.matrix-screen-status'),screenButton=root.querySelector('[data-map=playlist]');
- function stopWall(){wallPlayback?.dispose();wallPlayback=null;screenStatus.textContent=t('Pantallas en pausa','Screens paused');screenButton.setAttribute('aria-pressed','false');screenButton.textContent=t('Reproducir pantallas','Play screens');}
- function startWall(){
-  stopWall();const videos=[];
-  for(const p of model.players.filter(p=>wallIds.has(p.id)&&p.type==='video'&&p.url===STARBUCKS_SCREEN_PLAYLIST.tracks[0].url)){
-   destroyPreview(p.id);const v=document.createElement('video');v.className='matrix-player-media';v.dataset.wallVideo='true';v.setAttribute('aria-label',playerName(p));nodes.get(p.id).prepend(v);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,v);videos.push(v);
-  }
-  applyScreenLayout();
-  if(!videos.length){screenStatus.textContent=t('Sin pantallas de esta playlist; usa 6 pantallas para añadirlas.','No playlist screens; use 6 screens to add them.');return;}
-  wallPlayback=createScreenPlaylist({videos,tracks:wallTracks,onState:state=>{screenButton.setAttribute('aria-pressed',String(state.playing));screenButton.textContent=state.playing?t('Pausar pantallas','Pause screens'):t('Reproducir pantallas','Play screens');screenStatus.textContent=state.error?t('Vídeo no disponible · pulsa para reintentar','Video unavailable · click to retry'):state.count+'/6 · '+(state.playing?t('reproduciendo sin audio','playing muted'):t('en pausa','paused'))+' · '+state.title;}});void wallPlayback.play();
- }
  const tpvId=STARBUCKS_TPV_MAPPING.players[0].id,tpvButton=root.querySelector('[data-map=tpv-playlist]'),tpvStatus=root.querySelector('.matrix-tpv-status');
  let tpvPlayback=null;
- function stopTPV(){tpvPlayback?.dispose();tpvPlayback=null;tpvButton.setAttribute('aria-pressed','false');tpvButton.textContent=t('Reproducir TPV','Play POS');tpvStatus.textContent=t('TPV en pausa','POS paused');}
- function stopPlayer(id){if(id===tpvId)stopTPV();else if(wallIds.has(id))stopWall();}
- function startTPV(){
-  stopTPV();const p=model.players.find(p=>p.id===tpvId);
-  if(!p||p.type!=='video'||p.url!==STARBUCKS_TPV_PLAYLIST.tracks[0].url){tpvStatus.textContent=t('Playlist TPV sin asignar · revisa Mapear players','POS playlist unassigned · check Map players');return;}
-  destroyPreview(p.id);const v=document.createElement('video');v.className='matrix-player-media';v.dataset.tpvVideo='true';v.setAttribute('aria-label',t('TPV · Publicidad local','POS · Local advertising'));nodes.get(p.id).prepend(v);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,v);
-  tpvPlayback=createScreenPlaylist({videos:[v],tracks:tpvTracks,onState:state=>{tpvButton.setAttribute('aria-pressed',String(state.playing));tpvButton.textContent=state.playing?t('Pausar TPV','Pause POS'):t('Reproducir TPV','Play POS');tpvStatus.textContent=state.error?t('TPV no disponible · pulsa para reintentar','POS unavailable · click to retry'):'TPV / POS · '+(state.playing?t('publicidad local sin audio','local advertising muted'):t('en pausa','paused'))+' · '+state.title;}});void tpvPlayback.play();
- }
+ const runtime=createDevicePlayback({onState:()=>{
+  for(const [ids,button,label] of [[[...wallIds],screenButton,screenStatus],[[tpvId],tpvButton,tpvStatus]]){const wall=ids.length>1;if(wall&&demoMode==='ia')continue;const state=runtime.state(ids);button.setAttribute('aria-pressed',String(state.playing));button.textContent=state.playing?(wall?t('Pausar pantallas','Pause screens'):t('Pausar TPV','Pause POS')):(wall?t('Reproducir pantallas','Play screens'):t('Reproducir TPV','Play POS'));label.textContent=state.error?t('Vídeo no disponible · pulsa para reintentar','Video unavailable · click to retry'):state.count+' · '+(state.playing?t('reproduciendo sin audio','playing muted'):t('en pausa','paused'));}
+ }});
+ const catalog=()=>({wall:{title:t('Pared · Starbucks','Wall · Starbucks'),tracks:wallTracks.filter(t=>demoMode==='christmas'?t.condition==='/navidad':!t.condition)},tpv:{title:t('TPV · Publicidad local','POS · Local advertising'),tracks:tpvTracks}});
+ function updateRuntime(){runtime.update({devices:[...previews].filter(([id,v])=>DEVICE_IDS.includes(id)&&!incidents?.off.has(id)&&!(demoMode==='ia'&&wallIds.has(id))&&v.tagName==='VIDEO'&&(v.dataset.wallVideo||v.dataset.tpvVideo)).map(([id,video])=>({id,video})),config:deviceEditor?.config||emptyDeviceLayout(),catalog:catalog()});applyScreenLayout();}
+ function updateDeviceLabels(){for(const [id,badge] of numberNodes){const pid=assignedPlaylist(deviceEditor.config,id);badge.querySelector('small').textContent=deviceEditor.config.playlists[pid]?.title||(pid==='tpv'?t('Publicidad local','Local advertising'):screenGroup(screenNumber(id))?t('Grupo ','Group ')+screenGroup(screenNumber(id)):t('Sola','Standalone'));}}
+ deviceEditor=mountDeviceEditor({root,surface,lang,nameFor:id=>playerName(model.players.find(p=>p.id===id)||{id,name:id}),catalog,onChange:()=>{updateRuntime();updateDeviceLabels();}});deviceEditor.enable(getScreenNumbersVisible());
+ const controller=ids=>({play(){if(demoMode==='ia'&&ids.length>1)void iaPlayback?.play();runtime.setPlaying(ids,true);},pause(){if(demoMode==='ia'&&ids.length>1)iaPlayback?.pause();runtime.setPlaying(ids,false);},state:()=>demoMode==='ia'&&ids.length>1?iaPlayback?.state()||{playing:false}:runtime.state(ids),replaceTracks(){updateRuntime();}});
+ function stopWall(){runtime.setPlaying([...wallIds],false);wallPlayback=null;}
+ function stopTPV(){runtime.setPlaying([tpvId],false);tpvPlayback=null;}
+ function stopPlayer(id){runtime.setPlaying([id],false);}
+ function mediaFor(p,kind){destroyPreview(p.id);const v=document.createElement('video');v.className='matrix-player-media';v.dataset[kind]='true';v.setAttribute('aria-label',playerName(p));nodes.get(p.id).prepend(v);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,v);}
+ function startWall(){for(const p of model.players.filter(p=>wallIds.has(p.id)&&p.type==='video'&&p.url===STARBUCKS_WALL_MAPPING.players.find(x=>x.id===p.id)?.url))if(!previews.get(p.id)?.dataset.wallVideo)mediaFor(p,'wallVideo');updateRuntime();wallPlayback=controller([...wallIds]);wallPlayback.play();}
+ function startTPV(){const p=model.players.find(p=>p.id===tpvId);if(!p||p.type!=='video'||p.url!==STARBUCKS_TPV_MAPPING.players[0].url)return;if(!previews.get(p.id)?.dataset.tpvVideo)mediaFor(p,'tpvVideo');updateRuntime();tpvPlayback=controller([tpvId]);tpvPlayback.play();}
+ function selectDevice(id,event){if(incidents?.visible){event.preventDefault?.();event.stopPropagation?.();incidents.select(id);}else deviceEditor.select(id,event);}
+ function applyPower(id,value){nodes.get(id)?.classList.toggle('device-off',value);updateRuntime();if(!value)runtime.setPlaying([id],true);}
+ incidents=mountIncidentPanel({root,lang,devices:DEVICE_IDS.map(id=>({id,name:playerName(model.players.find(p=>p.id===id)||{id,name:id}),equipo:id===tpvId?'tpv':'pantalla-'+screenNumber(id)})),onPower:applyPower});
+ async function setDemoMode(mode){if(!['linear','christmas','ia'].includes(mode))throw Error('Invalid demo mode');if(mode==='ia'&&(iaTracks.length!==6||new Set(iaTracks.map(t=>t.screen)).size!==6))throw Error('Sincro IA requires six screens');iaPlayback?.dispose();iaPlayback=null;demoMode=mode;updateRuntime();if(mode==='ia'){const entries=iaTracks.map(track=>({video:previews.get('starbucks-wall-0'+(7-track.screen)),url:track.url})).filter(x=>x.video);iaPlayback=createSincroIA({entries,onState:state=>{screenButton.setAttribute('aria-pressed',String(state.playing));screenButton.textContent=state.playing?t('Pausar pantallas','Pause screens'):t('Reproducir pantallas','Play screens');screenStatus.textContent=state.error?t('Sincro IA: error de vídeo','AI sync: video error'):t('Sincro IA · seis piezas · reloj común','AI sync · six clips · shared clock');}});await iaPlayback.play(true);}applyScreenLayout();deviceEditor.refresh();return mode;}
+ window.XpaceStarbucksDemo={setMode:setDemoMode,get mode(){return demoMode;}};
  const speaker=root.querySelector('.matrix-speaker'),musicStatus=root.querySelector('.matrix-music-status'),musicButtons=[...root.querySelectorAll('[data-music-toggle]')];
  const exitNext=root.querySelector('.matrix-exit-next'),nextButtons=[...root.querySelectorAll('[data-music-next]')];
  const music=starbucksMusic();
@@ -111,8 +118,9 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   list.replaceChildren(new Option('—',''));
   for(const p of model.players)list.add(new Option(playerName(p)+(p.playerId?' · '+p.playerId:''),p.id));select(selected);
   for(const [id,node] of nodes)if(!model.players.some(p=>p.id===id)){destroyPreview(id);node.remove();nodes.delete(id);numberNodes.get(id)?.remove();numberNodes.delete(id);}
-  for(const p of model.players){let node=nodes.get(p.id);if(!node){node=document.createElement('div');node.className='matrix-mapped-player';const name=document.createElement('button');name.className='matrix-player-label';name.addEventListener('click',()=>{panel.hidden=false;select(p.id);},options);node.append(name);layer.append(node);nodes.set(p.id,node);}node.style.width=(p.width||640)+'px';node.style.height=(p.height||360)+'px';node.querySelector('button').textContent=playerName(p)+' · '+(p.playerId||t('sin vincular','unmapped'));}
-  for(const p of model.players){const number=screenNumber(p.id);if((!number&&p.id!==tpvId)||numberNodes.has(p.id))continue;const badge=document.createElement('div');badge.className='matrix-screen-number';badge.dataset.screenNumber=number||'tpv';badge.innerHTML='<strong>'+number+'</strong><small>'+(screenGroup(number)?t('Grupo ','Group ')+screenGroup(number):t('Sola','Standalone'))+'</small>';if(p.id===tpvId)badge.innerHTML='<strong>TPV</strong><small>'+t('Publicidad local','Local advertising')+'</small>';badge.setAttribute('aria-label',number?numberLabel(number):'TPV / POS');numberLayer.append(badge);numberNodes.set(p.id,badge);}
+  for(const p of model.players){let node=nodes.get(p.id);if(!node){node=document.createElement('div');node.className='matrix-mapped-player';if(DEVICE_IDS.includes(p.id)){node.dataset.deviceId=p.id;node.addEventListener('contextmenu',e=>{if(getScreenNumbersVisible()&&e.ctrlKey)selectDevice(p.id,e);},options);node.addEventListener('click',e=>{if(getScreenNumbersVisible())selectDevice(p.id,e);else if(screenNumber(p.id)===1)incidents.open(p.id);},options);node.addEventListener('pointerdown',e=>{if(getScreenNumbersVisible()||screenNumber(p.id)===1)e.stopPropagation();},options);}const name=document.createElement('button');name.className='matrix-player-label';name.addEventListener('click',e=>{if(getScreenNumbersVisible()){selectDevice(p.id,e);return;}panel.hidden=false;select(p.id);},options);node.append(name);layer.append(node);nodes.set(p.id,node);}node.style.width=(p.width||640)+'px';node.style.height=(p.height||360)+'px';node.querySelector('button').textContent=playerName(p)+' · '+(p.playerId||t('sin vincular','unmapped'));}
+  for(const p of model.players){const number=screenNumber(p.id);if((!number&&p.id!==tpvId)||numberNodes.has(p.id))continue;const badge=document.createElement('button');badge.type='button';badge.dataset.deviceId=p.id;badge.addEventListener('contextmenu',e=>{if(e.ctrlKey)selectDevice(p.id,e);},options);badge.addEventListener('click',e=>selectDevice(p.id,e),options);badge.className='matrix-screen-number';badge.dataset.screenNumber=number||'tpv';badge.innerHTML='<strong>'+number+'</strong><small>'+(screenGroup(number)?t('Grupo ','Group ')+screenGroup(number):t('Sola','Standalone'))+'</small>';if(p.id===tpvId)badge.innerHTML='<strong>TPV</strong><small>'+t('Publicidad local','Local advertising')+'</small>';badge.setAttribute('aria-label',number?numberLabel(number):'TPV / POS');numberLayer.append(badge);numberNodes.set(p.id,badge);}
+  for(const [id,node] of nodes)node.classList.toggle('device-off',incidents.off.has(id));updateDeviceLabels();updateRuntime();
  }
  renderList();
  list.addEventListener('change',()=>select(list.value),options);
@@ -121,7 +129,8 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  function save(){try{localStorage.setItem(MAPPING_KEY,JSON.stringify(validateMapping(model)));dirty=false;message(t('Mapa guardado en este navegador','Map saved in this browser'));}catch{message(t('No se pudo guardar el mapa','Could not save the map'));}}
  for(const button of root.querySelectorAll('[data-map]'))button.addEventListener('click',()=>{
   switch(button.dataset.map){
-   case 'panel':panel.hidden=!panel.hidden;break;
+   case 'panel':panel.hidden=true;setScreenNumbersVisible(true);incidents.open();break;
+   case 'geometry':incidents.close();panel.hidden=!panel.hidden;break;
    case 'close':panel.hidden=true;cancel();break;
    case 'home':yaw=STARBUCKS_WALL_VIEW.yaw;pitch=STARBUCKS_WALL_VIEW.pitch;fov=STARBUCKS_WALL_VIEW.fov;break;
    case 'wall':{const missing=STARBUCKS_WALL_MAPPING.players.filter(p=>!model.players.some(v=>v.id===p.id));if(model.players.length+missing.length>24){message(t('No caben seis pantallas: máximo 24.','Cannot add screens: maximum 24.'));break;}if(missing.length){model.players.push(...validateMapping({...STARBUCKS_WALL_MAPPING,players:missing}).players);changed();renderList();}yaw=STARBUCKS_WALL_VIEW.yaw;pitch=STARBUCKS_WALL_VIEW.pitch;fov=STARBUCKS_WALL_VIEW.fov;startWall();break;}
@@ -152,7 +161,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  for(const type of ['click','keydown','keyup','keypress','pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])toolbar.addEventListener(type,e=>e.stopPropagation(),options);
  document.querySelector('#telegramDock .tg-actions')?.append(toolbar);
  let stopRemote=()=>{};
- const dispose=()=>{if(disposed)return;disposed=true;announcement.dispose();announcementAudio.remove();stopRemote();stopWall();stopTPV();controls.abort();clearInterval(musicPoll);unsubscribeMusic();unsubscribeLayout();unsubscribeNumbers();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
+ const dispose=()=>{if(disposed)return;disposed=true;delete window.XpaceStarbucksDemo;iaPlayback?.dispose();incidents.dispose();deviceEditor.dispose();runtime.dispose();announcement.dispose();announcementAudio.remove();stopRemote();stopWall();stopTPV();controls.abort();clearInterval(musicPoll);unsubscribeMusic();unsubscribeLayout();unsubscribeNumbers();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
  let observer;
  signal?.addEventListener('abort',dispose,{once:true});
  try{
@@ -178,6 +187,8 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   draw();startWall();startTPV();
   let remoteState=null;
   stopRemote=watchMatrixState({onState:state=>{
+   deviceEditor.remote(state);if(state.playlists.sincroIA&&JSON.stringify(iaTracks)!==JSON.stringify(state.playlists.sincroIA.tracks)){iaTracks=state.playlists.sincroIA.tracks;if(demoMode==='ia')void setDemoMode('ia');}
+   if(state.devicesOff)for(const [id,value] of Object.entries(state.devicesOff)){if(!remoteState||state.devicesOffRevision?.[id]!==remoteState.devicesOffRevision?.[id])incidents.remote(id,value);}
    for(const channel of ['wall','tpv','music']){
     const playlist=state.playlists[channel],old=remoteState?.playlists[channel];
     if(!playlist.managed||JSON.stringify(playlist)===JSON.stringify(old))continue;
@@ -187,6 +198,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
    }
    for(const [key,value] of Object.entries(state.controls)){
     if(remoteState&&state.controlRevision[key]===remoteState.controlRevision[key])continue;
+    if(key==='demoMode')void setDemoMode(value);
     if(key==='wallPlaying'){if(value)void wallPlayback?.play();else wallPlayback?.pause();}
     if(key==='tpvPlaying'){if(value)void tpvPlayback?.play();else tpvPlayback?.pause();}
     if(key==='wallMode')setScreenDisplayMode(value);
@@ -195,7 +207,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
    }
    if(remoteState&&state.musicNext>remoteState.musicNext)for(let i=remoteState.musicNext;i<state.musicNext;i++)music.next();
    if(remoteState&&(state.announcementNext||0)>(remoteState.announcementNext||0))void announcement.play();
-   remoteState=state;
+   deviceEditor.refresh();remoteState=state;
   },onStatus:state=>{if(disposed)return;toolbar.querySelector('.matrix-remote-status').textContent=state.error?t('MCP sin conexión · se conserva el último estado','MCP offline · keeping last state'):t('MCP conectado · revisión ','MCP connected · revision ')+state.revision;}});
   message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();
  }catch(error){if(!disposed){message(t('No se pudo cargar el panorama. Reintenta desde Matrix.','Could not load panorama. Retry Matrix.'));onReady(String(error?.message||error));}}

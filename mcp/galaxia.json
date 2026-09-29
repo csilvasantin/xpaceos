@@ -33,7 +33,7 @@
       "endpoint": "https://mcp.admira.store/mcp",
       "health": "https://mcp.admira.store/",
       "auth": "lectura abierta; escritura con clave de flota",
-      "tools": ["quien_soy", "fleet_status", "list_screens", "screen_now", "emission_report", "register_device", "publish_asset", "search_twins", "twin_detail", "catalog_stats", "list_scenes", "scene_status", "xpl_rules", "signage_feed", "help", "galaxy", "matrix_state", "matrix_playlist_update", "matrix_configure", "matrix_music_next", "matrix_announcement"],
+      "tools": ["quien_soy", "fleet_status", "list_screens", "screen_now", "emission_report", "register_device", "publish_asset", "search_twins", "twin_detail", "catalog_stats", "list_scenes", "scene_status", "xpl_rules", "signage_feed", "help", "galaxy", "matrix_state", "matrix_playlist_update", "matrix_configure", "matrix_music_next", "matrix_announcement", "matrix_device_layout", "playlist_list", "playlist_add", "playlist_remove", "playlist_reorder", "hotspot_bind", "sincro_set", "screen_unplug", "screen_plug", "incident_open"],
       "static_catalog": {
         "url": "https://www.xpaceos.com/mcp/funcionalidades.json",
         "docs": "https://www.xpaceos.com/help/funcionalidades/",

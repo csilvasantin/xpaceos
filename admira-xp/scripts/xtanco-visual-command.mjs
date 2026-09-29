@@ -10,6 +10,8 @@ const aliases=new Map([
 
 export function parseVisualCommand(input){
   const text=String(input||'').trim();
+  if(/^\/(?:navidad|christmas)(?:\s+(?:on|off))?$/i.test(text))return {demo:/off$/i.test(text)?'linear':'christmas'};
+  if(/^\/(?:sincro|sync)\s+(?:ia|ai)$/i.test(text))return {demo:'ia'};
   const labels=parseScreenLayoutCommand(text);if(labels)return labels.legacy?null:{labels};
   const screen=parseScreenDisplayCommand(text);if(screen)return {screen};
   if(/^\/mudanza(?:@\w+)?$/i.test(text))return {moving:true};
@@ -29,6 +31,7 @@ export function parseVisualCommand(input){
 export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
   const command=parseVisualCommand(input);if(!command)return null;
   const en=lang==='en';
+  if(command.demo){try{await router?.choose('matrix');if(!globalThis.XpaceStarbucksDemo)throw Error();await globalThis.XpaceStarbucksDemo.setMode(command.demo);if(command.demo==='ia')setScreenDisplayMode('groups');return {ok:true,local:true,message:'Matrix · '+({ia:'Sincro IA / AI sync',christmas:'Navidad / Christmas',linear:'Playlist estándar / Standard playlist'}[command.demo])};}catch{return {ok:false,local:true,message:en?'Could not load the demo. Retry.':'No se pudo cargar la demo. Reintenta.'};}}
   if(command.labels){
     if(command.labels.invalid)return {ok:false,local:true,message:en?'Usage: /layout [on|off] shows screen numbers. /layoiut is also accepted.':'Uso: /layout [on|off] muestra los números de pantalla. También se acepta /layoiut.'};
     try{
@@ -44,6 +47,7 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
     try{
       const outcome=await router.choose('matrix');
       if(outcome?.ok===false||outcome?.cancelled||router.mode!=='matrix'||router.error||router.busy)throw Error('unavailable');
+      if(globalThis.XpaceStarbucksDemo?.mode==='ia')await globalThis.XpaceStarbucksDemo.setMode('linear');
       const mode=setScreenDisplayMode(command.screen.mode);
       const label=mode==='total'?(en?'one video across screens 1–6':'un vídeo repartido entre las pantallas 1–6'):mode==='groups'?(en?'one video per group: 1–3 / 4 / 5–6':'un vídeo por grupo: 1–3 / 4 / 5–6'):(en?'full video on each screen':'vídeo completo en cada pantalla');
       return {ok:true,local:true,mode:'matrix',screenLayout:mode,message:'Matrix · Starbucks: '+label+'. '+(en?'Layout saved in this browser; playback continues unchanged.':'Distribución guardada en este navegador; la reproducción mantiene su estado.')};
@@ -63,8 +67,8 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
     }
   }
   if(command.help)return {ok:!command.invalid,local:true,message:en
-    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Best shows Avenida Admira in layers, with a fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models; use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. /mudanza toggles an empty floor-and-walls view without changing the real layout. Matrix opens the Starbucks Alsea 360° capture and local screen/player mapping. /layout toggles screen numbers from the street entrance (6–5 | 4 | 3–2–1 in the wall view). /sync spans groups 1–3 / 4 / 5–6, /synctotal spans all six, /sync off restores individual screens. /mode, 8/16/32 and /mode status are also accepted.'
-    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Best muestra Avenida Admira por capas, con cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos; usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. Matrix abre la captura 360° del Starbucks Alsea y el mapeo local de pantallas/players. /layout muestra u oculta números desde la entrada (6–5 | 4 | 3–2–1 mirando la pared). /sincro extiende por grupos 1–3 / 4 / 5–6, /sincrototal entre las seis y /sincro off restaura pantallas individuales. También se aceptan /modo, 8/16/32 y /modo estado.'};
+    ? 'Local visual styles (Expert CLI or __xtExec): type good, better, best or matrix. Best shows Avenida Admira in layers, with a fixed camera, editable furniture and live visitors. /inventario lists the 43 shared models; use /inventario añadir 1, /inventario eliminar 1 and /inventario deshacer to add, remove and undo. /mudanza toggles an empty floor-and-walls view without changing the real layout. Matrix opens the Starbucks Alsea 360° capture and local screen/player mapping. /layout lets you click devices to edit playlists; Ctrl/Cmd + click selects devices to group. /christmas activates the seasonal playlist; /sync AI plays the six IA clips. /layout toggles screen numbers from the street entrance (6–5 | 4 | 3–2–1 in the wall view). /sync spans groups 1–3 / 4 / 5–6, /synctotal spans all six, /sync off restores individual screens. /mode, 8/16/32 and /mode status are also accepted.'
+    : 'Estilos visuales locales (CLI experto o __xtExec): escribe good, better, best o matrix. Best muestra Avenida Admira por capas, con cámara fija, mobiliario editable y visitantes en vivo. /inventario enumera los 43 modelos compartidos; usa /inventario añadir 1, /inventario eliminar 1 y /inventario deshacer. /mudanza alterna una vista vacía de suelo y paredes sin modificar el layout real. Matrix abre la captura 360° del Starbucks Alsea y el mapeo local de pantallas/players. /layout permite pulsar dispositivos para editar playlists; Ctrl/Cmd + clic selecciona varios para unirlos. /navidad activa la playlist estacional; /sincro IA reproduce las seis piezas IA. /layout muestra u oculta números desde la entrada (6–5 | 4 | 3–2–1 mirando la pared). /sincro extiende por grupos 1–3 / 4 / 5–6, /sincrototal entre las seis y /sincro off restaura pantallas individuales. También se aceptan /modo, 8/16/32 y /modo estado.'};
   if(typeof router?.choose!=='function')return {ok:false,local:true,message:en
     ? 'The visual selector is not ready. Try again from Advanced (▤).'
     : 'El selector visual no está listo. Reintenta desde Avanzado (▤).'};
@@ -90,8 +94,8 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
       ? 'The Matrix preview is not available. Try again from Advanced (▤).'
       : 'La vista previa Matrix no está disponible. Reintenta desde Avanzado (▤).'};
     return {ok:true,local:true,mode,requested:'matrix',availability:'preview',preview:true,busy:!!router.busy,message:en
-      ? 'Matrix · Starbucks Alsea: 360° panorama. Map players lets you mark each screen with four corners, enter its real player ID and preview URL, and save or export a local map. Real player connections are not verified.'
-      : 'Matrix · Starbucks Alsea: panorama 360°. Mapear players permite marcar las cuatro esquinas de cada pantalla, anotar su ID real y URL de vista previa, y guardar o exportar el mapa local. Las conexiones reales no están verificadas.'};
+      ? 'Matrix · Starbucks Alsea: 360° panorama. Recalibrate map lets you mark each screen with four corners, enter its real player ID and preview URL, and save or export a local map. Real player connections are not verified.'
+      : 'Matrix · Starbucks Alsea: panorama 360°. Recalibrar mapa permite marcar las cuatro esquinas de cada pantalla, anotar su ID real y URL de vista previa, y guardar o exportar el mapa local. Las conexiones reales no están verificadas.'};
   }
   if(command.tier==='best'){
     if(router.availability!=='preview')return {ok:false,local:true,mode,requested:'best',message:en
