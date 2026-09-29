@@ -45,8 +45,13 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 
 #telegramDock .matrix-remote-status{font:9px/1.4 monospace;color:#a8dbc9;overflow-wrap:anywhere}
 
-.matrix-announcement{position:absolute;z-index:4;width:36px;height:40px;transform:translate(-50%,-50%);border:1px solid #ddd8;border-radius:5px;background:#151515b8;color:#fff;cursor:pointer;font:20px/1 system-ui;touch-action:manipulation}
-.matrix-announcement[hidden]{display:none}.matrix-announcement:focus-visible{outline:2px solid white}.matrix-announcement[aria-pressed="true"]{background:#965900;color:white}
+.matrix-announcement{position:absolute;z-index:4;width:40px;height:46px;padding:0;transform:translate(-50%,-50%);border:0;border-radius:5px;background:transparent;cursor:pointer;touch-action:manipulation}
+.matrix-announcement::before{content:"";position:absolute;inset:0;border:1px solid #e8e3d344;border-radius:5px;background:#1515150d;transition:border-color .25s,background .25s,box-shadow .25s}
+.matrix-announcement[hidden]{display:none}.matrix-announcement:focus-visible{outline:2px solid #fff3cf;outline-offset:4px}
+.matrix-announcement:hover::before,.matrix-announcement:focus-visible::before{border-color:#eee2bfbb;background:#eee2bf12;animation:announcement-hover 1.8s ease-in-out infinite}
+.matrix-announcement[aria-pressed="true"]::before{border-color:#ead291dd;background:#c8a64a22;box-shadow:0 0 12px #e2c27644}
+@keyframes announcement-hover{0%,100%{box-shadow:0 0 0 0 #f5e2aa12;opacity:.65}50%{box-shadow:0 0 12px 2px #f5e2aa33;opacity:1}}
+@media(prefers-reduced-motion:reduce){.matrix-announcement::before{animation:none!important;transition:none}}
 #telegramDock .matrix-announcement-status{font:10px/1.4 monospace;color:#ffde9e;overflow-wrap:anywhere}
 /* Keep wheel/touch/keyboard access and resizing; remove visible scrollbar chrome. */
 #telegramDock,#telegramDock *,#characterDock,#characterDock *{scrollbar-width:none!important}

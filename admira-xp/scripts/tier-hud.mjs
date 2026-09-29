@@ -1,4 +1,4 @@
-// View metadata belongs to the Expert controls pane; the scene stays clear.
+// View metadata belongs to the third Expert pane; the scene stays clear.
 export const TIER_HUD={
   better:{index:'02',name:'BETTER',bits:16,caption:'Gemelo 3D · cámara alineada con Good',captionEn:'3D twin · camera aligned with Good'},
   best:{index:'03',name:'BEST',bits:32,caption:'Avenida Admira · mobiliario editable',captionEn:'Avenida Admira · editable furniture'},
@@ -12,7 +12,7 @@ export function mountTierHud(dialog,{mode,stage}={}){
   const tier=TIER_HUD[mode];
   if(!dialog||!tier)return {setStatus(){},dispose(){}};
   const scene=stage||dialog.querySelector('.best-stage,.life-stage')||dialog;
-  const host=document.querySelector?.('#telegramDock .tg-actions');
+  const host=document.querySelector?.('#telegramDock .expert-view-pane');
   dialog.dataset.tierHud=mode;
   const en=document.documentElement?.lang==='en';
   const hud=document.createElement('div');
@@ -23,7 +23,7 @@ export function mountTierHud(dialog,{mode,stage}={}){
     <p class="tier-hud-status">${en?'LIVE':'EN VIVO'}</p>
     <details class="tier-hud-details" hidden><summary>${en?'Scene details':'Detalles de la escena'}</summary><div class="tier-hud-extra"></div></details>`;
   // Keep scene metadata in Expert even when Expert is hidden; never fall back
-  // to covering the scene. The tier selector stays first in the controls pane.
+  // to covering the scene. The tier selector stays first in the third pane.
   const selector=host?.querySelector('.visual-tier-controls');
   if(selector?.insertAdjacentElement)selector.insertAdjacentElement('afterend',hud);
   else host?.append(hud);

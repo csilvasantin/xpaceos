@@ -1224,7 +1224,7 @@
         <button type="button" id="telegramHideBtn" title="Mostrar/ocultar Local view">Hide</button>
       </div>
     <div class="expert-divider" data-expert-divider="1" role="separator" aria-orientation="vertical" tabindex="0"></div>
-    <div id="telegramLastResponse" class="tg-last-response" hidden aria-live="polite"></div>
+    <div class="expert-view-pane"><div id="telegramLastResponse" class="tg-last-response" hidden aria-live="polite"></div></div>
     </div>
     <div class="tg-quick-actions" id="telegramQuickActions" aria-label="Acciones rápidas de escena"></div>
   </div>
@@ -31322,7 +31322,7 @@ window.xtAPI = (function(){
     if(!/^(?:good|better|best|matrix)$|^\/(?:sincro|sync|sincrototal|synctotal|navidad|christmas|layout|layoiut)(?:@\w+)?(?:\s|$)|^\/mudanza(?:@\w+)?$|^\/?(?:modo|mode)(?:@\w+)?(?:\s|$)/i.test(text))return null;
     const language=typeof lang==='undefined'?'es':lang;
     try{
-      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=pixeria-1');
+      const {executeVisualCommand}=await import('./scripts/xtanco-visual-command.mjs?v=expert-view-1');
       return await executeVisualCommand(text,{router:window.__xtancoVisualTiers,moving:window.__xtancoMudanza,lang:language});
     }catch(error){
       return {ok:false,local:true,message:language==='en'?'The local visual command could not load. Please retry.':'No se pudo cargar el comando visual local. Reintenta.'};
@@ -35365,8 +35365,11 @@ window.xtAPI = (function(){
   #telegramDock.compose-start .expert-divider{display:block;position:relative;cursor:col-resize;touch-action:none;min-height:0;outline-offset:-2px}
   .expert-divider::before{content:'';position:absolute;top:5px;bottom:5px;left:5px;width:2px;background:rgba(120,243,255,.3);border-radius:2px}
   .expert-divider:hover::before,.expert-divider:focus-visible::before,.expert-divider.is-dragging::before{background:#78f3ff}
-  #telegramDock.compose-start.cli-out-hidden .expert-workspace{grid-template-columns:minmax(0,var(--expert-input,32fr)) 12px minmax(0,var(--expert-controls,38fr))}
-  #telegramDock.compose-start.cli-out-hidden #telegramLastResponse,#telegramDock.compose-start.cli-out-hidden [data-expert-divider="1"]{display:none!important}
+  #telegramDock .expert-view-pane{display:flex;flex-direction:column;gap:5px;min-width:0;min-height:0;padding:6px;overflow:auto;scrollbar-width:none}
+  #telegramDock .expert-view-pane::-webkit-scrollbar{display:none}
+  #telegramDock .expert-view-pane>.visual-tier-controls,#telegramDock .expert-view-pane>.tier-hud{flex:0 0 auto}
+  #telegramDock.compose-start .expert-view-pane #telegramLastResponse{flex:1 0 auto;overflow:visible;padding:4px 0}
+  #telegramDock.compose-start.cli-out-hidden #telegramLastResponse{display:none!important}
   #telegramDock.compose-start .help-open .expert-workspace,#telegramDock.compose-start .signage-open .expert-workspace{flex:0 0 90px}
   #telegramDock.compose-start .dock-resize-handle{z-index:10}
   /* Modo AVANZADO (▤) = los iconos ocupan el panel derecho, en lugar del texto
@@ -35401,7 +35404,7 @@ window.xtAPI = (function(){
   #advSceneControls .tg-quick-btn[aria-pressed=true]{border-color:#6ce6a2 !important;background:#123427 !important;color:#f0fff4 !important}
   #advSceneControls .tg-quick-btn[aria-pressed=true] span{color:#a7e6be !important}
 </style>
-<script src="scripts/expert-dock.js?v=expert-dock-1"></script>
+<script src="scripts/expert-dock.js?v=expert-view-1"></script>
 <script id="quickLaunchScript">
 (function(){
   var src=document.getElementById('telegramQuickActions'); if(!src) return;
@@ -35587,14 +35590,14 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=controls-1">
 <script type="module" src="scripts/avatar-audience.mjs?v=controls-1"></script>
-<link rel="stylesheet" href="scripts/matrix-panorama.css?v=pixeria-1">
+<link rel="stylesheet" href="scripts/matrix-panorama.css?v=expert-view-1">
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=expert-hud-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=pixeria-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=expert-view-1"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=closing-1"></script>
 </body>
 </html>

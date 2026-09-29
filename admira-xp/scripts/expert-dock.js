@@ -10,7 +10,7 @@
   function render(){
     ['input','controls','output'].forEach((name,i)=>workspace.style.setProperty('--expert-'+name,sizes[i]+'fr'));
     dividers.forEach((el,i)=>{
-      el.setAttribute('aria-label',i===0?'Comandos y calidad / Commands and quality':'Calidad y Local view / Quality and Local view');
+      el.setAttribute('aria-label',i===0?'Comandos y controles / Commands and controls':'Controles y vistas / Controls and views');
       el.setAttribute('aria-valuemin','0');el.setAttribute('aria-valuemax','100');
       el.setAttribute('aria-valuenow',String(Math.round(100*sizes[i]/(sizes[i]+sizes[i+1]))));
       el.title='Arrastrar · Flechas ← → · Doble clic: restablecer / Drag · Arrow keys · Double-click: reset';
@@ -27,9 +27,9 @@
     handle.addEventListener('pointerdown',e=>{
       if(e.button!==0)return;e.preventDefault();e.stopPropagation();
       const initial=[...sizes],start=e.clientX;
-      const hidden=dock.classList.contains('cli-out-hidden');
-      const total=initial[0]+initial[1]+(hidden?0:initial[2]);
-      const width=Math.max(1,workspace.clientWidth-(hidden?12:24));
+
+      const total=initial[0]+initial[1]+initial[2];
+      const width=Math.max(1,workspace.clientWidth-24);
       handle.setPointerCapture(e.pointerId);handle.classList.add('is-dragging');
       const move=event=>{if(event.pointerId!==e.pointerId)return;event.preventDefault();adjust(i,(event.clientX-start)*total/width,initial);};
       const end=event=>{

@@ -1,10 +1,10 @@
-import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=pixeria-1';
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=expert-hud-1';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=expert-hud-1';
+import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=expert-view-1';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=expert-view-1';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=expert-view-1';
 import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=alsea-1';
 import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=alsea-1';
 
-const actions=document.querySelector('#telegramDock .tg-actions');
+const viewPane=document.querySelector('#telegramDock .expert-view-pane');
 const status=document.createElement('div');status.id='xtanco-best-status';
 status.setAttribute('role','status');status.hidden=true;document.body.append(status);
 let storage;try{storage=window.localStorage;}catch{}
@@ -104,7 +104,7 @@ tiers.choose=mode=>{
   }catch{transitionActive=false;return chooseDirect(mode);}
 };
 const expertControls=createTierControls({context:'Calidad visual · modo experto',choose:mode=>tiers.choose(mode)});
-expertControls.element.id='xtanco-visual-quality';actions?.prepend(expertControls.element);
+expertControls.element.id='xtanco-visual-quality';viewPane?.prepend(expertControls.element);
 function syncCafeteriaTierControls(){
   const unavailable=isCafeteria();
   for(const button of expertControls.element.querySelectorAll('[data-visual-mode]')){

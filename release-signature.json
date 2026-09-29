@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r18.23:19",
+  "version": "v.29.09.2026.r19.23:27",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #266: búsqueda Pixeria por título, hashtag y Stock #1329 desde playlists; MCP 2.7, help y tutorial ES/EN.",
+  "evidence": "Yokup #271: vistas y estado en tercera columna Experto, altavoz de avisos rectangular sin icono con hover y teclado; help/tutorial/MCP ES/EN.",
   "day": "29.09.2026",
-  "time": "23:19"
+  "time": "23:27"
 }

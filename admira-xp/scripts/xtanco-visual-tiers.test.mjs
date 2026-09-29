@@ -233,7 +233,7 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
   }
   const body=new Element('body'),actions=new Element('expert-actions'),advanced=new Element('advanced-actions');body.dataset.xtancoVisual='better';
   body.append(actions);body.append(advanced);
-  const document={body,querySelector(selector){queries.push(selector);return selector==='#telegramDock .tg-actions'?actions:selector==='.quad-right'?advanced:null;},
+  const document={body,querySelector(selector){queries.push(selector);return selector==='#telegramDock .expert-view-pane'?actions:selector==='.quad-right'?advanced:null;},
     createElement(tag){created.push(tag);return new Element(tag);},getElementById(id){
       const find=node=>(node.id||node.attrs.id)===id?node:node.children.map(find).find(Boolean);
       return find(body)??null;
@@ -247,7 +247,7 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
     openMatrixView:matrix.openLifeView,closeMatrixView:matrix.closeLifeView,subscribeMatrixView:matrix.subscribeLifeView});
   vm.runInContext(controlsSource.replace(/export function /g,'function '),context);
   vm.runInContext(selectorSource.replace(/^import .*;\n/gm,''),context);
-  const controls=actions.children[0];assert.ok(controls,'the selector must be inserted in the expert actions');
+  const controls=actions.children[0];assert.ok(controls,'the selector must be inserted in the third expert pane');
   return {body,actions,advanced,controls,document,window,storage,good,life,best,matrix,created,queries,
     get status(){return document.getElementById('xtanco-best-status');},
     pagehide(){for(const fn of windowEvents.pagehide||[])fn({persisted:false});},
@@ -257,7 +257,7 @@ function selectorHarness({search='',storage=memoryStorage(),storageBlocked=false
 
 test('Expert keeps the version selector and Advanced no longer repeats it',()=>{
   const h=selectorHarness({search:'?visual=best'});
-  assert.deepEqual(h.queries,['#telegramDock .tg-actions','dialog.visual-tier-surface[open]']);assert.equal(h.controls.parent,h.actions);
+  assert.deepEqual(h.queries,['#telegramDock .expert-view-pane','dialog.visual-tier-surface[open]']);assert.equal(h.controls.parent,h.actions);
   assert.equal(h.advanced.children.length,0,'the side panel must not host a second Good/Better/Best/Matrix selector');
   assert.equal(h.controls.attrs.role,'group');assert.match(h.controls.attrs['aria-label'],/experto/);
   assert.notEqual(h.button('best').attrs['aria-disabled'],'true');assert.equal(h.button('best').attrs['aria-pressed'],'true');
@@ -335,7 +335,7 @@ test('selector boots safely with denied storage or stale legacy Best and never i
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
   const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./matrix-preview-ui.mjs?v=pixeria-1','./life-ui.mjs?v=expert-hud-1','./best-preview-ui.mjs?v=expert-hud-1','./xtanco-visual-tiers.mjs?v=alsea-1','./visual-tier-controls.mjs?v=alsea-1']);
+  assert.deepEqual(imports,['./matrix-preview-ui.mjs?v=expert-view-1','./life-ui.mjs?v=expert-view-1','./best-preview-ui.mjs?v=expert-view-1','./xtanco-visual-tiers.mjs?v=alsea-1','./visual-tier-controls.mjs?v=alsea-1']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);
