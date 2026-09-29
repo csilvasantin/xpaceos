@@ -65,7 +65,10 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   }
  },options);
  root.querySelector('.matrix-map-import').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>100000)throw Error();const next=validateMapping(JSON.parse(await file.text()));if(disposed)return;for(const id of previews.keys())destroyPreview(id);model=next;selected='';changed();renderList();}catch{message(t('Mapa inválido para esta captura','Invalid map for this capture'));}finally{e.target.value='';}},options);
- const dispose=()=>{if(disposed)return;disposed=true;controls.abort();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();root.replaceChildren();};
+ const toolbar=root.querySelector('.matrix-map-toolbar');
+ for(const type of ['click','keydown','keyup','keypress','pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])toolbar.addEventListener(type,e=>e.stopPropagation(),options);
+ document.querySelector('#telegramDock .tg-actions')?.append(toolbar);
+ const dispose=()=>{if(disposed)return;disposed=true;controls.abort();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
  let observer;
  signal?.addEventListener('abort',dispose,{once:true});
  try{

@@ -1,5 +1,5 @@
 import {createLifeSnapshot} from './life-snapshot.mjs?v=people-visibility-2';
-import {mountTierHud} from './tier-hud.mjs?v=alsea-1';
+import {mountTierHud} from './tier-hud.mjs?v=expert-hud-1';
 
 // The expert Good/Better/Best selector owns launch, routing and preference.
 const listeners=new Set();
@@ -115,9 +115,9 @@ async function open(options={}){
         try{
           if(!document.hidden){
             if(now-lastSnapshot>=100){const next=snapshot(window.__xtancoVisualState?.());if(!next){close();return;}viewer.update(next);current=next;lastSnapshot=now;}
-            if(now-lastStatus>=1000){const count=current.inside??0;const status=current.moving
-              ? 'Mudanza activa · solo suelo y paredes'
-              : `Gemelo conectado · ${count} ${count===1?'cliente':'clientes'} en la simulación`;dialog.querySelector('.life-state').textContent=status;hud?.setStatus(status);lastStatus=now;}
+            if(now-lastStatus>=1000){const count=current.inside??0;const en=document.documentElement?.lang==='en';const status=current.moving
+              ? (en?'Moving mode · floor and walls only':'Mudanza activa · solo suelo y paredes')
+              : en?`Twin connected · ${count} ${count===1?'customer':'customers'} in the simulation`:`Gemelo conectado · ${count} ${count===1?'cliente':'clientes'} en la simulación`;dialog.querySelector('.life-state').textContent=status;hud?.setStatus(status);lastStatus=now;}
             viewer.render(now);
           }
           frame=requestAnimationFrame(tick);

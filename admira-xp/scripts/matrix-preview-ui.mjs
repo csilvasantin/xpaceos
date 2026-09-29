@@ -1,5 +1,5 @@
-import {mountMatrixPanorama} from './matrix-panorama.mjs?v=alsea-1';
-import {mountTierHud} from './tier-hud.mjs?v=alsea-1';
+import {mountMatrixPanorama} from './matrix-panorama.mjs?v=expert-hud-1';
+import {mountTierHud} from './tier-hud.mjs?v=expert-hud-1';
 const listeners=new Set();
 let dialog,dispose,controller,hud,requestId,lastFocus,busy=false,viewError='';
 const announce=(reason='')=>{for(const fn of listeners)fn({open:!!dialog,busy,error:viewError,reason,requestId});};
@@ -17,8 +17,8 @@ export async function openMatrixView(options={}){
  current.addEventListener('cancel',e=>{e.preventDefault();closeMatrixView();});
  window.__xtancoSyncVisualSurface?.();document.body.append(current);current.show();current.getBoundingClientRect();current.classList.add('is-visible');window.__xtancoReleaseInputs?.();announce();
  const stop=await mountMatrixPanorama(root,{signal:controller.signal,lang:document.documentElement.lang,onReady(error=''){
-  if(dialog!==current)return;busy=false;viewError=error;hud?.setStatus(error?'Error':'Captura 360° · players virtuales');announce();
+  if(dialog!==current)return;busy=false;viewError=error;hud?.setStatus(error?'Error':(document.documentElement?.lang==='en'?'360° capture · virtual players':'Captura 360° · players virtuales'));announce();
  }});
- if(dialog!==current){stop?.();return;}dispose=stop;hud=mountTierHud(current,{mode:'matrix',stage:root});hud.setStatus(viewError?'Error':'Captura 360° · players virtuales');
+ if(dialog!==current){stop?.();return;}dispose=stop;hud=mountTierHud(current,{mode:'matrix',stage:root});hud.setStatus(viewError?'Error':(document.documentElement?.lang==='en'?'360° capture · virtual players':'Captura 360° · players virtuales'));
 }
 window.addEventListener('pagehide',()=>closeMatrixView('pagehide'));

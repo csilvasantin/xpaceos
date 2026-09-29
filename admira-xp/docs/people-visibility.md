@@ -49,9 +49,9 @@ Tracking: `DCL-0166cf641d75ffb6afb7deb0` · OraculoMacMini.
 
 ## Panel experto / Expert panel
 
-Arrastra el tirador superior para ajustar la altura. Los dos separadores verticales reparten el ancho entre comandos, Good/Better/Best y Local view. Se guardan las medidas en este navegador. Con el separador enfocado usa las flechas; doble clic o Inicio restablece los anchos. Ocultar/Mostrar controla Local view.
+Arrastra el tirador superior para ajustar la altura. Los dos separadores verticales reparten el ancho entre comandos, Good/Better/Best y Local view. Se guardan las medidas en este navegador. Con el separador enfocado usa las flechas; doble clic o Inicio restablece los anchos. Ocultar/Mostrar controla Local view. La información de Better, Best y Matrix (vista, cámara, estado y reloj) aparece en el bloque central de Experto, debajo del selector de calidad. Los rótulos, brújula y marcos permanentes desaparecen del Xpacio. En Matrix, Mapear players y Vista inicial también están en Experto; el editor se abre al solicitarlo.
 
-Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view.
+Drag the top handle to adjust height. The two vertical dividers distribute width between commands, Good/Better/Best and Local view. Sizes are saved in this browser. Focus a divider and use arrow keys; double-click or Home resets column widths. Hide/Show toggles Local view. Better, Best and Matrix information (view, camera, status and clock) appears in the middle Expert pane, below the quality selector. Permanent labels, compass and frames no longer cover the Xpacio. In Matrix, Map players and Reset view also live in Expert; the editor opens on demand.
 
 Por defecto las tiendas empiezan con /gente OFF: personal y clientes ocultos hasta activarlos. Se conserva una elección explícita guardada en la partida.
 
