@@ -1,15 +1,15 @@
-import {DEMO_WALL,DEMO_CHRISTMAS,DEMO_TPV,DEMO_IA,DEMO_MUSIC} from './starbucks-demo.mjs?v=devices-1';
-import {mountIncidentPanel} from './starbucks-incidents.mjs?v=devices-1';
-import {createSincroIA} from './sincro-ia.mjs?v=devices-1';
-import {mountDeviceEditor} from './device-editor.mjs?v=devices-1';
-import {createDevicePlayback} from './device-playback.mjs?v=devices-1';
-import {DEVICE_IDS,assignedPlaylist,emptyDeviceLayout} from './device-layout.mjs?v=devices-1';
+import {DEMO_WALL,DEMO_CHRISTMAS,DEMO_TPV,DEMO_IA,DEMO_MUSIC} from './starbucks-demo.mjs?v=devices-2';
+import {mountIncidentPanel} from './starbucks-incidents.mjs?v=devices-2';
+import {createSincroIA} from './sincro-ia.mjs?v=devices-2';
+import {mountDeviceEditor} from './device-editor.mjs?v=devices-2';
+import {createDevicePlayback} from './device-playback.mjs?v=devices-2';
+import {DEVICE_IDS,assignedPlaylist,emptyDeviceLayout} from './device-layout.mjs?v=devices-2';
 import {createAnnouncement,ANNOUNCEMENT_SPEAKER,CLOSING_ANNOUNCEMENT} from './starbucks-announcement.mjs?v=closing-1';
-import {watchMatrixState} from './matrix-remote.mjs?v=devices-1';
+import {watchMatrixState} from './matrix-remote.mjs?v=devices-2';
 import {STARBUCKS_TPV_PLAYLIST,STARBUCKS_TPV_MAPPING,STARBUCKS_TPV_VIEW,withStarbucksTPV} from './starbucks-tpv.mjs?v=tpv-1';
 import {getScreenDisplayMode,setScreenDisplayMode,subscribeScreenDisplay,screenSlice,screenNumber,screenGroup,getScreenNumbersVisible,setScreenNumbersVisible,subscribeScreenNumbers} from './screen-display.mjs?v=number-layout-1';
 import {STARBUCKS_SCREEN_PLAYLIST,STARBUCKS_WALL_MAPPING,STARBUCKS_WALL_VIEW} from './starbucks-screens.mjs?v=number-layout-1';
-import {starbucksMusic,STARBUCKS_SPEAKER,STARBUCKS_EXIT} from './starbucks-music.mjs?v=devices-1';
+import {starbucksMusic,STARBUCKS_SPEAKER,STARBUCKS_EXIT} from './starbucks-music.mjs?v=devices-2';
 import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=wall-1';
 
 export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}={}){

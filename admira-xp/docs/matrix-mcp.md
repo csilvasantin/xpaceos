@@ -68,3 +68,5 @@ In Matrix · Starbucks, /layout enables labels and selection for the six wall sc
 matrix_device_layout: save_playlist {playlist_id:"playlist-local",title:"Local",tracks:[{id:"clip",title:"Promotion",url:"https://stock.admira.store/stock/ID/asset.mp4"}]}; assign {device_ids:["starbucks-wall-06","starbucks-tpv-01"],playlist_id:"playlist-local"}; reset {device_ids:[...]}; remove_playlist {playlist_id:"playlist-local"}. Every call requires action and a fresh expected_revision from matrix_state. deviceLayout contains custom playlists and assignments; deviceLayoutRevision controls delivery. Maximum 24 custom playlists, 100 clips each. Only the seven documented virtual screen IDs are supported. No physical-device publication or cross-browser playback clock.
 
 [Guide](https://www.xpaceos.com/admira-xp/docs/device-playlists.md)
+
+ES: En Yokup, resolve:true registra la recuperación del recurso; el cierre definitivo requiere verificación en Yokup. EN: In Yokup, resolve:true records resource recovery; final ticket closure requires verification in Yokup.
