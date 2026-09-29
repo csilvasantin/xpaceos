@@ -12,3 +12,11 @@ Good keeps the classic twin; Better shows its 3D version. Best is now the former
 - La previsualización se inicia explícitamente; no se restaura sola. No envía órdenes a equipos.
 - /gente y /personal controlan los actores simulados en Good/Better/Best. No retocan personas fotografiadas en la captura Matrix.
 - Referencia: Yokup DCL-e9f021571cfbed9fbebd3d4e · captura pública /api/catalog y /img/starbucks-demo.webp.
+
+## Altavoz / Speaker
+
+Matrix · Starbucks Paseo de Gracia: pulsa el altavoz situado junto a la señal de salida para escuchar la playlist Starbucks Alsea. La primera pulsación inicia el audio; las siguientes alternan sonido y silencio sin pausar, reiniciar ni detener el cambio de canción. Experto → Altavoz lleva la cámara hasta él; Escuchar/Silenciar ofrece el mismo control. Al salir de Matrix se silencia la escucha local y la playlist sigue avanzando mientras la página esté abierta. El canal solicita tres instrumentales Suno de Morfeo; muestra playlist pendiente hasta su publicación. Consulta nuevas piezas cada 30 segundos. Este control no cambia el volumen de las pantallas físicas.
+
+Matrix · Starbucks Paseo de Gracia: click the speaker beside the exit sign to listen to the Starbucks Alsea playlist. The first click starts audio; subsequent clicks toggle sound and mute without pausing, restarting or stopping track changes. Expert → Speaker takes the camera there; Listen/Mute offers the same control. Leaving Matrix mutes local listening while the playlist keeps advancing as long as the page stays open. The channel awaits three Suno instrumentals from Morfeo and shows playlist pending until publication. New tracks are checked every 30 seconds. This control does not change the volume of physical screens.
+
+Canal: `starbucks-alsea-paseo-de-gracia` · `/hilomusical/next` en api.admira.store. La creación/publicación de las piezas se coordina en FLT-101276; implementación del altavoz: Yokup #178.

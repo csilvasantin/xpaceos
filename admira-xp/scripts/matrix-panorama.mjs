@@ -1,3 +1,4 @@
+import {starbucksMusic,STARBUCKS_SPEAKER} from './starbucks-music.mjs?v=starbucks-1';
 import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=alsea-1';
 
 export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}={}){
@@ -7,8 +8,8 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  let yaw=CAPTURE.yaw,pitch=CAPTURE.pitch,fov=CAPTURE.fov;
  let model={version:1,capture:CAPTURE.id,players:[]};
  try{const saved=localStorage.getItem(MAPPING_KEY);if(saved)model=validateMapping(JSON.parse(saved));}catch{}
- root.innerHTML=`<div class="matrix-panorama" tabindex="0" aria-label="Starbucks Alsea 360°"><div class="matrix-player-layer"></div><svg class="matrix-markers" aria-hidden="true"></svg></div>
- <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
+ root.innerHTML=`<div class="matrix-panorama" tabindex="0" aria-label="Starbucks Alsea 360°"><div class="matrix-player-layer"></div><svg class="matrix-markers" aria-hidden="true"></svg><button class="matrix-speaker" type="button" hidden data-music-toggle aria-pressed="false">♫</button></div>
+ <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><span class="matrix-music-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
  <section class="matrix-map-panel" aria-label="${t('Mapeo de players','Player mapping')}" hidden>
  <header><strong>Starbucks · Alsea</strong><button data-map="close" aria-label="${t('Cerrar','Close')}">×</button></header>
  <p>${t('Marca cada pantalla en orden: arriba izquierda, arriba derecha, abajo derecha, abajo izquierda.','Mark each screen in order: top left, top right, bottom right, bottom left.')}</p>
@@ -26,6 +27,22 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  </section>`;
  const surface=root.querySelector('.matrix-panorama'),layer=root.querySelector('.matrix-player-layer'),markers=root.querySelector('.matrix-markers'),panel=root.querySelector('.matrix-map-panel'),status=root.querySelector('.matrix-map-status'),list=root.querySelector('.matrix-map-list'),form=root.querySelector('form');
  const controls=new AbortController(),options={signal:controls.signal},previews=new Map(),nodes=new Map();
+ const speaker=root.querySelector('.matrix-speaker'),musicStatus=root.querySelector('.matrix-music-status'),musicButtons=[...root.querySelectorAll('[data-music-toggle]')];
+ const music=starbucksMusic();
+ const unsubscribeMusic=music.subscribe(state=>{
+  const audible=state.started&&!state.muted;
+  const action=audible?t('Silenciar','Mute'):t('Escuchar','Listen');
+  let label=!state.tracks?t('Playlist pendiente · 3 instrumentales Suno de Morfeo','Playlist pending · 3 Suno instrumentals from Morfeo')
+   :state.started?(state.muted?t('Silenciado · la playlist continúa','Muted · playlist continues'):t('Sonando','Playing'))+' · '+state.title
+   :state.tracks+' '+t('piezas · pulsa el altavoz para escuchar','tracks · click the speaker to listen');
+  if(state.error==='play')label=t('Pulsa para reintentar el audio','Click to retry audio');
+  if(state.error==='media')label=t('Audio no disponible · pulsa para reintentar','Audio unavailable · click to retry');
+  if(state.error==='feed'&&!state.tracks)label=t('No se pudo cargar la playlist · pulsa para reintentar','Could not load playlist · click to retry');
+  musicStatus.textContent=label;
+  for(const button of musicButtons){button.setAttribute('aria-pressed',String(audible));button.setAttribute('aria-label',action+' · Starbucks Alsea');button.title=label;if(button===speaker)button.textContent=audible?'♫':'♪';else button.textContent=action;}
+ });
+ for(const button of musicButtons)button.addEventListener('click',()=>{music.toggle();},options);
+ void music.refresh();const musicPoll=setInterval(()=>{void music.refresh();},30000);
  function message(value){status.textContent=value;}
  function changed(){dirty=true;message(t('Mapa sin guardar','Unsaved map'));}
  function destroyPreview(id){const node=previews.get(id);if(node){if(node.tagName==='VIDEO'){node.pause();node.removeAttribute('src');node.load();}else if(node.tagName==='IFRAME')node.src='about:blank';node.remove();previews.delete(id);}}
@@ -47,6 +64,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
    case 'panel':panel.hidden=!panel.hidden;break;
    case 'close':panel.hidden=true;cancel();break;
    case 'home':yaw=CAPTURE.yaw;pitch=CAPTURE.pitch;fov=CAPTURE.fov;break;
+   case 'speaker':yaw=STARBUCKS_SPEAKER.yaw;pitch=STARBUCKS_SPEAKER.pitch;fov=75;break;
    case 'add':if(model.players.length>=24){message(t('Máximo 24 pantallas','Maximum 24 screens'));break;}cancel();marking=[];surface.classList.add('is-mapping');root.querySelector('[data-map=cancel]').hidden=false;message(t('Marca esquina 1: arriba izquierda','Mark corner 1: top left'));break;
    case 'recalibrate':if(selected){cancel();recalibrating=selected;marking=[];surface.classList.add('is-mapping');root.querySelector('[data-map=cancel]').hidden=false;message(t('Marca esquina 1: arriba izquierda','Mark corner 1: top left'));}break;
    case 'cancel':cancel();message(t('Marcado cancelado','Marking cancelled'));break;
@@ -68,7 +86,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const toolbar=root.querySelector('.matrix-map-toolbar');
  for(const type of ['click','keydown','keyup','keypress','pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])toolbar.addEventListener(type,e=>e.stopPropagation(),options);
  document.querySelector('#telegramDock .tg-actions')?.append(toolbar);
- const dispose=()=>{if(disposed)return;disposed=true;controls.abort();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
+ const dispose=()=>{if(disposed)return;disposed=true;controls.abort();clearInterval(musicPoll);unsubscribeMusic();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
  let observer;
  signal?.addEventListener('abort',dispose,{once:true});
  try{
@@ -90,7 +108,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   const release=()=>{drag=null;};surface.addEventListener('pointerup',release,options);surface.addEventListener('pointercancel',release,options);
   surface.addEventListener('wheel',e=>{e.preventDefault();fov=Math.max(30,Math.min(100,fov+e.deltaY*.04));},{...options,passive:false});
   surface.addEventListener('keydown',e=>{const keys={ArrowLeft:()=>yaw-=4,ArrowRight:()=>yaw+=4,ArrowUp:()=>pitch=Math.min(85,pitch+4),ArrowDown:()=>pitch=Math.max(-85,pitch-4),'+':()=>fov=Math.max(30,fov-5),'-':()=>fov=Math.min(100,fov+5)};if(keys[e.key]){e.preventDefault();keys[e.key]();}},options);
-  function draw(){if(disposed)return;const key=[yaw,pitch,fov,surface.clientWidth,surface.clientHeight,mapRevision,marking?.length].join(':');if(key===renderKey){frame=requestAnimationFrame(draw);return;}renderKey=key;updateCamera();renderer.render(scene,camera);for(const p of model.players){const node=nodes.get(p.id),pts=p.corners.map(project);const matrix=pts.every(Boolean)&&quadTransform(pts);node.hidden=!matrix;if(matrix)node.style.transform='matrix3d('+matrix.join(',')+')';}markers.replaceChildren();if(marking)marking.forEach((corner,i)=>{const p=project(corner);if(!p)return;const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',p.x);circle.setAttribute('cy',p.y);circle.setAttribute('r','7');markers.append(circle);});frame=requestAnimationFrame(draw);}
+  function draw(){if(disposed)return;const key=[yaw,pitch,fov,surface.clientWidth,surface.clientHeight,mapRevision,marking?.length].join(':');if(key===renderKey){frame=requestAnimationFrame(draw);return;}renderKey=key;updateCamera();renderer.render(scene,camera);const soundPoint=project(STARBUCKS_SPEAKER);speaker.hidden=!soundPoint||!!marking;if(soundPoint){speaker.style.left=soundPoint.x+'px';speaker.style.top=soundPoint.y+'px';}for(const p of model.players){const node=nodes.get(p.id),pts=p.corners.map(project);const matrix=pts.every(Boolean)&&quadTransform(pts);node.hidden=!matrix;if(matrix)node.style.transform='matrix3d('+matrix.join(',')+')';}markers.replaceChildren();if(marking)marking.forEach((corner,i)=>{const p=project(corner);if(!p)return;const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',p.x);circle.setAttribute('cy',p.y);circle.setAttribute('r','7');markers.append(circle);});frame=requestAnimationFrame(draw);}
   draw();message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();
  }catch(error){if(!disposed){message(t('No se pudo cargar el panorama. Reintenta desde Matrix.','Could not load panorama. Retry Matrix.'));onReady(String(error?.message||error));}}
  return dispose;

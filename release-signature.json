@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r4.19:49",
+  "version": "v.29.09.2026.r5.20:18",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup DCL-de483873628a49359a3881c1: información de vistas y controles Matrix en Experto, Xpacio sin HUD superpuesto.",
+  "evidence": "Yokup #178 DCL-c34b3a36c6c56cded1c96c94: altavoz Starbucks con mute sin pausa y playlist dinámica. Piezas Suno encargadas a Morfeo FLT-101276, pendientes.",
   "day": "29.09.2026",
-  "time": "19:49"
+  "time": "20:18"
 }
