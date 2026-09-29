@@ -1,12 +1,12 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.29.09.2026.r21.23:45",
+  "version": "v.29.09.2026.r22.23:55",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.8.0",
+    "version": "2.9.0",
     "health": "https://mcp.admira.store/",
     "tool_count": 33
   },
@@ -118,11 +118,11 @@
     },
     {
       "name": "playlist_list",
-      "description": "Read Starbucks playlists, conditions and screen assignments. Leer playlists de hilo, pantallas, TPV y sincro-ia."
+      "description": "Read base playlists or a #playlist UUID and its independent revision."
     },
     {
       "name": "playlist_add",
-      "description": "Añade un contenido Stock/Pixeria por número, título, hashtag o id; coincidencias ambiguas requieren elegir con pixeria_search. Escritura autenticada y revisionada."
+      "description": "Añadir al final por #playlist ID y Stock/título/hashtag; authenticated automatic append. UUID registry revision is independent of Matrix."
     },
     {
       "name": "playlist_remove",
