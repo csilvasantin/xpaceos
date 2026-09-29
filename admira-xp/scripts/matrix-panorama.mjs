@@ -2,8 +2,8 @@ import {previewSlice} from './device-preview-layout.mjs?v=drop-1';
 import {DEMO_WALL,DEMO_CHRISTMAS,DEMO_TPV,DEMO_IA,DEMO_MUSIC} from './starbucks-demo.mjs?v=devices-2';
 import {mountIncidentPanel} from './starbucks-incidents.mjs?v=devices-2';
 import {createSincroIA} from './sincro-ia.mjs?v=devices-2';
-import {mountDeviceEditor} from './device-editor.mjs?v=drop-1';
-import {createDevicePlayback} from './device-playback.mjs?v=drop-1';
+import {mountDeviceEditor} from './device-editor.mjs?v=capsules-1';
+import {createDevicePlayback} from './device-playback.mjs?v=capsules-1';
 import {DEVICE_IDS,assignedPlaylist,emptyDeviceLayout} from './device-layout.mjs?v=devices-2';
 import {createAnnouncement,ANNOUNCEMENT_SPEAKER,CLOSING_ANNOUNCEMENT} from './starbucks-announcement.mjs?v=closing-1';
 import {watchMatrixState} from './matrix-remote.mjs?v=drop-1';
@@ -69,6 +69,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const tpvId=STARBUCKS_TPV_MAPPING.players[0].id,tpvButton=root.querySelector('[data-map=tpv-playlist]'),tpvStatus=root.querySelector('.matrix-tpv-status');
  let tpvPlayback=null;
  const runtime=createDevicePlayback({onState:()=>{
+  deviceEditor?.playbackChanged();
   for(const [ids,button,label] of [[[...wallIds],screenButton,screenStatus],[[tpvId],tpvButton,tpvStatus]]){const wall=ids.length>1;if(wall&&demoMode==='ia')continue;const state=runtime.state(ids);button.setAttribute('aria-pressed',String(state.playing));button.textContent=state.playing?(wall?t('Pausar pantallas','Pause screens'):t('Pausar TPV','Pause POS')):(wall?t('Reproducir pantallas','Play screens'):t('Reproducir TPV','Play POS'));label.textContent=state.error?t('Vídeo no disponible · pulsa para reintentar','Video unavailable · click to retry'):state.count+' · '+(state.playing?t('reproduciendo sin audio','playing muted'):t('en pausa','paused'));}
  }});
  const catalog=()=>({wall:{title:t('Pared · Starbucks','Wall · Starbucks'),tracks:wallTracks.filter(t=>demoMode==='christmas'?t.condition==='/navidad':!t.condition)},tpv:{title:t('TPV · Publicidad local','POS · Local advertising'),tracks:tpvTracks}});
@@ -77,7 +78,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  function updateDeviceLabels(){for(const [id,badge] of numberNodes){const pid=assignedPlaylist(deviceEditor.config,id);badge.querySelector('small').textContent=deviceEditor.config.playlists[pid]?.title||(pid==='tpv'?t('Publicidad local','Local advertising'):screenGroup(screenNumber(id))?t('Grupo ','Group ')+screenGroup(screenNumber(id)):t('Sola','Standalone'));}}
  async function previewDevices(ids,track){if(demoMode==='ia')await setDemoMode('linear');for(const id of ids){const p=model.players.find(p=>p.id===id);if(p&&nodes.has(id)&&!previews.get(id)?.dataset[id===tpvId?'tpvVideo':'wallVideo'])mediaFor(p,id===tpvId?'tpvVideo':'wallVideo');}updateRuntime();const result=await runtime.preview(ids,track);applyScreenLayout();return result;}
  async function reloadDevices(ids){if(demoMode==='ia')await setDemoMode('linear');updateRuntime();const result=await runtime.reload(ids);applyScreenLayout();return result;}
- deviceEditor=mountDeviceEditor({root,surface,lang,nameFor:id=>playerName(model.players.find(p=>p.id===id)||{id,name:id}),catalog,onPlay:async(pid,track)=>{if(demoMode==='ia')await setDemoMode('linear');ensurePlaylistMedia(pid);updateRuntime();const result=await runtime.jump(pid,track);applyScreenLayout();return result;},onPreview:previewDevices,onReload:reloadDevices,onChange:()=>{updateRuntime();updateDeviceLabels();}});deviceEditor.enable(getScreenNumbersVisible());
+ deviceEditor=mountDeviceEditor({root,surface,lang,getPlayback:ids=>runtime.nowPlaying(ids),nameFor:id=>playerName(model.players.find(p=>p.id===id)||{id,name:id}),catalog,onPlay:async(pid,track)=>{if(demoMode==='ia')await setDemoMode('linear');ensurePlaylistMedia(pid);updateRuntime();const result=await runtime.jump(pid,track);applyScreenLayout();return result;},onPreview:previewDevices,onReload:reloadDevices,onChange:()=>{updateRuntime();updateDeviceLabels();}});deviceEditor.enable(getScreenNumbersVisible());
  const controller=ids=>({play(){if(demoMode==='ia'&&ids.length>1)void iaPlayback?.play();runtime.setPlaying(ids,true);},pause(){if(demoMode==='ia'&&ids.length>1)iaPlayback?.pause();runtime.setPlaying(ids,false);},state:()=>demoMode==='ia'&&ids.length>1?iaPlayback?.state()||{playing:false}:runtime.state(ids),replaceTracks(){updateRuntime();}});
  function stopWall(){runtime.setPlaying([...wallIds],false);wallPlayback=null;}
  function stopTPV(){runtime.setPlaying([tpvId],false);tpvPlayback=null;}

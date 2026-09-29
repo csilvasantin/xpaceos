@@ -16,3 +16,14 @@ test('temporary previews span only chosen devices without changing saved schedul
  await assert.rejects(runtime.preview(['missing'],c),/No active/);assert.equal(v[0].src,b.url);
  }finally{runtime.dispose();}
 });
+test('now-playing follows actual selected devices, automatic advance, pause, preview and reload',async()=>{
+ const ids=['starbucks-wall-06','starbucks-tpv-01'],v=[new Video(),new Video()],runtime=createDevicePlayback();
+ try{runtime.update({devices:ids.map((id,i)=>({id,video:v[i]})),catalog:{wall:{tracks:[a,b]},tpv:{tracks:[b]}}});await tick();
+ assert.deepEqual(runtime.nowPlaying([ids[0]]).map(s=>[s.playlistId,s.trackId,s.playing,s.preview]),[['wall','a',true,false]]);
+ v[0].dispatchEvent(new Event('ended'));await tick();assert.equal(runtime.nowPlaying([ids[0]])[0].trackId,'b');assert.equal(runtime.nowPlaying([ids[1]])[0].playlistId,'tpv');
+ runtime.setPlaying([ids[0]],false);await tick();assert.equal(runtime.nowPlaying([ids[0]])[0].playing,false);assert.equal(runtime.nowPlaying([ids[1]])[0].playing,true);
+ await runtime.preview([ids[0]],a);assert.equal(runtime.nowPlaying([ids[0]])[0].preview,true);assert.equal(runtime.nowPlaying([ids[0]])[0].trackId,'a');
+ await runtime.reload([ids[0]]);assert.equal(runtime.nowPlaying([ids[0]])[0].preview,false);assert.equal(runtime.nowPlaying([ids[0]])[0].trackId,'a');
+ v[0].dispatchEvent(new Event('error'));assert.equal(runtime.nowPlaying([ids[0]])[0].playing,false);assert.equal(runtime.nowPlaying([ids[0]])[0].error,true);
+ }finally{runtime.dispose();}
+});

@@ -97,3 +97,29 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-screen-number.device-drop-target{background:#86ffe6;color:#071a1a;border-color:#fff}
 .device-drag-ghost{position:fixed;z-index:10000;width:52px;height:76px;border:2px solid #86ffe6;border-radius:6px;background:#06191d;pointer-events:none;box-shadow:0 5px 20px #0009;overflow:hidden}
 .device-drag-ghost video{width:100%;height:100%;object-fit:contain;pointer-events:none}
+
+/* Keep the schedule, rather than metadata, in the foreground. */
+.matrix-playlist-editor{box-sizing:border-box;display:flex;flex-direction:column;gap:6px;width:410px;padding:10px;height:calc(100% - var(--hud-safe-bottom,120px) - 24px);max-height:calc(100% - var(--hud-safe-bottom,120px) - 24px);max-width:calc(100% - 24px);overflow:hidden}
+.matrix-playlist-editor>header,.matrix-playlist-editor>footer,.matrix-playlist-editor>.device-playlist-bar,.matrix-playlist-editor>.device-id-bar{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.matrix-playlist-editor>header button{padding:3px 9px}.matrix-playlist-editor>header strong{font-size:13px}
+.matrix-playlist-editor p{margin:0}.matrix-playlist-editor .device-selection{color:#b5cfc5;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;flex-shrink:0;font-size:11px}
+.matrix-playlist-editor .device-playlists{flex:1;width:0;padding:5px;font-size:12px}
+.matrix-playlist-editor button{font-size:11px;padding:5px 7px;white-space:nowrap}
+.matrix-playlist-editor .device-id-bar{font-size:10px}.matrix-playlist-editor .device-reference{flex:1;min-width:0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.matrix-playlist-editor .device-details{flex-shrink:0;max-height:160px;overflow:auto;scrollbar-width:none;font-size:11px;color:#b7d1c8}
+.matrix-playlist-editor summary{cursor:pointer;color:#9dd8c7}.matrix-playlist-editor .device-details label{margin:6px 0}.matrix-playlist-editor .device-save-actions{margin:6px 0;gap:4px}
+.matrix-playlist-editor .device-now-playing{flex-shrink:0;font-size:11px;color:#9dffcd;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;min-height:16px}
+.matrix-playlist-editor .device-tracks{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;margin:0;padding:2px 2px 2px 23px;scroll-padding:2px}
+.matrix-playlist-editor .device-tracks li{box-sizing:border-box;display:grid;grid-template-columns:repeat(4,28px) minmax(48px,1fr);column-gap:4px;row-gap:3px;position:relative;min-height:70px;margin:0 0 5px;padding:4px 5px 12px 57px;border:1px solid #31544c;border-radius:7px;background:#10292b;counter-increment:capsule;transition:background .16s,border-color .16s}
+.matrix-playlist-editor .device-tracks{counter-reset:capsule}.matrix-playlist-editor .device-tracks li::before{content:counter(capsule) '.';position:absolute;left:-22px;top:9px;width:18px;text-align:right;color:#adcbc1}
+.matrix-playlist-editor .device-tracks input:not([type=hidden]){grid-column:1/-1;margin:0;padding:4px 6px;height:25px;font-size:12px;background:#09232899}
+.matrix-playlist-editor .device-tracks button{margin:0;padding:3px;min-height:24px}.matrix-playlist-editor .device-tracks .pixeria-find{margin:0;font-size:0}.matrix-playlist-editor .pixeria-find::after{content:'Pixeria';font-size:10px}
+.matrix-playlist-editor .device-preview-handle{left:5px;top:5px;width:44px;height:60px;padding:0}
+.matrix-playlist-editor .pixeria-status,.matrix-playlist-editor .pixeria-results{grid-column:1/-1;margin:0}.matrix-playlist-editor .pixeria-results button{white-space:normal}
+.matrix-playlist-editor .device-playing-badge{position:absolute;right:7px;bottom:1px;font-size:9px;font-weight:700;color:#bdffe0;line-height:12px}
+.matrix-playlist-editor .device-tracks li.is-playing{background:#176448;border-color:#7dffc0;box-shadow:inset 3px 0 #89ffd0}.matrix-playlist-editor .device-tracks li.is-playing input{border-color:#66bc94;background:#0c432f;color:#fff}.matrix-playlist-editor .is-playing .device-track-play{background:#adffd3;color:#063d29;border-color:#adffd3}
+.matrix-playlist-editor>footer{justify-content:space-between}.matrix-playlist-editor .device-notice{flex-shrink:0;max-height:30px;overflow:auto;font-size:10px}.matrix-playlist-editor .device-notice:empty{display:none}
+@media(max-width:650px){.matrix-playlist-editor{top:6px;right:6px;max-width:calc(100% - 12px);height:calc(100% - var(--hud-safe-bottom,120px) - 12px);max-height:calc(100% - var(--hud-safe-bottom,120px) - 12px);padding:8px;gap:5px;width:380px}}
+@media(prefers-reduced-motion:reduce){.matrix-playlist-editor .device-tracks li{transition:none}}
+/* The floating mobile funnel must not cover playlist controls. */
+@media(max-width:700px){body:has(.matrix-playlist-editor:not([hidden])) #topBar #bbFunnel{visibility:hidden}}

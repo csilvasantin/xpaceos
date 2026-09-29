@@ -7,7 +7,7 @@ export function createScreenPlaylist({videos,tracks,initialURL,onState=()=>{}}){
  const timer=setInterval(sync,500);
  async function play(){
   if(disposed||!tracks.length||!videos.length)return;
-  const ticket=++generation;error=false;playing=false;
+  const ticket=++generation;error=false;playing=false;emit();
   for(const v of videos)if(v.getAttribute('src')!==tracks[index].url){v.src=tracks[index].url;v.load();}
   if(videos.some(v=>v.readyState<3)){
    const ready=await Promise.allSettled(videos.map(v=>v.readyState>=3?Promise.resolve():new Promise((resolve,reject)=>{const done=e=>{clearTimeout(timeout);v.removeEventListener('canplay',loaded);v.removeEventListener('error',failed);e?reject(e):resolve();};const loaded=()=>done(),failed=()=>done(Error('Video unavailable')),timeout=setTimeout(()=>done(Error('Video timeout')),20000);v.addEventListener('canplay',loaded,{once:true});v.addEventListener('error',failed,{once:true});})));

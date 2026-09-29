@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "title": "Catálogo funcional del Xpacio · Good / Better / Best",
-  "updated_at": "2026-09-29",
+  "updated_at": "2026-09-30",
   "audit": {
     "basis": "Revisión estática del código del gemelo; inventario MCP contrastado con tools/list y resources/list públicos. No se ejecutaron operaciones físicas, envíos, compras ni generación de pago.",
     "source_commit": "a7b8d62eacfcbb166d2ddc1e3a6758bec0fdc178",
@@ -2435,5 +2435,12 @@
       "en": "Open incident"
     },
     "guide": "https://www.xpaceos.com/admira-xp/docs/matrix-entry.md"
+  },
+  "playlist_capsules": {
+    "highlight": "actual local playback on selected devices",
+    "compact_header": true,
+    "visible_items_verified": 5,
+    "follow_active": true,
+    "guide": "https://www.xpaceos.com/admira-xp/docs/playlist-capsules.md"
   }
 }
