@@ -2301,5 +2301,12 @@
     "integration_guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-playlist.md",
     "screen_muted": true,
     "cross_device_sync": false
+  },
+  "starbucks_digital_twin": {
+    "location_id": "alsea-sbux-021",
+    "profile": "https://admira.app/?locationId=alsea-sbux-021&lang=es",
+    "url": "https://www.xpaceos.com/admira-xp/?autostart=xtanco&visual=matrix&loc=alsea-sbux-021",
+    "es": "En admira.app, busca «Starbucks Paseo de Gracia» y abre la ficha de Paseo de Gracia 103, Barcelona. Pulsa «Visita al Digital Twin» junto a «Tour DOOH» para entrar directamente al Starbucks de XpaceOS en Matrix. Tour DOOH conserva su recorrido por el mapa.",
+    "en": "In admira.app, search for “Starbucks Paseo de Gracia” and open the profile at Paseo de Gracia 103, Barcelona. Click “Visit the Digital Twin” beside “Tour DOOH” to open the Starbucks in XpaceOS Matrix directly. Tour DOOH keeps its map tour."
   }
 }

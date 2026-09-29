@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r7.20:41",
+  "version": "v.29.09.2026.r8.20:48",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #190: contrato JSON playlist Starbucks para PlayerTaza, guía ES/EN y regla de cierre MCP/help/documentación.",
+  "evidence": "Yokup #192: visita al Digital Twin Starbucks Paseo de Gracia 103 desde admira.app, ayuda y MCP ES/EN.",
   "day": "29.09.2026",
-  "time": "20:41"
+  "time": "20:48"
 }
