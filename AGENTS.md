@@ -13,3 +13,5 @@ Every implementation must ship with current Spanish/English MCP help, web help, 
 Pantallas Starbucks: fuente `admira-xp/scripts/starbucks-screens.mjs`; regenerar playlist/mapa JSON con `node admira-xp/scripts/export-starbucks-screens.mjs`. Mantener esta playlist separada del hilo musical.
 
 TPV Starbucks / POS: fuente `admira-xp/scripts/starbucks-tpv.mjs`; regenerar sus JSON con `node admira-xp/scripts/export-starbucks-tpv.mjs`. Playlist de publicidad local independiente de pared e hilo musical / Local advertising playlist independent of wall and speaker music. Guía / Guide: `admira-xp/docs/starbucks-tpv.md`.
+
+Matrix MCP: estado compartido en `https://mcp.admira.store/matrix/starbucks`, editable sólo mediante herramientas MCP autenticadas con revisión. Los JSON del sitio son semillas, no el estado vivo tras una edición MCP. Source: xpaceos-mcp/src/matrix-state.mjs; guide `admira-xp/docs/matrix-mcp.md`. Shared state is authoritative after a channel is managed; static JSON remains bootstrap.

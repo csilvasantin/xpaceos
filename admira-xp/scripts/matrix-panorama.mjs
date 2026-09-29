@@ -1,8 +1,9 @@
+import {watchMatrixState} from './matrix-remote.mjs?v=mcp-1';
 import {STARBUCKS_TPV_PLAYLIST,STARBUCKS_TPV_MAPPING,STARBUCKS_TPV_VIEW,withStarbucksTPV} from './starbucks-tpv.mjs?v=tpv-1';
 import {getScreenDisplayMode,setScreenDisplayMode,subscribeScreenDisplay,screenSlice,screenNumber,screenGroup,getScreenNumbersVisible,setScreenNumbersVisible,subscribeScreenNumbers} from './screen-display.mjs?v=number-layout-1';
 import {STARBUCKS_SCREEN_PLAYLIST,STARBUCKS_WALL_MAPPING,STARBUCKS_WALL_VIEW} from './starbucks-screens.mjs?v=number-layout-1';
-import {createScreenPlaylist} from './screen-playlist.mjs?v=wall-1';
-import {starbucksMusic,STARBUCKS_SPEAKER,STARBUCKS_EXIT} from './starbucks-music.mjs?v=exit-next-1';
+import {createScreenPlaylist} from './screen-playlist.mjs?v=mcp-1';
+import {starbucksMusic,STARBUCKS_SPEAKER,STARBUCKS_EXIT} from './starbucks-music.mjs?v=mcp-1';
 import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=wall-1';
 
 export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}={}){
@@ -14,7 +15,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  try{const saved=localStorage.getItem(MAPPING_KEY);if(saved)model=validateMapping(JSON.parse(saved));}catch{}
  model=withStarbucksTPV(model);
  root.innerHTML=`<div class="matrix-panorama" tabindex="0" aria-label="Starbucks Alsea 360°"><div class="matrix-player-layer"></div><div class="matrix-screen-numbers" hidden></div><svg class="matrix-markers" aria-hidden="true"></svg><button class="matrix-speaker" type="button" hidden data-music-toggle aria-pressed="false">♫</button><button class="matrix-exit-next" type="button" hidden data-music-next aria-label="${t('EXIT · Siguiente canción','EXIT · Next track')}">⏭</button></div>
- <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-screen-numbers type="button" aria-pressed="false">${t('Layout · números','Layout · numbers')}</button><button data-map="wall">${t('6 pantallas','6 screens')}</button><button data-map="playlist" aria-pressed="false">${t('Reproducir pantallas','Play screens')}</button><label class="matrix-screen-layout">${t('Vídeo','Video')} <select data-screen-layout aria-label="${t('Distribución del vídeo','Video layout')}"><option value="individual">${t('Individual · 1 por pantalla','Individual · 1 per screen')}</option><option value="groups">${t('Sincro · 1–3 / 4 / 5–6','Sync · 1–3 / 4 / 5–6')}</option><option value="total">${t('Sincro total · 1–6','Total sync · 1–6')}</option></select></label><span class="matrix-screen-status" role="status"></span><button data-map="tpv">TPV / POS</button><button data-map="tpv-playlist" aria-pressed="false">${t('Reproducir TPV','Play POS')}</button><span class="matrix-tpv-status" role="status"></span><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><button data-music-next type="button">${t('Siguiente canción','Next track')}</button><span class="matrix-music-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
+ <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-screen-numbers type="button" aria-pressed="false">${t('Layout · números','Layout · numbers')}</button><button data-map="wall">${t('6 pantallas','6 screens')}</button><button data-map="playlist" aria-pressed="false">${t('Reproducir pantallas','Play screens')}</button><label class="matrix-screen-layout">${t('Vídeo','Video')} <select data-screen-layout aria-label="${t('Distribución del vídeo','Video layout')}"><option value="individual">${t('Individual · 1 por pantalla','Individual · 1 per screen')}</option><option value="groups">${t('Sincro · 1–3 / 4 / 5–6','Sync · 1–3 / 4 / 5–6')}</option><option value="total">${t('Sincro total · 1–6','Total sync · 1–6')}</option></select></label><span class="matrix-screen-status" role="status"></span><button data-map="tpv">TPV / POS</button><button data-map="tpv-playlist" aria-pressed="false">${t('Reproducir TPV','Play POS')}</button><span class="matrix-tpv-status" role="status"></span><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><button data-music-next type="button">${t('Siguiente canción','Next track')}</button><span class="matrix-music-status" role="status"></span><span class="matrix-remote-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
  <section class="matrix-map-panel" aria-label="${t('Mapeo de players','Player mapping')}" hidden>
  <header><strong>Starbucks · Alsea</strong><button data-map="close" aria-label="${t('Cerrar','Close')}">×</button></header>
  <p>${t('Marca cada pantalla en orden: arriba izquierda, arriba derecha, abajo derecha, abajo izquierda.','Mark each screen in order: top left, top right, bottom right, bottom left.')}</p>
@@ -38,7 +39,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  function showNumbers(visible){numberLayer.hidden=!visible;numberButton.setAttribute('aria-pressed',String(visible));}
  showNumbers(getScreenNumbersVisible());const unsubscribeNumbers=subscribeScreenNumbers(showNumbers);
  numberButton.addEventListener('click',()=>setScreenNumbersVisible(null),options);
- let wallPlayback=null;
+ let wallPlayback=null,wallTracks=STARBUCKS_SCREEN_PLAYLIST.tracks,tpvTracks=STARBUCKS_TPV_PLAYLIST.tracks;
  const layoutSelect=root.querySelector('[data-screen-layout]');
  function applyScreenLayout(mode=getScreenDisplayMode()){
   layoutSelect.value=mode;
@@ -62,7 +63,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   }
   applyScreenLayout();
   if(!videos.length){screenStatus.textContent=t('Sin pantallas de esta playlist; usa 6 pantallas para añadirlas.','No playlist screens; use 6 screens to add them.');return;}
-  wallPlayback=createScreenPlaylist({videos,tracks:STARBUCKS_SCREEN_PLAYLIST.tracks,onState:state=>{screenButton.setAttribute('aria-pressed',String(state.playing));screenButton.textContent=state.playing?t('Pausar pantallas','Pause screens'):t('Reproducir pantallas','Play screens');screenStatus.textContent=state.error?t('Vídeo no disponible · pulsa para reintentar','Video unavailable · click to retry'):state.count+'/6 · '+(state.playing?t('reproduciendo sin audio','playing muted'):t('en pausa','paused'))+' · '+state.title;}});void wallPlayback.play();
+  wallPlayback=createScreenPlaylist({videos,tracks:wallTracks,onState:state=>{screenButton.setAttribute('aria-pressed',String(state.playing));screenButton.textContent=state.playing?t('Pausar pantallas','Pause screens'):t('Reproducir pantallas','Play screens');screenStatus.textContent=state.error?t('Vídeo no disponible · pulsa para reintentar','Video unavailable · click to retry'):state.count+'/6 · '+(state.playing?t('reproduciendo sin audio','playing muted'):t('en pausa','paused'))+' · '+state.title;}});void wallPlayback.play();
  }
  const tpvId=STARBUCKS_TPV_MAPPING.players[0].id,tpvButton=root.querySelector('[data-map=tpv-playlist]'),tpvStatus=root.querySelector('.matrix-tpv-status');
  let tpvPlayback=null;
@@ -72,7 +73,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   stopTPV();const p=model.players.find(p=>p.id===tpvId);
   if(!p||p.type!=='video'||p.url!==STARBUCKS_TPV_PLAYLIST.tracks[0].url){tpvStatus.textContent=t('Playlist TPV sin asignar · revisa Mapear players','POS playlist unassigned · check Map players');return;}
   destroyPreview(p.id);const v=document.createElement('video');v.className='matrix-player-media';v.dataset.tpvVideo='true';v.setAttribute('aria-label',t('TPV · Publicidad local','POS · Local advertising'));nodes.get(p.id).prepend(v);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,v);
-  tpvPlayback=createScreenPlaylist({videos:[v],tracks:STARBUCKS_TPV_PLAYLIST.tracks,onState:state=>{tpvButton.setAttribute('aria-pressed',String(state.playing));tpvButton.textContent=state.playing?t('Pausar TPV','Pause POS'):t('Reproducir TPV','Play POS');tpvStatus.textContent=state.error?t('TPV no disponible · pulsa para reintentar','POS unavailable · click to retry'):'TPV / POS · '+(state.playing?t('publicidad local sin audio','local advertising muted'):t('en pausa','paused'))+' · '+state.title;}});void tpvPlayback.play();
+  tpvPlayback=createScreenPlaylist({videos:[v],tracks:tpvTracks,onState:state=>{tpvButton.setAttribute('aria-pressed',String(state.playing));tpvButton.textContent=state.playing?t('Pausar TPV','Pause POS'):t('Reproducir TPV','Play POS');tpvStatus.textContent=state.error?t('TPV no disponible · pulsa para reintentar','POS unavailable · click to retry'):'TPV / POS · '+(state.playing?t('publicidad local sin audio','local advertising muted'):t('en pausa','paused'))+' · '+state.title;}});void tpvPlayback.play();
  }
  const speaker=root.querySelector('.matrix-speaker'),musicStatus=root.querySelector('.matrix-music-status'),musicButtons=[...root.querySelectorAll('[data-music-toggle]')];
  const exitNext=root.querySelector('.matrix-exit-next'),nextButtons=[...root.querySelectorAll('[data-music-next]')];
@@ -80,7 +81,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const unsubscribeMusic=music.subscribe(state=>{
   const audible=state.started&&!state.muted;
   const action=audible?t('Silenciar','Mute'):t('Escuchar','Listen');
-  let label=!state.tracks?t('Playlist pendiente · 3 instrumentales Suno de Morfeo','Playlist pending · 3 Suno instrumentals from Morfeo')
+  let label=!state.tracks?(state.managed?t('Playlist musical vacía · gestionada por MCP','Empty music playlist · managed by MCP'):t('Playlist pendiente · 3 instrumentales Suno de Morfeo','Playlist pending · 3 Suno instrumentals from Morfeo'))
    :state.started?(state.muted?t('Silenciado · la playlist continúa','Muted · playlist continues'):t('Sonando','Playing'))+' · '+state.title
    :state.tracks+' '+(state.tracks===1?t('pieza','track'):t('piezas','tracks'))+' · '+state.title+' · '+t('pulsa el altavoz para escuchar','click the speaker to listen');
   if(state.error==='play')label=t('Pulsa para reintentar el audio','Click to retry audio');
@@ -141,7 +142,8 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  const toolbar=root.querySelector('.matrix-map-toolbar');
  for(const type of ['click','keydown','keyup','keypress','pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])toolbar.addEventListener(type,e=>e.stopPropagation(),options);
  document.querySelector('#telegramDock .tg-actions')?.append(toolbar);
- const dispose=()=>{if(disposed)return;disposed=true;stopWall();stopTPV();controls.abort();clearInterval(musicPoll);unsubscribeMusic();unsubscribeLayout();unsubscribeNumbers();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
+ let stopRemote=()=>{};
+ const dispose=()=>{if(disposed)return;disposed=true;stopRemote();stopWall();stopTPV();controls.abort();clearInterval(musicPoll);unsubscribeMusic();unsubscribeLayout();unsubscribeNumbers();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
  let observer;
  signal?.addEventListener('abort',dispose,{once:true});
  try{
@@ -164,7 +166,28 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   surface.addEventListener('wheel',e=>{e.preventDefault();fov=Math.max(30,Math.min(100,fov+e.deltaY*.04));},{...options,passive:false});
   surface.addEventListener('keydown',e=>{const keys={ArrowLeft:()=>yaw-=4,ArrowRight:()=>yaw+=4,ArrowUp:()=>pitch=Math.min(85,pitch+4),ArrowDown:()=>pitch=Math.max(-85,pitch-4),'+':()=>fov=Math.max(30,fov-5),'-':()=>fov=Math.min(100,fov+5)};if(keys[e.key]){e.preventDefault();keys[e.key]();}},options);
   function draw(){if(disposed)return;const key=[yaw,pitch,fov,surface.clientWidth,surface.clientHeight,mapRevision,marking?.length].join(':');if(key===renderKey){frame=requestAnimationFrame(draw);return;}renderKey=key;updateCamera();renderer.render(scene,camera);const soundPoint=project(STARBUCKS_SPEAKER);speaker.hidden=!soundPoint||!!marking;if(soundPoint){speaker.style.left=soundPoint.x+'px';speaker.style.top=soundPoint.y+'px';}const exitPoint=project(STARBUCKS_EXIT);exitNext.hidden=!exitPoint||!!marking;if(exitPoint){exitNext.style.left=exitPoint.x+'px';exitNext.style.top=exitPoint.y+'px';}for(const p of model.players){const node=nodes.get(p.id),pts=p.corners.map(project);const matrix=pts.every(Boolean)&&quadTransform(pts,p.width||640,p.height||360);node.hidden=!matrix;if(matrix)node.style.transform='matrix3d('+matrix.join(',')+')';const badge=numberNodes.get(p.id);if(badge){badge.hidden=!matrix||!!marking;if(matrix){badge.style.left=((pts[0].x+pts[1].x)/2)+'px';badge.style.top=(Math.min(pts[0].y,pts[1].y)-5)+'px';}}}markers.replaceChildren();if(marking)marking.forEach((corner,i)=>{const p=project(corner);if(!p)return;const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',p.x);circle.setAttribute('cy',p.y);circle.setAttribute('r','7');markers.append(circle);});frame=requestAnimationFrame(draw);}
-  draw();startWall();startTPV();message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();
+  draw();startWall();startTPV();
+  let remoteState=null;
+  stopRemote=watchMatrixState({onState:state=>{
+   for(const channel of ['wall','tpv','music']){
+    const playlist=state.playlists[channel],old=remoteState?.playlists[channel];
+    if(!playlist.managed||JSON.stringify(playlist)===JSON.stringify(old))continue;
+    if(channel==='wall'){wallTracks=playlist.tracks;wallPlayback?.replaceTracks(wallTracks);}
+    else if(channel==='tpv'){tpvTracks=playlist.tracks;tpvPlayback?.replaceTracks(tpvTracks);}
+    else music.replaceTracks(playlist.tracks);
+   }
+   for(const [key,value] of Object.entries(state.controls)){
+    if(remoteState&&state.controlRevision[key]===remoteState.controlRevision[key])continue;
+    if(key==='wallPlaying'){if(value)void wallPlayback?.play();else wallPlayback?.pause();}
+    if(key==='tpvPlaying'){if(value)void tpvPlayback?.play();else tpvPlayback?.pause();}
+    if(key==='wallMode')setScreenDisplayMode(value);
+    if(key==='numbersVisible')setScreenNumbersVisible(value);
+    if(key==='musicMuted'&&value)music.mute();
+   }
+   if(remoteState&&state.musicNext>remoteState.musicNext)for(let i=remoteState.musicNext;i<state.musicNext;i++)music.next();
+   remoteState=state;
+  },onStatus:state=>{if(disposed)return;toolbar.querySelector('.matrix-remote-status').textContent=state.error?t('MCP sin conexión · se conserva el último estado','MCP offline · keeping last state'):t('MCP conectado · revisión ','MCP connected · revision ')+state.revision;}});
+  message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();
  }catch(error){if(!disposed){message(t('No se pudo cargar el panorama. Reintenta desde Matrix.','Could not load panorama. Retry Matrix.'));onReady(String(error?.message||error));}}
  return dispose;
 }

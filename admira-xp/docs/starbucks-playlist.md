@@ -38,3 +38,8 @@ API local: window.XpaceStarbucksMusic.getState(), .subscribe(fn) (devuelve una f
 Local API: window.XpaceStarbucksMusic.getState(), .subscribe(fn) (returns an unsubscribe function), .next(). Window event: xpaceos:starbucks-music; state is in event.detail. Fields: schemaVersion:1, store, tracks (count), index (zero-based), title, url, position (seconds), playing, started, muted, loading, error, revision, reason, updatedAt (Unix milliseconds). revision increments on selection/restart; reason=next identifies EXIT. Events cover state changes and timeupdate, with clock updates at most once per second. A source change can emit playing=false while loading: selection is not confirmed playback. Available after Matrix initializes; one audio#starbucksMusic instance per page.
 
 Alcance / Scope: API/evento sólo en la página XpaceOS; no es un relay entre equipos ni una confirmación USB/Bluetooth. Local XpaceOS page only; no cross-device relay or USB/Bluetooth acknowledgement. PlayerTaza necesita conectar su puente y verificar recepción física / must connect its bridge and verify physical reception. Catálogo verificado: una pista publicada y feed vacío al 29-09-2026; no se añadió música de prueba al catálogo / verified catalog: one published track and empty feed; no test music was added. Ancla EXIT yaw=-129.314172, pitch=7.892714. Yokup #213.
+
+
+## Gestión compartida / Shared management
+
+MCP `matrix_state` y `matrix_playlist_update` gestionan esta playlist. El JSON estático es la semilla; al gestionar el canal vía MCP prevalece el estado compartido / Static JSON is bootstrap; after managing the channel via MCP the shared state takes precedence. Guía / Guide: https://www.xpaceos.com/admira-xp/docs/matrix-mcp.md

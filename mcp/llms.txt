@@ -1,6 +1,6 @@
 # XpaceOS · MCP — conecta con la red de retail media
 
-> Servidor MCP de XpaceOS (v2.2.0): el puente para que agentes (silicio) y personas (carbono)
+> Servidor MCP de XpaceOS (v2.3.0): el puente para que agentes (silicio) y personas (carbono)
 > se conecten al sistema operativo del comercio físico — la red de pantallas (flota, emisión en
 > vivo, audiencia, proof-of-play, alta, publicar), el catálogo de 8.775 gemelos digitales,
 > XpaceScan (3D desde el móvil), el motor de reglas XPL y la ayuda para humanos.
@@ -54,7 +54,7 @@ Repo: https://github.com/csilvasantin/xpaceos
   Se puede descubrir mediante galaxy({element:"xpaceos"}) o xpaceos://llms.txt; para leer
   el archivo completo, el cliente necesita acceso HTTP ordinario a la URL publicada.
 - Esto no añade herramientas ni registra xpaceos://funcionalidades. El servidor sigue
-  ofreciendo 16 herramientas y 4 recursos. tools/list y resources/list son la referencia
+  ofreciendo 20 herramientas y 5 recursos. tools/list y resources/list son la referencia
   para saber qué se puede invocar realmente en la conexión.
 - La herramienta help y xpaceos://help conservan la guía embebida en el Worker hasta que
   se actualice ese backend. xpaceos://llms.txt y galaxy leen sus archivos web con caché;
@@ -285,3 +285,16 @@ ES: Solo el terminal vertical de la foto, no los terminales pequeños de caja. H
 EN: Only the portrait terminal in the reference photo, not the small cashier terminals. Four yaw/pitch corners and a 360×640 projection base. A missing POS anchor is added in memory when entering Matrix (24 maximum); saved localStorage and existing custom corners/URLs are not rewritten. Save map persists the result. If removed during the session, TPV / POS restores it; re-entering adds it again. If the map is full, remove an anchor first. Imported maps are kept as supplied: TPV / POS adds the missing anchor. If you change its URL, use Open preview; playlist controls only play the POS catalog URL. Video failures allow retry without pausing the wall. Leaving Matrix releases its video and controller. No content is published to the physical POS device.
 
 Fuente canónica / Canonical source: `admira-xp/scripts/starbucks-tpv.mjs`. Regenerar contratos / Regenerate contracts: `node admira-xp/scripts/export-starbucks-tpv.mjs`. Controlador separado / Separate controller: `createScreenPlaylist` with one muted video; it loops the playlist on `ended`. No wall synchronization or music transport coupling. Yokup #220.
+
+
+## Matrix MCP · Shared playlists / Playlists compartidas
+
+Las pantallas de Matrix · Starbucks y el TPV llevan marco negro, incluido el halo de la captura. Los agentes gestionan sus contenidos desde el MCP de XpaceOS: matrix_state consulta las tres playlists (wall, tpv, music); matrix_playlist_update añade, quita, ordena o vacía contenido; matrix_configure controla reproducción de pared/TPV, sincro, etiquetas y silencio; matrix_music_next avanza la música. Matrix consulta cambios cada 5 segundos mientras está abierto. Las escrituras exigen clave de flota y expected_revision; quedan firmadas por el agente. El estado compartido conserva la última versión si se pierde la conexión.
+
+Matrix · Starbucks screens and POS use black frames, covering the captured blue halo. Agents manage content through XpaceOS MCP: matrix_state reads the three playlists (wall, tpv, music); matrix_playlist_update adds, removes, reorders or clears content; matrix_configure controls wall/POS playback, sync, labels and mute; matrix_music_next advances music. Open Matrix pages poll every 5 seconds. Writes require a fleet key and expected_revision and are signed by the agent. The last state is retained if the connection fails.
+
+ES: Estos controles operan los players virtuales de Matrix. El audio se activa con una pulsación local. Los controles locales siguen disponibles; un nuevo cambio remoto del mismo control prevalece. reset:true libera los controles compartidos y conserva la elección local actual. Para comunicación y encargos entre agentes se utiliza el MCP de Admira.live (agora_decir, agente_encargar, encargo_estado); no se ha enviado ningún encargo de prueba. Añadir funciones nuevas requiere implementación y despliegue: matrix_configure sólo admite las funciones enumeradas, no código arbitrario. El mapeo de esquinas continúa en Mapear players y no hay confirmación de recepción en hardware.
+
+EN: Controls operate virtual Matrix players. Sound activation requires a local click. Local controls remain available; a new remote change to the same control takes precedence. reset:true releases shared controls while retaining the current local choice. Agent communication and assignments use the Admira.live MCP (agora_decir, agente_encargar, encargo_estado); no test assignment was sent. New capabilities require implementation and deployment: matrix_configure accepts only the listed controls, not arbitrary code. Corner mapping remains in Map players; no hardware receipt is implied.
+
+Guide: https://www.xpaceos.com/admira-xp/docs/matrix-mcp.md

@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r13.21:55",
+  "version": "v.29.09.2026.r14.22:11",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #220: TPV virtual calibrado, playlist local Stock 1329 independiente, controles ES/EN, ayuda y MCP actualizados.",
+  "evidence": "Yokup #232: marcos negros, MCP Matrix CRUD/control autenticado con CAS, tres playlists y polling vivo, coordinación MCP y ayuda ES/EN.",
   "day": "29.09.2026",
-  "time": "21:55"
+  "time": "22:11"
 }

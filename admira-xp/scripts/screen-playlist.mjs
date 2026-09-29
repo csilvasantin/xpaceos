@@ -19,5 +19,12 @@ export function createScreenPlaylist({videos,tracks,onState=()=>{}}){
  const failed=()=>{pause();error=true;emit();};
  videos[0]?.addEventListener('ended',ended);for(const v of videos)v.addEventListener('error',failed);
  emit();
- return {play,pause,state:()=>({playing,error,index}),dispose(){disposed=true;++generation;clearInterval(timer);videos[0]?.removeEventListener('ended',ended);for(const v of videos){v.removeEventListener('error',failed);v.pause();}}};
+ function replaceTracks(incoming){
+  const current=tracks[index]?.url,wasPlaying=playing;tracks=[...incoming];
+  const kept=tracks.findIndex(t=>t.url===current);if(kept>=0){index=kept;emit();return;}
+  ++generation;index=Math.min(index,Math.max(0,tracks.length-1));
+  for(const v of videos){v.pause();if(tracks.length)v.src=tracks[index].url;else v.removeAttribute('src');v.load();}
+  playing=false;error=false;if(wasPlaying&&tracks.length)void play();else emit();
+ }
+ return {play,pause,replaceTracks,state:()=>({playing,error,index}),dispose(){disposed=true;++generation;clearInterval(timer);videos[0]?.removeEventListener('ended',ended);for(const v of videos){v.removeEventListener('error',failed);v.pause();}}};
 }

@@ -26,3 +26,7 @@ test('one blocked screen pauses the group and exposes an error; explicit retry r
 test('leaving the view while play is pending cannot announce playback afterwards',async()=>{
  const v=new Video();let resolve;v.play=()=>new Promise(r=>resolve=r);const c=createScreenPlaylist({videos:[v],tracks:playlist.tracks});const pending=c.play();c.dispose();resolve();await pending;assert.equal(c.state().playing,false);assert.equal(v.paused,true);
 });
+test('live playlist changes preserve current track; removing current switches and clear stops all media',async()=>{
+ const v=new Video();v.removeAttribute=n=>{v[n]='';};const a={id:'a',url:'https://a.test/1.mp4'},b={id:'b',url:'https://a.test/2.mp4'},c=createScreenPlaylist({videos:[v],tracks:[a]});
+ try{await c.play();v.currentTime=3;c.replaceTracks([a,b]);assert.equal(v.currentTime,3);c.replaceTracks([b]);await flush();assert.equal(v.src,b.url);assert.equal(v.paused,false);c.pause();c.replaceTracks([a]);assert.equal(v.paused,true);c.replaceTracks([]);assert.equal(v.src,'');assert.equal(v.paused,true);}finally{c.dispose();}
+});

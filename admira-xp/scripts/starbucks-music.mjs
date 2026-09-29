@@ -24,10 +24,11 @@ export function musicTracks(value){
 export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fetch(STARBUCKS_FEED,{cache:'no-store'})}={}){
   const published=musicTracks(publishedTracks);
   let tracks=[...published],index=0,started=false,loading=false,error='',request=null,disposed=false;
+  let managed=false;
   let playVersion=0,revision=0,reason='initial',lastClockEmit=0;
   const listeners=new Set(),failed=new Set();
   audio.preload='metadata';audio.loop=false;audio.muted=true;audio.volume=.35;
-  const state=()=>({schemaVersion:1,store:STARBUCKS_STORE,tracks:tracks.length,index,title:tracks[index]?.title||'',url:tracks[index]?.url||'',position:Number.isFinite(audio.currentTime)?audio.currentTime:0,playing:started&&!audio.paused,started,muted:audio.muted,loading,error,revision,reason,updatedAt:Date.now()});
+  const state=()=>({schemaVersion:1,store:STARBUCKS_STORE,managed,tracks:tracks.length,index,title:tracks[index]?.title||'',url:tracks[index]?.url||'',position:Number.isFinite(audio.currentTime)?audio.currentTime:0,playing:started&&!audio.paused,started,muted:audio.muted,loading,error,revision,reason,updatedAt:Date.now()});
   const emit=()=>{for(const fn of listeners)fn(state());};
   async function play(){
     const version=++playVersion;
@@ -53,16 +54,24 @@ export function createStarbucksMusic({audio,publishedTracks=[],fetchFeed=()=>fet
   audio.addEventListener('ended',ended);audio.addEventListener('error',mediaError);audio.addEventListener('timeupdate',clock);
   return {
     state,
+    replaceTracks(incoming){
+      managed=true;const next=musicTracks(incoming),current=tracks[index]?.url,wasStarted=started;
+      const kept=next.findIndex(t=>t.url===current);tracks=next;failed.clear();error='';
+      if(kept>=0){index=kept;emit();return;}
+      ++playVersion;audio.pause();index=Math.min(index,Math.max(0,tracks.length-1));
+      if(!tracks.length){started=false;revision++;reason='playlist';audio.removeAttribute('src');audio.load();emit();return;}
+      select(index,'playlist');if(wasStarted)void play();emit();
+    },
     next:()=>advance(true),
     subscribe(fn){listeners.add(fn);fn(state());return ()=>listeners.delete(fn);},
     refresh(){
-      if(request||disposed)return request;
+      if(request||disposed||managed)return request;
       loading=true;emit();
       request=(async()=>{
         try{
           const response=await fetchFeed();if(!response.ok)throw Error('feed');
           const data=await response.json();if(data.ok===false)throw Error('feed');
-          const incoming=musicTracks([...published,...musicTracks(data.playlist)]);if(disposed)return;
+          const incoming=musicTracks([...published,...musicTracks(data.playlist)]);if(disposed||managed)return;
           // An empty/transient response must not cut off a playing song.
           if(incoming.length){
             const current=tracks[index]?.url,kept=incoming.findIndex(t=>t.url===current);

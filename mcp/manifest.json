@@ -1,18 +1,18 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.15.09.2026.r4.12:07",
+  "version": "v.29.09.2026.r14.22:11",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "health": "https://mcp.admira.store/",
-    "tool_count": 16
+    "tool_count": 20
   },
   "auth": {
     "lectura": "none",
-    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset)",
+    "escritura": "Authorization: Bearer <clave de flota AdmiraNeXT> (register_device, publish_asset, matrix_playlist_update, matrix_configure, matrix_music_next)",
     "identidad": "https://www.admiranext.com/mcp/identidad-flota.mjs",
     "directorio": "https://www.admiranext.com/mcp/#directorio"
   },
@@ -91,6 +91,22 @@
     {
       "name": "galaxy",
       "description": "Directorio conectable de servidores, hubs, identificadores compartidos y flujos de la Galaxia Admira."
+    },
+    {
+      "name": "matrix_state",
+      "description": "Shared Matrix playlists and functions; see matrix_mcp guide"
+    },
+    {
+      "name": "matrix_playlist_update",
+      "description": "Shared Matrix playlists and functions; see matrix_mcp guide"
+    },
+    {
+      "name": "matrix_configure",
+      "description": "Shared Matrix playlists and functions; see matrix_mcp guide"
+    },
+    {
+      "name": "matrix_music_next",
+      "description": "Shared Matrix playlists and functions; see matrix_mcp guide"
     }
   ],
   "ecosystem": {
@@ -125,6 +141,11 @@
     {
       "uri": "xpaceos://galaxy",
       "mimeType": "application/json"
+    },
+    {
+      "uri": "xpaceos://matrix/starbucks",
+      "name": "Starbucks shared Matrix state",
+      "description": "Live playlists, controls and signed changes"
     }
   ],
   "people_visibility": {
@@ -302,6 +323,35 @@
     "independent_from": [
       "wall",
       "music"
+    ]
+  },
+  "matrix_mcp": {
+    "es": "Las pantallas de Matrix · Starbucks y el TPV llevan marco negro, incluido el halo de la captura. Los agentes gestionan sus contenidos desde el MCP de XpaceOS: matrix_state consulta las tres playlists (wall, tpv, music); matrix_playlist_update añade, quita, ordena o vacía contenido; matrix_configure controla reproducción de pared/TPV, sincro, etiquetas y silencio; matrix_music_next avanza la música. Matrix consulta cambios cada 5 segundos mientras está abierto. Las escrituras exigen clave de flota y expected_revision; quedan firmadas por el agente. El estado compartido conserva la última versión si se pierde la conexión.",
+    "en": "Matrix · Starbucks screens and POS use black frames, covering the captured blue halo. Agents manage content through XpaceOS MCP: matrix_state reads the three playlists (wall, tpv, music); matrix_playlist_update adds, removes, reorders or clears content; matrix_configure controls wall/POS playback, sync, labels and mute; matrix_music_next advances music. Open Matrix pages poll every 5 seconds. Writes require a fleet key and expected_revision and are signed by the agent. The last state is retained if the connection fails.",
+    "endpoint": "https://mcp.admira.store/mcp",
+    "state_url": "https://mcp.admira.store/matrix/starbucks",
+    "resource": "xpaceos://matrix/starbucks",
+    "tools": [
+      "matrix_state",
+      "matrix_playlist_update",
+      "matrix_configure",
+      "matrix_music_next"
+    ],
+    "channels": [
+      "wall",
+      "tpv",
+      "music"
+    ],
+    "poll_seconds": 5,
+    "authentication": "fleet key for writes",
+    "concurrency": "expected_revision; atomic compare-and-swap",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/matrix-mcp.md",
+    "scope": "virtual Matrix clients; no physical-device acknowledgement",
+    "coordination_endpoint": "https://mcp.admira.live/mcp",
+    "coordination_tools": [
+      "agora_decir",
+      "agente_encargar",
+      "encargo_estado"
     ]
   }
 }

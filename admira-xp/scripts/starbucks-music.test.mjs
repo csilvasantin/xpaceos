@@ -64,3 +64,6 @@ test('single-track next restarts and increments revision; empty next cannot pret
  const {audio,music,setFeed}=setup();setFeed([]);await music.refresh();assert.equal(music.next(),false);assert.equal(music.state().started,false);
  setFeed([songs[0]]);await music.refresh();music.toggle();await tick();audio.currentTime=123;const revision=music.state().revision;music.next();await tick();assert.equal(audio.src,songs[0].url);assert.equal(audio.currentTime,0);assert.equal(music.state().revision,revision+1);music.dispose();
 });
+test('MCP playlist replaces queue authoritatively and removing current track keeps mute',async()=>{
+ const {audio,music,setFeed}=setup();await music.refresh();music.toggle();await tick();music.mute();audio.currentTime=12;music.replaceTracks([songs[0],songs[2]]);assert.equal(audio.currentTime,12);music.replaceTracks([songs[2]]);await tick();assert.equal(audio.src,songs[2].url);assert.equal(audio.muted,true);music.replaceTracks([]);assert.equal(music.state().tracks,0);assert.equal(audio.paused,true);setFeed(songs);await music.refresh();assert.equal(music.state().tracks,0);music.dispose();
+});

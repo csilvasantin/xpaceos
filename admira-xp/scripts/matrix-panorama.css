@@ -3,7 +3,7 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-panorama{position:absolute;inset:0;touch-action:none;outline-offset:-3px;cursor:grab}
 .matrix-panorama.is-mapping{cursor:crosshair}.matrix-panorama canvas{display:block;width:100%;height:100%}
 .matrix-player-layer,.matrix-markers{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden}.matrix-markers circle{fill:#78f3ff;stroke:#03151b;stroke-width:2}
-.matrix-mapped-player{position:absolute;left:0;top:0;transform-origin:0 0;background:#07332d99;border:3px solid #78f3ff;pointer-events:none;overflow:hidden;backface-visibility:hidden}
+.matrix-mapped-player{position:absolute;left:0;top:0;transform-origin:0 0;background:#000;border:4px solid #000;box-sizing:border-box;box-shadow:0 0 0 12px #000;pointer-events:none;overflow:hidden;backface-visibility:hidden}
 .matrix-player-label{position:absolute;left:0;bottom:0;max-width:100%;font:22px/1.4 monospace;padding:8px 12px;background:#032d2ded;color:white;border:0;pointer-events:auto;cursor:pointer;text-align:left;overflow-wrap:anywhere}
 .matrix-player-media{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:fill;pointer-events:none}
 .matrix-map-toolbar{position:absolute;z-index:5;top:100px;left:16px;right:16px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;pointer-events:none}
@@ -22,7 +22,7 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-speaker{position:absolute;z-index:3;width:36px;height:36px;transform:translate(-50%,-50%);display:grid;place-items:center;border:1px solid #96dfd5aa;border-radius:50%;background:#062a2bad;color:#d5fff9;font:22px/1 system-ui;cursor:pointer;touch-action:manipulation}
 .matrix-speaker[hidden]{display:none}.matrix-speaker:hover,.matrix-speaker:focus-visible{background:#12615e;border-color:#b6fff3;outline:2px solid #78f3ff;outline-offset:3px}.matrix-speaker[aria-pressed="true"]{color:#032b28;background:#9dffcf}
 #telegramDock .matrix-music-status{flex:0 0 100%;color:#9dffcf;font:9px/1.4 monospace;overflow-wrap:anywhere}
-.matrix-mapped-player.has-preview{border:0;background:#000}
+.matrix-mapped-player.has-preview{border:4px solid #000;background:#000}
 .matrix-mapped-player.has-preview .matrix-player-label{display:none}
 .matrix-capture-stage:has(.matrix-map-panel:not([hidden])) .matrix-player-label{display:block}
 .matrix-mapped-player .matrix-player-media{object-fit:contain}
@@ -42,3 +42,5 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-screen-number{display:grid;justify-items:center;gap:2px;font-size:10px}.matrix-screen-number strong{font-size:20px;line-height:1}.matrix-screen-number small{font:inherit}
 
 @media(max-width:650px){.matrix-screen-number{padding:3px 5px;gap:0}.matrix-screen-number strong{font-size:14px}.matrix-screen-number small{display:none}}
+
+#telegramDock .matrix-remote-status{font:9px/1.4 monospace;color:#a8dbc9;overflow-wrap:anywhere}

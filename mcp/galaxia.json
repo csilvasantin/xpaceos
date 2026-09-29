@@ -33,7 +33,7 @@
       "endpoint": "https://mcp.admira.store/mcp",
       "health": "https://mcp.admira.store/",
       "auth": "lectura abierta; escritura con clave de flota",
-      "tools": ["quien_soy", "fleet_status", "list_screens", "screen_now", "emission_report", "register_device", "publish_asset", "search_twins", "twin_detail", "catalog_stats", "list_scenes", "scene_status", "xpl_rules", "signage_feed", "help", "galaxy"],
+      "tools": ["quien_soy", "fleet_status", "list_screens", "screen_now", "emission_report", "register_device", "publish_asset", "search_twins", "twin_detail", "catalog_stats", "list_scenes", "scene_status", "xpl_rules", "signage_feed", "help", "galaxy", "matrix_state", "matrix_playlist_update", "matrix_configure", "matrix_music_next"],
       "static_catalog": {
         "url": "https://www.xpaceos.com/mcp/funcionalidades.json",
         "docs": "https://www.xpaceos.com/help/funcionalidades/",
@@ -77,6 +77,7 @@
       "health": "https://mcp.admira.live/salud",
       "auth": "clave de flota o clave de consejero",
       "capabilities": ["consejo", "flota", "AgoraMatrix", "Yokup", "Telegram humano"],
+      "tools": ["agora_decir", "agente_encargar", "encargo_estado"],
       "accepts": ["persona_machine", "project_id", "mission_id"],
       "hands_off": ["decision", "assignment", "message_receipt"]
     },

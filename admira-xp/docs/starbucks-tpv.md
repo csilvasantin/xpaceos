@@ -15,3 +15,8 @@ ES: Solo el terminal vertical de la foto, no los terminales pequeños de caja. H
 EN: Only the portrait terminal in the reference photo, not the small cashier terminals. Four yaw/pitch corners and a 360×640 projection base. A missing POS anchor is added in memory when entering Matrix (24 maximum); saved localStorage and existing custom corners/URLs are not rewritten. Save map persists the result. If removed during the session, TPV / POS restores it; re-entering adds it again. If the map is full, remove an anchor first. Imported maps are kept as supplied: TPV / POS adds the missing anchor. If you change its URL, use Open preview; playlist controls only play the POS catalog URL. Video failures allow retry without pausing the wall. Leaving Matrix releases its video and controller. No content is published to the physical POS device.
 
 Fuente canónica / Canonical source: `admira-xp/scripts/starbucks-tpv.mjs`. Regenerar contratos / Regenerate contracts: `node admira-xp/scripts/export-starbucks-tpv.mjs`. Controlador separado / Separate controller: `createScreenPlaylist` with one muted video; it loops the playlist on `ended`. No wall synchronization or music transport coupling. Yokup #220.
+
+
+## Gestión compartida / Shared management
+
+MCP `matrix_state` y `matrix_playlist_update` gestionan esta playlist. El JSON estático es la semilla; al gestionar el canal vía MCP prevalece el estado compartido / Static JSON is bootstrap; after managing the channel via MCP the shared state takes precedence. Guía / Guide: https://www.xpaceos.com/admira-xp/docs/matrix-mcp.md
