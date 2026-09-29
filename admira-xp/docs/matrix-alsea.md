@@ -99,3 +99,22 @@ Type /layout to show or hide numbers above all six screens in Matrix · Starbuck
 IDs: starbucks-wall-01→6, -02→5, -03→4, -04→3, -05→2, -06→1. Son IDs de anclaje persistentes: no renombrarlos ni invertir sus esquinas. El número de pantalla es una etiqueta separada, definida por display.screenNumbersById en starbucks-screen-playlist.json. display.spatialOrder=[6,5,4,3,2,1] ordena las franjas sin espejo. Mapas previos se corrigen visualmente sin reescribir localStorage. Los números por defecto están ocultos; /layout es inspección local, no una orden de carga/reset del mobiliario.
 
 IDs are persistent anchors: do not rename them or reverse their corners. Screen numbers are separate labels defined by display.screenNumbersById in starbucks-screen-playlist.json. display.spatialOrder=[6,5,4,3,2,1] orders slices without mirroring. Existing maps are visually corrected without rewriting localStorage. Numbers are hidden by default; bare /layout is local inspection, not a furniture load/reset. Sources: starbucks-screens.mjs and screen-display.mjs. Yokup #216.
+
+
+## Starbucks · TPV / POS · Publicidad local / Local advertising
+
+En Matrix · Starbucks, Experto → TPV / POS centra la cámara en la pantalla del terminal orientada al cliente. Reproduce la playlist de publicidad local: Stock 1329, «Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2» (30 s), en bucle y sin audio. Pausar/Reproducir TPV actúa solo sobre ese player. Las seis pantallas de pared, /sincro, /sincrototal y el hilo musical son independientes. /layout identifica el terminal como TPV, sin cambiar los números 1–6. Mapear players permite recalibrar y guardar las cuatro esquinas.
+
+In Matrix · Starbucks, Expert → TPV / POS centers the camera on the customer-facing terminal screen. It plays the local advertising playlist: Stock 1329, “Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2” (30 s), looping without audio. Pause/Play POS affects only that player. The six wall screens, /sync, /synctotal and speaker music remain independent. /layout labels the terminal as TPV without changing numbers 1–6. Map players allows recalibrating and saving its four corners.
+
+Playlist JSON: https://www.xpaceos.com/admira-xp/starbucks-tpv-playlist.json
+
+Mapping JSON: https://www.xpaceos.com/admira-xp/starbucks-tpv-mapping.json
+
+Contrato / Contract: `starbucks-alsea-paseo-de-gracia-tpv`; virtual ID `starbucks-tpv-01`; physical `playerId` is empty. Source: https://www.youtube.com/shorts/vtOoHibZTug. Stock 1329 / `1790711463701-yxy150`. Video: https://stock.admira.store/stock/1790711463701-yxy150/asset.mp4.
+
+ES: Solo el terminal vertical de la foto, no los terminales pequeños de caja. Homografía de cuatro esquinas yaw/pitch y base 360×640. Se añade el anclaje TPV ausente en memoria al entrar en Matrix (máximo 24); no reescribe localStorage ni las esquinas/URLs personalizadas existentes. Guardar mapa persiste el resultado. Si se elimina durante la sesión, el botón TPV / POS lo recupera; al volver a entrar se añade otra vez. Si el mapa está lleno, libera un anclaje antes de añadirlo. Un mapa importado se respeta tal cual: TPV / POS permite añadir el anclaje que falte. Si cambias su URL, usa Abrir vista previa; el control de playlist sólo reproduce la URL del catálogo TPV. Un fallo de vídeo permite reintentar y no pausa la pared. Al salir de Matrix se libera este vídeo y su controlador. No publica contenido en el TPV físico.
+
+EN: Only the portrait terminal in the reference photo, not the small cashier terminals. Four yaw/pitch corners and a 360×640 projection base. A missing POS anchor is added in memory when entering Matrix (24 maximum); saved localStorage and existing custom corners/URLs are not rewritten. Save map persists the result. If removed during the session, TPV / POS restores it; re-entering adds it again. If the map is full, remove an anchor first. Imported maps are kept as supplied: TPV / POS adds the missing anchor. If you change its URL, use Open preview; playlist controls only play the POS catalog URL. Video failures allow retry without pausing the wall. Leaving Matrix releases its video and controller. No content is published to the physical POS device.
+
+Fuente canónica / Canonical source: `admira-xp/scripts/starbucks-tpv.mjs`. Regenerar contratos / Regenerate contracts: `node admira-xp/scripts/export-starbucks-tpv.mjs`. Controlador separado / Separate controller: `createScreenPlaylist` with one muted video; it loops the playlist on `ended`. No wall synchronization or music transport coupling. Yokup #220.

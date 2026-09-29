@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "starbucks-alsea-paseo-de-gracia-tpv",
+  "store": "starbucks-alsea-paseo-de-gracia",
+  "purpose": "local-advertising",
+  "muted": true,
+  "repeat": "all",
+  "tracks": [
+    {
+      "stockId": "1790711463701-yxy150",
+      "stockNumber": 1329,
+      "title": "Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2",
+      "sourceUrl": "https://www.youtube.com/shorts/vtOoHibZTug",
+      "url": "https://stock.admira.store/stock/1790711463701-yxy150/asset.mp4",
+      "duration": 30,
+      "mimeType": "video/mp4"
+    }
+  ]
+}

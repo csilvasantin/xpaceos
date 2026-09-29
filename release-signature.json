@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r12.21:38",
+  "version": "v.29.09.2026.r13.21:55",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #216: números desde entrada 6-5 | 4 | 3-2-1, grupos físicos corregidos, /layout y /layoiut, mapas conservados, ayuda ES/EN.",
+  "evidence": "Yokup #220: TPV virtual calibrado, playlist local Stock 1329 independiente, controles ES/EN, ayuda y MCP actualizados.",
   "day": "29.09.2026",
-  "time": "21:38"
+  "time": "21:55"
 }

@@ -11,3 +11,5 @@ Por instrucción de Carlos, cada implementación debe terminar con MCP, help y d
 Every implementation must ship with current Spanish/English MCP help, web help, tutorial and documentation. Publish verified shared contracts for agents; distinguish delivered behavior from pending work. Verify the deployed URLs and actual MCP server before reporting completion.
 
 Pantallas Starbucks: fuente `admira-xp/scripts/starbucks-screens.mjs`; regenerar playlist/mapa JSON con `node admira-xp/scripts/export-starbucks-screens.mjs`. Mantener esta playlist separada del hilo musical.
+
+TPV Starbucks / POS: fuente `admira-xp/scripts/starbucks-tpv.mjs`; regenerar sus JSON con `node admira-xp/scripts/export-starbucks-tpv.mjs`. Playlist de publicidad local independiente de pared e hilo musical / Local advertising playlist independent of wall and speaker music. Guía / Guide: `admira-xp/docs/starbucks-tpv.md`.

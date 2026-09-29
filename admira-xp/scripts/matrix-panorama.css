@@ -26,7 +26,7 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-mapped-player.has-preview .matrix-player-label{display:none}
 .matrix-capture-stage:has(.matrix-map-panel:not([hidden])) .matrix-player-label{display:block}
 .matrix-mapped-player .matrix-player-media{object-fit:contain}
-.matrix-screen-status{font:11px/1.4 system-ui;color:#a8dbc9;max-width:100%;overflow-wrap:anywhere}
+.matrix-screen-status,.matrix-tpv-status{font:11px/1.4 system-ui;color:#a8dbc9;max-width:100%;overflow-wrap:anywhere}
 
 #telegramDock .matrix-screen-layout{display:flex;align-items:center;gap:5px;font:10px/1.3 monospace;max-width:100%;min-width:0;color:#dcfffa}
 #telegramDock .matrix-screen-layout select{min-width:0;max-width:100%;background:#082c2c;border:1px solid #528a83;border-radius:5px;color:#dcfffa;padding:3px;font:inherit}

@@ -2381,5 +2381,21 @@
     "scope": "local page only",
     "physical_mug_verified": false,
     "guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-playlist.md"
+  },
+  "starbucks_tpv": {
+    "es": "En Matrix · Starbucks, Experto → TPV / POS centra la cámara en la pantalla del terminal orientada al cliente. Reproduce la playlist de publicidad local: Stock 1329, «Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2» (30 s), en bucle y sin audio. Pausar/Reproducir TPV actúa solo sobre ese player. Las seis pantallas de pared, /sincro, /sincrototal y el hilo musical son independientes. /layout identifica el terminal como TPV, sin cambiar los números 1–6. Mapear players permite recalibrar y guardar las cuatro esquinas.",
+    "en": "In Matrix · Starbucks, Expert → TPV / POS centers the camera on the customer-facing terminal screen. It plays the local advertising playlist: Stock 1329, “Good Energy with Adrian Grenier: Starbucks & The Devil Wears Prada 2” (30 s), looping without audio. Pause/Play POS affects only that player. The six wall screens, /sync, /synctotal and speaker music remain independent. /layout labels the terminal as TPV without changing numbers 1–6. Map players allows recalibrating and saving its four corners.",
+    "playlist_id": "starbucks-alsea-paseo-de-gracia-tpv",
+    "virtual_player_id": "starbucks-tpv-01",
+    "playlist": "https://www.xpaceos.com/admira-xp/starbucks-tpv-playlist.json",
+    "mapping": "https://www.xpaceos.com/admira-xp/starbucks-tpv-mapping.json",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-tpv.md",
+    "stock_id": "1790711463701-yxy150",
+    "stock_number": 1329,
+    "physical_player_bound": false,
+    "independent_from": [
+      "wall",
+      "music"
+    ]
   }
 }
