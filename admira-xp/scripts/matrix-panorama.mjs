@@ -1,15 +1,17 @@
+import {STARBUCKS_SCREEN_PLAYLIST,STARBUCKS_WALL_MAPPING,STARBUCKS_WALL_VIEW} from './starbucks-screens.mjs?v=wall-1';
+import {createScreenPlaylist} from './screen-playlist.mjs?v=wall-1';
 import {starbucksMusic,STARBUCKS_SPEAKER} from './starbucks-music.mjs?v=first-track-1';
-import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=alsea-1';
+import {MATRIX_CAPTURE as CAPTURE,MAPPING_KEY,validateMapping,previewURL,quadTransform} from './matrix-mapping.mjs?v=wall-1';
 
 export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}={}){
  const en=lang==='en',t=(es,english)=>en?english:es;
  let disposed=false,renderer,texture,geometry,material,frame=0,drag=null,marking=null,selected='',dirty=false;
  let recalibrating='',mapRevision=0,renderKey='';
- let yaw=CAPTURE.yaw,pitch=CAPTURE.pitch,fov=CAPTURE.fov;
- let model={version:1,capture:CAPTURE.id,players:[]};
+ let yaw=STARBUCKS_WALL_VIEW.yaw,pitch=STARBUCKS_WALL_VIEW.pitch,fov=STARBUCKS_WALL_VIEW.fov;
+ let model=validateMapping(STARBUCKS_WALL_MAPPING);
  try{const saved=localStorage.getItem(MAPPING_KEY);if(saved)model=validateMapping(JSON.parse(saved));}catch{}
  root.innerHTML=`<div class="matrix-panorama" tabindex="0" aria-label="Starbucks Alsea 360°"><div class="matrix-player-layer"></div><svg class="matrix-markers" aria-hidden="true"></svg><button class="matrix-speaker" type="button" hidden data-music-toggle aria-pressed="false">♫</button></div>
- <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><span class="matrix-music-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
+ <div class="matrix-map-toolbar"><button data-map="panel">${t('Mapear players','Map players')}</button><button data-map="wall">${t('6 pantallas','6 screens')}</button><button data-map="playlist" aria-pressed="false">${t('Reproducir pantallas','Play screens')}</button><span class="matrix-screen-status" role="status"></span><button data-map="home">${t('Vista inicial','Reset view')}</button><a href="${CAPTURE.source}" target="_blank" rel="noopener">${t('Captura original','Original capture')} ↗</a><button data-map="speaker">${t('Altavoz','Speaker')}</button><button data-music-toggle type="button" aria-pressed="false">${t('Escuchar','Listen')}</button><span class="matrix-music-status" role="status"></span><span class="matrix-map-status" role="status">${t('Cargando panorama…','Loading panorama…')}</span></div>
  <section class="matrix-map-panel" aria-label="${t('Mapeo de players','Player mapping')}" hidden>
  <header><strong>Starbucks · Alsea</strong><button data-map="close" aria-label="${t('Cerrar','Close')}">×</button></header>
  <p>${t('Marca cada pantalla en orden: arriba izquierda, arriba derecha, abajo derecha, abajo izquierda.','Mark each screen in order: top left, top right, bottom right, bottom left.')}</p>
@@ -27,6 +29,18 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  </section>`;
  const surface=root.querySelector('.matrix-panorama'),layer=root.querySelector('.matrix-player-layer'),markers=root.querySelector('.matrix-markers'),panel=root.querySelector('.matrix-map-panel'),status=root.querySelector('.matrix-map-status'),list=root.querySelector('.matrix-map-list'),form=root.querySelector('form');
  const controls=new AbortController(),options={signal:controls.signal},previews=new Map(),nodes=new Map();
+ let wallPlayback=null;
+ const wallIds=new Set(STARBUCKS_WALL_MAPPING.players.map(p=>p.id));
+ const screenStatus=root.querySelector('.matrix-screen-status'),screenButton=root.querySelector('[data-map=playlist]');
+ function stopWall(){wallPlayback?.dispose();wallPlayback=null;screenStatus.textContent=t('Pantallas en pausa','Screens paused');screenButton.setAttribute('aria-pressed','false');screenButton.textContent=t('Reproducir pantallas','Play screens');}
+ function startWall(){
+  stopWall();const videos=[];
+  for(const p of model.players.filter(p=>wallIds.has(p.id)&&p.type==='video'&&p.url===STARBUCKS_SCREEN_PLAYLIST.tracks[0].url)){
+   destroyPreview(p.id);const v=document.createElement('video');v.className='matrix-player-media';v.setAttribute('aria-label',p.name);nodes.get(p.id).prepend(v);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,v);videos.push(v);
+  }
+  if(!videos.length){screenStatus.textContent=t('Sin pantallas de esta playlist; usa 6 pantallas para añadirlas.','No playlist screens; use 6 screens to add them.');return;}
+  wallPlayback=createScreenPlaylist({videos,tracks:STARBUCKS_SCREEN_PLAYLIST.tracks,onState:state=>{screenButton.setAttribute('aria-pressed',String(state.playing));screenButton.textContent=state.playing?t('Pausar pantallas','Pause screens'):t('Reproducir pantallas','Play screens');screenStatus.textContent=state.error?t('Vídeo no disponible · pulsa para reintentar','Video unavailable · click to retry'):state.count+'/6 · '+(state.playing?t('reproduciendo sin audio','playing muted'):t('en pausa','paused'))+' · '+state.title;}});void wallPlayback.play();
+ }
  const speaker=root.querySelector('.matrix-speaker'),musicStatus=root.querySelector('.matrix-music-status'),musicButtons=[...root.querySelectorAll('[data-music-toggle]')];
  const music=starbucksMusic();
  const unsubscribeMusic=music.subscribe(state=>{
@@ -45,48 +59,50 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  void music.refresh();const musicPoll=setInterval(()=>{void music.refresh();},30000);
  function message(value){status.textContent=value;}
  function changed(){dirty=true;message(t('Mapa sin guardar','Unsaved map'));}
- function destroyPreview(id){const node=previews.get(id);if(node){if(node.tagName==='VIDEO'){node.pause();node.removeAttribute('src');node.load();}else if(node.tagName==='IFRAME')node.src='about:blank';node.remove();previews.delete(id);}}
+ function destroyPreview(id){const node=previews.get(id);if(node){if(node.tagName==='VIDEO'){node.pause();node.removeAttribute('src');node.load();}else if(node.tagName==='IFRAME')node.src='about:blank';node.remove();nodes.get(id)?.classList.remove('has-preview');previews.delete(id);}}
  function select(id){selected=id;list.value=id;const p=model.players.find(p=>p.id===id);form.hidden=!p;if(p)for(const key of ['name','playerId','url','type'])form.elements.namedItem(key).value=p[key];}
  function renderList(){
   mapRevision++;
   list.replaceChildren(new Option('—',''));
   for(const p of model.players)list.add(new Option(p.name+(p.playerId?' · '+p.playerId:''),p.id));select(selected);
   for(const [id,node] of nodes)if(!model.players.some(p=>p.id===id)){destroyPreview(id);node.remove();nodes.delete(id);}
-  for(const p of model.players){let node=nodes.get(p.id);if(!node){node=document.createElement('div');node.className='matrix-mapped-player';node.style.width='640px';node.style.height='360px';const name=document.createElement('button');name.className='matrix-player-label';name.addEventListener('click',()=>{panel.hidden=false;select(p.id);},options);node.append(name);layer.append(node);nodes.set(p.id,node);}node.querySelector('button').textContent=p.name+' · '+(p.playerId||t('sin vincular','unmapped'));}
+  for(const p of model.players){let node=nodes.get(p.id);if(!node){node=document.createElement('div');node.className='matrix-mapped-player';const name=document.createElement('button');name.className='matrix-player-label';name.addEventListener('click',()=>{panel.hidden=false;select(p.id);},options);node.append(name);layer.append(node);nodes.set(p.id,node);}node.style.width=(p.width||640)+'px';node.style.height=(p.height||360)+'px';node.querySelector('button').textContent=p.name+' · '+(p.playerId||t('sin vincular','unmapped'));}
  }
  renderList();
  list.addEventListener('change',()=>select(list.value),options);
- form.addEventListener('submit',e=>{e.preventDefault();const p=model.players.find(p=>p.id===selected);if(!p)return;const data=new FormData(form),url=previewURL(data.get('url'));if(url===null){message(t('Usa una URL HTTPS sin credenciales.','Use an HTTPS URL without credentials.'));return;}destroyPreview(p.id);Object.assign(p,{name:String(data.get('name')).trim()||'Player',playerId:String(data.get('playerId')).trim(),url,type:data.get('type')});changed();renderList();},options);
+ form.addEventListener('submit',e=>{e.preventDefault();const p=model.players.find(p=>p.id===selected);if(!p)return;const data=new FormData(form),url=previewURL(data.get('url'));if(url===null){message(t('Usa una URL HTTPS sin credenciales.','Use an HTTPS URL without credentials.'));return;}stopWall();destroyPreview(p.id);Object.assign(p,{name:String(data.get('name')).trim()||'Player',playerId:String(data.get('playerId')).trim(),url,type:data.get('type')});changed();renderList();},options);
  function cancel(){marking=null;recalibrating='';root.querySelector('[data-map=cancel]').hidden=true;surface.classList.remove('is-mapping');markers.replaceChildren();}
  function save(){try{localStorage.setItem(MAPPING_KEY,JSON.stringify(validateMapping(model)));dirty=false;message(t('Mapa guardado en este navegador','Map saved in this browser'));}catch{message(t('No se pudo guardar el mapa','Could not save the map'));}}
  for(const button of root.querySelectorAll('[data-map]'))button.addEventListener('click',()=>{
   switch(button.dataset.map){
    case 'panel':panel.hidden=!panel.hidden;break;
    case 'close':panel.hidden=true;cancel();break;
-   case 'home':yaw=CAPTURE.yaw;pitch=CAPTURE.pitch;fov=CAPTURE.fov;break;
+   case 'home':yaw=STARBUCKS_WALL_VIEW.yaw;pitch=STARBUCKS_WALL_VIEW.pitch;fov=STARBUCKS_WALL_VIEW.fov;break;
+   case 'wall':{const missing=STARBUCKS_WALL_MAPPING.players.filter(p=>!model.players.some(v=>v.id===p.id));if(model.players.length+missing.length>24){message(t('No caben seis pantallas: máximo 24.','Cannot add screens: maximum 24.'));break;}if(missing.length){model.players.push(...validateMapping({...STARBUCKS_WALL_MAPPING,players:missing}).players);changed();renderList();}yaw=STARBUCKS_WALL_VIEW.yaw;pitch=STARBUCKS_WALL_VIEW.pitch;fov=STARBUCKS_WALL_VIEW.fov;startWall();break;}
+   case 'playlist':if(wallPlayback?.state().playing)wallPlayback.pause();else if(wallPlayback)void wallPlayback.play();else startWall();break;
    case 'speaker':yaw=STARBUCKS_SPEAKER.yaw;pitch=STARBUCKS_SPEAKER.pitch;fov=75;break;
    case 'add':if(model.players.length>=24){message(t('Máximo 24 pantallas','Maximum 24 screens'));break;}cancel();marking=[];surface.classList.add('is-mapping');root.querySelector('[data-map=cancel]').hidden=false;message(t('Marca esquina 1: arriba izquierda','Mark corner 1: top left'));break;
    case 'recalibrate':if(selected){cancel();recalibrating=selected;marking=[];surface.classList.add('is-mapping');root.querySelector('[data-map=cancel]').hidden=false;message(t('Marca esquina 1: arriba izquierda','Mark corner 1: top left'));}break;
    case 'cancel':cancel();message(t('Marcado cancelado','Marking cancelled'));break;
    case 'save':save();break;
-   case 'remove':model.players=model.players.filter(p=>p.id!==selected);selected='';changed();renderList();break;
+   case 'remove':stopWall();model.players=model.players.filter(p=>p.id!==selected);selected='';changed();renderList();break;
    case 'preview':{
     const p=model.players.find(p=>p.id===selected);if(!p?.url){message(t('Aplica una URL de vista previa primero','Apply a preview URL first'));break;}
-    destroyPreview(p.id);const node=document.createElement(p.type==='frame'?'iframe':p.type==='video'?'video':'img');node.className='matrix-player-media';
+    stopWall();destroyPreview(p.id);const node=document.createElement(p.type==='frame'?'iframe':p.type==='video'?'video':'img');node.className='matrix-player-media';
     if(p.type==='frame'){node.title=p.name;node.setAttribute('sandbox','allow-scripts allow-same-origin');node.referrerPolicy='no-referrer';}
     if(p.type==='video'){node.muted=true;node.loop=true;node.playsInline=true;node.autoplay=true;}
-    node.src=p.url;nodes.get(p.id).prepend(node);previews.set(p.id,node);message(t('Vista previa local; conexión real sin verificar','Local preview; real connection unverified'));break;
+    node.src=p.url;nodes.get(p.id).prepend(node);nodes.get(p.id).classList.add('has-preview');previews.set(p.id,node);message(t('Vista previa local; conexión real sin verificar','Local preview; real connection unverified'));break;
    }
    case 'export':{
     const blob=new Blob([JSON.stringify(model,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='alsea-starbucks-players.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);break;
    }
   }
  },options);
- root.querySelector('.matrix-map-import').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>100000)throw Error();const next=validateMapping(JSON.parse(await file.text()));if(disposed)return;for(const id of previews.keys())destroyPreview(id);model=next;selected='';changed();renderList();}catch{message(t('Mapa inválido para esta captura','Invalid map for this capture'));}finally{e.target.value='';}},options);
+ root.querySelector('.matrix-map-import').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>100000)throw Error();const next=validateMapping(JSON.parse(await file.text()));if(disposed)return;stopWall();for(const id of previews.keys())destroyPreview(id);model=next;selected='';changed();renderList();}catch{message(t('Mapa inválido para esta captura','Invalid map for this capture'));}finally{e.target.value='';}},options);
  const toolbar=root.querySelector('.matrix-map-toolbar');
  for(const type of ['click','keydown','keyup','keypress','pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])toolbar.addEventListener(type,e=>e.stopPropagation(),options);
  document.querySelector('#telegramDock .tg-actions')?.append(toolbar);
- const dispose=()=>{if(disposed)return;disposed=true;controls.abort();clearInterval(musicPoll);unsubscribeMusic();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
+ const dispose=()=>{if(disposed)return;disposed=true;stopWall();controls.abort();clearInterval(musicPoll);unsubscribeMusic();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
  let observer;
  signal?.addEventListener('abort',dispose,{once:true});
  try{
@@ -108,8 +124,8 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   const release=()=>{drag=null;};surface.addEventListener('pointerup',release,options);surface.addEventListener('pointercancel',release,options);
   surface.addEventListener('wheel',e=>{e.preventDefault();fov=Math.max(30,Math.min(100,fov+e.deltaY*.04));},{...options,passive:false});
   surface.addEventListener('keydown',e=>{const keys={ArrowLeft:()=>yaw-=4,ArrowRight:()=>yaw+=4,ArrowUp:()=>pitch=Math.min(85,pitch+4),ArrowDown:()=>pitch=Math.max(-85,pitch-4),'+':()=>fov=Math.max(30,fov-5),'-':()=>fov=Math.min(100,fov+5)};if(keys[e.key]){e.preventDefault();keys[e.key]();}},options);
-  function draw(){if(disposed)return;const key=[yaw,pitch,fov,surface.clientWidth,surface.clientHeight,mapRevision,marking?.length].join(':');if(key===renderKey){frame=requestAnimationFrame(draw);return;}renderKey=key;updateCamera();renderer.render(scene,camera);const soundPoint=project(STARBUCKS_SPEAKER);speaker.hidden=!soundPoint||!!marking;if(soundPoint){speaker.style.left=soundPoint.x+'px';speaker.style.top=soundPoint.y+'px';}for(const p of model.players){const node=nodes.get(p.id),pts=p.corners.map(project);const matrix=pts.every(Boolean)&&quadTransform(pts);node.hidden=!matrix;if(matrix)node.style.transform='matrix3d('+matrix.join(',')+')';}markers.replaceChildren();if(marking)marking.forEach((corner,i)=>{const p=project(corner);if(!p)return;const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',p.x);circle.setAttribute('cy',p.y);circle.setAttribute('r','7');markers.append(circle);});frame=requestAnimationFrame(draw);}
-  draw();message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();
+  function draw(){if(disposed)return;const key=[yaw,pitch,fov,surface.clientWidth,surface.clientHeight,mapRevision,marking?.length].join(':');if(key===renderKey){frame=requestAnimationFrame(draw);return;}renderKey=key;updateCamera();renderer.render(scene,camera);const soundPoint=project(STARBUCKS_SPEAKER);speaker.hidden=!soundPoint||!!marking;if(soundPoint){speaker.style.left=soundPoint.x+'px';speaker.style.top=soundPoint.y+'px';}for(const p of model.players){const node=nodes.get(p.id),pts=p.corners.map(project);const matrix=pts.every(Boolean)&&quadTransform(pts,p.width||640,p.height||360);node.hidden=!matrix;if(matrix)node.style.transform='matrix3d('+matrix.join(',')+')';}markers.replaceChildren();if(marking)marking.forEach((corner,i)=>{const p=project(corner);if(!p)return;const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',p.x);circle.setAttribute('cy',p.y);circle.setAttribute('r','7');markers.append(circle);});frame=requestAnimationFrame(draw);}
+  draw();startWall();message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();
  }catch(error){if(!disposed){message(t('No se pudo cargar el panorama. Reintenta desde Matrix.','Could not load panorama. Retry Matrix.'));onReady(String(error?.message||error));}}
  return dispose;
 }

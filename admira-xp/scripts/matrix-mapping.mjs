@@ -12,7 +12,8 @@ export function validateMapping(value){
   const corners=p.corners.map(c=>{if(!c||!Number.isFinite(c.yaw)||!Number.isFinite(c.pitch)||Math.abs(c.pitch)>90||Math.abs(c.yaw)>360)throw Error('Invalid screen corner');return {yaw:c.yaw,pitch:c.pitch};});
   const url=previewURL(p.url);if(url===null)throw Error('HTTPS preview URL required');
   if(!['frame','video','image'].includes(p.type))throw Error('Invalid preview type');
-  return {id:p.id,name:String(p.name||'Player').slice(0,100),playerId:String(p.playerId||'').slice(0,200),url,type:p.type,corners};
+  const size={};if(p.width!==undefined||p.height!==undefined){if(!Number.isFinite(p.width)||!Number.isFinite(p.height)||p.width<64||p.height<64||p.width>4096||p.height>4096)throw Error('Invalid player dimensions');size.width=p.width;size.height=p.height;}
+  return {...size,id:p.id,name:String(p.name||'Player').slice(0,100),playerId:String(p.playerId||'').slice(0,200),url,type:p.type,corners};
  });
  return {version:1,capture:MATRIX_CAPTURE.id,players};
 }

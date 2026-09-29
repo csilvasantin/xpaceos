@@ -2308,5 +2308,13 @@
     "url": "https://www.xpaceos.com/admira-xp/?autostart=xtanco&visual=matrix&loc=alsea-sbux-021",
     "es": "En admira.app, busca «Starbucks Paseo de Gracia» y abre la ficha de Paseo de Gracia 103, Barcelona. Pulsa «Visita al Digital Twin» junto a «Tour DOOH» para entrar directamente al Starbucks de XpaceOS en Matrix. Tour DOOH conserva su recorrido por el mapa.",
     "en": "In admira.app, search for “Starbucks Paseo de Gracia” and open the profile at Paseo de Gracia 103, Barcelona. Click “Visit the Digital Twin” beside “Tour DOOH” to open the Starbucks in XpaceOS Matrix directly. Tour DOOH keeps its map tour."
+  },
+  "starbucks_screens": {
+    "es": "Matrix · Starbucks: las seis pantallas grandes de la pared reproducen la playlist de vídeo de Stock 1311, «A Coffee Moment Worth Remembering» (10 s), en bucle y sin audio. Experto → 6 pantallas centra la cámara y añade los seis anclajes que falten, conservando los mapas guardados. Reproducir/Pausar pantallas controla el grupo; el hilo musical del altavoz es independiente. Mapear players permite recalibrar y guardar las esquinas. Los players son virtuales: sus IDs físicos siguen sin vincular.",
+    "en": "Matrix · Starbucks: the six large wall screens play the Stock 1311 video playlist, “A Coffee Moment Worth Remembering” (10 s), looping without audio. Expert → 6 screens centers the camera and adds missing wall anchors while preserving saved maps. Play/Pause screens controls the group; the speaker music playlist is independent. Map players allows corner recalibration and saving. These players are virtual; physical player IDs remain unbound.",
+    "playlist": "https://www.xpaceos.com/admira-xp/starbucks-screen-playlist.json",
+    "mapping": "https://www.xpaceos.com/admira-xp/starbucks-wall-mapping.json",
+    "stock": "https://www.pixeria.com/stock.html?highlight=1790708784283-yvy7w9",
+    "physical_players_bound": false
   }
 }

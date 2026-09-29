@@ -22,3 +22,8 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-speaker{position:absolute;z-index:3;width:36px;height:36px;transform:translate(-50%,-50%);display:grid;place-items:center;border:1px solid #96dfd5aa;border-radius:50%;background:#062a2bad;color:#d5fff9;font:22px/1 system-ui;cursor:pointer;touch-action:manipulation}
 .matrix-speaker[hidden]{display:none}.matrix-speaker:hover,.matrix-speaker:focus-visible{background:#12615e;border-color:#b6fff3;outline:2px solid #78f3ff;outline-offset:3px}.matrix-speaker[aria-pressed="true"]{color:#032b28;background:#9dffcf}
 #telegramDock .matrix-music-status{flex:0 0 100%;color:#9dffcf;font:9px/1.4 monospace;overflow-wrap:anywhere}
+.matrix-mapped-player.has-preview{border:0;background:#000}
+.matrix-mapped-player.has-preview .matrix-player-label{display:none}
+.matrix-capture-stage:has(.matrix-map-panel:not([hidden])) .matrix-player-label{display:block}
+.matrix-mapped-player .matrix-player-media{object-fit:contain}
+.matrix-screen-status{font:11px/1.4 system-ui;color:#a8dbc9;max-width:100%;overflow-wrap:anywhere}

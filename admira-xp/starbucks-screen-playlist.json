@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "starbucks-alsea-paseo-de-gracia-wall",
+  "store": "starbucks-alsea-paseo-de-gracia",
+  "muted": true,
+  "repeat": "all",
+  "tracks": [
+    {
+      "stockId": "1790708784283-yvy7w9",
+      "stockNumber": 1311,
+      "title": "A Coffee Moment Worth Remembering ☕ | Starbucks Cinematic Ad 2026",
+      "sourceUrl": "https://www.youtube.com/shorts/nkhc9OnjbV8",
+      "url": "https://stock.admira.store/stock/1790708784283-yvy7w9/asset.mp4",
+      "duration": 10,
+      "mimeType": "video/mp4"
+    }
+  ]
+}

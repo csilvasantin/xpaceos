@@ -9,3 +9,5 @@ Por instrucción de Carlos, cada implementación debe terminar con MCP, help y d
 - Playlist Starbucks: la fuente es `admira-xp/scripts/starbucks-playlist.mjs`. Tras modificarla, ejecutar `node admira-xp/scripts/export-starbucks-playlist.mjs` y publicar el JSON generado. Guía: `admira-xp/docs/starbucks-playlist.md`.
 
 Every implementation must ship with current Spanish/English MCP help, web help, tutorial and documentation. Publish verified shared contracts for agents; distinguish delivered behavior from pending work. Verify the deployed URLs and actual MCP server before reporting completion.
+
+Pantallas Starbucks: fuente `admira-xp/scripts/starbucks-screens.mjs`; regenerar playlist/mapa JSON con `node admira-xp/scripts/export-starbucks-screens.mjs`. Mantener esta playlist separada del hilo musical.

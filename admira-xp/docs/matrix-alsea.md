@@ -46,3 +46,21 @@ Digital Twin: https://www.xpaceos.com/admira-xp/?autostart=xtanco&visual=matrix&
 ID: alsea-sbux-021. Asociación curada por ID en xpace-link.js; xpaceUrl explícito del backoffice prevalece, incluido vacío. No se asigna a los demás Starbucks por nombre o circuito. Abrir la visita no publica contenido en players físicos.
 
 Curated association by ID in xpace-link.js; an explicit backoffice xpaceUrl takes precedence, including an empty value. Other Starbucks locations are not matched by name or circuit. Visiting does not publish content to physical players.
+
+
+## Starbucks · Seis pantallas / Six wall screens
+
+Matrix · Starbucks: las seis pantallas grandes de la pared reproducen la playlist de vídeo de Stock 1311, «A Coffee Moment Worth Remembering» (10 s), en bucle y sin audio. Experto → 6 pantallas centra la cámara y añade los seis anclajes que falten, conservando los mapas guardados. Reproducir/Pausar pantallas controla el grupo; el hilo musical del altavoz es independiente. Mapear players permite recalibrar y guardar las esquinas. Los players son virtuales: sus IDs físicos siguen sin vincular.
+
+Matrix · Starbucks: the six large wall screens play the Stock 1311 video playlist, “A Coffee Moment Worth Remembering” (10 s), looping without audio. Expert → 6 screens centers the camera and adds missing wall anchors while preserving saved maps. Play/Pause screens controls the group; the speaker music playlist is independent. Map players allows corner recalibration and saving. These players are virtual; physical player IDs remain unbound.
+
+Playlist: https://www.xpaceos.com/admira-xp/starbucks-screen-playlist.json
+Mapa / Mapping: https://www.xpaceos.com/admira-xp/starbucks-wall-mapping.json
+Stock: https://www.pixeria.com/stock.html?highlight=1790708784283-yvy7w9
+Fuente / Source: https://www.youtube.com/shorts/nkhc9OnjbV8
+
+Contrato para agentes: playlist independiente `starbucks-alsea-paseo-de-gracia-wall`, seis IDs virtuales `starbucks-wall-01` a `starbucks-wall-06`; `playerId` físico vacío. Cuatro anclajes yaw/pitch por pantalla, base de proyección vertical 360×640. Primera pantalla como reloj local, corrección de deriva cada 500 ms al superar 0,2 s; no sincroniza dispositivos físicos. La primera carga de vídeo puede tardar: el estado reproducido sólo se confirma tras arrancar todos los vídeos. Un fallo pausa el grupo y permite reintentar. Al cerrar Matrix se liberan vídeos/timers. Mapas existentes se conservan; «6 pantallas» añade únicamente los IDs ausentes (máximo total 24).
+
+Agent contract: separate wall playlist, six stable virtual IDs, empty physical player IDs. Four yaw/pitch corners per screen; portrait projection base 360×640. The first screen supplies the local clock, correcting drift over 0.2 s every 500 ms; this does not synchronize physical devices. Initial loading can take time; playing status is confirmed after all videos start. Failures pause the group and allow retry. Closing Matrix releases videos/timers. Existing maps remain; “6 screens” only adds missing IDs (24 total maximum).
+
+Fuente canónica / Canonical source: `admira-xp/scripts/starbucks-screens.mjs`. Regenerar ambos JSON con / Regenerate both JSON files with `node admira-xp/scripts/export-starbucks-screens.mjs`. Yokup #201.
