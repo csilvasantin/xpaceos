@@ -20,3 +20,14 @@ Matrix · Starbucks Paseo de Gracia: pulsa el altavoz situado junto a la señal 
 Matrix · Starbucks Paseo de Gracia: click the speaker beside the exit sign to listen to the Starbucks Alsea playlist. The first click starts audio; subsequent clicks toggle sound and mute without pausing, restarting or stopping track changes. Expert → Speaker takes the camera there; Listen/Mute offers the same control. Leaving Matrix mutes local listening while the playlist keeps advancing as long as the page stays open. First Stock track: Bad Times Deep House (6:41), linked directly. Published references remain available after the delivery queue expires. The Suno tracks requested from Morfeo are still awaiting delivery. New tracks are checked every 30 seconds. This control does not change the volume of physical screens.
 
 Canal: `starbucks-alsea-paseo-de-gracia` · `/hilomusical/next` en api.admira.store. La creación/publicación de las piezas se coordina en FLT-101276; implementación del altavoz: Yokup #178.
+
+
+## Playlist Starbucks · PlayerTaza / Mug screen
+
+PlayerTaza comparte la selección publicada del Starbucks. La taza debe mostrar el vídeo silenciado y el altavoz controla el audio. La integración de la taza y la sincronización entre dispositivos siguen pendientes.
+
+PlayerTaza shares the published Starbucks selection. The mug should display muted video while the speaker controls audio. Mug integration and cross-device synchronization are still pending.
+
+Playlist JSON: https://www.xpaceos.com/admira-xp/starbucks-playlist.json
+
+Guía ES/EN / Integration guide: https://www.xpaceos.com/admira-xp/docs/starbucks-playlist.md

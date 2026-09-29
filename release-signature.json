@@ -1,10 +1,10 @@
 {
-  "version": "v.29.09.2026.r6.20:30",
+  "version": "v.29.09.2026.r7.20:41",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #178 paso c: primera canción Stock 1308 Bad Times Deep House enlazada al altavoz Starbucks, persistente y verificada con audio real.",
+  "evidence": "Yokup #190: contrato JSON playlist Starbucks para PlayerTaza, guía ES/EN y regla de cierre MCP/help/documentación.",
   "day": "29.09.2026",
-  "time": "20:30"
+  "time": "20:41"
 }
