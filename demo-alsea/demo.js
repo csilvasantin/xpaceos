@@ -173,6 +173,9 @@
     document.querySelectorAll('#modos button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tier') === state.tier);
     });
+    document.querySelectorAll('#cartelera button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-pieza') === state.pieza);
+    });
     document.querySelectorAll('.hot').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-objeto') === state.objeto);
     });
