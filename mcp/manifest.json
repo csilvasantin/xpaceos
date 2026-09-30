@@ -1,12 +1,12 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.30.09.2026.r27.08:08",
+  "version": "v.30.09.2026.r32.15:00",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.11.0",
+    "version": "2.12.2",
     "health": "https://mcp.admira.store/",
     "tool_count": 35
   },
@@ -473,5 +473,16 @@
     "guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-now-playing-recovery.md",
     "scope": "browser-local virtual players; no Yokup incident write",
     "tutorial": "https://api.yokup.com/media/fleet/1fd264a783522364.mp4"
+  },
+  "anonymizer_demo": {
+    "preset": "visitor-green-v1",
+    "modes": [
+      8,
+      16,
+      32
+    ],
+    "mcp": "https://mcp-pixeria.admira.store/mcp",
+    "tool": "anonymizer_demo",
+    "guide": "https://www.pixeria.com/docs/anonymizer-demo.md"
   }
 }

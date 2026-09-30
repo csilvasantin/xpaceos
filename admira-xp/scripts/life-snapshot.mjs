@@ -1,6 +1,6 @@
 import {createSceneSnapshot} from './xtanco-scene-snapshot.mjs?v=inventari-1';
 import {visitorProfilesForGame} from './visitor-profiles.mjs?v=visitors-24';
-import {pixeriaPersonaStyle} from './pixeria-personas.mjs?v=px-2';
+import {pixeriaPersonaStyle} from './pixeria-personas.mjs?v=anon-demo-v1';
 
 // Read-only presentation adapter for the immersive view. The game continues to
 // own navigation, appearance, media, time and counters. These defaults mirror P

@@ -2450,5 +2450,16 @@
     "scope": "shared #playlistUUID virtual screen/POS schedules",
     "revision": "playlist_list own revision",
     "guide": "https://www.xpaceos.com/admira-xp/docs/playlist-loop.md"
+  },
+  "anonymizer_demo": {
+    "preset": "visitor-green-v1",
+    "modes": [
+      8,
+      16,
+      32
+    ],
+    "mcp": "https://mcp-pixeria.admira.store/mcp",
+    "tool": "anonymizer_demo",
+    "guide": "https://www.pixeria.com/docs/anonymizer-demo.md"
   }
 }

@@ -1,4 +1,4 @@
-import {createLifeSnapshot} from './life-snapshot.mjs?v=people-visibility-2';
+import {createLifeSnapshot} from './life-snapshot.mjs?v=anon-demo-v1';
 import {mountTierHud} from './tier-hud.mjs?v=expert-view-1';
 
 // The expert Good/Better/Best selector owns launch, routing and preference.

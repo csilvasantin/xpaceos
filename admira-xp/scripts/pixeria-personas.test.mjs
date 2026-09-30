@@ -31,3 +31,17 @@ test('a Pixeria persona flows from the Good customer to every tier', () => {
   const registry=readFileSync(new URL('./pixeria-personas.mjs',import.meta.url),'utf8');
   assert.match(registry,/LOCAL_WORKER=\/\^http:\\\/\\\/\(127\\\.0\\\.0\\\.1\|localhost\):\\d\+\$\//,'only local workers may override the production one');
 });
+
+
+test('a prepared demo loads its style without triggering generation', async () => {
+  const oldFetch=globalThis.fetch,calls=[];
+  globalThis.fetch=async (url)=>{calls.push(url);return new Response(JSON.stringify({demo:'visitor-green-v1',ready:true,body:'male',style:{gender:'m',age:'adult',outfit:'jacket',palette:{color:'#193d30'}}}));};
+  try{
+    const {pixeriaPersonaStyle,pixeriaPersonaState}=await import('./pixeria-personas.mjs?demo-test');
+    assert.equal(pixeriaPersonaStyle('npc_demo1234'),null);
+    await new Promise(r=>setTimeout(r,20));
+    assert.equal(pixeriaPersonaState('npc_demo1234'),'ready');
+    assert.equal(pixeriaPersonaStyle('npc_demo1234').palette.color,'#193d30');
+    assert.equal(calls.length,1);assert.ok(!calls[0].includes('/build'));
+  }finally{globalThis.fetch=oldFetch;}
+});

@@ -1,5 +1,5 @@
-import {createBestPeopleLayer} from './best-live-people.mjs?v=people-visibility-2';
-import {mountMatrixFurniture} from './matrix-furniture.mjs?v=alsea-1';
+import {createBestPeopleLayer} from './best-live-people.mjs?v=anon-demo-v1';
+import {mountMatrixFurniture} from './matrix-furniture.mjs?v=anon-demo-v1';
 import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';
 import {mountTierHud} from './tier-hud.mjs?v=expert-view-1';
 import {mountMatrixExterior} from './matrix-exterior.mjs?v=exterior-1';
