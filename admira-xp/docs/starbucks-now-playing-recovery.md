@@ -11,3 +11,7 @@ MCP: `matrix_state`, `matrix_music_next`, `matrix_configure` and `screen_plug` r
 Persistence: `xpaceos.starbucks.dismissed.v1` stores the closed incident ID and `resolved_at` for the last 50 dismissals. A reopened ticket is displayed even if it has the same ID; a subsequent closure with a new resolution timestamp can be dismissed again. Older closed cards are not revived after dismissing the most recent closure. Undismissed closed cards keep their ten-minute visibility window. Status polling remains 15 seconds; counter refresh remains one second.
 
 Validation: music transport and device-playback tests; browser interaction with a local incident fixture; public Matrix UI and bilingual help. The fixture is a simulation of Yokup status, not evidence of a new or resolved real incident.
+
+Tutorial animado / Animated guide (15 s, 1080×1920, H.264/AAC; not a screen recording): https://api.yokup.com/media/fleet/1fd264a783522364.mp4
+
+Yokup: Hoy #132 · DCL-ac2caee11ce573e634303ef8. MCP help: https://mcp.admira.store/help.

@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r30.14:34",
-  "signature": "NeoMBP14 · MacBookProNegro14",
+  "version": "v.30.09.2026.r31.14:48",
+  "signature": "TrinityMBP14 · MacBookProNegro14",
   "machine": "MacBookProNegro14",
-  "agent": "NeoMBP14",
-  "deployer": "NeoMBP14",
-  "evidence": "Aviso de cierre del Starbucks con dos voces (Mónica de macOS y ElevenLabs) en una línea Avisos del panel Experto, con estado de qué voz suena junto a Aviso de cierre; /aviso estandar|elevenlabs|estado en el CLI y autocompletado /av.",
+  "agent": "TrinityMBP14",
+  "deployer": "TrinityMBP14",
+  "evidence": "Starbucks Matrix: título completo entre Escuchar/Silenciar y Siguiente canción; tarjeta CERRADA retira el aviso y reanuda la playlist virtual sin cambiar Yokup. 31 pruebas web, 33 MCP y fixture de clic/teclado/persistencia. Tutorial animado https://api.yokup.com/media/fleet/1fd264a783522364.mp4",
   "day": "30.09.2026",
-  "time": "14:34"
+  "time": "14:48"
 }
