@@ -24,9 +24,6 @@ function isCafeteria(){
   }catch{}
   return requestedCafeteria();
 }
-function cafeteriaTierNotice(){
-  return document.documentElement.lang==='en'?'Cafebrería basic view':'Vista básica de Cafebrería';
-}
 function syncVisualSurface(){
   const canvas=document.getElementById('c');if(!canvas)return;
   const rect=canvas.getBoundingClientRect(),root=document.documentElement.style;
@@ -61,7 +58,7 @@ const tiers=createVisualTiers({openBetter:openLifeView,closeBetter:closeLifeView
   openMatrix:openMatrixView,closeMatrix:closeMatrixView,subscribeMatrix:subscribeMatrixView,storage,
   onChange(state){
     syncVisualSurface();document.body.dataset.xtancoTier=state.mode;updateTierControls(state);
-    status.textContent=state.error||(isCafeteria()&&state.mode!=='matrix'?cafeteriaTierNotice():(state.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
+    status.textContent=state.error||(state.busy?'Fusionando vista…':'');status.hidden=!status.textContent;
   }
 });
 const chooseDirect=tiers.choose.bind(tiers);let transitionActive=false;
@@ -117,7 +114,7 @@ function syncCafeteriaTierControls(){
     button.setAttribute('aria-disabled',String(blocked));
   }
   if(unavailable&&!['good','matrix'].includes(tiers.mode))void tiers.choose('good');
-  status.textContent=tiers.error||(unavailable&&tiers.mode!=='matrix'?cafeteriaTierNotice():(tiers.busy?'Fusionando vista…':''));status.hidden=!status.textContent;
+  status.textContent=tiers.error||(tiers.busy?'Fusionando vista…':'');status.hidden=!status.textContent;
 }
 syncCafeteriaTierControls();
 try{

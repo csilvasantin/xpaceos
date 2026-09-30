@@ -282,7 +282,7 @@ test('Cafebrería stays in verified Good and disables the unreviewed visual tier
   for(const tier of ['better','best']){
     assert.equal(h.button(tier).disabled,true);assert.equal(h.button(tier).attrs['aria-disabled'],'true');
   }
-  assert.match(h.status.textContent,/Vista básica de Cafebrería/);assert.equal(h.status.hidden,false);
+  assert.equal(h.status.textContent,'');assert.equal(h.status.hidden,true);
   assert.equal(h.button('matrix').disabled,false);await h.window.__xtancoVisualTiers.choose('matrix');assert.equal(h.matrix.calls.open,1);assert.equal(h.body.dataset.xtancoTier,'matrix');
 });
 

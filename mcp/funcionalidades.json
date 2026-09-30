@@ -2471,5 +2471,21 @@
     "storage": "starbucks_pg103_v1",
     "es": "Good/Better/Best comparten reconstrucción interpretativa del Starbucks; menús ilustrativos. Players y playlists operativos en Matrix. No es un levantamiento métrico.",
     "en": "Good/Better/Best share an interpretive Starbucks reconstruction with illustrative menus. Operational players/playlists remain in Matrix. Not a measured survey."
+  },
+  "side_panel_resize": {
+    "id": "side-panel-resize",
+    "docs": "https://www.xpaceos.com/admira-xp/docs/side-panel-resize.md",
+    "scope": "local-browser-ui",
+    "es": "Opciones y Avanzadas permiten cambiar su anchura arrastrando el tirador del borde interior. Con el tirador enfocado, usa las flechas izquierda/derecha; Inicio o doble clic restaura el ajuste automático al espacio lateral. Cada anchura manual se guarda en este navegador y prevalece al recalcular la escena. Los tiradores sólo aparecen con la barra abierta. Cafebrería ya no muestra el aviso permanente de vista básica; mantiene los errores y los estados de carga.",
+    "en": "Options and Advanced widths can be changed by dragging the handle on their inner edge. Focus a handle and use left/right arrows; Home or double-click restores automatic side-space sizing. Each manual width is saved in this browser and takes precedence when the scene is resized. Handles appear only while the rail is open. Cafebrería no longer shows the persistent basic-view notice; errors and loading status remain available.",
+    "selectors": [
+      ".quad-resize-left",
+      ".quad-resize-right"
+    ],
+    "storage_keys": [
+      "xpace_side_width_left",
+      "xpace_side_width_right"
+    ],
+    "mcp_control": false
   }
 }

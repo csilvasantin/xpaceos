@@ -484,3 +484,7 @@ Good/Better/Best comparten reconstrucción interpretativa del Starbucks; menús 
 Good/Better/Best share an interpretive Starbucks reconstruction with illustrative menus. Operational players/playlists remain in Matrix. Not a measured survey.
 Guide: https://www.xpaceos.com/admira-xp/docs/starbucks-room.md
 Location: alsea-sbux-021; select quality=good|better|best; default Matrix.
+
+Side rails / Barras laterales: Opciones y Avanzadas permiten cambiar su anchura arrastrando el tirador del borde interior. Con el tirador enfocado, usa las flechas izquierda/derecha; Inicio o doble clic restaura el ajuste automático al espacio lateral. Cada anchura manual se guarda en este navegador y prevalece al recalcular la escena. Los tiradores sólo aparecen con la barra abierta. Cafebrería ya no muestra el aviso permanente de vista básica; mantiene los errores y los estados de carga.
+Options and Advanced widths can be changed by dragging the handle on their inner edge. Focus a handle and use left/right arrows; Home or double-click restores automatic side-space sizing. Each manual width is saved in this browser and takes precedence when the scene is resized. Handles appear only while the rail is open. Cafebrería no longer shows the persistent basic-view notice; errors and loading status remain available.
+https://www.xpaceos.com/admira-xp/docs/side-panel-resize.md
