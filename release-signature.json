@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r27.08:08",
-  "signature": "OraculoMacMini · MacMini",
-  "machine": "MacMini",
-  "agent": "OraculoMacMini",
-  "deployer": "OraculoMacMini",
-  "evidence": "Yokup #37: Settings reproduce en bucle por defecto, ajuste compartido y MCP playlist_settings. Pruebas y ayuda ES/EN.",
+  "version": "v.30.09.2026.r28.09:10",
+  "signature": "NeoMBP14 · MacBookProNegro14",
+  "machine": "MacBookProNegro14",
+  "agent": "NeoMBP14",
+  "deployer": "NeoMBP14",
+  "evidence": "DEC-munpe1fhy7kq / DCL-44b02451e449aa60b71142e3: Matrix Starbucks pinta sobre cada pantalla el estado de su ticket de Yokup (GET /incident/status): etapa, técnico y reloj SLA. Pruebas y ayuda ES/EN.",
   "day": "30.09.2026",
-  "time": "08:08"
+  "time": "09:10"
 }
