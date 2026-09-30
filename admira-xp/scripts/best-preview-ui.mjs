@@ -1,17 +1,21 @@
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=starbucks-room-1';
 import {createBestPeopleLayer} from './best-live-people.mjs?v=anon-demo-v1';
 import {mountMatrixFurniture} from './matrix-furniture.mjs?v=anon-demo-v1';
 import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';
-import {mountTierHud} from './tier-hud.mjs?v=expert-view-1';
+import {mountTierHud} from './tier-hud.mjs?v=starbucks-room-1';
 import {mountMatrixExterior} from './matrix-exterior.mjs?v=exterior-1';
 
 // Best keeps the Avenida Admira room as its backdrop. Furniture and visitors
 // are separate, depth-sorted layers driven by the shared Xtanco inventory.
 const listeners=new Set();
+let starbucksDelegate=false;
+subscribeLifeView(state=>{if(starbucksDelegate)for(const listener of listeners)listener(state);});
 let dialog,people,furniture,exterior,lastFocus,requestId,removeAbort,hud,busy=false,viewError='';
 const announce=(reason='')=>{for(const fn of listeners)fn({open:!!dialog,busy,error:viewError,reason,requestId});};
 export function subscribeBestView(fn){listeners.add(fn);return ()=>listeners.delete(fn);}
 
 export function closeBestView(reason=''){
+  if(starbucksDelegate){closeLifeView(reason);starbucksDelegate=false;return;}
   if(!dialog)return;
   const current=dialog;dialog=null;
   removeAbort?.();removeAbort=null;people?.dispose();people=null;furniture?.dispose();furniture=null;exterior?.dispose();exterior=null;hud?.dispose();hud=null;
@@ -21,6 +25,7 @@ export function closeBestView(reason=''){
 }
 
 export function openBestView(options={}){
+  if(globalThis.XpaceStarbucks?.active()){starbucksDelegate=true;return openLifeView({...options,tier:'best'});}
   if(dialog||options.signal?.aborted)return;
   requestId=options.requestId;lastFocus=document.activeElement;busy=true;viewError='';
   dialog=document.createElement('dialog');

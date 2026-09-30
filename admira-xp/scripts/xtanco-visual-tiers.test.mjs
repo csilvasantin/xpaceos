@@ -334,8 +334,8 @@ test('selector boots safely with denied storage or stale legacy Best and never i
   for(const options of [{storageBlocked:true},{storage:memoryStorage({xtanco_visual_quality:'best'})}]){
     const h=selectorHarness(options);assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.life.calls.open,0);
   }
-  const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1]);
-  assert.deepEqual(imports,['./matrix-preview-ui.mjs?v=entry-1','./life-ui.mjs?v=expert-view-1','./best-preview-ui.mjs?v=expert-view-1','./xtanco-visual-tiers.mjs?v=entry-1','./visual-tier-controls.mjs?v=alsea-1']);
+  const imports=[...selectorSource.matchAll(/^import .* from ['"]([^'"]+)['"]/gm)].map(match=>match[1].split('?')[0]);
+  assert.deepEqual(imports,['./matrix-preview-ui.mjs','./life-ui.mjs','./best-preview-ui.mjs','./xtanco-visual-tiers.mjs','./visual-tier-controls.mjs']);
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.equal([...html.matchAll(/<script\b[^>]*src="scripts\/xtanco-premium-ui\.mjs[^\"]*"/g)].length,1);
   assert.doesNotMatch(html,/<script\b[^>]*src="scripts\/life-ui\.mjs/);

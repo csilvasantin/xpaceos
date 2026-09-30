@@ -1,5 +1,5 @@
-import {createLifeSnapshot} from './life-snapshot.mjs?v=anon-demo-v1';
-import {mountTierHud} from './tier-hud.mjs?v=expert-view-1';
+import {createLifeSnapshot} from './life-snapshot.mjs?v=starbucks-room-1';
+import {mountTierHud} from './tier-hud.mjs?v=starbucks-room-1';
 
 // The expert Good/Better/Best selector owns launch, routing and preference.
 const listeners=new Set();
@@ -38,7 +38,14 @@ async function open(options={}){
     <div class="life-camera" role="group" aria-label="Cámara"><button type="button" class="tg-quick-btn" data-preset="mapped" aria-pressed="true"><strong>Comparar con Good</strong><span>cámara alineada</span></button><button type="button" class="tg-quick-btn" data-preset="home" aria-pressed="false"><strong>Explorar 3D</strong><span>cámara libre</span></button><button type="button" class="tg-quick-btn" data-preset="floor" aria-pressed="false"><strong>Planta</strong><span>vista cenital</span></button><button type="button" class="tg-quick-btn" data-preset="detail" aria-pressed="false"><strong>Detalle</strong><span>primer plano</span></button><button type="button" class="tg-quick-btn" data-zoom="out" aria-label="Alejar"><strong>−</strong><span>alejar</span></button><button type="button" class="tg-quick-btn" data-zoom="in" aria-label="Acercar"><strong>+</strong><span>acercar</span></button></div></div>
     <div class="life-compass" aria-hidden="true"><span>N</span><b>↟</b></div>
   </div>`;
-  hud=mountTierHud(dialog,{mode:'better',stage:dialog.querySelector('.life-stage')});
+  const venue=globalThis.XpaceStarbucks?.active(),best=options.tier==='best';
+  if(venue){dialog.setAttribute('aria-label',(best?'Best':'Better')+' · Starbucks Paseo de Gracia 103');
+    dialog.dataset.venue='alsea-sbux-021';dialog.dataset.quality=best?'best':'better';
+    dialog.querySelector('.life-eyebrow').textContent='BARCELONA · PASSEIG DE GRÀCIA 103';
+    dialog.querySelector('.life-location h2').textContent='Starbucks · Alsea';
+    dialog.querySelector('.visual-surface-badge').firstChild.textContent=best?'03.- BEST · 32 BITS ':'02.- BETTER · 16 BITS ';
+  }
+  hud=mountTierHud(dialog,{mode:best?'best':'better',stage:dialog.querySelector('.life-stage')});
   window.__xtancoSyncVisualSurface?.();
   const abort=()=>{if(ticket===generation)close('switch');};
   options.signal?.addEventListener('abort',abort,{once:true});removeAbort=()=>options.signal?.removeEventListener('abort',abort);
@@ -100,8 +107,8 @@ async function open(options={}){
       pending=setTimeout(connect,180);return;
     }
     try{
-      const {createLifeRenderer}=await import('./life-renderer.mjs?v=px-2');if(ticket!==generation)return;
-      viewer=createLifeRenderer({canvas,snapshot:input,getPlayer:()=>window.__xtoreWindowPlayer,onSelect:select,onCameraChange:state=>{
+      const {createLifeRenderer}=await import('./life-renderer.mjs?v=starbucks-room-1');if(ticket!==generation)return;
+      viewer=createLifeRenderer({canvas,assetQuality:best?'best':'better',snapshot:input,getPlayer:()=>window.__xtoreWindowPlayer,onSelect:select,onCameraChange:state=>{
         if(ticket!==generation||!dialog)return;
         const mapped=state.mode==='mapped';dialog.dataset.camera=mapped?'mapped':'free';
         dialog.querySelector('.life-mapping-state').textContent=mapped?'· cámara alineada':'· exploración libre';

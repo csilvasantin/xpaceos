@@ -2,7 +2,7 @@
 export function createSceneSnapshot(){
   const ids=new WeakMap();let sequence=0;
   const identity=(actor,kind)=>{if(!ids.has(actor))ids.set(actor,`${kind}-${++sequence}`);return ids.get(actor);};
-  return function snapshot({iso,projection,layout=[],hardness={},game,active=false,editor=false,footprints={},wallHelpers={}}={}){
+  return function snapshot({venue=null,iso,projection,layout=[],hardness={},game,active=false,editor=false,footprints={},wallHelpers={}}={}){
     if(!active||!game||!iso)return null;
     const elevation=Math.asin(iso.tileH/iso.tileW);
     const pixelsPerHeightUnit=iso.tileW/Math.SQRT2*Math.cos(elevation);
@@ -36,7 +36,7 @@ export function createSceneSnapshot(){
       const value=game[kind];if(value&&value.phase!=='idle')actors.push(actor(value,kind));
     }
     const blocked=Array.isArray(hardness.blocked)?[...new Set(hardness.blocked.filter(value=>typeof value==='string'&&/^\d+,\d+$/.test(value)))]:[];
-    return {cols:iso.cols,rows:iso.rows,elevation,editor,
+    return {venue,cols:iso.cols,rows:iso.rows,elevation,editor,
       projection:projection?{...projection}:undefined,
       hardness:{cols:iso.cols,rows:iso.rows,blocked},
       wallHeight:iso.wallH/pixelsPerHeightUnit,

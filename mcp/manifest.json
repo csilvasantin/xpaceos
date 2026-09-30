@@ -1,12 +1,12 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.30.09.2026.r33.15:07",
+  "version": "v.30.09.2026.r34.15:26",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.12.2",
+    "version": "2.12.3",
     "health": "https://mcp.admira.store/",
     "tool_count": 35
   },
@@ -485,5 +485,15 @@
     "tool": "anonymizer_demo",
     "guide": "https://www.pixeria.com/docs/anonymizer-demo.md",
     "receive_window_ms": 300000
+  },
+  "starbucks_room": {
+    "location_id": "alsea-sbux-021",
+    "source": "https://panorama-viewer-d8j.pages.dev/",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-room.md",
+    "good": "https://www.xpaceos.com/admira-xp/?loc=alsea-sbux-021&quality=good",
+    "default": "matrix",
+    "storage": "starbucks_pg103_v1",
+    "es": "Good/Better/Best comparten reconstrucción interpretativa del Starbucks; menús ilustrativos. Players y playlists operativos en Matrix. No es un levantamiento métrico.",
+    "en": "Good/Better/Best share an interpretive Starbucks reconstruction with illustrative menus. Operational players/playlists remain in Matrix. Not a measured survey."
   }
 }

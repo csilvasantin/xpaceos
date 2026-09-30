@@ -1,4 +1,5 @@
 import * as T from './premium-three.mjs';
+import './starbucks-room.js?v=starbucks-room-1';
 import {FOOTPRINTS,normalizeSnapshot} from './premium-model.mjs';
 import {buildCustomerNavigation} from './customer-navigation.mjs?v=customer-motion-1';
 import {createCustomerMotion} from './customer-motion.mjs?v=customer-motion-1';
@@ -328,6 +329,29 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     return root;
   }
 
+  function starbucksRoom(){
+    const colors=new Map();
+    const finish=part=>{
+      const key=part.color+(part.glass?'glass':'');if(colors.has(key))return colors.get(key);
+      const detailed=assetQuality==='best';
+      const m=material(part.color,{roughness:part.glass?.12:detailed?.62:.9,
+        ...(part.glass?{transparent:true,opacity:.19,depthWrite:false}:{}),
+        ...(detailed&&['#ad855b','#745640'].includes(part.color)?{map:woodMap}:{}),
+        ...(part.color==='#ffe2a0'?{emissive:part.color,emissiveIntensity:.7}:{} )},worldResources);
+      colors.set(key,m);return m;
+    };
+    for(const fixture of globalThis.XpaceStarbucks.build(snapshot.layout,{quality:assetQuality,moving:snapshot.moving})){
+      const root=group(world);root.name='starbucks:'+fixture.id;
+      if(fixture.item)root.userData={item:fixture.item,layoutId:fixture.id,selectable:true};
+      for(const part of fixture.parts){
+        const {x,y,z,w,h,d}=part;
+        if(part.round&&assetQuality==='best')mesh(root,cylinderGeometry,finish(part),x+w/2,y+h/2,z+d/2,w/2,h,d/2);
+        else box(root,x+w/2,y+h/2,z+d/2,w,h,d,finish(part),assetQuality==='best'&&Math.max(w,h,d)<2.5);
+        if(part.text)label(root,part.text,x+w/2,y+h/2,z+d+.006,w*.96,h*.96,{bg:part.color,fg:'#f5eed9',font:40});
+      }
+      batch(root);
+    }
+  }
   function architecture(){
     const {cols:c,rows:r,wallHeight:h}=snapshot;
     const architectureRoot=group(world);architectureRoot.name='life:architecture';
@@ -605,11 +629,13 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     snapshot=normalizeLifeSnapshot(raw);
     // The Canvas2D projection is deliberately absent from this signature. Orbit,
     // resize and editor zoom must never skew or rebuild genuine 3D furniture.
-    const next=JSON.stringify([snapshot.cols,snapshot.rows,snapshot.wallHeight,snapshot.moving,snapshot.layout]);
+    const next=JSON.stringify([snapshot.cols,snapshot.rows,snapshot.wallHeight,snapshot.venue,snapshot.moving,snapshot.layout]);
     if(next!==signature){
       customerNavigation=buildCustomerNavigation(snapshot,{allowOutside:true});
       release(worldResources);world.traverse(o=>{if(o.isInstancedMesh)o.dispose();});world.clear();fixtureLights.length=0;doors.length=0;
-      if(!inventory)architecture();for(const item of snapshot.layout)furniture(item);signature=next;
+      if(snapshot.venue==='alsea-sbux-021')starbucksRoom();
+      else {if(!inventory)architecture();for(const item of snapshot.layout)furniture(item);}
+      signature=next;
       ground.visible=!inventory;ground.position.set(snapshot.cols/2,-.565,snapshot.rows/2);ground.scale.set(500,500,1);
       const key=inventory?'':snapshot.cols+'x'+snapshot.rows+'x'+snapshot.wallHeight;
       if(key!==exteriorKey){exterior?.dispose();exterior=null;exteriorKey=key;if(key){exterior=createLifeExterior({cols:snapshot.cols,rows:snapshot.rows,wallHeight:snapshot.wallHeight,quality:assetQuality,canvasFactory});scene.add(exterior.root);}}

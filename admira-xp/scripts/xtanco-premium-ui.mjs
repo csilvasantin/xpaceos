@@ -1,8 +1,8 @@
 import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=closed-resume-1';
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=anon-demo-v1';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=anon-demo-v1';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=starbucks-room-1';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=starbucks-room-1';
 import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=entry-1';
-import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=alsea-1';
+import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=starbucks-room-1';
 
 const viewPane=document.querySelector('#telegramDock .expert-view-pane');
 const status=document.createElement('div');status.id='xtanco-best-status';
@@ -13,6 +13,7 @@ function requestedCafeteria(){
   try{return ['cafeteria','cafebreria'].includes((new URLSearchParams(location.search).get('autostart')||'').trim().toLowerCase());}catch{return false;}
 }
 function isCafeteria(){
+  if(globalThis.XpaceStarbucks?.active())return false;
   const body=document.body;
   if(body?.classList.contains('vertical-cafeteria'))return true;
   if(body?.dataset?.xpaceVertical)return body.dataset.xpaceVertical==='cafeteria';
@@ -89,6 +90,7 @@ function fuseWithoutNative(mode){
   return outcome;
 }
 tiers.choose=mode=>{
+  if(mode==='matrix')window.__xtancoEnterStarbucks?.();
   ensureExpertDock();
   syncVisualSurface();
   if(window.__xpaceMatrixEntry&&document.documentElement.classList.contains('matrix-boot'))return chooseDirect(mode);
@@ -101,6 +103,7 @@ tiers.choose=mode=>{
   let outcome;transitionActive=true;
   try{
     const transition=document.startViewTransition(()=>{outcome=chooseDirect(mode);return outcome;});
+    transition.ready?.catch(()=>{}); // Resize may cancel the visual transition while the view itself remains valid.
     return transition.finished.catch(()=>{}).then(()=>outcome).finally(()=>{transitionActive=false;});
   }catch{transitionActive=false;return chooseDirect(mode);}
 };

@@ -44,7 +44,7 @@ function harness({cached=false,broken=false,showFailure=false,peopleFailure=fals
     const layer={container,onReady,onSelect,zones:[],count:43,disposed:false,dispose(){this.disposed=true;}};
     furnitureLayers.push(layer);if(!furniturePending)onReady();return layer;
   };
-  const context=vm.createContext({mountTierHud:()=>({setStatus(){},dispose(){}}),document,window,createBestPeopleLayer,mountMatrixFurniture,projectMatrixFloor,MATRIX_FLOOR_POLYGON});
+  const context=vm.createContext({subscribeLifeView:()=>()=>{},openLifeView:()=>{},closeLifeView:()=>{},mountTierHud:()=>({setStatus(){},dispose(){}}),document,window,createBestPeopleLayer,mountMatrixFurniture,projectMatrixFloor,MATRIX_FLOOR_POLYGON});
   vm.runInContext(source.replace(/^import .*;\n/gm,'').replace(/export function /g,'function ')+';globalThis.audit={openBestView,closeBestView,subscribeBestView,get dialog(){return dialog;}};',context);
   return {body,window,document,previous,layers,furnitureLayers,get releases(){return releases;},get dialog(){return context.audit.dialog;},open:options=>context.audit.openBestView(options),close:reason=>context.audit.closeBestView(reason),subscribe:fn=>context.audit.subscribeBestView(fn)};
 }

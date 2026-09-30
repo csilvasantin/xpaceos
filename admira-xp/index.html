@@ -1378,6 +1378,7 @@
 <script src="assets/js/sfx.js"></script>
 <script src="assets/js/ambient.js"></script>
 <script src="assets/js/sky.js"></script>
+<script src="scripts/starbucks-room.js?v=starbucks-room-1"></script>
 <script src="assets/js/heatmap.js"></script>
 <script src="assets/js/streamdeck.js"></script>
 <script src="assets/js/session-ping.js" defer></script>
@@ -6739,11 +6740,14 @@ function getProductLabelsForClient(clientIndex){
 function getProductLabel(index,clientIndex){
   return getProductLabelsForClient(clientIndex)[index] || (lang==='es'?'Producto':'Product')+' '+index;
 }
+function isStarbucksVenue(){return !!window.XpaceStarbucks?.active();}
 function getLayoutStoragePrefix(){
+  if(isStarbucksVenue())return "starbucks_pg103_v1";
   const id=(getActiveClient()||CLIENTS[0]).id||'xtanco';
   return id==='xtanco' ? 'xtanco' : 'xtanco_'+id;
 }
 function getCurrentVenueBrand(){
+  if(isStarbucksVenue()) return 'STARBUCKS';
   if(isCafeteriaClient()) return 'CAFEBRERÍA';
   return isSupermarketClient() ? 'SUPER' : 'XTANCO';
 }
@@ -8413,7 +8417,7 @@ function resetXpaceCreatorConfig(){
   applyXpaceCreatorGrid();
   saveXpaceCreatorConfig();
 }
-let DEFAULT_LAYOUT=JSON.parse(JSON.stringify(FACTORY_LAYOUTS.xtanco));
+let DEFAULT_LAYOUT=JSON.parse(JSON.stringify(isStarbucksVenue()?window.XpaceStarbucks.layout():FACTORY_LAYOUTS.xtanco));
 let shopLayout=JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
 let shopFurnitureVisible=true;
 let edSelIdx=-1;       // selected furniture index in editor
@@ -8444,7 +8448,7 @@ let shopStaffPos=null;     // saved staff positions (null = use DEFAULT_STAFF_PO
 let shopStaffZones=null;   // saved staff influence zones (null = use home-based defaults)
 
 const LAYOUT_SCHEMA_VERSION='20260426-public-canonical-1';
-const CANONICAL_LAYOUT_IDS=new Set(Object.values(FACTORY_LAYOUTS).flat().map(item=>item.id));
+const CANONICAL_LAYOUT_IDS=new Set([...Object.values(FACTORY_LAYOUTS).flat(),...window.XpaceStarbucks.layout()].map(item=>item.id));
 const PINNED_LAYOUT_IDS=new Set(['aroma']);
 
 // Default staff home positions (used when no custom positions saved)
@@ -9389,7 +9393,7 @@ function initGame(){
   // Sincroniza XPACE_BOOTH con el cliente activo para que el HUD muestre
   // el badge correcto (Shoptalk, Xtanco, …).
   try{ window.XPACE_BOOTH=getActiveClient().id; }catch(e){}
-  DEFAULT_LAYOUT=JSON.parse(JSON.stringify(FACTORY_LAYOUTS[getActiveClient().id]||FACTORY_LAYOUTS.xtanco));
+  DEFAULT_LAYOUT=JSON.parse(JSON.stringify(isStarbucksVenue()?window.XpaceStarbucks.layout():(FACTORY_LAYOUTS[getActiveClient().id]||FACTORY_LAYOUTS.xtanco)));
   loadLayout();
   try{
     document.body.dataset.xpaceVertical=getActiveClient().id;
@@ -18350,7 +18354,7 @@ function drawShopOperation(fn,kind='device'){
 
 // ── DRAW SHOP (ISOMETRIC — Kairosoft warm style) ─────────────
 let inventoryPublishedAt=0;
-function inventorySpace(){return CLIENTS[activeClient]?.id||'xtanco';}
+function inventorySpace(){return isStarbucksVenue()?'starbucks_pg103':CLIENTS[activeClient]?.id||'xtanco';}
 function inventoryPresentationLayout(){
   const store=window.XpaceInventory,space=inventorySpace();
   if(store&&Date.now()-inventoryPublishedAt>1000){store.publish(space,shopLayout);inventoryPublishedAt=Date.now();}
@@ -18358,6 +18362,16 @@ function inventoryPresentationLayout(){
 }
 function drawShop(){
   const renderLayout=inventoryPresentationLayout();
+  if(isStarbucksVenue()){
+    const actors=[];
+    if(!editorSceneActive && !document.body.classList.contains('xtanco-mudanza')){
+      for(const s of G.staff||[])if(s.hired&&!s.hidden&&G.peopleVisibility?.staff!==false)actors.push({depth:(s.y+27-ISO.oy)/(ISO.tileH/2),draw:()=>drawIsoStaff(s)});
+      for(const c of G.custs||[])if(G.peopleVisibility?.customers!==false)actors.push({depth:(c.y+20-ISO.oy)/(ISO.tileH/2),draw:()=>drawIsoCust(c)});
+    }
+    cx.save();cx.beginPath();cx.rect(SHOP.x,SHOP.y,SHOP.w,Math.max(SHOP.h,H-SHOP.y));cx.clip();
+    window.XpaceStarbucks.draw(cx,ISO,toIso,shopFurnitureVisible?renderLayout:[],actors,document.body.classList.contains('xtanco-mudanza'));
+    cx.restore();return;
+  }
   const premiumView=window.__xtancoPremiumView;
   const premiumActive=!!premiumView?.begin?.(cx,cv);
   const mudanzaActive=document.body.classList.contains('xtanco-mudanza');
@@ -27223,9 +27237,17 @@ function loop(){
   cx.save();try{if(codexMapOpen)drawCodexMapOverlay();}catch(e){}cx.restore();
   finalizeFrame();
 }
+// Matrix represents this concrete venue even when opened from the generic entry.
+window.__xtancoEnterStarbucks=()=>{
+  if(isStarbucksVenue())return;
+  const url=new URL(location.href);url.searchParams.set('loc','alsea-sbux-021');
+  url.searchParams.delete('play');url.searchParams.delete('autostart');
+  history.replaceState(history.state,'',url);
+  autoEnterVertical('cafeteria');
+};
 window.__xtancoVisualState=()=>{
   const moving=document.body.classList.contains('xtanco-mudanza');
-  return {palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:moving?[]:(shopFurnitureVisible||editorSceneActive?inventoryPresentationLayout():[]),hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,moving,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&['xtanco','cafeteria'].includes(CLIENTS[activeClient]?.id),vertical:CLIENTS[activeClient]?.id||'xtanco'};
+  return {venue:isStarbucksVenue()?'alsea-sbux-021':null,palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:moving?[]:(shopFurnitureVisible||editorSceneActive?inventoryPresentationLayout():[]),hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,moving,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&['xtanco','cafeteria'].includes(CLIENTS[activeClient]?.id),vertical:CLIENTS[activeClient]?.id||'xtanco'};
 };
 loop();
 
@@ -27238,6 +27260,7 @@ loop();
 //  ?play=creator      → Xpace Creator (EDITOR)
 //  ?play=loterias     → Loterias (pending — muestra el catálogo con loterias preseleccionado)
 function autoEnterVertical(id){
+  if(isStarbucksVenue())id='cafeteria';
   if(!id) return false;
   const idx=CLIENTS.findIndex(c=>c && c.id===id);
   if(idx<0) return false;
@@ -30309,6 +30332,8 @@ window.xtAPI = (function(){
     return id?('layouts/'+id+'.xml'):null;
   }
   async function loadStoreLayoutFromRepo(opts){
+    // Starbucks owns a versioned local seed; never import the tobacco default.
+    if(isStarbucksVenue())return false;
     const silent=!!(opts&&opts.silent);
     const perLoc=storeLayoutPath();
     if(perLoc){
@@ -34203,6 +34228,7 @@ window.xtAPI = (function(){
   try{
     const _qs=new URLSearchParams(location.search);
     let _as=(_qs.get('autostart')||'').toLowerCase();
+    if(isStarbucksVenue())_as='cafeteria';
       // Directo al Xtanco por defecto (Carlos, 13-jul-2026): fuera XPACE INVADERS del camino
       // de entrada. El arcade queda como easter egg con ?arcade=1; los modos con entrada
       // propia (view/distro/present/preview) siguen intactos.
@@ -35639,7 +35665,7 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=expert-hud-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=anon-demo-v1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=starbucks-room-1"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=aviso-1"></script>
 </body>
 </html>
