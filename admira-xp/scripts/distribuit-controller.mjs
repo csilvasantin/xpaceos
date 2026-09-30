@@ -1,4 +1,4 @@
-import {validateFurnitureMove} from './distribuit.mjs';
+import {validateFurnitureMove,furniturePose,sameFurniturePose} from './distribuit.mjs?v=distribuir-2';
 import {isWallFurniture} from './furniture-geometry.mjs';
 
 // Preview is private to Better. Only a validated, completed gesture is saved.
@@ -14,13 +14,14 @@ export function createDistribuitController({bridge,onChange=()=>{}}={}){
     try{
       const scene=read(),item=scene.layout.find(i=>String(i.id)===selectedId);
       if(!item)return {ok:false,reason:'missing'};
-      const origin={col:item.col,row:item.row};
+      const origin=furniturePose(item);
       if(!draft)draft={id:selectedId,origin,position:origin,path:[],candidate:origin,result:{ok:true}};
-      const result=validateFurnitureMove(scene,selectedId,position,{from:draft.position});
-      draft.candidate=position;draft.result=result;
-      if(result.ok&&(position.col!==draft.position.col||position.row!==draft.position.row)){
+      const candidate={...draft.position,...position};
+      const result=validateFurnitureMove(scene,selectedId,candidate,{from:draft.position});
+      draft.candidate=candidate;draft.result=result;
+      if(result.ok&&!sameFurniturePose(result.position,draft.position)){
         if(draft.path.length>=4096){notice='long';emit();return {ok:false,reason:'long'};}
-        draft.position={...position};draft.path.push({...position});
+        draft.position={...result.position};draft.path.push({...result.position});
       }
       notice=result.ok?'preview':result.reason;emit();return result;
     }catch{notice='room';emit();return {ok:false,reason:'room'};}

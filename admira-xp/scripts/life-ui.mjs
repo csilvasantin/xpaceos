@@ -110,7 +110,7 @@ async function open(options={}){
       pending=setTimeout(connect,180);return;
     }
     try{
-      const {createLifeRenderer}=await import('./life-renderer.mjs?v=distribuit-1');if(ticket!==generation)return;
+      const {createLifeRenderer}=await import('./life-renderer.mjs?v=distribuir-2');if(ticket!==generation)return;
       viewer=createLifeRenderer({canvas,assetQuality:best?'best':'better',snapshot:input,getPlayer:()=>window.__xtoreWindowPlayer,onSelect:select,onCameraChange:state=>{
         if(ticket!==generation||!dialog)return;
         const mapped=state.mode==='mapped';dialog.dataset.camera=mapped?'mapped':'free';
@@ -125,7 +125,7 @@ async function open(options={}){
         try{
           if(!document.hidden){
             if(now-lastSnapshot>=100){const next=snapshot(window.__xtancoVisualState?.());if(!next){close();return;}viewer.update(furnitureEditor?furnitureEditor.decorateSnapshot(next):next);current=next;lastSnapshot=now;}
-            if(now-lastStatus>=1000){const count=current.inside??0;const en=document.documentElement?.lang==='en';const status=furnitureEditor?(en?'Distribuit · simulation paused':'Distribuit · simulación pausada'):current.moving
+            if(now-lastStatus>=1000){const count=current.inside??0;const en=document.documentElement?.lang==='en';const status=furnitureEditor?(en?'Distribute · simulation paused':'Distribuir · simulación pausada'):current.moving
               ? (en?'Moving mode · floor and walls only':'Mudanza activa · solo suelo y paredes')
               : en?`Twin connected · ${count} ${count===1?'customer':'customers'} in the simulation`:`Gemelo conectado · ${count} ${count===1?'cliente':'clientes'} en la simulación`;dialog.querySelector('.life-state').textContent=status;hud?.setStatus(status);lastStatus=now;}
             viewer.render(now);
@@ -142,7 +142,7 @@ async function openLifeEditor(){
   if(!dialog||!viewer||!window.__xtancoFurnitureEditor)return false;
   if(furnitureEditor)return true;
   const ticket=generation;
-  const {mountDistribuit}=await import('./distribuit-ui.mjs?v=distribuit-1');
+  const {mountDistribuit}=await import('./distribuit-ui.mjs?v=distribuir-2');
   if(ticket!==generation||!viewer)return false;
   if(furnitureEditor)return true;
   try{furnitureEditor=mountDistribuit({dialog,viewer,bridge:window.__xtancoFurnitureEditor,onClose:closeLifeEditor});dialog.querySelector('.life-selection').hidden=true;return true;}catch(error){console.warn('[Distribuit]',error);return false;}

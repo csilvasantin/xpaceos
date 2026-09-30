@@ -98,6 +98,18 @@
     }
     return groups;
   }
+  // Quarter turns remain axis-aligned boxes in Good; use the same layout
+  // origin and horizontal scale as the THREE group in Better/Best.
+  function transformPart(part,item){
+    if(!item)return part;
+    const sx=item.sx??1,sy=item.sy??1,flip=item.flipX?-1:1,a=-(item.rot??0)*Math.PI/2,c=Math.cos(a),n=Math.sin(a);
+    const corners=[[part.x,part.z],[part.x+part.w,part.z],[part.x,part.z+part.d],[part.x+part.w,part.z+part.d]].map(([x,z])=>{
+      x=(x-item.col)*sx*flip;z=(z-item.row)*sx;
+      return [item.col+c*x+n*z,item.row-n*x+c*z];
+    });
+    const xs=corners.map(p=>p[0]),zs=corners.map(p=>p[1]);
+    return {...part,x:Math.min(...xs),z:Math.min(...zs),w:Math.max(...xs)-Math.min(...xs),d:Math.max(...zs)-Math.min(...zs),y:part.y*sy,h:part.h*sy};
+  }
   // Canvas follows the existing Good projection and pixel grid; no image backdrop.
   let cachedKey=null,cachedGroups=null;
   function draw(ctx,iso,project,items,actors=[],moving=false){
@@ -108,7 +120,7 @@
     const key=JSON.stringify([items,moving]);if(key!==cachedKey){cachedGroups=build(items,{moving});cachedKey=key;}
     const groups=[...cachedGroups];for(const a of actors)groups.push({depth:a.depth,draw:a.draw});
     groups.sort((a,b)=>a.depth-b.depth);
-    for(const g of groups){if(g.draw){g.draw();continue;}for(const v of g.parts){const {x,y,z,w,h,d,color}=v;
+    for(const g of groups){if(g.draw){g.draw();continue;}for(const raw of g.parts){const v=transformPart(raw,g.item),{x,y,z,w,h,d,color}=v;
       const a=p(x,y+h,z),b=p(x+w,y+h,z),c=p(x+w,y+h,z+d),e=p(x,y+h,z+d),f=p(x+w,y,z+d),j=p(x,y,z+d),k=p(x+w,y,z);
       ctx.globalAlpha=v.glass?.22:1;
       if(v.round){
@@ -119,5 +131,5 @@
       if(v.text){ctx.save();ctx.transform((c[0]-e[0])/w,(c[1]-e[1])/w,0,height,e[0],e[1]);ctx.fillStyle='#f5eed9';ctx.font=`bold ${h*.72}px monospace`;ctx.textAlign='center';ctx.fillText(v.text,w/2,h*.78,w*.93);ctx.restore();}
     }}ctx.globalAlpha=1;
   }
-  root.XpaceStarbucks={id:ID,active,layout,build,draw};
+  root.XpaceStarbucks={id:ID,active,layout,build,draw,transformPart};
 })(globalThis);

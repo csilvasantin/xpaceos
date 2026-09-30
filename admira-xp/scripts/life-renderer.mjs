@@ -1,5 +1,5 @@
 import * as T from './premium-three.mjs';
-import {createLifeScene} from './life-scene.mjs?v=distribuit-1';
+import {createLifeScene} from './life-scene.mjs?v=distribuir-2';
 import {furnitureBounds,isSolidFurniture} from './furniture-geometry.mjs';
 import {mappedCameraFrame} from './life-camera.mjs';
 

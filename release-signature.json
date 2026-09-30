@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r36.20:45",
+  "version": "v.30.09.2026.r37.22:09",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #214: Distribuit furniture editor in Better 16 bits, swept collision checks, save/undo, Cafebrería models, ES/EN help and MCP.",
+  "evidence": "Yokup #223: Distribuir/Distribute rotation and proportional scale, continuous collision checks, full transform save/undo, ES/EN and MCP help.",
   "day": "30.09.2026",
-  "time": "20:45"
+  "time": "22:09"
 }

@@ -1,7 +1,7 @@
 import * as T from './premium-three.mjs';
 import './starbucks-room.js?v=starbucks-room-1';
 import {FOOTPRINTS,normalizeSnapshot} from './premium-model.mjs';
-import {buildCustomerNavigation} from './customer-navigation.mjs?v=distribuit-1';
+import {buildCustomerNavigation} from './customer-navigation.mjs?v=distribuir-2';
 import {createCustomerMotion} from './customer-motion.mjs?v=customer-motion-1';
 import {createLifeExterior} from './life-exterior.mjs?v=exterior-1';
 
@@ -358,9 +358,13 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     };
     for(const fixture of globalThis.XpaceStarbucks.build(snapshot.layout,{quality:assetQuality,moving:snapshot.moving})){
       const root=group(world);root.name='starbucks:'+fixture.id;
-      if(fixture.item)root.userData={item:fixture.item,layoutId:fixture.id,selectable:true,baseOrigin:{col:fixture.item.col,row:fixture.item.row}};
+      if(fixture.item){
+        const item=fixture.item;root.userData={item,layoutId:fixture.id,selectable:true};
+        root.position.set(item.col,0,item.row);root.rotation.y=-(item.rot??0)*Math.PI/2;
+        root.scale.set((item.flipX?-1:1)*(item.sx??1),item.sy??1,item.sx??1);
+      }
       for(const part of fixture.parts){
-        const {x,y,z,w,h,d}=part;
+        const {y,w,h,d}=part,x=part.x-(fixture.item?.col||0),z=part.z-(fixture.item?.row||0);
         if(part.round&&assetQuality==='best')mesh(root,cylinderGeometry,finish(part),x+w/2,y+h/2,z+d/2,w/2,h,d/2);
         else box(root,x+w/2,y+h/2,z+d/2,w,h,d,finish(part),assetQuality==='best'&&Math.max(w,h,d)<2.5);
         if(part.text)label(root,part.text,x+w/2,y+h/2,z+d+.006,w*.96,h*.96,{bg:part.color,fg:'#f5eed9',font:40});

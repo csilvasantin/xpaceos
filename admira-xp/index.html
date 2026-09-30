@@ -1378,7 +1378,7 @@
 <script src="assets/js/sfx.js"></script>
 <script src="assets/js/ambient.js"></script>
 <script src="assets/js/sky.js"></script>
-<script src="scripts/starbucks-room.js?v=starbucks-room-1"></script>
+<script src="scripts/starbucks-room.js?v=distribuir-2"></script>
 <script src="assets/js/heatmap.js"></script>
 <script src="assets/js/streamdeck.js"></script>
 <script src="assets/js/session-ping.js" defer></script>
@@ -8872,12 +8872,14 @@ const FURNITURE_SIZE={
 function gridKey(col,row){return Math.round(col)+','+Math.round(row);}
 function isGridInside(col,row){return col>=0&&col<ISO.cols&&row>=0&&row<ISO.rows;}
 function getFurnitureFootprint(item){
-  const base=(item.type==='custom'&&Array.isArray(item.fp)&&item.fp.length===2)?item.fp:(FURNITURE_SIZE[item.type]||[1,1]);
-  const rot=((item.rot||0)%4+4)%4;
-  let w=Math.max(1,Math.ceil(base[0]*Math.max(0.2,item.sx||1)));
-  let d=Math.max(1,Math.ceil(base[1]*Math.max(0.2,item.sy||1)));
-  if(rot%2===1){const tmp=w;w=d;d=tmp;}
-  return {col:Math.round(item.col),row:Math.round(item.row),w,d};
+  const base=Array.isArray(item.fp)&&item.fp.length===2?item.fp:(FURNITURE_SIZE[item.type]||[1,1]);
+  const scale=Math.max(.1,Math.abs(item.sx??1)),flip=item.flipX?-1:1,angle=-(item.rot||0)*Math.PI/2,cos=Math.cos(angle),sin=Math.sin(angle);
+  const points=[[0,0],[base[0],0],[base[0],base[1]],[0,base[1]]].map(([x,z])=>{
+    x*=scale*flip;z*=scale;return [item.col+cos*x+sin*z,item.row-sin*x+cos*z];
+  });
+  const xs=points.map(p=>p[0]),zs=points.map(p=>p[1]);
+  const col=Math.floor(Math.min(...xs)+1e-7),row=Math.floor(Math.min(...zs)+1e-7);
+  return {col,row,w:Math.ceil(Math.max(...xs)-1e-7)-col,d:Math.ceil(Math.max(...zs)-1e-7)-row};
 }
 
 // Check if a tile is blocked by furniture
@@ -27263,20 +27265,21 @@ window.__xtancoFurnitureEditor={
     const token={roomId:scene.roomId,game:G,previous:state};if(state===S.GAME)state=S.PAUSE;return token;
   },
   end(token){if(token&&G===token.game&&getLayoutStoragePrefix()===token.roomId&&token.previous===S.GAME&&state===S.PAUSE)state=S.GAME;},
-  async commit({roomId,id,from,col,row,path}){
-    const {validateFurniturePath}=await import('./scripts/distribuit.mjs?v=distribuit-1');
+  async commit({roomId,id,from,col,row,rot,sx,sy,path}){
+    const {validateFurniturePath,furniturePose,sameFurniturePose}=await import('./scripts/distribuit.mjs?v=distribuir-2');
     const scene=this.read(),item=scene.layout.find(value=>String(value.id)===String(id));
     if(!scene.active||scene.roomId!==roomId)throw Error('room');
-    if(!item||item.col!==from?.col||item.row!==from?.row)throw Error('changed');
+    if(!item||!from||!sameFurniturePose(item,from))throw Error('changed');
     const result=validateFurniturePath(scene,id,path);
-    if(!result.ok||result.position.col!==col||result.position.row!==row)throw Error(result.reason||'invalid');
-    const next=inventoryPresentationLayout().map(value=>String(value.id)===String(id)?{...value,col,row}:value);
+    const requested=furniturePose({...item,col,row,...(rot===undefined?{}:{rot}),...(sx===undefined?{}:{sx}),...(sy===undefined?{}:{sy})});
+    if(!result.ok||!sameFurniturePose(result.position,requested))throw Error(result.reason||'invalid');
+    const next=inventoryPresentationLayout().map(value=>String(value.id)===String(id)?{...value,...result.position}:value);
     const keys=getLayoutSlotKeys(roomId),writes=[[keys.current,JSON.stringify(next)],[keys.backup,JSON.stringify(next)],[keys.schema,LAYOUT_SCHEMA_VERSION]];
     const before=writes.map(([key])=>[key,localStorage.getItem(key)]),old=shopLayout,oldGrid=walkGrid;
     try{for(const [key,value]of writes)localStorage.setItem(key,value);shopLayout=next;buildWalkGrid();}
     catch(error){shopLayout=old;walkGrid=oldGrid;for(const [key,value]of before){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{}}throw error;}
     try{window.XpaceInventory?.publish(inventorySpace(),shopLayout);}catch(error){console.warn('[Distribuit inventory]',error);}
-    return {ok:true,col,row};
+    return {ok:true,...result.position};
   }
 };
 
@@ -30857,7 +30860,7 @@ window.xtAPI = (function(){
       {title:'IA y contenido',items:['/grok pregunta','/draw dibujo','/metahuman pregunta','/avatar3d on|off','/avatar3d ds on|off','/avatar3d audio on|off','/avatar3d models','/avatar3d preset <nombre> <url RPM>','/avatar3d model <nombre|id>','/avatar3d pregunta','/log','/log thief','/log customer','/import','/import list','/import remove 1','/importTube https://youtu.be/...']},
       {title:'Ajustes rápidos',items:['/money 12000','/sat 90','/fame 80','/set week 12','/set year 2','/set revenue 5000','/set storeLevel 2','/set customers 30']},
       {title:'Musica y layout',items:['/music on','/music off','/music next','/music previous','/music 3','/song 1','/song bad bunny','/next','/prev','/seoul2026','/seul','/seultrap','/seultecno','/equipo inicio ana 3 4','/equipo zona dj 12 2 2','/catalogo','/catalogo pared','/importar catalogo','/importar 1','/importar lista','/importar quitar 1','/mobiliario','/mobiliario inicio','/layout save','/layout factory','/layout xpacio','/layout xpacio load']},
-      {title:'Distribuit · editor de muebles / furniture editor · Better 16 bits',items:['/cli distribuit','/distribuit','/distribuit off']},
+      {title:'Distribuir / Distribute · editor de muebles · Better 16 bits',items:['/cli distribuir','/cli distribute','/distribuir off']},
       {title:'Inventario local · números permanentes',items:['/inventario','eliminar el 1','/inventario deshacer']},
       {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit / Matrix Starbucks Alsea',items:['good','better','best','matrix','/layout','/layout off','/sincro','/sincrototal','/sincro off','/sync','/synctotal','/sync off','/mudanza','/modo estado']},
       {title:'Estilo del render clásico',items:['/render 8bit','/render 16bit','/render habbo','/render real']},
@@ -31384,12 +31387,12 @@ window.xtAPI = (function(){
 
   async function executeLocalVisualCommand(rawText){
     const text=String(rawText||'').trim();
-    if(/^\/?(?:cli\s+)?(?:distribuit|distribute)(?:\s+(?:off|close|cerrar|salir|on))?$/i.test(text)){
+    if(/^\/?(?:cli\s+)?(?:distribuir|distribute|distribuit)(?:\s+(?:off|close|cerrar|salir|on))?$/i.test(text)){
       try{
-        const {executeDistribuitCommand}=await import('./scripts/distribuit.mjs?v=distribuit-1');
-        const {openLifeEditor,closeLifeEditor}=await import('./scripts/life-ui.mjs?v=distribuit-1');
+        const {executeDistribuitCommand}=await import('./scripts/distribuit.mjs?v=distribuir-2');
+        const {openLifeEditor,closeLifeEditor}=await import('./scripts/life-ui.mjs?v=distribuir-2');
         return await executeDistribuitCommand(text,{router:window.__xtancoVisualTiers,open:openLifeEditor,close:closeLifeEditor,lang:typeof lang==='undefined'?'es':lang});
-      }catch{return {ok:false,local:true,message:'Distribuit no disponible. Abre un Xpacio y reintenta.'};}
+      }catch{return {ok:false,local:true,message:typeof lang!=='undefined'&&lang==='en'?'Distribute unavailable. Open an Xpace and retry.':'Distribuir no disponible. Abre un Xpacio y reintenta.'};}
     }
     const visibility=executePeopleVisibilityCommand(text);
     if(visibility)return visibility;
@@ -35700,12 +35703,12 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-panorama.css?v=closed-resume-1">
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=panel-scene-1">
-<link rel="stylesheet" href="scripts/distribuit.css?v=distribuit-1">
+<link rel="stylesheet" href="scripts/distribuit.css?v=distribuir-2">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=expert-hud-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=distribuit-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=distribuir-2"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=aviso-1"></script>
 <link rel="stylesheet" href="scripts/side-panel-resize.css?v=1">
 <script type="module" src="scripts/side-panel-resize.mjs?v=1"></script>

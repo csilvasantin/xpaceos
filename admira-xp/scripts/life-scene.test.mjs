@@ -274,3 +274,14 @@ test('Starbucks keeps absolute fixture geometry while moving its layout anchor',
   model.update({...original,layout:original.layout.map(i=>i.id==='sb-table-a'?{...i,col:i.col+1,row:i.row+.5}:i)});
   const after=new Box3().setFromObject(root);assert.equal(model.world.children.includes(root),true);assert.ok(Math.abs(after.min.x-before.min.x-1)<1e-6);assert.ok(Math.abs(after.min.z-before.min.z-.5)<1e-6);model.dispose();
 });
+
+test('Starbucks renders saved rotation, mirror and proportional scale at the same origin as Good',()=>{
+ const fixture=globalThis.XpaceStarbucks.layout().find(i=>i.id==='sb-table-a'),pose={...fixture,col:5,row:3,rot:1,sx:1.5,sy:1.8,flipX:true};
+ const raw=globalThis.XpaceStarbucks.build([pose],{quality:'better'}).find(g=>g.id===pose.id),model=createLifeScene({...input,venue:'alsea-sbux-021',layout:[pose],actors:[]},{canvasFactory});
+ const root=model.world.children.find(o=>o.userData.item?.id===pose.id),actual=new Box3().setFromObject(root);
+ assert.equal(root.rotation.y,-Math.PI/2);assert.deepEqual(root.scale.toArray(),[-1.5,1.8,1.5]);
+ const parts=raw.parts.map(part=>globalThis.XpaceStarbucks.transformPart(part,pose));
+ const bounds={minX:Math.min(...parts.map(p=>p.x)),maxX:Math.max(...parts.map(p=>p.x+p.w)),minZ:Math.min(...parts.map(p=>p.z)),maxZ:Math.max(...parts.map(p=>p.z+p.d)),maxY:Math.max(...parts.map(p=>p.y+p.h))};
+ assert.ok(Math.abs(actual.min.x-bounds.minX)<1e-6);assert.ok(Math.abs(actual.max.x-bounds.maxX)<1e-6);
+ assert.ok(Math.abs(actual.min.z-bounds.minZ)<1e-6);assert.ok(Math.abs(actual.max.z-bounds.maxZ)<1e-6);assert.ok(Math.abs(actual.max.y-bounds.maxY)<1e-6);model.dispose();
+});
