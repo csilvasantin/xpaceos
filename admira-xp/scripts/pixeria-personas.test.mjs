@@ -45,3 +45,16 @@ test('a prepared demo loads its style without triggering generation', async () =
     assert.equal(calls.length,1);assert.ok(!calls[0].includes('/build'));
   }finally{globalThis.fetch=oldFetch;}
 });
+
+
+test('late queue visibility retains the same five-minute receive window after startup',async()=>{
+  const {runInNewContext}=await import('node:vm');
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const body=html.slice(html.indexOf('  async function pollNpcQueue(){'),html.indexOf('  async function pollFeed(){'));
+  const now=1000000,entry={id:'npc_late1234',img:'data:image/png;base64,AA==',ts:now-120000};let calls=0,spawned=0;
+  const ctx={state:'game',S:{GAME:'game'},PIXER_WORKER:'https://api.admira.store',screenId:'test',__npcSeen:now-300000,__npcDone:new Set(),Date,encodeURIComponent,Math,
+    fetch:async url=>({ok:true,json:async()=>({now,pending:++calls>1&&Number(new URL(url).searchParams.get('since'))<entry.ts?[entry]:[]})}),
+    spawnCustomNpc:()=>{spawned++;return true},__npcMarkDone:id=>ctx.__npcDone.add(id)};
+  runInNewContext(body+';globalThis.poll=pollNpcQueue;',ctx);
+  await ctx.poll();await ctx.poll();await ctx.poll();assert.equal(spawned,1);
+});

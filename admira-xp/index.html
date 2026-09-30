@@ -33736,9 +33736,9 @@ window.xtAPI = (function(){
       const r=await fetch(PIXER_WORKER+'/twin/spawn/pending?since='+__npcSeen+'&screen='+encodeURIComponent(screenId)+'&ts='+Date.now(),{cache:'no-store'});
       if(!r.ok) return;
       const d=await r.json(); const list=(d&&d.pending)||[];
-      // Ventana de 60s con SOLAPE (no avanzar a d.now seco): así no se salta ningún
-      // envío entre polls y, si la tienda estaba llena, se reintenta hasta que entre.
-      if(d&&d.now) __npcSeen=Math.max(0,d.now-60000);
+      // Mantener los cinco minutos de recepción también después del primer poll:
+      // KV puede propagar tarde una entrada. Los IDs confirmados ya se deduplican.
+      if(d&&d.now) __npcSeen=Math.max(0,d.now-5*60*1000);
       for(const e of list){ if(e&&e.img&&e.id&&!__npcDone.has(e.id)){ if(spawnCustomNpc(e)) __npcMarkDone(e.id); } }
     }catch(_){}
   }
