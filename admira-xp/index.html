@@ -5707,6 +5707,21 @@ function tryLookAndFeelIntent(text){
   }
   return {handled:false};
 }
+// PUENTE LOCAL (Elgato, Hue, Telegram y guardado de layout en localhost:9124/9126).
+// Desde la web pública cada sondeo a localhost hace que Chrome pida «acceder a otras
+// aplicaciones y servicios de este dispositivo» (Local Network Access): el popup salía en
+// el Matrix del Starbucks en cuanto la simulación llegaba a la noche y encendía la lámpara.
+// Sólo se usa si la página se sirve en local o si el equipo del estudio lo activa con
+// ?local=1 (se recuerda en ese navegador; ?local=0 lo apaga). Carlos, 30-sep-2026.
+var LOCAL_BRIDGE=(()=>{
+  try{
+    if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return true;
+    const q=new URLSearchParams(location.search).get('local');
+    if(q==='1') localStorage.setItem('xpaceos.localBridge','1');
+    if(q==='0') localStorage.removeItem('xpaceos.localBridge');
+    return localStorage.getItem('xpaceos.localBridge')==='1';
+  }catch(e){return false;}
+})();
 const ELGATO={
   ip:typeof ELGATO_CONFIG.directIp==='string'?ELGATO_CONFIG.directIp:'',
   port:Number(ELGATO_CONFIG.directPort)||9123,
@@ -5915,10 +5930,11 @@ async function elgatoFetch(path,opts){
   const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
   const urls=isLocal
     ? [location.origin+path]  // same origin — no CORS issues
-    : [
+    : LOCAL_BRIDGE ? [
         `http://localhost:${ELGATO.proxyPort}${path}`,
         `http://127.0.0.1:${ELGATO.proxyPort}${path}`,
-      ];
+      ] : [];
+  if(!urls.length) throw new Error('Puente local desactivado (?local=1 en el equipo del estudio)');
   for(const url of urls){
     try{
       const res=await fetch(url,{...opts,signal:AbortSignal.timeout(2000)});
@@ -6294,7 +6310,7 @@ async function hueSend(lightId,stateObj){
   const urls=[];
   if(isLocal) urls.push(`${location.origin}/hue/lights/${lightId}/state`);
   if(!isHTTPS&&HUE.bridgeIP&&HUE.apiKey) urls.push(`http://${HUE.bridgeIP}/api/${HUE.apiKey}/lights/${lightId}/state`);
-  if(!isLocal) urls.push(`http://localhost:${ELGATO.proxyPort}/hue/lights/${lightId}/state`);
+  if(!isLocal&&LOCAL_BRIDGE) urls.push(`http://localhost:${ELGATO.proxyPort}/hue/lights/${lightId}/state`);
 
   for(const url of urls){
     try{
@@ -29284,7 +29300,7 @@ window.xtAPI = (function(){
 
   function telegramCandidates(){
     const seen=new Set();
-    return [TELEGRAM.activeBaseUrl,workerTelegramBaseUrl(),localTelegramBaseUrl()]
+    return [TELEGRAM.activeBaseUrl,workerTelegramBaseUrl(),LOCAL_BRIDGE?localTelegramBaseUrl():'']
       .filter(Boolean)
       .filter(base=>{
         if(seen.has(base)) return false;
@@ -29604,7 +29620,7 @@ window.xtAPI = (function(){
   refreshTelegramDiagnostics();
 
   function telegramUrl(path){
-    const base=TELEGRAM.activeBaseUrl||workerTelegramBaseUrl()||localTelegramBaseUrl();
+    const base=TELEGRAM.activeBaseUrl||workerTelegramBaseUrl()||(LOCAL_BRIDGE?localTelegramBaseUrl():'');
     return base+path;
   }
 
@@ -30146,7 +30162,7 @@ window.xtAPI = (function(){
     if(typeof location!=='undefined'&&/^(localhost|127\.0\.0\.1)/.test(location.hostname)){
       proxyBases.push(location.origin);
     }
-    proxyBases.push('http://localhost:9124','http://127.0.0.1:9124');
+    if(LOCAL_BRIDGE) proxyBases.push('http://localhost:9124','http://127.0.0.1:9124');
     let savedVia=null,lastErr=null;
     for(const base of proxyBases){
       try{
@@ -30333,13 +30349,9 @@ window.xtAPI = (function(){
     // Endpoints en orden: local (MBP) primero, después Tailscale Funnel
     // (público vía macbook-pro-16.tail48b61c.ts.net/admira/...) para que el
     // móvil u otros dispositivos también puedan empujar.
-    proxyBases.push(
-      'http://localhost:9126',
-      'http://127.0.0.1:9126',
-      'https://macbook-pro-16.tail48b61c.ts.net/admira',
-      'http://localhost:9124',
-      'http://127.0.0.1:9124'
-    );
+    if(LOCAL_BRIDGE) proxyBases.push('http://localhost:9126','http://127.0.0.1:9126');
+    proxyBases.push('https://macbook-pro-16.tail48b61c.ts.net/admira');
+    if(LOCAL_BRIDGE) proxyBases.push('http://localhost:9124','http://127.0.0.1:9124');
     let savedVia=null,lastErr=null,gitInfo=null;
     for(const base of proxyBases){
       try{

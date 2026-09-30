@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r28.09:10",
+  "version": "v.30.09.2026.r29.13:28",
   "signature": "NeoMBP14 · MacBookProNegro14",
   "machine": "MacBookProNegro14",
   "agent": "NeoMBP14",
   "deployer": "NeoMBP14",
-  "evidence": "DEC-munpe1fhy7kq / DCL-44b02451e449aa60b71142e3: Matrix Starbucks pinta sobre cada pantalla el estado de su ticket de Yokup (GET /incident/status): etapa, técnico y reloj SLA. Pruebas y ayuda ES/EN.",
+  "evidence": "Sin popup de Chrome «acceder a otras aplicaciones y servicios de este dispositivo»: los sondeos a localhost (Elgato, Hue, Telegram, guardado de layout) sólo con la página en local o ?local=1 en el equipo del estudio. Prueba local-bridge.test.mjs.",
   "day": "30.09.2026",
-  "time": "09:10"
+  "time": "13:28"
 }
