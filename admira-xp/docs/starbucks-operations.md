@@ -36,6 +36,10 @@ Canonical assets: starbucks-demo.mjs. Published contracts: starbucks-playlist.js
 
 ES: En Yokup, resolve:true registra la recuperación del recurso; el cierre definitivo requiere verificación en Yokup. EN: In Yokup, resolve:true records resource recovery; final ticket closure requires verification in Yokup.
 
+ES: Vuelta de Yokup: cada pantalla con incidencia muestra encima su ticket (número, etapa, gravedad, técnico y reloj del SLA) leído de https://api.yokup.com/incident/status cada 15 s: rojo ABIERTA con la cuenta atrás de respuesta, ámbar EN CURSO o RECUPERADA (falta verificar en Yokup) y verde CERRADA durante 10 minutos. Pulsar el cartel abre Yokup.
+
+EN: Yokup feedback: every screen with an incident shows its ticket on top (number, stage, severity, technician and SLA clock) read from https://api.yokup.com/incident/status every 15 s: red OPEN with the response countdown, amber IN PROGRESS or RECOVERED (pending verification in Yokup) and green CLOSED for 10 minutes. Clicking the card opens Yokup.
+
 ## Starbucks · Entrada directa Matrix / Direct Matrix entry · Abrir incidencia / Open incident
 
 ES: La ficha Starbucks Paseo de Gracia 103 de admira.app conserva el botón Visita al Digital Twin. La ubicación alsea-sbux-021 abre Matrix por defecto aunque el navegador recuerde Good, Better o Best. Un parámetro visual explícito sigue permitiendo elegir otra vista. Enlace estable: https://www.xpaceos.com/admira-xp/?autostart=xtanco&visual=matrix&loc=alsea-sbux-021.

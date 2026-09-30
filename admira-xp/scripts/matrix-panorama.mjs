@@ -1,6 +1,6 @@
 import {previewSlice} from './device-preview-layout.mjs?v=drop-1';
 import {DEMO_WALL,DEMO_CHRISTMAS,DEMO_TPV,DEMO_IA,DEMO_MUSIC} from './starbucks-demo.mjs?v=devices-2';
-import {mountIncidentPanel} from './starbucks-incidents.mjs?v=devices-2';
+import {mountIncidentPanel} from './starbucks-incidents.mjs?v=yokup-status-7';
 import {createSincroIA} from './sincro-ia.mjs?v=devices-2';
 import {mountDeviceEditor} from './device-editor.mjs?v=loop-1';
 import {createDevicePlayback} from './device-playback.mjs?v=loop-1';
@@ -88,7 +88,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  function startTPV(){const p=model.players.find(p=>p.id===tpvId);if(!p||p.type!=='video'||p.url!==STARBUCKS_TPV_MAPPING.players[0].url)return;if(!previews.get(p.id)?.dataset.tpvVideo)mediaFor(p,'tpvVideo');updateRuntime();tpvPlayback=controller([tpvId]);tpvPlayback.play();}
  function selectDevice(id,event){if(incidents?.visible){event.preventDefault?.();event.stopPropagation?.();incidents.select(id);}else {panel.hidden=true;cancel();deviceEditor.select(id,event);}}
  function applyPower(id,value){nodes.get(id)?.classList.toggle('device-off',value);updateRuntime();if(!value)runtime.setPlaying([id],true);}
- incidents=mountIncidentPanel({root,lang,devices:DEVICE_IDS.map(id=>({id,name:playerName(model.players.find(p=>p.id===id)||{id,name:id}),equipo:id===tpvId?'tpv':'pantalla-'+screenNumber(id)})),onPower:applyPower});
+ incidents=mountIncidentPanel({root,lang,devices:DEVICE_IDS.map(id=>({id,name:playerName(model.players.find(p=>p.id===id)||{id,name:id}),equipo:id===tpvId?'tpv':'pantalla-'+screenNumber(id)})),onPower:applyPower,nodeFor:id=>nodes.get(id)});
  async function setDemoMode(mode){if(!['linear','christmas','ia'].includes(mode))throw Error('Invalid demo mode');if(mode==='ia'&&(iaTracks.length!==6||new Set(iaTracks.map(t=>t.screen)).size!==6))throw Error('Sincro IA requires six screens');iaPlayback?.dispose();iaPlayback=null;demoMode=mode;updateRuntime();if(mode==='ia'){const entries=iaTracks.map(track=>({video:previews.get('starbucks-wall-0'+(7-track.screen)),url:track.url})).filter(x=>x.video);iaPlayback=createSincroIA({entries,onState:state=>{screenButton.setAttribute('aria-pressed',String(state.playing));screenButton.textContent=state.playing?t('Pausar pantallas','Pause screens'):t('Reproducir pantallas','Play screens');screenStatus.textContent=state.error?t('Sincro IA: error de vídeo','AI sync: video error'):t('Sincro IA · seis piezas · reloj común','AI sync · six clips · shared clock');}});await iaPlayback.play(true);}applyScreenLayout();deviceEditor.refresh();return mode;}
  window.XpaceStarbucksDemo={setMode:setDemoMode,get mode(){return demoMode;}};
  const speaker=root.querySelector('.matrix-speaker'),musicStatus=root.querySelector('.matrix-music-status'),musicButtons=[...root.querySelectorAll('[data-music-toggle]')];
