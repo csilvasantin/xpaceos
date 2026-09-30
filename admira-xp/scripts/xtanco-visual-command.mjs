@@ -14,6 +14,12 @@ export function parseVisualCommand(input){
   if(/^\/(?:sincro|sync)\s+(?:ia|ai)$/i.test(text))return {demo:'ia'};
   const labels=parseScreenLayoutCommand(text);if(labels)return labels.legacy?null:{labels};
   const screen=parseScreenDisplayCommand(text);if(screen)return {screen};
+  const aviso=text.match(/^\/(?:aviso|announcement)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
+  if(aviso){const arg=(aviso[1]||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+   if(!arg)return {announcement:{action:'toggle'}};
+   if(['estado','status'].includes(arg))return {announcement:{action:'status'}};
+   const quality=['estandar','standard','normal','basica','basic','monica','macos'].includes(arg)?'estandar':['elevenlabs','eleven','11labs','premium','ia','ai'].includes(arg)?'elevenlabs':null;
+   return quality?{announcement:{action:'quality',quality}}:{announcement:{action:'invalid'}};}
   if(/^\/mudanza(?:@\w+)?$/i.test(text))return {moving:true};
   const direct=text.toLowerCase();if(['good','better','best','matrix'].includes(direct))return {tier:direct};
   const match=text.match(/^\/?(?:modo|mode)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
@@ -52,6 +58,19 @@ export async function executeVisualCommand(input,{router,moving,lang='es'}={}){
       const label=mode==='total'?(en?'one video across screens 1–6':'un vídeo repartido entre las pantallas 1–6'):mode==='groups'?(en?'one video per group: 1–3 / 4 / 5–6':'un vídeo por grupo: 1–3 / 4 / 5–6'):(en?'full video on each screen':'vídeo completo en cada pantalla');
       return {ok:true,local:true,mode:'matrix',screenLayout:mode,message:'Matrix · Starbucks: '+label+'. '+(en?'Layout saved in this browser; playback continues unchanged.':'Distribución guardada en este navegador; la reproducción mantiene su estado.')};
     }catch{return {ok:false,local:true,message:en?'Could not open Matrix. Retry.':'No se pudo abrir Matrix. Reintenta.'};}
+  }
+  if(command.announcement){
+    const a=command.announcement,label=q=>q==='elevenlabs'?'ElevenLabs':(en?'Standard (macOS Mónica)':'Estándar (Mónica de macOS)');
+    if(a.action==='invalid')return {ok:false,local:true,message:en?'Usage: /announcement plays or stops the closing announcement; /announcement standard|elevenlabs picks the voice; /announcement status.':'Uso: /aviso emite o detiene el aviso de cierre; /aviso estandar|elevenlabs elige la voz; /aviso estado.'};
+    try{
+      const outcome=await router?.choose('matrix');
+      if(!router||outcome?.ok===false||outcome?.cancelled||router.mode!=='matrix'||router.error)throw Error();
+      const api=globalThis.XpaceStarbucksDemo?.announcement;if(!api)throw Error();
+      if(a.action==='quality'){const q=api.setQuality(a.quality);return {ok:!!q,local:true,mode:'matrix',announcementQuality:q,message:(en?'Closing announcement voice: ':'Voz del aviso de cierre: ')+label(q)+'. '+(en?'Saved in this browser. /announcement plays it.':'Guardada en este navegador. /aviso lo emite.')};}
+      if(a.action==='status'){const st=api.state();return {ok:true,local:true,mode:'matrix',announcementQuality:st.quality,message:(en?'Closing announcement · voice ':'Aviso de cierre · voz ')+label(st.quality)+' · '+(st.playing||st.pending?(en?'playing':'sonando'):(en?'idle':'en reposo'))+'.'};}
+      api.toggle();const st=api.state();
+      return {ok:true,local:true,mode:'matrix',announcementQuality:st.quality,message:(st.playing||st.pending?(en?'Closing announcement playing · voice ':'Aviso de cierre sonando · voz '):(en?'Closing announcement stopped · voice ':'Aviso de cierre detenido · voz '))+label(st.quality)+'.'};
+    }catch{return {ok:false,local:true,message:en?'The Starbucks Matrix is not ready. Open Matrix and retry.':'El Matrix del Starbucks no está listo. Abre Matrix y reintenta.'};}
   }
   if(command.moving){
     if(typeof moving?.toggle!=='function')return {ok:false,local:true,message:en

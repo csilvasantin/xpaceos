@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r29.13:28",
+  "version": "v.30.09.2026.r30.14:34",
   "signature": "NeoMBP14 · MacBookProNegro14",
   "machine": "MacBookProNegro14",
   "agent": "NeoMBP14",
   "deployer": "NeoMBP14",
-  "evidence": "Sin popup de Chrome «acceder a otras aplicaciones y servicios de este dispositivo»: los sondeos a localhost (Elgato, Hue, Telegram, guardado de layout) sólo con la página en local o ?local=1 en el equipo del estudio. Prueba local-bridge.test.mjs.",
+  "evidence": "Aviso de cierre del Starbucks con dos voces (Mónica de macOS y ElevenLabs) en una línea Avisos del panel Experto, con estado de qué voz suena junto a Aviso de cierre; /aviso estandar|elevenlabs|estado en el CLI y autocompletado /av.",
   "day": "30.09.2026",
-  "time": "13:28"
+  "time": "14:34"
 }

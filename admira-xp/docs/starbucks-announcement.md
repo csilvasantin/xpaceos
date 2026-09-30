@@ -4,6 +4,11 @@ El altavoz negro junto a la escalera reproduce el aviso: «Hoy por motivos de fi
 
 The black speaker beside the staircase plays the Spanish closing announcement: “Hoy por motivos de fiesta local, nuestro horario de cierre es a las 22 horas. Gracias.” Initial free voice: macOS Mónica. Music keeps advancing at zero volume during the announcement; its volume and mute state are restored on completion, cancellation or failure. Click again to stop. In Control Xtore, /sin completes /sincro on or /sincro off, targeting the opposite current state; Enter runs it and Tab accepts. Suggested text remains editable. Bottom panels hide scrollbars while preserving scrolling and resize handles.
 
+
+ES: Dos voces: Mónica (macOS, gratuita, la original) y ElevenLabs (eleven_multilingual_v2, generada una vez por api.admira.store/tts y servida como fichero: reproducirla no gasta créditos). En Experto, la línea inferior «Avisos» reúne Altavoz avisos, Aviso de cierre con su estado al lado (qué voz suena, como la música: «Sonando · ElevenLabs · música en pausa» o «Voz · Mónica» en reposo) y el selector Mónica/ElevenLabs. En el CLI: /aviso emite o detiene, /aviso estandar o /aviso elevenlabs eligen la voz, /aviso estado la muestra; /av autocompleta la voz contraria (Tab acepta, Enter ejecuta). La elección se recuerda en este navegador y no cambia la playlist.
+
+EN: Two voices: Mónica (macOS, free, the original) and ElevenLabs (eleven_multilingual_v2, generated once via api.admira.store/tts and served as a file, so playback spends no credits). In Expert, the bottom «Announcements» line groups Announcement speaker, Closing announcement with its status beside it (which voice is playing, like the music: «Playing · ElevenLabs · music paused» or «Voice · Mónica» when idle) and the Mónica/ElevenLabs selector. CLI: /announcement (or /aviso) plays or stops, /aviso estandar or /aviso elevenlabs picks the voice, /aviso estado shows it; /av completes the other voice (Tab accepts, Enter runs). The choice is kept in this browser and does not change the playlist.
+
 ## MCP
 
 matrix_announcement {expected_revision:N} increments announcementNext. Read matrix_state first. Authenticated fleet key required. Open Matrix pages apply new events once; newly opened pages do not replay old announcements. Browser audio permission is required: if blocked, click the speaker locally. Saved is not playback acknowledgement. The music playlist is unchanged.
@@ -14,7 +19,7 @@ Audio: https://www.xpaceos.com/admira-xp/assets/audio/starbucks-cierre-22h.m4a
 
 Anclaje / Anchor: yaw -23.289684°, pitch 21.400960°. Fuente / Source: starbucks-announcement.mjs. Botón Experto / Expert button: Altavoz avisos / Announcement speaker.
 
-Generación / Generation: macOS say, Mónica, rate 165; ffmpeg atempo=0.82, loudnorm -16 LUFS, AAC 128 kbps. Texto validado con transcripción local. / Text checked by local transcription.
+Generación / Generation: macOS say, Mónica → starbucks-cierre-22h.m4a, rate 165; ElevenLabs eleven_multilingual_v2 (voz por defecto de la flota, «veintidós» en letra) → starbucks-cierre-22h-elevenlabs.m4a, loudnorm -16 LUFS, AAC 128 kbps. Mónica: ffmpeg atempo=0.82, loudnorm -16 LUFS, AAC 128 kbps. Texto validado con transcripción local. / Text checked by local transcription.
 
 ## Experto · Vistas y altavoz / Expert · Views and speaker
 

@@ -130,3 +130,12 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-incident-chip[data-tone=warn]{background:#5a3a00f2;border-color:#ffb020}.matrix-incident-chip[data-tone=ok]{background:#0a4d2cf2;border-color:#3ddc84}
 .matrix-incident-chip[data-tone=alert]{animation:matrix-incident-pulse 1.6s ease-in-out infinite}@keyframes matrix-incident-pulse{50%{border-color:#ffd0d1}}
 @media (prefers-reduced-motion:reduce){.matrix-incident-chip[data-tone=alert]{animation:none}}
+
+.matrix-announcement-line{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding-top:6px;margin-top:2px;border-top:1px solid #528a8355;pointer-events:auto}
+.matrix-announcement-line>b{font:600 11px/1 ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#9dffcf;margin-right:2px}
+.matrix-announcement-quality{display:inline-flex;border:1px solid #528a83;border-radius:6px;overflow:hidden}
+.matrix-announcement-quality button{border:0!important;border-radius:0!important;margin:0!important}
+.matrix-announcement-quality button+button{border-left:1px solid #528a83!important}
+.matrix-announcement-quality button.active{background:#1f6b56!important;color:#eafff4!important;box-shadow:inset 0 0 0 1px #9dffcf}
+.matrix-announcement-line .matrix-announcement-status{font:12px/1.3 ui-monospace,monospace;color:#b9d8cf;min-width:0}
+.matrix-announcement-line .matrix-announcement-status[data-playing=true]{color:#9dffcf;font-weight:600}

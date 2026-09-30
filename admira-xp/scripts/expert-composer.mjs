@@ -1,6 +1,9 @@
 import {getScreenDisplayMode,subscribeScreenDisplay} from './screen-display.mjs?v=number-layout-1';
 export const nextSyncCommand=mode=>mode==='individual'?'/sincro on':'/sincro off';
-export const completionFor=(text,mode)=>/^\/(?:sin|sinc|sincr|sincro|syn|sync)$/i.test(text)?nextSyncCommand(mode):null;
+// /av… propone la calidad contraria a la actual del aviso de cierre (Carlos, 30-sep-2026).
+export const nextAnnouncementCommand=quality=>quality==='elevenlabs'?'/aviso estandar':'/aviso elevenlabs';
+const announcementQuality=()=>{try{return globalThis.XpaceStarbucksDemo?.announcement?.state().quality||globalThis.localStorage?.getItem('xpaceos.starbucks.announcementQuality')||'estandar';}catch{return 'estandar';}};
+export const completionFor=(text,mode,quality=announcementQuality())=>/^\/(?:sin|sinc|sincr|sincro|syn|sync)$/i.test(text)?nextSyncCommand(mode):/^\/(?:av|avi|avis|aviso)$/i.test(text)?nextAnnouncementCommand(quality):null;
 export function bindExpertComposer(composer){
  if(!composer)return ()=>{};let suggestion=null;
  function refresh(){composer.placeholder=nextSyncCommand(getScreenDisplayMode());composer.title='Enter: ejecutar / run · Shift+Enter: nueva línea / newline';
