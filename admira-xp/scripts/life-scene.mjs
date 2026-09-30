@@ -1,7 +1,7 @@
 import * as T from './premium-three.mjs';
 import './starbucks-room.js?v=starbucks-room-1';
 import {FOOTPRINTS,normalizeSnapshot} from './premium-model.mjs';
-import {buildCustomerNavigation} from './customer-navigation.mjs?v=distribuir-2';
+import {buildCustomerNavigation} from './customer-navigation.mjs?v=distribuir-3';
 import {createCustomerMotion} from './customer-motion.mjs?v=customer-motion-1';
 import {createLifeExterior} from './life-exterior.mjs?v=exterior-1';
 
@@ -323,6 +323,11 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
         box(leaf,(w-.16)/2,1.18,0,w-.16,2.25,.045,palette.glass);box(leaf,w-.28,1.06,.047,.035,.3,.035,palette.brass);
         break;
       }
+      case 'custom':{
+        const h=item.source==='PixerIA'?1:Math.min(2,Math.max(.3,item.ph));
+        box(root,w/2,h/2,d/2,w,h,d,palette.cream);
+        if(item.label)label(root,item.label,w/2,h*.7,d+.029,w*.83,.17,{font:32});break;
+      }
       default:{
         cabinet(root,w,d,Math.max(.3,item.ph),{finish:palette.oak});
         if(item.label)label(root,item.label,w/2,item.ph*.65,d+.029,w*.83,.17,{bg:'#bb8b59',fg:'#284a42',font:37});
@@ -333,13 +338,14 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
     if(loader){
       root.userData.assetStatus='loading';
       Promise.resolve().then(loader).then(asset=>{
-        if(disposed||root.parent!==world)return;
+        if(disposed||root.parent!==world){if(asset?.userData.pixeria)asset.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){for(const v of Object.values(m))if(v?.isTexture)v.dispose();m.dispose();}}});return;}
         if(!asset){root.userData.assetStatus='unregistered';return;}
         const retiredDoors=new Set();root.traverse(o=>{if(doors.includes(o))retiredDoors.add(o);});
         for(let i=doors.length-1;i>=0;i--)if(retiredDoors.has(doors[i]))doors.splice(i,1);
         asset.traverse(o=>{if(o.userData.doorHinge){o.rotation.y=-snapshot.doorOpen*Math.PI*.48;doors.push(o);}});
         asset.traverse(o=>{if(o.isMesh&&o.userData.mediaSurface==='existing_shared_player')o.material=mediaMaterial;});
-        root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});root.clear();root.add(asset);root.userData.assetStatus='ready';root.userData.assetSource='Blender';
+        if(asset.userData.pixeria)asset.traverse(o=>{if(o.isMesh){own(o.geometry,worldResources);for(const m of Array.isArray(o.material)?o.material:[o.material]){own(m,worldResources);for(const v of Object.values(m))if(v?.isTexture)own(v,worldResources);}}});
+        root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});root.clear();root.add(asset);root.userData.assetStatus='ready';root.userData.assetSource=item.source==='PixerIA'?'PixerIA':'Blender';
       }).catch(()=>{if(!disposed&&root.parent===world)root.userData.assetStatus='fallback';});
     }
     return root;
@@ -356,7 +362,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
         ...(part.color==='#ffe2a0'?{emissive:part.color,emissiveIntensity:.7}:{} )},worldResources);
       colors.set(key,m);return m;
     };
-    for(const fixture of globalThis.XpaceStarbucks.build(snapshot.layout,{quality:assetQuality,moving:snapshot.moving})){
+    for(const fixture of globalThis.XpaceStarbucks.build(snapshot.layout.filter(i=>i.source!=='PixerIA'),{quality:assetQuality,moving:snapshot.moving})){
       const root=group(world);root.name='starbucks:'+fixture.id;
       if(fixture.item){
         const item=fixture.item;root.userData={item,layoutId:fixture.id,selectable:true};
@@ -371,6 +377,7 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       }
       batch(root);
     }
+    for(const item of snapshot.layout)if(item.source==='PixerIA')furniture(item);
   }
   function architecture(){
     const {cols:c,rows:r,wallHeight:h}=snapshot;

@@ -1,5 +1,5 @@
 import * as T from './premium-three.mjs';
-import {createLifeScene} from './life-scene.mjs?v=distribuir-2';
+import {createLifeScene} from './life-scene.mjs?v=distribuir-3';
 import {furnitureBounds,isSolidFurniture} from './furniture-geometry.mjs';
 import {mappedCameraFrame} from './life-camera.mjs';
 
@@ -12,7 +12,7 @@ export function createLifeRenderer({canvas,snapshot,getPlayer=()=>null,onSelect=
   let model;
   try{model=createLifeScene(snapshot,{
     assetQuality,
-    loadFurniture:item=>import('./furniture-asset.mjs').then(m=>m.loadFurniture(item,assetQuality)),
+    loadFurniture:item=>import('./furniture-asset.mjs?v=distribuir-3').then(m=>m.loadFurniture(item,assetQuality)),
     loadPerson:assetQuality==='best'?actor=>import('./best-person-asset.mjs?v=visitors-24').then(m=>m.loadBestPerson(actor)):null
   });}catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
   const camera=new T.OrthographicCamera(-15,15,10,-10,.1,200);

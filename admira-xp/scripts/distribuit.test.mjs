@@ -67,7 +67,7 @@ test('busy gestures cannot save or select twice',async()=>{
 test('the real saved-layout bridge revalidates stale edits and rolls storage back',async()=>{
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   const code=html.slice(html.indexOf('window.__xtancoFurnitureEditor={'),html.indexOf('\nloop();',html.indexOf('window.__xtancoFurnitureEditor={')))
-    .replace("await import('./scripts/distribuit.mjs?v=distribuir-2')",'await loadValidator()');
+    .replace("await import('./scripts/distribuit.mjs?v=distribuir-3')",'await loadValidator()');
   const storage=new Map([['current','old'],['backup','old'],['schema','old']]);let failed=false;
   const context=vm.createContext({window:{__xtancoVisualState:()=>({active:true,hardness:{blocked:[]}})},G:{},S:{GAME:1,PAUSE:2},state:1,
     ISO:{cols:10,rows:8},FURNITURE_SIZE:{},shopLayout:structuredClone(scene.layout),walkGrid:'old',LAYOUT_SCHEMA_VERSION:'1',

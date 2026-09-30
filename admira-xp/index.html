@@ -1378,7 +1378,7 @@
 <script src="assets/js/sfx.js"></script>
 <script src="assets/js/ambient.js"></script>
 <script src="assets/js/sky.js"></script>
-<script src="scripts/starbucks-room.js?v=distribuir-2"></script>
+<script src="scripts/starbucks-room.js?v=distribuir-3"></script>
 <script src="assets/js/heatmap.js"></script>
 <script src="assets/js/streamdeck.js"></script>
 <script src="assets/js/session-ping.js" defer></script>
@@ -18372,6 +18372,7 @@ function drawShop(){
     }
     cx.save();cx.beginPath();cx.rect(SHOP.x,SHOP.y,SHOP.w,Math.max(SHOP.h,H-SHOP.y));cx.clip();
     window.XpaceStarbucks.draw(cx,ISO,toIso,shopFurnitureVisible?renderLayout:[],actors,document.body.classList.contains('xtanco-mudanza'));
+    if(shopFurnitureVisible)for(const item of renderLayout)if(item.source==='PixerIA')drawCustomFurni(item);
     cx.restore();return;
   }
   const premiumView=window.__xtancoPremiumView;
@@ -23322,7 +23323,7 @@ const PIXERIA_STOCK_BASE='https://api.admira.store';
 let IMPORT_CATALOG=[];                          // último /stock/list?type=furni
 async function fetchPixeriaCatalog(typeFilter){
   const t=typeFilter||'furni';
-  const r=await fetch(PIXERIA_STOCK_BASE+'/stock/list?type='+encodeURIComponent(t)+'&limit=60',{cache:'no-store'});
+  const r=await fetch(PIXERIA_STOCK_BASE+'/stock/list?type='+encodeURIComponent(t)+'&limit=60',{cache:'no-store',signal:AbortSignal.timeout(30000)});
   if(!r.ok) throw new Error('HTTP '+r.status);
   const data=await r.json();
   return Array.isArray(data.items)?data.items:[];
@@ -23344,16 +23345,19 @@ function getCustomFurniImage(url){
 }
 function customFurniFootprint(e){
   const fp=Array.isArray(e.fp)&&e.fp.length===2?e.fp:[1,1];
-  let w=fp[0]*(e.sx||1), d=fp[1]*(e.sy||1);
+  let w=fp[0]*(e.sx||1), d=fp[1]*(e.sx||1);
   if((((e.rot||0)%2)+2)%2===1){ const t=w; w=d; d=t; }
   return [Math.max(0.4,w), Math.max(0.4,d)];
 }
 function drawCustomFurni(e){
   const [fw,fd]=customFurniFootprint(e);
+  const fp=e.fp||[1,1],angle=(e.rot||0)*Math.PI/2,c=Math.cos(angle),s=Math.sin(angle),scale=e.sx||1,flip=e.flipX?-1:1;
+  const corners=[[0,0],[fp[0],0],[fp[0],fp[1]],[0,fp[1]]].map(([x,z])=>[e.col+scale*(c*x*flip-s*z),e.row+scale*(s*x*flip+c*z)]);
+  const originCol=Math.min(...corners.map(p=>p[0])),originRow=Math.min(...corners.map(p=>p[1]));
   // Sombra de contacto a la huella (igual que el resto del mobiliario).
-  drawFurnitureContactShadow(e.col,e.row,fw,fd);
+  drawFurnitureContactShadow(originCol,originRow,fw,fd);
   // Ancla: centro de la huella en el suelo; la base del sprite se apoya ahí.
-  const p=toIso(e.col+fw/2,e.row+fd/2);
+  const p=toIso(originCol+fw/2,originRow+fd/2);
   const rec=getCustomFurniImage(e.img);
   let topY=p.y-Math.max(12,(e.ph||46));   // por defecto (placeholder)
   if(rec&&rec.loaded&&rec.img.naturalWidth>0){
@@ -27255,7 +27259,8 @@ window.__xtancoVisualState=()=>{
 window.__xtancoFurnitureEditor={
   read(){
     const source=window.__xtancoVisualState(),roomId=getLayoutStoragePrefix();
-    const layout=inventoryPresentationLayout().map(item=>({...cloneLayoutData(item),mount:getItemMount(item.type),locked:!!item.locked||item.id==='sb-pillar'}));
+    const store=window.XpaceInventory,space=inventorySpace();
+    const layout=(store?.retained(space,shopLayout)||shopLayout).map(item=>({...cloneLayoutData(item),mount:getItemMount(item.type),inventoryHidden:store?.visible(space,item.id)===false,nativeFixed:item.id==='sb-pillar',locked:!!item.locked||item.id==='sb-pillar'}));
     const owned=new Set();
     for(const item of shopLayout){if(['rug','led','tft','aroma'].includes(item.type))continue;const fp=getFurnitureFootprint(item);for(let c=fp.col;c<fp.col+fp.w;c++)for(let r=fp.row;r<fp.row+fp.d;r++)owned.add(c+','+r);}
     return {roomId,active:source.active&&!source.moving,cols:ISO.cols,rows:ISO.rows,layout,footprints:FURNITURE_SIZE,hardness:{fixed:source.hardness.blocked.filter(cell=>!owned.has(cell))}};
@@ -27265,21 +27270,64 @@ window.__xtancoFurnitureEditor={
     const token={roomId:scene.roomId,game:G,previous:state};if(state===S.GAME)state=S.PAUSE;return token;
   },
   end(token){if(token&&G===token.game&&getLayoutStoragePrefix()===token.roomId&&token.previous===S.GAME&&state===S.PAUSE)state=S.GAME;},
-  async commit({roomId,id,from,col,row,rot,sx,sy,path}){
-    const {validateFurniturePath,furniturePose,sameFurniturePose}=await import('./scripts/distribuit.mjs?v=distribuir-2');
+  async commit({roomId,id,from,col,row,rot,sx,sy,path,signal}){
+    const {validateFurniturePath,furniturePose,sameFurniturePose}=await import('./scripts/distribuit.mjs?v=distribuir-3');
+    if(signal?.aborted)throw Error('cancelled');
     const scene=this.read(),item=scene.layout.find(value=>String(value.id)===String(id));
     if(!scene.active||scene.roomId!==roomId)throw Error('room');
     if(!item||!from||!sameFurniturePose(item,from))throw Error('changed');
     const result=validateFurniturePath(scene,id,path);
     const requested=furniturePose({...item,col,row,...(rot===undefined?{}:{rot}),...(sx===undefined?{}:{sx}),...(sy===undefined?{}:{sy})});
     if(!result.ok||!sameFurniturePose(result.position,requested))throw Error(result.reason||'invalid');
-    const next=inventoryPresentationLayout().map(value=>String(value.id)===String(id)?{...value,...result.position}:value);
+    const store=window.XpaceInventory,space=inventorySpace();
+    const next=(store?.retained(space,shopLayout)||shopLayout).map(value=>String(value.id)===String(id)?{...value,...result.position}:value);
+    const ledger=store?cloneLayoutData(store.removals(space)):null;
+    if(ledger?.added?.[id])ledger.added[id]=cloneLayoutData(next.find(value=>String(value.id)===String(id)));
+    this.save(next,ledger);
+    return {ok:true,...result.position};
+  },
+  save(next,ledger=null,visibility=null){
+    const roomId=getLayoutStoragePrefix(),space=inventorySpace(),store=window.XpaceInventory;
     const keys=getLayoutSlotKeys(roomId),writes=[[keys.current,JSON.stringify(next)],[keys.backup,JSON.stringify(next)],[keys.schema,LAYOUT_SCHEMA_VERSION]];
     const before=writes.map(([key])=>[key,localStorage.getItem(key)]),old=shopLayout,oldGrid=walkGrid;
-    try{for(const [key,value]of writes)localStorage.setItem(key,value);shopLayout=next;buildWalkGrid();}
-    catch(error){shopLayout=old;walkGrid=oldGrid;for(const [key,value]of before){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{}}throw error;}
-    try{window.XpaceInventory?.publish(inventorySpace(),shopLayout);}catch(error){console.warn('[Distribuit inventory]',error);}
-    return {ok:true,...result.position};
+    const oldLedger=ledger?cloneLayoutData(store.removals(space)):null,oldVisibility=visibility?cloneLayoutData(store.read(space)):null;
+    try{
+      if(ledger)store.writeRemovals(space,ledger);if(visibility)store.writeVisibility(space,visibility);
+      for(const [key,value]of writes)localStorage.setItem(key,value);shopLayout=next;buildWalkGrid();
+    }catch(error){
+      shopLayout=old;walkGrid=oldGrid;
+      try{if(oldLedger)store.writeRemovals(space,oldLedger);if(oldVisibility)store.writeVisibility(space,oldVisibility);}catch{}
+      for(const [key,value]of before){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{}}throw error;
+    }
+    try{store?.publish(space,shopLayout);store?.notify(space);}catch(error){console.warn('[Distribuir inventory]',error);}
+  },
+  async mutate(request){
+    const {planFurnitureObjectChange}=await import('./scripts/distribuit-objects.mjs?v=distribuir-3');
+    if(request.signal?.aborted)throw Error('cancelled');
+    const scene=this.read(),store=window.XpaceInventory,space=inventorySpace();
+    if(!scene.active||scene.roomId!==request.roomId)throw Error('room');
+    if(!store)throw Error('inventory');
+    const change=planFurnitureObjectChange({scene,layout:store.retained(space,shopLayout),ledger:store.removals(space),visibility:store.read(space)},request);
+    this.save(change.layout,change.ledger,change.visibility);return change.receipt;
+  },
+  catalogItems:new Map(),
+  async catalog({roomId}){
+    const {pixeriaFurnitureAsset}=await import('./scripts/pixeria-furniture.mjs?v=distribuir-3');
+    const scene=this.read();if(!scene.active||scene.roomId!==roomId)throw Error('room');
+    const values=await fetchPixeriaCatalog('furni'),current=this.read();
+    if(!current.active||current.roomId!==roomId)throw Error('room');
+    const assets=values.map(pixeriaFurnitureAsset).filter(Boolean);
+    this.catalogItems=new Map(assets.map(item=>[item.assetId,item]));return assets;
+  },
+  async importItem({roomId,assetId,signal}){
+    const {checkPixeriaFurniture}=await import('./scripts/pixeria-furniture.mjs?v=distribuir-3');
+    const scene=this.read();if(!scene.active||scene.roomId!==roomId)throw Error('room');
+    const asset=this.catalogItems.get(assetId);if(!asset)throw Error('asset');
+    if(signal?.aborted)throw Error('cancelled');
+    await checkPixeriaFurniture(asset);
+    if(signal?.aborted)throw Error('cancelled');
+    const item={id:'pixeria_'+crypto.randomUUID(),type:'custom',custom:true,source:'PixerIA',sourceAssetId:asset.assetId,label:asset.label,fp:[...asset.fp],img:asset.img,modelUrl:asset.modelUrl,ph:asset.ph,col:0,row:0,rot:0,sx:1,sy:1,locked:false};
+    return this.mutate({signal,roomId,action:'add',item});
   }
 };
 
@@ -31389,8 +31437,8 @@ window.xtAPI = (function(){
     const text=String(rawText||'').trim();
     if(/^\/?(?:cli\s+)?(?:distribuir|distribute|distribuit)(?:\s+(?:off|close|cerrar|salir|on))?$/i.test(text)){
       try{
-        const {executeDistribuitCommand}=await import('./scripts/distribuit.mjs?v=distribuir-2');
-        const {openLifeEditor,closeLifeEditor}=await import('./scripts/life-ui.mjs?v=distribuir-2');
+        const {executeDistribuitCommand}=await import('./scripts/distribuit.mjs?v=distribuir-3');
+        const {openLifeEditor,closeLifeEditor}=await import('./scripts/life-ui.mjs?v=distribuir-3');
         return await executeDistribuitCommand(text,{router:window.__xtancoVisualTiers,open:openLifeEditor,close:closeLifeEditor,lang:typeof lang==='undefined'?'es':lang});
       }catch{return {ok:false,local:true,message:typeof lang!=='undefined'&&lang==='en'?'Distribute unavailable. Open an Xpace and retry.':'Distribuir no disponible. Abre un Xpacio y reintenta.'};}
     }
@@ -31398,7 +31446,7 @@ window.xtAPI = (function(){
     if(visibility)return visibility;
     if(/^\/?(?:inventario|eliminar|añadir|anadir)(?:@\w+)?(?:\s|$)/i.test(text)){
       try{
-        const {executeInventoryCommand}=await import('../inventario/command.mjs?v=inventory-cli-3');
+        const {executeInventoryCommand}=await import('../inventario/command.mjs?v=inventory-cli-4');
         const space=inventorySpace();
         const checkSpace=()=>{if(inventorySpace()!==space)throw Error('El Xpacio ha cambiado');};
         return await executeInventoryCommand(text,{
@@ -35703,12 +35751,12 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-panorama.css?v=closed-resume-1">
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=panel-scene-1">
-<link rel="stylesheet" href="scripts/distribuit.css?v=distribuir-2">
+<link rel="stylesheet" href="scripts/distribuit.css?v=distribuir-3">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=expert-hud-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=distribuir-2"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=distribuir-3"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=aviso-1"></script>
 <link rel="stylesheet" href="scripts/side-panel-resize.css?v=1">
 <script type="module" src="scripts/side-panel-resize.mjs?v=1"></script>

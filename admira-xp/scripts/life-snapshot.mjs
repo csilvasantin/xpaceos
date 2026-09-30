@@ -1,4 +1,4 @@
-import {createSceneSnapshot} from './xtanco-scene-snapshot.mjs?v=starbucks-room-1';
+import {createSceneSnapshot} from './xtanco-scene-snapshot.mjs?v=distribuir-3';
 import {visitorProfilesForGame} from './visitor-profiles.mjs?v=visitors-24';
 import {pixeriaPersonaStyle} from './pixeria-personas.mjs?v=anon-demo-v1';
 

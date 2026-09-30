@@ -725,7 +725,7 @@
       },
       "better": {
         "status": "partial",
-        "detail": "En Modo Experto ejecuta /cli distribuir; en inglés, /cli distribute. Distribuir / Distribute abre Better · 16 bits. Selecciona un mueble en la escena o en la lista. Arrastra por el suelo o mueve ¼ de casilla con las flechas; Columna/Fila + Mover aplica un desplazamiento recto. Girar ↶/↷ aplica 90° sobre el origen del mueble. Escala permite 25–300% con −/+, un porcentaje y Enter; mantiene las proporciones de altura y suelo. Se valida la huella completa, el perímetro, otros muebles y el recorrido, incluido el espacio barrido durante el giro. Un intento bloqueado conserva la transformación anterior. El mapa de dureza muestra perímetro y huellas. Mover, girar y escalar se guardan en este navegador y admiten Deshacer (hasta 50 cambios mientras el editor siga abierto). Recargar conserva posición, giro y escala; reinicia Deshacer. Escape cancela un arrastre pendiente o cierra; Mayús + arrastre mueve la cámara. /distribuir off cierra. La simulación se pausa al editar y recupera su estado anterior al cerrar. Elementos montados y bloqueados, incluido el pilar de Starbucks, quedan fijos. El alias anterior /cli distribuit sigue funcionando. Sin herramienta MCP remota nueva. Sustituir e importar desde este editor siguen pendientes."
+        "detail": "En Modo Experto ejecuta /cli distribuir; en inglés, /cli distribute. Distribuir / Distribute abre Better · 16 bits. Selecciona un mueble en la escena o en la lista. Arrastra por el suelo o mueve ¼ de casilla con las flechas; Columna/Fila + Mover aplica un desplazamiento recto. Girar ↶/↷ aplica 90° sobre el origen del mueble. Escala permite 25–300% con −/+, un porcentaje y Enter; mantiene las proporciones de altura y suelo. Se valida la huella completa, el perímetro, otros muebles y el recorrido, incluido el espacio barrido durante el giro. Un intento bloqueado conserva la transformación anterior. El mapa de dureza muestra perímetro y huellas. Mover, girar y escalar se guardan en este navegador y admiten Deshacer (hasta 50 cambios mientras el editor siga abierto). Recargar conserva posición, giro y escala; reinicia Deshacer. Escape cancela un arrastre pendiente o cierra; Mayús + arrastre mueve la cámara. /distribuir off cierra. La simulación se pausa al editar y recupera su estado anterior al cerrar. Elementos montados y bloqueados, incluido el pilar de Starbucks, quedan fijos. El alias anterior /cli distribuit sigue funcionando. Sin herramienta MCP remota nueva. Bloquear/Desbloquear impide o permite mover, girar y escalar el objeto seleccionado. Eliminar retira sólo esa instancia; Deshacer la recupera si su posición sigue libre. Cargar desde PixerIA abre los 60 objetos recientes compatibles con vista previa; Añadir al espacio carga el GLB real en Better o una imagen ilustrada y busca un hueco libre para toda su huella. Un catálogo o archivo inaccesible no guarda una pieza nueva. Bloqueo, eliminación e importación se guardan con el inventario de este Xpacio y admiten Deshacer mientras el editor siga abierto. Recargar mantiene los cambios, pero reinicia Deshacer. La posición de los objetos montados sigue fija aunque se quite su bloqueo; el pilar estructural no se puede desbloquear ni eliminar. Good muestra la imagen del objeto de PixerIA cuando está disponible. Sustitución directa sigue pendiente."
       },
       "best": {
         "status": "planned",
@@ -780,7 +780,7 @@
         "gap": "El MCP XpaceOS no edita el layout ni instancia GLB en el navegador."
       },
       "restore": [
-        "Sustituir e importar por ID desde Distribuir.",
+        "Sustituir por ID en un único paso desde Distribuir.",
         "Edición compartida del layout entre navegadores o mediante MCP."
       ],
       "evidence": [
@@ -2532,14 +2532,14 @@
     ],
     "tier": "better",
     "snap_tiles": 0.25,
-    "es": "En Modo Experto ejecuta /cli distribuir; en inglés, /cli distribute. Distribuir / Distribute abre Better · 16 bits. Selecciona un mueble en la escena o en la lista. Arrastra por el suelo o mueve ¼ de casilla con las flechas; Columna/Fila + Mover aplica un desplazamiento recto. Girar ↶/↷ aplica 90° sobre el origen del mueble. Escala permite 25–300% con −/+, un porcentaje y Enter; mantiene las proporciones de altura y suelo. Se valida la huella completa, el perímetro, otros muebles y el recorrido, incluido el espacio barrido durante el giro. Un intento bloqueado conserva la transformación anterior. El mapa de dureza muestra perímetro y huellas. Mover, girar y escalar se guardan en este navegador y admiten Deshacer (hasta 50 cambios mientras el editor siga abierto). Recargar conserva posición, giro y escala; reinicia Deshacer. Escape cancela un arrastre pendiente o cierra; Mayús + arrastre mueve la cámara. /distribuir off cierra. La simulación se pausa al editar y recupera su estado anterior al cerrar. Elementos montados y bloqueados, incluido el pilar de Starbucks, quedan fijos. El alias anterior /cli distribuit sigue funcionando. Sin herramienta MCP remota nueva.",
-    "en": "In Expert mode run /cli distribute (Spanish: /cli distribuir). Distribute / Distribuir opens Better · 16 bits. Select furniture in the scene or list. Drag along the floor or move ¼ tile with arrow keys; Column/Row + Move applies a straight move. Rotate ↶/↷ turns 90° around the furniture origin. Scale accepts 25–300% using −/+, a percentage and Enter; it preserves height-to-floor proportions. The full footprint, room boundary, other furniture and path are checked, including the area swept during rotation. Blocked attempts retain the previous transform. The hardness map shows the perimeter and footprints. Move, rotate and scale save in this browser and support Undo (up to 50 changes while the editor is open). Reload retains position, rotation and scale but clears Undo history. Escape cancels a pending drag or closes; Shift + drag moves the camera. /distribute off closes. Simulation pauses during editing and restores its previous state on exit. Mounted and locked items, including the Starbucks pillar, remain fixed. The legacy /cli distribuit alias still works. No new remote MCP tool.",
+    "es": "En Modo Experto ejecuta /cli distribuir; en inglés, /cli distribute. Distribuir / Distribute abre Better · 16 bits. Selecciona un mueble en la escena o en la lista. Arrastra por el suelo o mueve ¼ de casilla con las flechas; Columna/Fila + Mover aplica un desplazamiento recto. Girar ↶/↷ aplica 90° sobre el origen del mueble. Escala permite 25–300% con −/+, un porcentaje y Enter; mantiene las proporciones de altura y suelo. Se valida la huella completa, el perímetro, otros muebles y el recorrido, incluido el espacio barrido durante el giro. Un intento bloqueado conserva la transformación anterior. El mapa de dureza muestra perímetro y huellas. Mover, girar y escalar se guardan en este navegador y admiten Deshacer (hasta 50 cambios mientras el editor siga abierto). Recargar conserva posición, giro y escala; reinicia Deshacer. Escape cancela un arrastre pendiente o cierra; Mayús + arrastre mueve la cámara. /distribuir off cierra. La simulación se pausa al editar y recupera su estado anterior al cerrar. Elementos montados y bloqueados, incluido el pilar de Starbucks, quedan fijos. El alias anterior /cli distribuit sigue funcionando. Sin herramienta MCP remota nueva. Bloquear/Desbloquear impide o permite mover, girar y escalar el objeto seleccionado. Eliminar retira sólo esa instancia; Deshacer la recupera si su posición sigue libre. Cargar desde PixerIA abre los 60 objetos recientes compatibles con vista previa; Añadir al espacio carga el GLB real en Better o una imagen ilustrada y busca un hueco libre para toda su huella. Un catálogo o archivo inaccesible no guarda una pieza nueva. Bloqueo, eliminación e importación se guardan con el inventario de este Xpacio y admiten Deshacer mientras el editor siga abierto. Recargar mantiene los cambios, pero reinicia Deshacer. La posición de los objetos montados sigue fija aunque se quite su bloqueo; el pilar estructural no se puede desbloquear ni eliminar. Good muestra la imagen del objeto de PixerIA cuando está disponible.",
+    "en": "In Expert mode run /cli distribute (Spanish: /cli distribuir). Distribute / Distribuir opens Better · 16 bits. Select furniture in the scene or list. Drag along the floor or move ¼ tile with arrow keys; Column/Row + Move applies a straight move. Rotate ↶/↷ turns 90° around the furniture origin. Scale accepts 25–300% using −/+, a percentage and Enter; it preserves height-to-floor proportions. The full footprint, room boundary, other furniture and path are checked, including the area swept during rotation. Blocked attempts retain the previous transform. The hardness map shows the perimeter and footprints. Move, rotate and scale save in this browser and support Undo (up to 50 changes while the editor is open). Reload retains position, rotation and scale but clears Undo history. Escape cancels a pending drag or closes; Shift + drag moves the camera. /distribute off closes. Simulation pauses during editing and restores its previous state on exit. Mounted and locked items, including the Starbucks pillar, remain fixed. The legacy /cli distribuit alias still works. No new remote MCP tool. Lock/Unlock prevents or allows moving, rotating and scaling the selected object. Delete removes only that instance; Undo restores it if its original position is still clear. Load from PixerIA opens the 60 recent compatible objects with previews; Add to space loads the actual GLB in Better or an illustrated image and finds free space for its full footprint. An unavailable catalog or asset does not save a new instance. Locks, deletions and imports save with this Xpace inventory and support Undo while the editor stays open. Reload keeps edits but resets Undo. Mounted objects remain fixed even when their user lock is removed; the structural pillar cannot be unlocked or deleted. Good shows the PixerIA object image when available.",
     "guide": "https://www.xpaceos.com/admira-xp/docs/distribuir.md",
     "mcp_control": false,
     "source_ids": "existing layout item IDs",
-    "persistence": "current and backup per Xpacio; localStorage; col,row,rot,sx,sy retained",
+    "persistence": "current/backup/schema per Xpacio; localStorage transforms, user locks and PixerIA source metadata; atomic inventory tombstones/additions and visibility",
     "collision": "full floor footprints; room boundary, solid furniture, fixed hardness cells; continuous translation and rotation checks",
-    "undo": "up to 50 completed moves, rotations and scales while editor is open; reverse validated path",
+    "undo": "up to 50 completed pose/object edits while open; reverse validated path or guarded object/ledger restoration; occupied restoration rejected",
     "dependencies": [
       "WebGL",
       "Pointer Events",
@@ -2560,6 +2560,37 @@
       "min": 0.25,
       "max": 3,
       "proportional": true
+    },
+    "objects": {
+      "lock": true,
+      "unlock": true,
+      "delete_instance": true,
+      "undo": true,
+      "structural_fixed_ids": [
+        "sb-pillar"
+      ],
+      "mounted_positions_fixed": true
+    },
+    "pixeria": {
+      "catalog_url": "https://api.admira.store/stock/list?type=furni&limit=60",
+      "source_url": "https://pixeria.com",
+      "instance_id": "pixeria_<UUID>",
+      "source_id": "sourceAssetId",
+      "formats": [
+        "model/gltf-binary",
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/gif"
+      ],
+      "placement": "full footprint, quarter-tile search, room/hardness/solid furniture checks",
+      "rendering": {
+        "better": "actual GLB or illustrated image",
+        "good": "poster/image when available"
+      },
+      "max_instances": 300,
+      "scope": "local-browser-layout",
+      "asset_bytes_remote": true
     }
   }
 }
