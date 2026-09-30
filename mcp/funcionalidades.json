@@ -2442,5 +2442,13 @@
     "visible_items_verified": 5,
     "follow_active": true,
     "guide": "https://www.xpaceos.com/admira-xp/docs/playlist-capsules.md"
+  },
+  "playlist_loop": {
+    "default": true,
+    "setting": "loop",
+    "tool": "playlist_settings",
+    "scope": "shared #playlistUUID virtual screen/POS schedules",
+    "revision": "playlist_list own revision",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/playlist-loop.md"
   }
 }

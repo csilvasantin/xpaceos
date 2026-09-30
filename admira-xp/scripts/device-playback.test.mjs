@@ -27,3 +27,10 @@ test('now-playing follows actual selected devices, automatic advance, pause, pre
  v[0].dispatchEvent(new Event('error'));assert.equal(runtime.nowPlaying([ids[0]])[0].playing,false);assert.equal(runtime.nowPlaying([ids[0]])[0].error,true);
  }finally{runtime.dispose();}
 });
+test('changing a playlist loop flag keeps its current clock and does not affect unrelated devices',async()=>{
+ const ids=['starbucks-wall-06','starbucks-tpv-01'],v=[new Video(),new Video()],runtime=createDevicePlayback(),config={playlists:{'playlist-loop':{title:'Loop',tracks:[a,b],loop:true}},assignments:{[ids[0]]:'playlist-loop'}};
+ try{runtime.update({devices:ids.map((id,i)=>({id,video:v[i]})),config,catalog:{tpv:{tracks:[a,b]}}});await tick();v[0].currentTime=7;config.playlists['playlist-loop'].loop=false;runtime.update({config});assert.equal(v[0].currentTime,7);assert.equal(runtime.nowPlaying([ids[0]])[0].loop,false);
+ await runtime.jump('playlist-loop','b');v[0].dispatchEvent(new Event('ended'));await tick();assert.equal(runtime.state([ids[0]]).playing,false);assert.equal(runtime.state([ids[1]]).playing,true);
+ await runtime.reload([ids[0]]);assert.equal(v[0].src,a.url);assert.equal(runtime.nowPlaying([ids[0]])[0].loop,false);
+ }finally{runtime.dispose();}
+});

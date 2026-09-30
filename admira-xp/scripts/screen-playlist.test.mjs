@@ -30,3 +30,10 @@ test('live playlist changes preserve current track; removing current switches an
  const v=new Video();v.removeAttribute=n=>{v[n]='';};const a={id:'a',url:'https://a.test/1.mp4'},b={id:'b',url:'https://a.test/2.mp4'},c=createScreenPlaylist({videos:[v],tracks:[a]});
  try{await c.play();v.currentTime=3;c.replaceTracks([a,b]);assert.equal(v.currentTime,3);c.replaceTracks([b]);await flush();assert.equal(v.src,b.url);assert.equal(v.paused,false);c.pause();c.replaceTracks([a]);assert.equal(v.paused,true);c.replaceTracks([]);assert.equal(v.src,'');assert.equal(v.paused,true);}finally{c.dispose();}
 });
+test('loop defaults on, can stop at the last item, and manual play restarts a completed schedule',async()=>{
+ const v=new Video(),tracks=[{id:'a',url:'https://media.test/a.mp4'},{id:'b',url:'https://media.test/b.mp4'}],c=createScreenPlaylist({videos:[v],tracks});
+ try{await c.play();v.dispatchEvent(new Event('ended'));await flush();assert.equal(c.state().index,1);v.dispatchEvent(new Event('ended'));await flush();assert.equal(c.state().index,0);assert.equal(c.state().playing,true);
+ c.setLoop(false);v.currentTime=4;assert.equal(v.currentTime,4);v.dispatchEvent(new Event('ended'));await flush();assert.equal(c.state().index,1);v.dispatchEvent(new Event('ended'));await flush();assert.equal(c.state().index,1);assert.equal(c.state().playing,false);assert.equal(c.state().finished,true);assert.equal(v.paused,true);
+ await c.play();assert.equal(c.state().index,0);assert.equal(c.state().playing,true);c.setLoop(true);await c.jump('b');v.dispatchEvent(new Event('ended'));await flush();assert.equal(c.state().index,0);assert.equal(c.state().playing,true);
+ }finally{c.dispose();}
+});

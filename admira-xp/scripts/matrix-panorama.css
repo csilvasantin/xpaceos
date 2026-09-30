@@ -123,3 +123,5 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 @media(prefers-reduced-motion:reduce){.matrix-playlist-editor .device-tracks li{transition:none}}
 /* The floating mobile funnel must not cover playlist controls. */
 @media(max-width:700px){body:has(.matrix-playlist-editor:not([hidden])) #topBar #bbFunnel{visibility:hidden}}
+
+.matrix-playlist-editor .device-loop-label{display:flex;align-items:center;gap:6px;color:#c0ffdf}.matrix-playlist-editor .device-loop-help{font-size:10px;margin-bottom:7px;color:#9dbfb1}
