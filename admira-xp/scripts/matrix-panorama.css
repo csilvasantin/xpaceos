@@ -139,3 +139,9 @@ dialog.matrix-panorama-dialog{left:0!important;top:38px!important;width:100vw!im
 .matrix-announcement-quality button.active{background:#1f6b56!important;color:#eafff4!important;box-shadow:inset 0 0 0 1px #9dffcf}
 .matrix-announcement-line .matrix-announcement-status{font:12px/1.3 ui-monospace,monospace;color:#b9d8cf;min-width:0}
 .matrix-announcement-line .matrix-announcement-status[data-playing=true]{color:#9dffcf;font-weight:600}
+
+/* Keep the current title between Listen/Mute and Next track, including long titles. */
+.matrix-music-controls{display:flex;align-items:center;gap:5px;flex:1 1 450px;max-width:700px;min-width:0}
+.matrix-music-controls button{flex:none}
+.matrix-current-track{flex:1;min-width:0;color:#9dffcf;font:12px/1.4 system-ui;overflow-wrap:anywhere}
+#telegramDock .matrix-current-track{font:10px/1.4 monospace}

@@ -466,5 +466,11 @@
     "scope": "shared #playlistUUID virtual screen/POS schedules",
     "revision": "playlist_list own revision",
     "guide": "https://www.xpaceos.com/admira-xp/docs/playlist-loop.md"
+  },
+  "starbucks_now_playing_recovery": {
+    "es": "En Matrix · Starbucks, el título completo de la pista actual aparece entre Escuchar/Silenciar y Siguiente canción en el menú Experto y se actualiza al avanzar, también en silencio. Pulsa la tarjeta verde CERRADA para quitar el aviso y reanudar la playlist asignada a esa pantalla virtual. La retirada se recuerda en este navegador para ese cierre; una incidencia nueva o reabierta vuelve a aparecer. Las tarjetas ABIERTA, EN CURSO y RECUPERADA siguen abriendo Yokup. Este clic no modifica ni reabre el ticket de Yokup y no confirma emisión en una pantalla física.",
+    "en": "In Matrix · Starbucks, the full current track title appears between Listen/Mute and Next track in the Expert menu and updates on track changes, including while muted. Click the green CLOSED card to dismiss the notice and resume that virtual screen’s assigned playlist. Dismissal is remembered in this browser for that closure; a new or reopened incident appears again. OPEN, IN PROGRESS and RECOVERED cards still open Yokup. This click does not modify or reopen the Yokup ticket and does not confirm playback on a physical screen.",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/starbucks-now-playing-recovery.md",
+    "scope": "browser-local virtual players; no Yokup incident write"
   }
 }
