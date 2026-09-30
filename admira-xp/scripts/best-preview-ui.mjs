@@ -1,4 +1,4 @@
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=starbucks-room-1';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=distribuit-1';
 import {createBestPeopleLayer} from './best-live-people.mjs?v=anon-demo-v1';
 import {mountMatrixFurniture} from './matrix-furniture.mjs?v=anon-demo-v1';
 import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';

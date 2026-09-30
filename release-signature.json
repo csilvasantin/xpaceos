@@ -1,10 +1,10 @@
 {
-  "version": "v.30.09.2026.r35.20:08",
+  "version": "v.30.09.2026.r36.20:45",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
-  "evidence": "Yokup #211: remove Cafebrería basic-view notice; persistent resizable side rails, ES/EN help and MCP.",
+  "evidence": "Yokup #214: Distribuit furniture editor in Better 16 bits, swept collision checks, save/undo, Cafebrería models, ES/EN help and MCP.",
   "day": "30.09.2026",
-  "time": "20:08"
+  "time": "20:45"
 }

@@ -1,7 +1,7 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.30.09.2026.r35.20:08",
+  "version": "v.30.09.2026.r36.20:45",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
@@ -511,5 +511,35 @@
       "xpace_side_width_right"
     ],
     "mcp_control": false
+  },
+  "distribuit": {
+    "id": "distribuit",
+    "scope": "local-browser-layout",
+    "commands": [
+      "/cli distribuit",
+      "distribuit",
+      "/distribuit",
+      "/cli distribute",
+      "/distribuit off"
+    ],
+    "tier": "better",
+    "snap_tiles": 0.25,
+    "es": "En Modo Experto ejecuta /cli distribuit (también distribuit o /distribuit). Se abre Better · 16 bits con el editor. Selecciona un mueble en la escena o en la lista y arrástralo por el suelo; las flechas y los botones mueven ¼ de casilla. Columna/Fila + Mover aplica un desplazamiento recto. El mapa de dureza muestra el perímetro y las huellas ocupadas. Se comprueba la huella completa, escala horizontal, giro y espejo, además del recorrido: no permite salir del espacio, ocupar otro mueble ni atravesarlo. Verde indica una posición válida; rojo indica un intento bloqueado. Al soltar se guarda en este navegador; Deshacer recorre el camino inverso. Escape cancela el arrastre pendiente o cierra el editor. Mayús + arrastre mueve la cámara. /distribuit off cierra. La simulación se pausa mientras se edita y recupera su estado anterior al cerrar. Las paredes, pantallas montadas y el pilar de Starbucks quedan fijos. Better también está disponible en Cafebrería con mesas, libros y sofá.",
+    "en": "In Expert mode run /cli distribuit (also distribuit, /distribuit or /cli distribute). Better · 16 bits opens with the editor. Select furniture in the scene or list and drag it along the floor; arrow keys and buttons move ¼ tile. Column/Row + Move applies a straight move. The hardness map shows the perimeter and occupied footprints. The full footprint, horizontal scale, rotation and mirror are checked along with the path: furniture cannot leave the space, overlap another piece or pass through it. Green means a valid position; red means a blocked attempt. Release to save in this browser; Undo follows the reverse path. Escape cancels the pending drag or closes the editor. Shift + drag moves the camera. /distribuit off closes it. Simulation is paused during editing and its previous state is restored on exit. Walls, mounted screens and the Starbucks pillar remain fixed. Better is also available in Cafebrería with tables, books and seating.",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/distribuit.md",
+    "mcp_control": false,
+    "source_ids": "existing layout item IDs",
+    "persistence": "current and backup of getLayoutStoragePrefix(); localStorage; quarter-tile coordinates preserved",
+    "collision": "shared furnitureBounds; room boundary, solid footprints, fixed hardness cells and swept path",
+    "undo": "up to 50 completed moves in the open editor; reverse accepted path",
+    "dependencies": [
+      "WebGL",
+      "Pointer Events",
+      "localStorage"
+    ],
+    "pending": [
+      "rotation/scale controls inside Distribuit",
+      "cross-browser/shared layout editing via MCP"
+    ]
   }
 }

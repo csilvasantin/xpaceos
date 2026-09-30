@@ -8620,11 +8620,11 @@ function loadLayout(){
       if(Array.isArray(saved)&&saved.length>0){
         // Basic sanity: ensure col/row/sx/sy are valid numbers
         // (14 cols × 8 rows grid — hardcoded to avoid ISO reference)
-        const MAX_COL=13, MAX_ROW=7;
+        const MAX_COL=14, MAX_ROW=8; // rotated/mirrored furniture may anchor on the floor edge
         const clean=saved.map(it=>({
           ...it,
-          col: (typeof it.col==='number'&&isFinite(it.col)) ? Math.max(0,Math.min(MAX_COL,Math.round(it.col))) : 0,
-          row: (typeof it.row==='number'&&isFinite(it.row)) ? Math.max(0,Math.min(MAX_ROW,Math.round(it.row))) : 0,
+          col: (typeof it.col==='number'&&isFinite(it.col)) ? Math.max(0,Math.min(MAX_COL,it.col)) : 0,
+          row: (typeof it.row==='number'&&isFinite(it.row)) ? Math.max(0,Math.min(MAX_ROW,it.row)) : 0,
           sx:  (typeof it.sx==='number'&&it.sx>0) ? it.sx : 1,
           sy:  (typeof it.sy==='number'&&it.sy>0) ? it.sy : 1,
         }));
@@ -27249,6 +27249,37 @@ window.__xtancoVisualState=()=>{
   const moving=document.body.classList.contains('xtanco-mudanza');
   return {venue:isStarbucksVenue()?'alsea-sbux-021':null,palette:P,realTrafficActive:xtoreRealExteriorActive(),iso:ISO,projection:{width:W,height:H,ox:ISO.ox,oy:ISO.oy,tileW:ISO.tileW,tileH:ISO.tileH},layout:moving?[]:(shopFurnitureVisible||editorSceneActive?inventoryPresentationLayout():[]),hardness:getHardnessSnapshot(),game:G,footprints:FURNITURE_SIZE,wallHelpers:{isWallMountedType,getWallItemHeightPx,getWallItemFootprintCols,getWallItemRenderPoly},editor:state===S.EDITOR,moving,active:!!G&&(state===S.GAME||state===S.PAUSE||state===S.EDITOR)&&['xtanco','cafeteria'].includes(CLIENTS[activeClient]?.id),vertical:CLIENTS[activeClient]?.id||'xtanco'};
 };
+// Distribuit edits the same saved layout as Good, Better and the inventory.
+window.__xtancoFurnitureEditor={
+  read(){
+    const source=window.__xtancoVisualState(),roomId=getLayoutStoragePrefix();
+    const layout=inventoryPresentationLayout().map(item=>({...cloneLayoutData(item),mount:getItemMount(item.type),locked:!!item.locked||item.id==='sb-pillar'}));
+    const owned=new Set();
+    for(const item of shopLayout){if(['rug','led','tft','aroma'].includes(item.type))continue;const fp=getFurnitureFootprint(item);for(let c=fp.col;c<fp.col+fp.w;c++)for(let r=fp.row;r<fp.row+fp.d;r++)owned.add(c+','+r);}
+    return {roomId,active:source.active&&!source.moving,cols:ISO.cols,rows:ISO.rows,layout,footprints:FURNITURE_SIZE,hardness:{fixed:source.hardness.blocked.filter(cell=>!owned.has(cell))}};
+  },
+  begin(){
+    const scene=this.read();if(!scene.active)throw Error('room');
+    const token={roomId:scene.roomId,game:G,previous:state};if(state===S.GAME)state=S.PAUSE;return token;
+  },
+  end(token){if(token&&G===token.game&&getLayoutStoragePrefix()===token.roomId&&token.previous===S.GAME&&state===S.PAUSE)state=S.GAME;},
+  async commit({roomId,id,from,col,row,path}){
+    const {validateFurniturePath}=await import('./scripts/distribuit.mjs?v=distribuit-1');
+    const scene=this.read(),item=scene.layout.find(value=>String(value.id)===String(id));
+    if(!scene.active||scene.roomId!==roomId)throw Error('room');
+    if(!item||item.col!==from?.col||item.row!==from?.row)throw Error('changed');
+    const result=validateFurniturePath(scene,id,path);
+    if(!result.ok||result.position.col!==col||result.position.row!==row)throw Error(result.reason||'invalid');
+    const next=inventoryPresentationLayout().map(value=>String(value.id)===String(id)?{...value,col,row}:value);
+    const keys=getLayoutSlotKeys(roomId),writes=[[keys.current,JSON.stringify(next)],[keys.backup,JSON.stringify(next)],[keys.schema,LAYOUT_SCHEMA_VERSION]];
+    const before=writes.map(([key])=>[key,localStorage.getItem(key)]),old=shopLayout,oldGrid=walkGrid;
+    try{for(const [key,value]of writes)localStorage.setItem(key,value);shopLayout=next;buildWalkGrid();}
+    catch(error){shopLayout=old;walkGrid=oldGrid;for(const [key,value]of before){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{}}throw error;}
+    try{window.XpaceInventory?.publish(inventorySpace(),shopLayout);}catch(error){console.warn('[Distribuit inventory]',error);}
+    return {ok:true,col,row};
+  }
+};
+
 loop();
 
 // ── DIRECT ENTRY URL: ?play=<verticalId> ─────────────────────────
@@ -30826,6 +30857,7 @@ window.xtAPI = (function(){
       {title:'IA y contenido',items:['/grok pregunta','/draw dibujo','/metahuman pregunta','/avatar3d on|off','/avatar3d ds on|off','/avatar3d audio on|off','/avatar3d models','/avatar3d preset <nombre> <url RPM>','/avatar3d model <nombre|id>','/avatar3d pregunta','/log','/log thief','/log customer','/import','/import list','/import remove 1','/importTube https://youtu.be/...']},
       {title:'Ajustes rápidos',items:['/money 12000','/sat 90','/fame 80','/set week 12','/set year 2','/set revenue 5000','/set storeLevel 2','/set customers 30']},
       {title:'Musica y layout',items:['/music on','/music off','/music next','/music previous','/music 3','/song 1','/song bad bunny','/next','/prev','/seoul2026','/seul','/seultrap','/seultecno','/equipo inicio ana 3 4','/equipo zona dj 12 2 2','/catalogo','/catalogo pared','/importar catalogo','/importar 1','/importar lista','/importar quitar 1','/mobiliario','/mobiliario inicio','/layout save','/layout factory','/layout xpacio','/layout xpacio load']},
+      {title:'Distribuit · editor de muebles / furniture editor · Better 16 bits',items:['/cli distribuit','/distribuit','/distribuit off']},
       {title:'Inventario local · números permanentes',items:['/inventario','eliminar el 1','/inventario deshacer']},
       {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit / Matrix Starbucks Alsea',items:['good','better','best','matrix','/layout','/layout off','/sincro','/sincrototal','/sincro off','/sync','/synctotal','/sync off','/mudanza','/modo estado']},
       {title:'Estilo del render clásico',items:['/render 8bit','/render 16bit','/render habbo','/render real']},
@@ -31352,6 +31384,13 @@ window.xtAPI = (function(){
 
   async function executeLocalVisualCommand(rawText){
     const text=String(rawText||'').trim();
+    if(/^\/?(?:cli\s+)?(?:distribuit|distribute)(?:\s+(?:off|close|cerrar|salir|on))?$/i.test(text)){
+      try{
+        const {executeDistribuitCommand}=await import('./scripts/distribuit.mjs?v=distribuit-1');
+        const {openLifeEditor,closeLifeEditor}=await import('./scripts/life-ui.mjs?v=distribuit-1');
+        return await executeDistribuitCommand(text,{router:window.__xtancoVisualTiers,open:openLifeEditor,close:closeLifeEditor,lang:typeof lang==='undefined'?'es':lang});
+      }catch{return {ok:false,local:true,message:'Distribuit no disponible. Abre un Xpacio y reintenta.'};}
+    }
     const visibility=executePeopleVisibilityCommand(text);
     if(visibility)return visibility;
     if(/^\/?(?:inventario|eliminar|añadir|anadir)(?:@\w+)?(?:\s|$)/i.test(text)){
@@ -35661,11 +35700,12 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/matrix-panorama.css?v=closed-resume-1">
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=panel-scene-1">
+<link rel="stylesheet" href="scripts/distribuit.css?v=distribuit-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
 <link rel="stylesheet" href="scripts/tier-hud.css?v=expert-hud-1">
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=cafe-rails-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=distribuit-1"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=aviso-1"></script>
 <link rel="stylesheet" href="scripts/side-panel-resize.css?v=1">
 <script type="module" src="scripts/side-panel-resize.mjs?v=1"></script>

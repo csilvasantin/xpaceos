@@ -276,12 +276,13 @@ test('the floating status stays silent on success and is reserved for loading or
   h.button('best').click();assert.equal(status.hidden,true);assert.equal(h.status,status);
 });
 
-test('Cafebrería stays in verified Good and disables the unreviewed visual tiers',async()=>{
+test('Cafebrería enables Better and retains the Best guard',async()=>{
   const h=selectorHarness({search:'?quality=best',vertical:'cafeteria'});
   assert.equal(h.body.dataset.xtancoTier,'good');assert.equal(h.best.calls.open,0);
-  for(const tier of ['better','best']){
+  for(const tier of ['best']){
     assert.equal(h.button(tier).disabled,true);assert.equal(h.button(tier).attrs['aria-disabled'],'true');
   }
+  assert.equal(h.button('better').disabled,false);await h.window.__xtancoVisualTiers.choose('better');assert.equal(h.life.calls.open,1);
   assert.equal(h.status.textContent,'');assert.equal(h.status.hidden,true);
   assert.equal(h.button('matrix').disabled,false);await h.window.__xtancoVisualTiers.choose('matrix');assert.equal(h.matrix.calls.open,1);assert.equal(h.body.dataset.xtancoTier,'matrix');
 });

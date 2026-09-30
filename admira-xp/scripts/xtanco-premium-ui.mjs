@@ -1,6 +1,6 @@
 import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=closed-resume-1';
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=starbucks-room-1';
-import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=starbucks-room-1';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=distribuit-1';
+import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=distribuit-1';
 import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=entry-1';
 import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=starbucks-room-1';
 
@@ -92,7 +92,7 @@ tiers.choose=mode=>{
   syncVisualSurface();
   if(window.__xpaceMatrixEntry&&document.documentElement.classList.contains('matrix-boot'))return chooseDirect(mode);
   if(mode===tiers.mode)return chooseDirect(mode); // Same-view commands must not clone media for a transition.
-  if(mode!=='good'&&mode!=='matrix'&&isCafeteria()){
+  if(mode==='best'&&isCafeteria()){
     syncCafeteriaTierControls();
     return chooseDirect('good');
   }
@@ -109,11 +109,11 @@ expertControls.element.id='xtanco-visual-quality';viewPane?.prepend(expertContro
 function syncCafeteriaTierControls(){
   const unavailable=isCafeteria();
   for(const button of expertControls.element.querySelectorAll('[data-visual-mode]')){
-    const blocked=unavailable&&!['good','matrix'].includes(button.dataset.visualMode);
+    const blocked=unavailable&&button.dataset.visualMode==='best';
     button.disabled=blocked;
     button.setAttribute('aria-disabled',String(blocked));
   }
-  if(unavailable&&!['good','matrix'].includes(tiers.mode))void tiers.choose('good');
+  if(unavailable&&tiers.mode==='best')void tiers.choose('good');
   status.textContent=tiers.error||(tiers.busy?'Fusionando vista…':'');status.hidden=!status.textContent;
 }
 syncCafeteriaTierControls();

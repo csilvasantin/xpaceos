@@ -724,8 +724,8 @@
         "detail": "El clásico ofrece editor y catálogo de muebles. /layout save puede persistir en backend/repositorio; no es necesariamente sólo local. /layout factory elimina varias copias guardadas de este Xpacio: confirmar y exportar una copia antes de usarlo."
       },
       "better": {
-        "status": "presentation_only",
-        "detail": "Better dibuja posiciones, giros y escalas del layout, pero arrastrar mueve la cámara, no el mueble. Seleccionar sólo abre una ficha; para editar hay que volver a Good."
+        "status": "partial",
+        "detail": "En Modo Experto ejecuta /cli distribuit (también distribuit o /distribuit). Se abre Better · 16 bits con el editor. Selecciona un mueble en la escena o en la lista y arrástralo por el suelo; las flechas y los botones mueven ¼ de casilla. Columna/Fila + Mover aplica un desplazamiento recto. El mapa de dureza muestra el perímetro y las huellas ocupadas. Se comprueba la huella completa, escala horizontal, giro y espejo, además del recorrido: no permite salir del espacio, ocupar otro mueble ni atravesarlo. Verde indica una posición válida; rojo indica un intento bloqueado. Al soltar se guarda en este navegador; Deshacer recorre el camino inverso. Escape cancela el arrastre pendiente o cierra el editor. Mayús + arrastre mueve la cámara. /distribuit off cierra. La simulación se pausa mientras se edita y recupera su estado anterior al cerrar. Las paredes, pantallas montadas y el pilar de Starbucks quedan fijos. Better también está disponible en Cafebrería con mesas, libros y sofá. Girar, escalar, sustituir e importar desde este editor siguen pendientes."
       },
       "best": {
         "status": "planned",
@@ -755,6 +755,18 @@
           "entrypoint": "__xtExec",
           "note": "Puede persistir en backend/repositorio, no sólo en memoria local.",
           "status": "source_verified"
+        },
+        {
+          "text": "/cli distribuit",
+          "entrypoint": "CLI experto / __xtExec",
+          "status": "browser_verified",
+          "note": "Editor local de Better; no herramienta MCP."
+        },
+        {
+          "text": "/distribuit off",
+          "entrypoint": "CLI experto / __xtExec",
+          "status": "browser_verified",
+          "note": "Editor local de Better; no herramienta MCP."
         }
       ],
       "mcp": {
@@ -762,8 +774,8 @@
         "gap": "El MCP XpaceOS no edita el layout ni instancia GLB en el navegador."
       },
       "restore": [
-        "Mover, girar, escalar y sustituir por ID desde Better con deshacer.",
-        "Conservar footprint, colisiones, navegación y contenido asociado; no duplicar transformaciones."
+        "Girar, escalar, sustituir e importar por ID desde Distribuit.",
+        "Edición compartida del layout entre navegadores o mediante MCP."
       ],
       "evidence": [
         {
@@ -785,6 +797,16 @@
           "path": "admira-xp/scripts/life-ui.mjs",
           "line": 16,
           "symbol": "select"
+        },
+        {
+          "path": "admira-xp/scripts/distribuit.mjs",
+          "line": 18,
+          "symbol": "validateFurnitureMove"
+        },
+        {
+          "path": "admira-xp/scripts/distribuit-controller.mjs",
+          "line": 5,
+          "symbol": "createDistribuitController"
         }
       ]
     },
@@ -2487,5 +2509,35 @@
       "xpace_side_width_right"
     ],
     "mcp_control": false
+  },
+  "distribuit": {
+    "id": "distribuit",
+    "scope": "local-browser-layout",
+    "commands": [
+      "/cli distribuit",
+      "distribuit",
+      "/distribuit",
+      "/cli distribute",
+      "/distribuit off"
+    ],
+    "tier": "better",
+    "snap_tiles": 0.25,
+    "es": "En Modo Experto ejecuta /cli distribuit (también distribuit o /distribuit). Se abre Better · 16 bits con el editor. Selecciona un mueble en la escena o en la lista y arrástralo por el suelo; las flechas y los botones mueven ¼ de casilla. Columna/Fila + Mover aplica un desplazamiento recto. El mapa de dureza muestra el perímetro y las huellas ocupadas. Se comprueba la huella completa, escala horizontal, giro y espejo, además del recorrido: no permite salir del espacio, ocupar otro mueble ni atravesarlo. Verde indica una posición válida; rojo indica un intento bloqueado. Al soltar se guarda en este navegador; Deshacer recorre el camino inverso. Escape cancela el arrastre pendiente o cierra el editor. Mayús + arrastre mueve la cámara. /distribuit off cierra. La simulación se pausa mientras se edita y recupera su estado anterior al cerrar. Las paredes, pantallas montadas y el pilar de Starbucks quedan fijos. Better también está disponible en Cafebrería con mesas, libros y sofá.",
+    "en": "In Expert mode run /cli distribuit (also distribuit, /distribuit or /cli distribute). Better · 16 bits opens with the editor. Select furniture in the scene or list and drag it along the floor; arrow keys and buttons move ¼ tile. Column/Row + Move applies a straight move. The hardness map shows the perimeter and occupied footprints. The full footprint, horizontal scale, rotation and mirror are checked along with the path: furniture cannot leave the space, overlap another piece or pass through it. Green means a valid position; red means a blocked attempt. Release to save in this browser; Undo follows the reverse path. Escape cancels the pending drag or closes the editor. Shift + drag moves the camera. /distribuit off closes it. Simulation is paused during editing and its previous state is restored on exit. Walls, mounted screens and the Starbucks pillar remain fixed. Better is also available in Cafebrería with tables, books and seating.",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/distribuit.md",
+    "mcp_control": false,
+    "source_ids": "existing layout item IDs",
+    "persistence": "current and backup of getLayoutStoragePrefix(); localStorage; quarter-tile coordinates preserved",
+    "collision": "shared furnitureBounds; room boundary, solid footprints, fixed hardness cells and swept path",
+    "undo": "up to 50 completed moves in the open editor; reverse accepted path",
+    "dependencies": [
+      "WebGL",
+      "Pointer Events",
+      "localStorage"
+    ],
+    "pending": [
+      "rotation/scale controls inside Distribuit",
+      "cross-browser/shared layout editing via MCP"
+    ]
   }
 }
