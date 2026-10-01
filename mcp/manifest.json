@@ -649,17 +649,30 @@
   "starbucksFurniture": {
     "manifest": "https://www.xpaceos.com/inventario/starbucks/manifest.json",
     "viewer": "https://www.xpaceos.com/inventario/starbucks/",
-    "unitCount": 10,
-    "modelCount": 6,
+    "unitCount": 11,
+    "modelCount": 7,
     "catalogNumbers": [
       44,
       45,
       46,
       47,
       48,
-      49
+      49,
+      50
     ],
     "geometry": "interpretive; field dimensions pending",
-    "authority": "Yokup ITIL"
+    "authority": "Yokup ITIL",
+    "waterRack": {
+      "itil_code": "PDG103-BOT-01",
+      "instance_id": "sb-water-rack",
+      "asset_number": 50,
+      "viewer": "https://www.xpaceos.com/inventario/starbucks/?item=PDG103-BOT-01",
+      "visualBottleCount": 19,
+      "stockCount": null,
+      "materials": "blue PET, white caps, black metal; embedded PBR textures",
+      "geometry": "photo/360 interpretation; nominal dimensions, no field measurement",
+      "bottleModel": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.glb",
+      "bottleMaster": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.blend"
+    }
   }
 }

@@ -16,8 +16,8 @@ function harness(){
  const options={store:root.XpaceInventory,space:'xtanco',getLayout:()=>layout,applyLayout:next=>{layout=next;},load:async()=>({assets})};
  return {options,values,localStorage,exec:raw=>executeInventoryCommand(raw,options),get layout(){return layout;},fail(){fail=true;}};
 }
-test('49 permanent numbers survive source reorder and category/search filtering',()=>{
- assert.equal(assets.length,49);assert.deepEqual(assets.map(a=>a.number),Array.from({length:49},(_,i)=>i+1));
+test('50 permanent numbers survive source reorder and category/search filtering',()=>{
+ assert.equal(assets.length,50);assert.deepEqual(assets.map(a=>a.number),Array.from({length:50},(_,i)=>i+1));
  assert.equal(assets[0].id,'native:counter');assert.equal(assets[0].name,'Mostrador');
  const reordered=numberedCatalog([...data.native].reverse(),[...stock.items].reverse(),registry);
  assert.deepEqual(reordered,assets);assert.equal(assets.filter(a=>a.type==='shelves')[0].number,2);
@@ -28,9 +28,9 @@ test('inventory grammar reserves invalid destructive commands locally without in
  for(const s of ['eliminar 0','eliminar -1','eliminar 1.2','eliminar 1 todos','/inventario eliminar 99999999999999999'])assert.equal(parseInventoryCommand(s).action,'help');
  for(const s of ['/inventariox','hola','/mobiliario'])assert.equal(parseInventoryCommand(s),null);
 });
-test('CLI lists all 49 models with counts, including unplaced Pixeria furniture',async()=>{
+test('CLI lists all 50 models with counts, including unplaced Pixeria furniture',async()=>{
  const h=harness(),answer=await h.exec('/inventario');assert.equal(answer.ok,true);
- assert.equal(answer.message.split('\n').filter(line=>/^\d+\./.test(line)).length,49);
+ assert.equal(answer.message.split('\n').filter(line=>/^\d+\./.test(line)).length,50);
  assert.match(answer.message,/1\. Mostrador · 1 en el espacio/);assert.match(answer.message,/43\./);
 });
 test('remove 1 affects only the current counter, survives reload/factory reset and leaves catalog numbering intact',async()=>{

@@ -49,7 +49,8 @@
     "native:starbucksDisplay": 46,
     "native:starbucksShelves": 47,
     "native:starbucksTable": 48,
-    "native:starbucksChair": 49
+    "native:starbucksChair": 49,
+    "native:starbucksWaterRack": 50
   },
   "labels": {
     "pixeria:1781386629046-a7rnyw": "Scooter retro",
@@ -82,6 +83,7 @@
     "native:starbucksDisplay": "Vitrina Starbucks",
     "native:starbucksShelves": "Estantería de tazas y café Starbucks",
     "native:starbucksTable": "Mesa redonda Starbucks",
-    "native:starbucksChair": "Silla Starbucks"
+    "native:starbucksChair": "Silla Starbucks",
+    "native:starbucksWaterRack": "Botellero Solán de Cabras Starbucks"
   }
 }

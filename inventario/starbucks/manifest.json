@@ -3,7 +3,7 @@
   "location_id": "alsea-sbux-021",
   "confirmed_by": "Carlos",
   "confirmed_on": "2026-10-01",
-  "geometry_basis": "Interpretación del panorama; dimensiones sin medir, unidades de escena sin calibrar.",
+  "geometry_basis": "Interpretación del panorama y fotografías; dimensiones sin medir. Los modelos 44–49 usan unidades de escena sin calibrar; el botellero 50 usa proporciones métricas nominales aproximadas.",
   "units": [
     {
       "itil_code": "PDG103-BAR-01",
@@ -94,6 +94,24 @@
       "asset_number": 49,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/49/best.glb",
       "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend"
+    },
+    {
+      "itil_code": "PDG103-BOT-01",
+      "instance_id": "sb-water-rack",
+      "name": "Botellero Solán de Cabras Starbucks",
+      "category": "mobiliario",
+      "asset_number": 50,
+      "model3d": "https://www.xpaceos.com/inventario/assets/catalog/50/best.glb",
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/50/best.blend",
+      "geometry_basis": "Interpretación de foto y panorama 360; huella nominal 0,44 × 0,46 m, sin medición de campo.",
+      "brand_basis": "Solán de Cabras identificada por Carlos; etiqueta aproximada.",
+      "visual_filling": {
+        "bottle_count": 19,
+        "purpose": "Composición visual editable; no representa existencias medidas ni stock real.",
+        "material": "Plástico PET azul con tapón blanco; texturas PBR embebidas en GLB.",
+        "model3d": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.glb",
+        "master": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.blend"
+      }
     }
   ]
 }
