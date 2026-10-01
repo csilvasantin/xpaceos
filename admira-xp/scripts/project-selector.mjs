@@ -1,8 +1,8 @@
-import {ADAPTERS,projectContext,projectUrl} from './project-context.mjs';
+import {ADAPTERS,projectContext,projectUrl} from './project-context.mjs?v=projects-2';
 const select=document.getElementById('projectSelector'),chip=document.getElementById('projectContextChip');
 const chosenQuality=()=>document.querySelector('#visualQualityOptions [aria-pressed="true"]')?.dataset.visualMode;
 let projects=Object.entries(ADAPTERS).map(([id,a])=>({id,label:a.label,circuit:a.circuit})),last='';
-const english=()=>document.documentElement.lang==='en'||new URL(location.href).searchParams.get('lang')==='en';
+const english=()=>document.documentElement.lang==='en';
 const text=(en,es)=>english()?en:es;
 function refresh(){
   const context=projectContext(location.href,window.__xtancoVisualState?.()?.vertical);
