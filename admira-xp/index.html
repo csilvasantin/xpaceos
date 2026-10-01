@@ -32664,6 +32664,34 @@ window.xtAPI = (function(){
     showLastResponse._t=setTimeout(()=>{ try{ el.classList.remove('fresh'); }catch(e){} },3500);
   }
 
+  // Shell común (FLT-101337): fuera del gemelo, un verbo del gemelo escrito en ⌘ Experto
+  // se guarda en sessionStorage (xpaceos_expert_pending_v1, caduca a los 2 min, nunca en
+  // la URL) y se abre esta página. Aquí se ejecuta una sola vez, con el Xpacio en marcha,
+  // como si se hubiera escrito en la consola (sin reenviarla a Telegram).
+  (function runShellPending(){
+    let raw=null;
+    try{ raw=sessionStorage.getItem('xpaceos_expert_pending_v1'); if(raw) sessionStorage.removeItem('xpaceos_expert_pending_v1'); }catch(_){}
+    if(!raw) return;
+    let cmd='';
+    try{ const d=JSON.parse(raw); const age=Date.now()-Number(d&&d.at); if(d&&typeof d.cmd==='string'&&age>=0&&age<=120000) cmd=d.cmd.trim().slice(0,500); }catch(_){}
+    if(!cmd) return;
+    const t0=Date.now();
+    const ready=()=>typeof state!=='undefined'&&typeof S!=='undefined'&&(state===S.GAME||state===S.EDITOR);
+    const go=async()=>{
+      try{ if(document.body.classList.contains('xp-left-hidden')){ const b=document.getElementById('pfExpert'); if(b) b.click(); } }catch(_){}
+      try{
+        const visual=await executeLocalVisualCommand(cmd);
+        if(visual){ showLastResponse(visual.message,visual.ok?'ok':'err','local-visual'); return; }
+        appendTelegramLog('out','Experto',cmd);
+        const answer=await executeTelegramText(cmd);
+        appendTelegramLog('bot','AdmiraXPBot',answer);
+        showLastResponse(answer,'ok');
+      }catch(e){ const m='Error: '+(e&&e.message||e); appendTelegramLog('err','Error',m); showLastResponse(m,'err'); }
+    };
+    const wait=()=>{ if(ready()||Date.now()-t0>30000){ setTimeout(go,900); return; } setTimeout(wait,300); };
+    wait();
+  })();
+
   async function sendComposerText(text){
     const clean=String(text||'').trim();
     if(!clean) return;
