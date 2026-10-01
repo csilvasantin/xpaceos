@@ -2699,7 +2699,7 @@
       "https://www.yokup.com/equipo-inventario?code=PDG103-BOT-01"
     ],
     "layout": {
-      "top": "two permanent horizontal bars",
+      "top": "one horizontal bar visible by default; other menus collapsed",
       "left": "Options",
       "right": "Advanced",
       "bottom": "Expert/navigation CLI"

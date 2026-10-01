@@ -6,7 +6,7 @@
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.12.18",
+    "version": "2.12.19",
     "health": "https://mcp.admira.store/",
     "tool_count": 35
   },
@@ -727,7 +727,7 @@
       "https://www.yokup.com/equipo-inventario?code=PDG103-BOT-01"
     ],
     "layout": {
-      "top": "two permanent horizontal bars",
+      "top": "one horizontal bar visible by default; other menus collapsed",
       "left": "Options",
       "right": "Advanced",
       "bottom": "Expert/navigation CLI"
