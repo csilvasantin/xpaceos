@@ -30,6 +30,9 @@ jobs:
         run: |
           set -euo pipefail
           node --test tests/perimetro.test.mjs
+          # Sin la dirección de vuelta registrada en Google, el login muere en
+          # «redirect_uri_mismatch» (nos pasó dos veces). Se comprueba antes de publicar.
+          bash scripts/google-redirects.sh https://www.xpaceos.com/auth/callback https://xpaceos.pages.dev/auth/callback
           release="$(sed -n 's/.*admiranext-version.*content="\(v\.[^"]*\)".*/\1/p' index.html | head -1)"
           deployer="$(jq -r '.deployer // empty' release-signature.json)"
           machine="$(jq -r '.machine // empty' release-signature.json)"
