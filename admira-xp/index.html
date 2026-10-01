@@ -1238,9 +1238,9 @@
       <textarea id="telegramComposer" placeholder="/sincro on"></textarea>
     </div>
     <div class="expert-divider" data-expert-divider="0" role="separator" aria-orientation="vertical" tabindex="0"></div>
-      <div class="tg-actions"></div>
+      <div class="tg-actions" aria-label="Controles"><span class="expert-section-label" id="expertControlsLabel">CONTROLES</span><div id="expertQuickIcons"></div></div>
     <div class="expert-divider" data-expert-divider="1" role="separator" aria-orientation="vertical" tabindex="0"></div>
-    <div class="expert-view-pane">      <div class="tg-actions expert-primary-actions">
+    <div class="expert-view-pane"><span class="expert-section-label" id="expertPreviewLabel">PREVIOS</span><div class="tg-actions expert-primary-actions">
         <button type="button" class="primary" id="telegramSendBtn">Send</button>
         <!-- El botón /help se quitó de la barra (2-ago-2026, Carlos: «eliminar
              /help para tener más espacio»). El comando SIGUE existiendo: se
@@ -1375,8 +1375,9 @@
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
 <script src="xtanco-marketplace-client.js"></script>
-<script src="assets/js/sfx.js"></script>
-<script src="assets/js/ambient.js"></script>
+<script src="scripts/weather-command.js?v=quiet-rain-1"></script>
+<script src="assets/js/sfx.js?v=quiet-rain-1"></script>
+<script src="assets/js/ambient.js?v=quiet-rain-1"></script>
 <script src="assets/js/sky.js"></script>
 <script src="scripts/starbucks-room.js?v=distribuir-3"></script>
 <script src="assets/js/heatmap.js"></script>
@@ -9618,7 +9619,7 @@ const DEMO_SCRIPT=[
   '/socios listado',
   '/ladron on',
   '/weather rain',
-  '/comunicar La lluvia activa el ambiente sonoro automaticamente',
+  '/comunicar La lluvia es silenciosa; usa /tiempo lluvia sonora para escucharla',
   '/ladron off',
   '/devolucion',
   '/pedido',
@@ -27588,6 +27589,7 @@ window.xtAPI = (function(){
       saca: !!(G&&G.saca&&G.saca.phase!=='idle'),
       holiday: !!(G&&G.holiday&&G.holiday.active),
       rain: !!(G&&G.weather&&G.weather.type==='rain'),
+      rainSound: !!(G&&G.weather&&G.weather.type==='rain'&&G.weather.sonora===true),
       sun: !!(G&&G.weather&&G.weather.type==='sun'),
       rivalPromo: !!(G&&G.comp&&G.comp.promoTimer>0),
       robot: !!(G&&G.unitreeBot&&G.unitreeBot.phase!=='idle'),
@@ -27678,15 +27680,17 @@ window.xtAPI = (function(){
     return Math.max(120,Math.floor(framesPerDay/dayHours*2));
   }
 
-  function setRainState(on){
+  function setRainState(on,sonora=false){
     if(on){
-      G.weather={type:'rain',timer:twoHourTimer()};
+      G.weather={type:'rain',timer:twoHourTimer(),sonora:sonora===true};
       showEv('🌧 '+(lang==='es'?'¡Tormenta activada!':'Storm activated!'),'#6688aa');
       try{hueAll({on:true,bri:254,xy:[0.18,0.18],alert:'lselect'});}catch(e){}
     } else if(G.weather&&G.weather.type==='rain'){
       G.weather={type:null,timer:0};
       showEv('🌤 '+(lang==='es'?'Tiempo normal':'Normal weather'),'#aaaaaa');
     }
+    if(!on||!sonora)SFX.stopWeather?.();
+    try{window.AMBIENT?.update();}catch(_){}
     return !!on;
   }
 
@@ -27985,6 +27989,17 @@ window.xtAPI = (function(){
       const parts=normalized.split(/\s+/).filter(Boolean);
       const cmd=(parts.shift()||'').toLowerCase();
       const arg=parts.join(' ');
+      const weather=window.XpaceWeatherCommand.parse(raw,G&&G.weather);
+      if(weather){
+        if(!weather.ok)return {ok:false,message:weather.error};
+        if(!G)return noGame();
+        if(weather.type==='rain')setRainState(true,weather.sonora);
+        else if(weather.type==='sun'){SFX.stopWeather?.();setSunState(true);}
+        else {G.weather={type:null,timer:0,sonora:false};SFX.stopWeather?.();window.AMBIENT?.update();}
+        window.AMBIENT?.update();
+        const en=lang==='en';
+        return {ok:true,message:weather.type==='rain'?(en?'Rain · '+(weather.sonora?'audible':'silent'):'Lluvia · '+(weather.sonora?'sonora':'sin sonido')):weather.type==='sun'?(en?'Sunny weather':'Tiempo soleado'):(en?'Normal weather':'Tiempo normal'),data:{type:weather.type,sonora:weather.sonora}};
+      }
       // Echo del comando en el bocadillo del Store Manager — TRADUCIDO al
       // idioma actual y sin barras: "/store close" → "Tienda cerrada" (es) o
       // "Store closed" (en). Saltamos comandos diagnosticos (/audio probe etc.)
@@ -30894,7 +30909,7 @@ window.xtAPI = (function(){
       {title:'Personal (panel /staff)',items:['/staff','/staff bonus 0 100','/staff eotm 0','/staff eotm ana','/staff train 1','/staff hire 2','/staff fire 1']},
       {title:'Tienda',items:['/resetaudiencia 0','/resetaudiencia 100','/resetaudiencia auto','/ad 0','/ad 1','/ad 2','/upgrade','/aforo real','/aforo exacto','/aforo fake','/aforo','/visit com','/visit tec','/visit del','/visit gc','/save']},
       {title:'Look & feel',items:['/camiseta on','/camiseta off','/camiseta']},
-      {title:'Tiempo y ambiente',items:['/reloj 14:30','/reloj 14 30','/time am','/time pm','/time night','/weather normal','/weather rain','/weather sun','/lamp','/lamp auto','/hue','/hue auto']},
+      {title:'Tiempo y ambiente',items:['/reloj 14:30','/reloj 14 30','/time am','/time pm','/time night','/tiempo lluvia','/tiempo lluvia sonora','/weather rain audible','/weather normal','/weather rain','/weather sun','/lamp','/lamp auto','/hue','/hue auto']},
       {title:'Pantalla y directo',items:['/livecam','/mocap','/pixeria','/AdmiraLive texto','/comunicar texto','/comunicar texto --grok','/comunicar texto --elevenlabs','/AdmiraTube URL 2 audio','/say texto','/targetPublicity aforo','/targetPublicity genero','/targetPublicity off','/generovideo','/generovideo off','/impactos','/impactos cpm 12','/impactos tft','/impactos reset','/impactos off','/audienciaIN 8','/audienciaOUT 4']},
       {title:'Digital Signage (vídeos)',items:['/ds on','/ds off','/ds next','/ds previous','/ds audio on','/ds audio off','/info','/info on','/info off']},
       {title:'Mupi del Xtanco (tótem vertical)',items:['/admiratv','/admiratv on','/admiratv off','/admiratv tiktok','/admiratv all','/admiratv condicional (player condicionado por audiencia · también ?totem=condicional en la URL · chip de debug con ?debugchip=1)']},
@@ -32101,13 +32116,7 @@ window.xtAPI = (function(){
         const map={com:'Com',tec:'Tec',del:'Del',gc:'GC'};
         return api.visit(map[arg.toLowerCase()]||arg).message;
       }
-      if(cmd==='weather'){
-        const err=needsGame();if(err)return err;
-        const map={normal:'weather_0',rain:'weather_1',lluvia:'weather_1',storm:'weather_1',sun:'weather_2',sol:'weather_2'};
-        const id=map[arg.toLowerCase()]||'weather_0';
-        doAction(id);
-        return 'Tiempo actualizado: '+(arg||'normal');
-      }
+      if(['tiempo','weather','lluvia','rain'].includes(cmd))return api.command('/'+cmd+(arg?' '+arg:'')).message;
       if(cmd==='time'||cmd==='hora'){
         const err=needsGame();if(err)return err;
         const map={am:'time_am',morning:'time_am',mañana:'time_am',pm:'time_pm',tarde:'time_pm',night:'time_night',noche:'time_night'};
@@ -34381,6 +34390,8 @@ window.xtAPI = (function(){
     {sel:'#splashContactBtn', en:'Contact', es:'Contacto'},
     {sel:'#pfOptions', attr:'aria-label', en:'Options', es:'Opciones'},
     {sel:'#pfOptions', attr:'title', en:'Options', es:'Opciones'},
+    {sel:'#expertControlsLabel', en:'CONTROLS', es:'CONTROLES'},
+    {sel:'#expertPreviewLabel', en:'PREVIEWS', es:'PREVIOS'},
     {sel:'#pfToggles', attr:'aria-label', en:'Modes: advanced, expert', es:'Modos: avanzado, experto'},
     {sel:'[data-quad-toggle="right"]', attr:'aria-label', en:'Open advanced menu', es:'Desplegar menú avanzado'},
     {sel:'[data-quad-toggle="right"]', attr:'title', en:'Advanced menu', es:'Menú avanzado'},
@@ -35510,6 +35521,11 @@ window.xtAPI = (function(){
   #telegramDock.compose-start .tg-pane.send .tg-head{display:none !important}
   .expert-workspace{display:flex;flex-direction:column;min-height:0;flex:1}
   .expert-divider{display:none}
+  .expert-section-label{order:-2;flex:0 0 auto;width:100%;font:bold 9px/1.2 monospace;letter-spacing:.08em;color:#78f3ff}
+  #expertQuickIcons{display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:4px;width:100%}
+  #expertQuickIcons .tg-quick-btn{min-width:0;min-height:28px;padding:4px;overflow-wrap:anywhere}
+  #expertQuickIcons .tg-quick-btn strong{font-size:9px}
+  #expertQuickIcons .tg-quick-btn span{font-size:8px}
   #telegramDock.compose-start .tg-pane.send{flex-direction:column;gap:0}
   #telegramDock.compose-start .expert-workspace{display:grid;grid-template-columns:minmax(0,var(--expert-input,32fr)) 12px minmax(0,var(--expert-controls,38fr)) 12px minmax(0,var(--expert-output,30fr));overflow:hidden;min-width:0}
   #telegramDock.compose-start .tg-cli-row{display:flex;flex-direction:column;align-items:stretch;min-width:0;min-height:0;padding:6px;gap:3px;overflow:hidden}
@@ -35562,7 +35578,7 @@ window.xtAPI = (function(){
   #advSceneControls .tg-quick-btn[aria-pressed=true]{border-color:#6ce6a2 !important;background:#123427 !important;color:#f0fff4 !important}
   #advSceneControls .tg-quick-btn[aria-pressed=true] span{color:#a7e6be !important}
 </style>
-<script src="scripts/expert-dock.js?v=expert-view-1"></script>
+<script src="scripts/expert-dock.js?v=bottom-workspace-2"></script>
 <script id="quickLaunchScript">
 (function(){
   var src=document.getElementById('telegramQuickActions'); if(!src) return;
@@ -35602,6 +35618,12 @@ window.xtAPI = (function(){
     // Pixeria keeps its latest-item import. Scene bars (Better) sit under it.
     btns.filter(function(b){return b.getAttribute('data-quick-action')==='pixerai';}).forEach(appendAction);
     host.appendChild(scene);
+    var center=document.getElementById('expertQuickIcons');
+    if(center){center.replaceChildren();host.querySelectorAll('button').forEach(function(original){
+      if(original.closest('#advSceneControls'))return;
+      var copy=original.cloneNode(true);copy.removeAttribute('id');
+      copy.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();original.click();});center.appendChild(copy);
+    });}
   }
   try{ var mo=new MutationObserver(mirror); mo.observe(src,{childList:true,subtree:true,characterData:true}); }catch(e){}
   mirror();
@@ -35743,8 +35765,8 @@ window.xtAPI = (function(){
 })();
 </script>
 <script>if(new URLSearchParams(location.search).get("virtualPlayer")==="xtore-virtual-zapatillas"){try{for(const l of ["es","en"]){if(typeof LANGS!=="undefined"&&LANGS[l])LANGS[l].ledMsgs=["ADMIRA · XTORE ZAPATILLAS","PLAYER VIRTUAL · INTERIOR + ESCAPARATE","PUERTA CAM · PROGRAMACIÓN CONDICIONAL"];}}catch(_){}}</script>
-<link rel="stylesheet" href="scripts/xtore-window.css?v=normal-tabs-1">
-<script type="module" src="scripts/xtore-window.mjs?v=drag-hover-1"></script>
+<link rel="stylesheet" href="scripts/xtore-window.css?v=bottom-workspace-2">
+<script type="module" src="scripts/xtore-window.mjs?v=bottom-workspace-2"></script>
 <script type="module" src="scripts/real-traffic.mjs?v=1"></script>
 <link rel="stylesheet" href="scripts/avatar-audience.css?v=controls-1">
 <script type="module" src="scripts/avatar-audience.mjs?v=controls-1"></script>
