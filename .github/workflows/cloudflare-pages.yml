@@ -1,0 +1,43 @@
+name: Cloudflare Pages (perímetro)
+
+# xpaceos.com pasa de GitHub Pages a Cloudflare Pages para poder ponerle un
+# perímetro de seguridad en servidor (functions/_perimetro.js · Carlos,
+# 1-oct-2026, misión DCL-bdd079ab114d86b789f6ca65). Cada push a main publica
+# también aquí, así que el equipo sigue trabajando igual: git push.
+# Mientras el DNS siga en GitHub Pages, esto solo alimenta xpaceos.pages.dev.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir y publicar
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          node --test tests/perimetro.test.mjs
+          release="$(sed -n 's/.*admiranext-version.*content="\(v\.[^"]*\)".*/\1/p' index.html | head -1)"
+          deployer="$(jq -r '.deployer // empty' release-signature.json)"
+          machine="$(jq -r '.machine // empty' release-signature.json)"
+          mkdir -p _site
+          git archive HEAD | tar -x -C _site
+          rm -rf _site/.github _site/tests
+          jq -n --arg version "$release" --arg deployedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg deployer "$deployer" --arg machine "$machine" --arg git "$GITHUB_SHA" \
+            '{version:$version,deployedAt:$deployedAt,deployer:$deployer,machine:$machine,signature:($deployer+" · "+$machine),git:$git,gitShort:($git[0:7]),gitFull:$git,dirty:false,origin:"cloudflare-pages"}' \
+            > _site/version.json
+          npx --yes wrangler@4 pages deploy _site --project-name xpaceos --branch main --commit-hash "$GITHUB_SHA"
