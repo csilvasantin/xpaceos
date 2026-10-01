@@ -2688,5 +2688,41 @@
     "pending": "Other venue associations must be explicitly registered by an admin; legacy map/catalog publication and its existing login are not migrated; existing MCP/hardware permissions unchanged",
     "es": "Opciones → Proyecto y local → Conectar con AdmiraNext usa la identidad central y muestra sólo los proyectos comerciales y locales autorizados. El catálogo y las asociaciones viven en D1 de AdmiraNext; admira.app y XpaceOS son clientes. Sin conexión hay tres demos públicas claramente identificadas. Un proyecto autorizado sin local asociado no abre un gemelo inventado. Si hay varios locales, elige uno antes de abrirlo. Gestión central: https://www.admiranext.com/xpace/manage; permisos: https://www.admiranext.com/usuarios. El acceso de lectura dura 10 minutos en esta pestaña; al caducar o revocarse pide reconectar. Calidad, idioma y distribución siguen siendo locales. No concede escritura MCP ni control de dispositivos físicos.",
     "en": "Options → Project and venue → Connect with AdmiraNext uses central identity and shows only permitted commercial projects and venues. The registry and associations live in AdmiraNext D1; admira.app and XpaceOS are clients. Without a connection, three clearly identified public demos are available. A permitted project with no associated venue never opens an invented twin. Choose a venue first when several are available. Central management: https://www.admiranext.com/xpace/manage; permissions: https://www.admiranext.com/usuarios. Read access lasts 10 minutes in this tab; expiry or revocation requires reconnection. Quality, language and layout remain local. It grants no MCP writes or physical device control."
+  },
+  "inventory_frame": {
+    "version": "1",
+    "pages": [
+      "https://www.xpaceos.com/inventario/",
+      "https://www.xpaceos.com/inventario/conjunto/",
+      "https://www.xpaceos.com/inventario/starbucks/",
+      "https://www.yokup.com/retailer#itil",
+      "https://www.yokup.com/equipo-inventario?code=PDG103-BOT-01"
+    ],
+    "layout": {
+      "top": "two permanent horizontal bars",
+      "left": "Options",
+      "right": "Advanced",
+      "bottom": "Expert/navigation CLI"
+    },
+    "commands": [
+      "/inventario",
+      "/inventory",
+      "/starbucks",
+      "/referencias",
+      "/references",
+      "/ref PG103-001",
+      "/equipo PDG103-BOT-01",
+      "/equipment PDG103-BOT-01",
+      "/xpaceos",
+      "/yokup",
+      "/ayuda",
+      "/help"
+    ],
+    "master": "Yokup ITIL",
+    "shared_key": "itil_code",
+    "docs": "https://www.xpaceos.com/admira-xp/docs/inventory-frame.md",
+    "es": "En las páginas del inventario, /inventario sin argumentos abre el catálogo; /inventario con argumentos conserva la ejecución en el gemelo de XpaceOS. Desde Yokup se indica abrir el gemelo. Navegación: /inventario, /starbucks, /referencias, /ref PG103-001, /equipo PDG103-BOT-01, /xpaceos, /yokup y /ayuda. La unidad seleccionada conserva su código ITIL al abrir Yokup o volver a XpaceOS. Los candidatos enlazan el portal sin inventar fichas ITIL. Añadir, eliminar o mover muebles se realiza en la Xperience; las fichas patrimoniales se editan en Yokup con sus permisos existentes.",
+    "en": "On inventory pages, /inventario without arguments opens the catalogue; arguments retain execution in the XpaceOS twin. From Yokup it prompts opening the twin. Navigation: /inventory, /starbucks, /references, /ref PG103-001, /equipment PDG103-BOT-01, /xpaceos, /yokup and /help. A selected unit retains its ITIL code when opening Yokup or returning to XpaceOS. Candidates link to the portal without inventing ITIL records. Add, remove or move furniture in the Xperience; edit lifecycle records in Yokup with existing permissions.",
+    "new_remote_tools": false
   }
 }

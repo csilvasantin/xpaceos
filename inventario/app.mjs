@@ -1,5 +1,5 @@
 import {preview} from './viewer.mjs?v=catalog-43';
-import {mountCounterStage} from './counter-stage.mjs?v=catalog-43';
+import {mountCounterStage} from './counter-stage.mjs?v=inventory-frame-1';
 import {furnitureURL} from '../admira-xp/scripts/furniture-asset.mjs?v=water-rack-50';
 import {referenceLabel,referencePhotoURL} from './starbucks/reference-model.mjs?v=photo-references-1';
 let disposePilot,stageQueue=Promise.resolve();
@@ -9,7 +9,7 @@ function inspectAsset(asset){
   document.querySelector('[data-status]').textContent='Cargando '+asset.name+'…';
   document.querySelector('[data-blend]').href=furnitureURL(asset.number,'best','blend');
   document.querySelector('[data-glb]').href=furnitureURL(asset.number,'best');
-  disposePilot=await mountCounterStage(document.querySelector('#mostrador'),asset);select.disabled=false;
+  disposePilot=await mountCounterStage(document.querySelector('#mostrador'),asset,{controlsHost:document});select.disabled=false;
  });return stageQueue;
 }
 window.addEventListener('pagehide',()=>disposePilot?.());

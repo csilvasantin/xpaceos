@@ -1,7 +1,7 @@
 import * as T from '../admira-xp/scripts/premium-three.mjs';
 import {cloneFurniture} from '../admira-xp/scripts/furniture-asset.mjs?v=water-rack-50';
 
-export async function mountCounterStage(host,asset={number:1,name:'Mostrador'}){
+export async function mountCounterStage(host,asset={number:1,name:'Mostrador'},{controlsHost=host}={}){
  const canvas=host.querySelector('canvas'),status=host.querySelector('[data-status]');
  const homeZoom=asset.number===50?1.12:1;
  let renderer,object,disposed=false,angle=Math.PI/4,elevation=.38,zoom=homeZoom,drag=null;
@@ -39,13 +39,13 @@ export async function mountCounterStage(host,asset={number:1,name:'Mostrador'}){
    camera.position.copy(center).add(new T.Vector3(Math.sin(angle)*Math.cos(elevation)*distance,Math.sin(elevation)*distance,Math.cos(angle)*Math.cos(elevation)*distance));camera.lookAt(center);renderer.render(scene,camera);
   }
   const setView=(a,e,label)=>{angle=a;elevation=e;zoom=homeZoom;status.textContent=asset.number+'. '+asset.name+' · '+label+' · modelo 3D completo';draw();};
-  for(const button of host.querySelectorAll('[data-view]'))on(button,'click',()=>{const name=button.dataset.view;setView(...({front:[0,.25,'frontal'],back:[Math.PI,.25,'parte posterior'],side:[Math.PI/2,.25,'lateral'],home:[Math.PI/4,.38,'perspectiva']}[name]));});
-  for(const button of host.querySelectorAll('[data-zoom]'))on(button,'click',()=>{zoom=Math.max(.7,Math.min(2,zoom+(button.dataset.zoom==='in'?.15:-.15)));draw();});
+  for(const button of controlsHost.querySelectorAll('[data-view]'))on(button,'click',()=>{const name=button.dataset.view;setView(...({front:[0,.25,'frontal'],back:[Math.PI,.25,'parte posterior'],side:[Math.PI/2,.25,'lateral'],home:[Math.PI/4,.38,'perspectiva']}[name]));});
+  for(const button of controlsHost.querySelectorAll('[data-zoom]'))on(button,'click',()=>{zoom=Math.max(.7,Math.min(2,zoom+(button.dataset.zoom==='in'?.15:-.15)));draw();});
   on(canvas,'pointerdown',e=>{drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
   on(canvas,'pointermove',e=>{if(!drag)return;angle-=(e.clientX-drag.x)*.009;elevation=Math.max(.05,Math.min(1.35,elevation+(e.clientY-drag.y)*.008));drag={x:e.clientX,y:e.clientY};status.textContent=asset.number+'. '+asset.name+' · vista libre 360°';draw();});
   for(const type of ['pointerup','pointercancel','lostpointercapture'])on(canvas,type,()=>{drag=null;});
   on(canvas,'keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-'].includes(e.key))return;e.preventDefault();if(e.key==='ArrowLeft')angle-=.15;if(e.key==='ArrowRight')angle+=.15;if(e.key==='ArrowUp')elevation=Math.min(1.35,elevation+.1);if(e.key==='ArrowDown')elevation=Math.max(.05,elevation-.1);if(e.key==='+')zoom=Math.min(2,zoom+.1);if(e.key==='-')zoom=Math.max(.7,zoom-.1);draw();});
-  const wire=host.querySelector('[data-wire]');for(const m of materials.values())m.wireframe=wire.checked;on(wire,'change',()=>{for(const m of materials.values())m.wireframe=wire.checked;draw();});
+  const wire=controlsHost.querySelector('[data-wire]');for(const m of materials.values())m.wireframe=wire.checked;on(wire,'change',()=>{for(const m of materials.values())m.wireframe=wire.checked;draw();});
   on(canvas,'webglcontextlost',e=>{e.preventDefault();status.textContent='Se ha interrumpido la vista 3D. Recarga para recuperarla.';});
   const observer=new ResizeObserver(draw);observer.observe(canvas);events.push(()=>observer.disconnect());
   status.textContent=asset.number+'. '+asset.name+' · modelo 3D completo · arrastra para girar';draw();

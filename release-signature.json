@@ -1,10 +1,10 @@
 {
-  "version": "v.01.10.2026.r13.20:15",
-  "signature": "MorfeoMacMini · MacMini",
+  "version": "v.01.10.2026.r14.20:47",
+  "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
-  "agent": "MorfeoMacMini",
-  "deployer": "MorfeoMacMini",
-  "evidence": "Yokup FLT-101337: shell cuadrático común (xpace-shell.js/.css) en 35 páginas + gemelo, guardián tests/shell-cuadratico.test.mjs con 21 excepciones; marca blanca store del catálogo admiranext.com/marcablanca con /marca (alias /brand) en shell, gemelo, __xtExec y xtAPI.command.",
+  "agent": "OraculoMacMini",
+  "deployer": "OraculoMacMini",
+  "evidence": "Yokup Hoy #241 DCL-1be5b59b234e7be48381c4ee: inventario con shell canónico, dos barras, controles 3D laterales y conexión ITIL XpaceOS–Yokup; ayuda ES/EN.",
   "day": "01.10.2026",
-  "time": "20:15"
+  "time": "20:47"
 }

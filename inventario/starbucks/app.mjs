@@ -1,4 +1,4 @@
-import {mountCounterStage} from '../counter-stage.mjs?v=water-rack-50';
+import {mountCounterStage} from '../counter-stage.mjs?v=inventory-frame-1';
 import {indexReferences, referenceLabel, referencePhotoURL, selectReference, selectionURL, nameFor} from './reference-model.mjs?v=photo-references-1';
 
 const params = new URLSearchParams(location.search), language = params.get('lang') === 'en' ? 'en' : 'es', en = language === 'en';
@@ -93,7 +93,7 @@ function showReferenceDetails(reference, unit) {
     if (value != null && value !== '') $('#reference-meta').append(node('dt', copy[key]), node('dd', String(value)));
   }
   $('#candidate-note').hidden = Boolean(unit); $('#candidate-note').textContent = reference.status === 'product_reference' ? copy.productNote : copy.candidateNote;
-  const show3d = Boolean(unit) && view === 'inventory'; $('#model-panel').hidden = !show3d;
+  const show3d = Boolean(unit) && view === 'inventory'; $('#model-panel').hidden = !show3d; $('#model-controls').hidden = !show3d; $('#model-downloads').hidden = !show3d;
   for (const selector of ['[data-glb]', '[data-blend]', '[data-bottle-glb]', '[data-bottle-blend]']) $(selector).removeAttribute('href');
   if (unit) { $('[data-glb]').href = unit.model3d; $('[data-blend]').href = unit.master; }
   const filling = unit?.visual_filling;
@@ -112,7 +112,7 @@ function select(reference) {
     if (currentRevision !== revision || !show3d) return;
     const canvas = $('#model-panel canvas'); canvas.replaceWith(canvas.cloneNode(false));
     $('#model-status').textContent = copy.loading;
-    dispose = await mountCounterStage($('#model-panel'), {number:unit.asset_number, name:nameFor(reference, unit, language)});
+    dispose = await mountCounterStage($('#model-panel'), {number:unit.asset_number, name:nameFor(reference, unit, language)}, {controlsHost:document});
     if (currentRevision !== revision) { dispose?.(); dispose = null; }
   }).catch(error => { if (currentRevision === revision) $('#model-status').textContent = (en ? 'Model unavailable: ' : 'Modelo no disponible: ') + error.message; });
 }

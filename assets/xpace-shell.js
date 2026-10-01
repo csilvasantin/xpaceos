@@ -30,6 +30,8 @@
   const COMMON_OPTIONS = [
     {href: '/', es: 'Inicio', en: 'Home'},
     {href: '/admira-xp/?autostart=xtanco&visual=better', es: 'Gemelo digital', en: 'Digital twin'},
+    {href: '/inventario/', es: 'Inventario', en: 'Inventory'},
+    {href: 'https://www.yokup.com/retailer#itil', es: 'Inventario ITIL · Yokup', en: 'ITIL inventory · Yokup'},
     {href: '/help/', es: 'Ayuda', en: 'Help'},
     {href: '/help/cli/', es: 'Comandos CLI', en: 'CLI commands'},
   ];
@@ -481,6 +483,12 @@
   }
 
   function handoff(command) {
+    const target = new URL(cfg.twinHome || TWIN_HOME, root.location.href);
+    if (target.origin !== root.location.origin) {
+      log(T('Abre el gemelo y escribe allí: ', 'Open the twin and enter: ') + command);
+      setTimeout(() => root.location.assign(target.href), 350);
+      return true;
+    }
     if (!savePending(session, command)) { log(T('No se pudo preparar el gemelo (sessionStorage no disponible). Ábrelo y escribe la orden allí: ', 'Could not prepare the twin (no sessionStorage). Open it and type the command there: ') + TWIN_HOME); return false; }
     log(T('«' + command + '» es un verbo del gemelo: lo abro y lo ejecuto allí…', '“' + command + '” is a twin verb: opening the twin to run it there…'));
     setTimeout(() => root.location.assign(TWIN_HOME), 350);
