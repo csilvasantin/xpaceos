@@ -1,10 +1,10 @@
 {
-  "version": "v.01.10.2026.r14.20:47",
+  "version": "v.01.10.2026.r15.20:53",
   "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
   "agent": "OraculoMacMini",
   "deployer": "OraculoMacMini",
   "evidence": "Yokup Hoy #241 DCL-1be5b59b234e7be48381c4ee: inventario con shell canónico, dos barras, controles 3D laterales y conexión ITIL XpaceOS–Yokup; ayuda ES/EN.",
   "day": "01.10.2026",
-  "time": "20:47"
+  "time": "20:53"
 }
