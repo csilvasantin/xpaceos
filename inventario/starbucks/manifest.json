@@ -12,7 +12,13 @@
       "category": "mobiliario",
       "asset_number": 44,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/44/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/44/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/44/best.blend",
+      "reference_number": 1,
+      "reference_id": "PG103-001",
+      "photo": "./photos/sb-backbar.webp",
+      "photo_scope": "context",
+      "photo_basis": "Recorte real de Matrix; contrabarra parcialmente oculta por equipos y mostrador.",
+      "photo_basis_en": "Real Matrix crop; back counter partly obscured by equipment and checkout counter."
     },
     {
       "itil_code": "PDG103-MOS-01",
@@ -21,7 +27,13 @@
       "category": "mobiliario",
       "asset_number": 45,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/45/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/45/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/45/best.blend",
+      "reference_number": 2,
+      "reference_id": "PG103-002",
+      "photo": "./photos/sb-pos.webp",
+      "photo_scope": "element",
+      "photo_basis": "Recorte real del panorama Matrix; las zonas ocultas y las medidas no están verificadas.",
+      "photo_basis_en": "Real Matrix panorama crop; hidden areas and dimensions are not verified."
     },
     {
       "itil_code": "PDG103-VIT-01",
@@ -30,7 +42,13 @@
       "category": "mobiliario",
       "asset_number": 46,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/46/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/46/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/46/best.blend",
+      "reference_number": 3,
+      "reference_id": "PG103-003",
+      "photo": "./photos/sb-pastry.webp",
+      "photo_scope": "element",
+      "photo_basis": "Recorte real del panorama Matrix; las zonas ocultas y las medidas no están verificadas.",
+      "photo_basis_en": "Real Matrix panorama crop; hidden areas and dimensions are not verified."
     },
     {
       "itil_code": "PDG103-EST-01",
@@ -39,7 +57,13 @@
       "category": "mobiliario",
       "asset_number": 47,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/47/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/47/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/47/best.blend",
+      "reference_number": 4,
+      "reference_id": "PG103-004",
+      "photo": "./photos/sb-mugs.webp",
+      "photo_scope": "element",
+      "photo_basis": "Recorte real del panorama Matrix; las zonas ocultas y las medidas no están verificadas.",
+      "photo_basis_en": "Real Matrix panorama crop; hidden areas and dimensions are not verified."
     },
     {
       "itil_code": "PDG103-MES-01",
@@ -48,7 +72,13 @@
       "category": "mobiliario",
       "asset_number": 48,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/48/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/48/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/48/best.blend",
+      "reference_number": 5,
+      "reference_id": "PG103-005",
+      "photo": "./photos/sb-table-a.webp",
+      "photo_scope": "type",
+      "photo_basis": "Foto compartida de la tipología visible; no identifica esta unidad concreta ni prueba su posición.",
+      "photo_basis_en": "Shared photo of the visible type; it does not identify this particular unit or prove its position."
     },
     {
       "itil_code": "PDG103-MES-02",
@@ -57,7 +87,13 @@
       "category": "mobiliario",
       "asset_number": 48,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/48/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/48/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/48/best.blend",
+      "reference_number": 6,
+      "reference_id": "PG103-006",
+      "photo": "./photos/sb-table-b.webp",
+      "photo_scope": "type",
+      "photo_basis": "Foto compartida de la tipología visible; no identifica esta unidad concreta ni prueba su posición.",
+      "photo_basis_en": "Shared photo of the visible type; it does not identify this particular unit or prove its position."
     },
     {
       "itil_code": "PDG103-SIL-01",
@@ -66,7 +102,13 @@
       "category": "mobiliario",
       "asset_number": 49,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/49/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend",
+      "reference_number": 7,
+      "reference_id": "PG103-007",
+      "photo": "./photos/sb-chair-1.webp",
+      "photo_scope": "type",
+      "photo_basis": "Foto compartida de la tipología visible; no identifica esta unidad concreta ni prueba su posición.",
+      "photo_basis_en": "Shared photo of the visible type; it does not identify this particular unit or prove its position."
     },
     {
       "itil_code": "PDG103-SIL-02",
@@ -75,7 +117,13 @@
       "category": "mobiliario",
       "asset_number": 49,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/49/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend",
+      "reference_number": 8,
+      "reference_id": "PG103-008",
+      "photo": "./photos/sb-chair-2.webp",
+      "photo_scope": "type",
+      "photo_basis": "Foto compartida de la tipología visible; no identifica esta unidad concreta ni prueba su posición.",
+      "photo_basis_en": "Shared photo of the visible type; it does not identify this particular unit or prove its position."
     },
     {
       "itil_code": "PDG103-SIL-03",
@@ -84,7 +132,13 @@
       "category": "mobiliario",
       "asset_number": 49,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/49/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend",
+      "reference_number": 9,
+      "reference_id": "PG103-009",
+      "photo": "./photos/sb-chair-3.webp",
+      "photo_scope": "type",
+      "photo_basis": "Foto compartida de la tipología visible; no identifica esta unidad concreta ni prueba su posición.",
+      "photo_basis_en": "Shared photo of the visible type; it does not identify this particular unit or prove its position."
     },
     {
       "itil_code": "PDG103-SIL-04",
@@ -93,7 +147,13 @@
       "category": "mobiliario",
       "asset_number": 49,
       "model3d": "https://www.xpaceos.com/inventario/assets/catalog/49/best.glb",
-      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend"
+      "master": "https://www.xpaceos.com/inventario/assets/catalog/49/best.blend",
+      "reference_number": 10,
+      "reference_id": "PG103-010",
+      "photo": "./photos/sb-chair-4.webp",
+      "photo_scope": "type",
+      "photo_basis": "Foto compartida de la tipología visible; no identifica esta unidad concreta ni prueba su posición.",
+      "photo_basis_en": "Shared photo of the visible type; it does not identify this particular unit or prove its position."
     },
     {
       "itil_code": "PDG103-BOT-01",
@@ -111,7 +171,13 @@
         "material": "Plástico PET azul con tapón blanco; texturas PBR embebidas en GLB.",
         "model3d": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.glb",
         "master": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.blend"
-      }
+      },
+      "reference_number": 11,
+      "reference_id": "PG103-011",
+      "photo": "./photos/sb-water-rack.webp",
+      "photo_scope": "element",
+      "photo_basis": "Recorte real del panorama Matrix; las zonas ocultas y las medidas no están verificadas.",
+      "photo_basis_en": "Real Matrix panorama crop; hidden areas and dimensions are not verified."
     }
   ]
 }

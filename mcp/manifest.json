@@ -673,6 +673,28 @@
       "geometry": "photo/360 interpretation; nominal dimensions, no field measurement",
       "bottleModel": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.glb",
       "bottleMaster": "https://www.xpaceos.com/inventario/assets/catalog/50/bottle.blend"
+    },
+    "photoReferences": {
+      "manifest": "https://www.xpaceos.com/inventario/starbucks/references.json",
+      "viewer": "https://www.xpaceos.com/inventario/starbucks/?view=references",
+      "count": 60,
+      "registeredRange": [
+        1,
+        11
+      ],
+      "candidateRange": [
+        12,
+        39
+      ],
+      "productRange": [
+        40,
+        60
+      ],
+      "idPattern": "PG103-NNN",
+      "catalogNumberDistinct": true,
+      "basis": "real panorama crops; type/context references when unit identity is unverified",
+      "autoRegistration": false,
+      "yokup": "ITIL cards and equipment sheets map registered references by exact venue and code; public fetch without credentials"
     }
   }
 }

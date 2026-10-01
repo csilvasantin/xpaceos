@@ -1,34 +1,139 @@
 import {mountCounterStage} from '../counter-stage.mjs?v=water-rack-50';
-const params=new URLSearchParams(location.search),en=params.get('lang')==='en';
-if(en){
- document.documentElement.lang='en';
- document.querySelector('#subtitle').textContent='11 units · 7 independent models · Yokup inventory';
- document.querySelector('#basis').textContent='Models interpreted from the panorama and photos; measurements and warranties pending. The rack contains 19 blue PET bottles with white caps and PBR textures as visual filling. Brand identified by Carlos; this is not a stock count.';
- document.querySelector('#units').setAttribute('aria-label','Furniture units');
- document.querySelector('canvas').setAttribute('aria-label','3D model: drag to orbit');
- for(const [selector,label] of [['[data-view="front"]','Front'],['[data-view="back"]','Back'],['[data-view="side"]','Side'],['[data-bottle-glb]','Bottle GLB ↓'],['[data-bottle-blend]','Bottle Blender ↓']])document.querySelector(selector).textContent=label;
+import {indexReferences, referenceLabel, referencePhotoURL, selectReference, selectionURL, nameFor} from './reference-model.mjs?v=photo-references-1';
+
+const params = new URLSearchParams(location.search), language = params.get('lang') === 'en' ? 'en' : 'es', en = language === 'en';
+const $ = selector => document.querySelector(selector);
+const copy = en ? {
+  inventory:'3D inventory', references:'Real references', units:'Registered units', refs:'Numbered references', all:'All references',
+  registered:'In inventory', candidate:'To review', product_reference:'Product reference', photo:'Real photo', unavailable:'Photo unavailable',
+  element:'Photograph of this element', type:'Shared photograph of this furniture/product type; it does not identify an individual unit', context:'Context photograph; other elements also appear',
+  ref:'Ref.', asset:'3D model', code:'Inventory', showModel:'View 3D model', photoLink:'Open real photo ↗', permalink:'Link to this reference',
+  zone:'Zone', quantity:'Visible quantity', basis:'Reference basis', source:'Source', confidence:'Observation confidence',
+  candidateNote:'Reference to review and choose the next model. It has no inventory registration or 3D model yet.',
+  productNote:'Product observed in the 360 for future modelling. This reference does not represent stock or an individual inventory unit.',
+  empty:'No references in this group.', loading:'Loading model…', error:'References unavailable: ', total:'references', models:'independent models', registeredUnits:'registered units'
+} : {
+  inventory:'Inventario 3D', references:'Referencias reales', units:'Unidades registradas', refs:'Referencias numeradas', all:'Todas las referencias',
+  registered:'En inventario', candidate:'Por revisar', product_reference:'Producto de referencia', photo:'Foto real', unavailable:'Foto no disponible',
+  element:'Fotografía de este elemento', type:'Foto compartida del tipo de mueble/producto; no identifica una unidad individual', context:'Foto de contexto; también aparecen otros elementos',
+  ref:'Ref.', asset:'Modelo 3D', code:'Inventario', showModel:'Ver modelo 3D', photoLink:'Abrir foto real ↗', permalink:'Enlace a esta referencia',
+  zone:'Zona', quantity:'Cantidad visible', basis:'Base de la referencia', source:'Fuente', confidence:'Confianza de la observación',
+  candidateNote:'Referencia para revisar y elegir el siguiente modelo. Aún sin alta de inventario ni modelo 3D.',
+  productNote:'Producto observado en el 360 para futuros modelos. Esta referencia no representa existencias ni una unidad individual de inventario.',
+  empty:'No hay referencias en este grupo.', loading:'Cargando modelo…', error:'Referencias no disponibles: ', total:'referencias', models:'modelos independientes', registeredUnits:'unidades registradas'
+};
+document.documentElement.lang = language;
+$('#inventory-view').textContent = copy.inventory; $('#references-view').textContent = copy.references;
+$('#inventory-view').disabled = true; $('#references-view').disabled = true;
+$('#show-model').textContent = copy.showModel; $('#photo-link').textContent = copy.photoLink; $('#reference-link').textContent = copy.permalink;
+$('#empty-list').textContent = copy.empty;
+for (const option of $('#reference-filter').options) option.textContent = option.value === 'all' ? copy.all : copy[option.value];
+if (en) {
+  document.title = 'Starbucks PG103 · Inventory and real references';
+  $('#subtitle').textContent = 'Yokup inventory and photographic references';
+  $('#basis').textContent = 'Each reference number identifies an element and its real photograph. Photos come from the Matrix 360 or supplied references. Reference numbers and 3D model numbers are independent.';
+  $('#reference-note').textContent = '“To review” and “Product reference” are observations from the 360; they do not register new units or represent stock. Shared type or context photos are indicated on each record. Existing models use interpretative proportions; measurements and warranties are pending.';
+  $('#catalog-link').textContent = 'Catalogue'; $('#matrix-link').textContent = 'Open Matrix 360 ↗';
+  $('nav').setAttribute('aria-label', 'Navigation'); $('.view-switch').setAttribute('aria-label', 'Inventory view');
+  $('#units').setAttribute('aria-label', 'Numbered elements'); $('#reference-filter').setAttribute('aria-label', 'Filter references');
+  $('#model-heading').textContent = 'Interpretative 3D model'; $('#wire-label').textContent = 'Wireframe';
+  $('canvas').setAttribute('aria-label', '3D model: drag or use arrow keys to orbit');
+  for (const [selector, label] of [['[data-view="front"]','Front'],['[data-view="back"]','Back'],['[data-view="side"]','Side'],['[data-bottle-glb]','Bottle GLB ↓'],['[data-bottle-blend]','Bottle Blender ↓']]) $(selector).textContent = label;
+  for (const [selector, label] of [['[data-view="home"]','Perspective view'],['[data-zoom="in"]','Zoom in'],['[data-zoom="out"]','Zoom out']]) $(selector).setAttribute('aria-label', label);
 }
-const names={44:'Preparation counter',45:'Checkout counter',46:'Display case',47:'Mugs and coffee shelves',48:'Round table',49:'Chair',50:'Solán de Cabras water rack'};
-const manifest=await fetch('./manifest.json').then(r=>{if(!r.ok)throw Error('Manifest unavailable');return r.json();});
-let dispose,queue=Promise.resolve();
-const buttons=[];
-for(const unit of manifest.units){
- const button=document.createElement('button'),name=en?names[unit.asset_number]+([48,49].includes(unit.asset_number)?' '+Number(unit.itil_code.slice(-2)):''):unit.name;
- button.textContent=name;const code=document.createElement('small');code.textContent=unit.itil_code;button.append(code);button.dataset.code=unit.itil_code;button.setAttribute('aria-pressed','false');
- button.onclick=()=>{queue=queue.then(async()=>{
-  dispose?.();const canvas=document.querySelector('#viewer canvas');canvas.replaceWith(canvas.cloneNode(false));
-  document.querySelectorAll('#units button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
-  document.querySelector('#selected-name').textContent=name+' · '+unit.itil_code;
-  document.querySelector('[data-glb]').href=unit.model3d;document.querySelector('[data-blend]').href=unit.master;
-  const filling=unit.visual_filling;
-  document.querySelector('#unit-basis').textContent=filling?(en?'Photo/360 interpretation with nominal dimensions. The 19 editable bottles form a visual composition; actual stock is unknown. Embedded PBR textures; approximate label.':'Interpretación de foto/360 con dimensiones nominales. Las 19 botellas editables forman una composición visual; las existencias reales son desconocidas. Texturas PBR embebidas y etiqueta aproximada.') : '';
-  for(const [selector,url] of [['[data-bottle-glb]',filling?.model3d],['[data-bottle-blend]',filling?.master]]){const link=document.querySelector(selector);link.hidden=!url;if(url)link.href=url;else link.removeAttribute('href');}
-  const next=new URL(location.href);next.searchParams.set('item',unit.itil_code);history.replaceState(null,'',next);
-  for(const link of document.querySelectorAll('nav a[href^="?lang="]')){const target=new URL(link.href);target.searchParams.set('item',unit.itil_code);link.href=target;}
-  dispose=await mountCounterStage(document.querySelector('#viewer'),{number:unit.asset_number,name});
- }).catch(error=>{document.querySelector('#model-status').textContent=(en?'Model unavailable: ':'Modelo no disponible: ')+error.message;});};
- document.querySelector('#units').append(button);buttons.push({unit,button});
+
+const node = (tag, text, className) => { const element = document.createElement(tag); if (text != null) element.textContent = text; if (className) element.className = className; return element; };
+const localized = value => value && typeof value === 'object' ? value[language] || value.es || value.en || '' : value;
+const field = (reference, key) => localized(en ? reference[key + '_en'] ?? reference[key] : reference[key]);
+let manifest, references, view = 'inventory', selectedReference, selectedUnit, filter = 'all', dispose, queue = Promise.resolve(), revision = 0;
+
+function createPhoto(reference, className) {
+  const image = node('img', null, className);
+  image.src = referencePhotoURL(reference, location.href); image.alt = copy.photo + ': ' + nameFor(reference, null, language);
+  image.loading = 'lazy'; image.decoding = 'async'; image.width = 88; image.height = 72;
+  image.addEventListener('error', () => { const unavailable = node('span', copy.unavailable, className + ' photo-unavailable'); image.replaceWith(unavailable); }, {once:true});
+  return image;
 }
-const requested=params.get('item');
-(buttons.find(({unit})=>unit.itil_code===requested||unit.instance_id===requested)||buttons[0]).button.click();
-window.addEventListener('pagehide',()=>dispose?.());
+
+function updateURLs() {
+  const url = selectionURL(location.href, {view, reference:selectedReference, unit:selectedUnit}); history.replaceState(null, '', url);
+  $('#reference-link').href = selectionURL(location.href, {view:'references', reference:selectedReference, unit:selectedUnit}).href;
+  for (const link of document.querySelectorAll('[data-language]')) link.href = selectionURL(location.href, {view, reference:selectedReference, unit:selectedUnit, lang:link.dataset.language}).href;
+}
+
+function renderList() {
+  $('#inventory-grid').dataset.view = view;
+  $('#inventory-view').setAttribute('aria-pressed', String(view === 'inventory'));
+  $('#references-view').setAttribute('aria-pressed', String(view === 'references'));
+  $('#reference-filter').hidden = view !== 'references'; $('#list-title').textContent = view === 'references' ? copy.refs : copy.units;
+  const items = view === 'inventory' ? manifest.units.map(unit => references.byCode.get(unit.itil_code)) : references.items.filter(reference => filter === 'all' || reference.status === filter);
+  $('#units').replaceChildren(...items.filter(Boolean).map(reference => {
+    const button = node('button', null, 'unit-row'), text = node('span', null, 'unit-text');
+    button.type = 'button'; button.dataset.reference = reference.reference_id; button.setAttribute('aria-pressed', String(reference === selectedReference));
+    text.append(node('span', copy.ref + ' ' + referenceLabel(reference), 'ref-number'), node('strong', nameFor(reference, null, language)));
+    text.append(node('small', reference.status === 'registered' ? reference.itil_code + ' · ' + copy.asset + ' ' + reference.asset_number : copy[reference.status]));
+    button.append(createPhoto(reference, 'photo-thumb'), text); button.onclick = () => select(reference); return button;
+  }));
+  $('#empty-list').hidden = items.length > 0;
+  const models = new Set(manifest.units.map(unit => unit.asset_number)).size;
+  $('#view-count').textContent = view === 'references' ? references.items.length + ' ' + copy.total + ' · ' + manifest.units.length + ' ' + copy.registeredUnits : manifest.units.length + ' ' + copy.registeredUnits + ' · ' + models + ' ' + copy.models;
+}
+
+function showReferenceDetails(reference, unit) {
+  const label = copy.ref + ' ' + referenceLabel(reference), name = nameFor(reference, unit, language);
+  $('#selected-name').textContent = label + ' · ' + name;
+  $('#selected-status').replaceChildren(node('span', copy[reference.status], 'status ' + reference.status));
+  $('#selected-identity').textContent = reference.reference_id + (unit ? ' · ' + unit.itil_code + ' · ' + copy.asset + ' ' + unit.asset_number : '');
+  const image = $('#selected-photo'); image.hidden = false; image.src = referencePhotoURL(reference, location.href); image.alt = copy.photo + ': ' + name;
+  image.onerror = () => { image.hidden = true; $('#photo-caption').textContent = copy.unavailable + ' · ' + label; };
+  $('#photo-caption').textContent = copy.photo + ' · ' + label + '. ' + (copy[reference.photo_scope] || copy.element) + '. ' + (field(reference, 'photo_basis') || (unit ? field(unit, 'photo_basis') : '') || '');
+  $('#photo-link').href = image.src; $('#show-model').hidden = !unit || view === 'inventory';
+  $('#reference-meta').hidden = view === 'inventory'; $('#reference-meta').replaceChildren();
+  for (const [key, value] of [['zone', field(reference, 'zone')], ['quantity', field(reference, 'visible_quantity')], ['basis', field(reference, 'basis')], ['source', field(reference, 'source')], ['confidence', field(reference, 'confidence')]]) {
+    if (value != null && value !== '') $('#reference-meta').append(node('dt', copy[key]), node('dd', String(value)));
+  }
+  $('#candidate-note').hidden = Boolean(unit); $('#candidate-note').textContent = reference.status === 'product_reference' ? copy.productNote : copy.candidateNote;
+  const show3d = Boolean(unit) && view === 'inventory'; $('#model-panel').hidden = !show3d;
+  for (const selector of ['[data-glb]', '[data-blend]', '[data-bottle-glb]', '[data-bottle-blend]']) $(selector).removeAttribute('href');
+  if (unit) { $('[data-glb]').href = unit.model3d; $('[data-blend]').href = unit.master; }
+  const filling = unit?.visual_filling;
+  $('#unit-basis').textContent = filling ? (en ? 'Photo/360 interpretation with nominal dimensions. The 19 editable bottles form a visual composition; actual stock is unknown. Embedded PBR textures; approximate label.' : 'Interpretación de foto/360 con dimensiones nominales. Las 19 botellas editables forman una composición visual; las existencias reales son desconocidas. Texturas PBR embebidas y etiqueta aproximada.') : '';
+  for (const [selector, url] of [['[data-bottle-glb]', filling?.model3d], ['[data-bottle-blend]', filling?.master]]) { const link = $(selector); link.hidden = !url; if (url) link.href = url; }
+  return show3d;
+}
+
+function select(reference) {
+  if (!reference) return;
+  selectedReference = reference; selectedUnit = reference.status === 'registered' ? manifest.units.find(unit => unit.itil_code === reference.itil_code) : null;
+  const unit = selectedUnit, currentRevision = ++revision;
+  const show3d = showReferenceDetails(reference, unit); updateURLs(); renderList();
+  queue = queue.catch(() => {}).then(async () => {
+    dispose?.(); dispose = null;
+    if (currentRevision !== revision || !show3d) return;
+    const canvas = $('#model-panel canvas'); canvas.replaceWith(canvas.cloneNode(false));
+    $('#model-status').textContent = copy.loading;
+    dispose = await mountCounterStage($('#model-panel'), {number:unit.asset_number, name:nameFor(reference, unit, language)});
+    if (currentRevision !== revision) { dispose?.(); dispose = null; }
+  }).catch(error => { if (currentRevision === revision) $('#model-status').textContent = (en ? 'Model unavailable: ' : 'Modelo no disponible: ') + error.message; });
+}
+
+function setView(nextView) {
+  view = nextView;
+  if (view === 'inventory' && selectedReference?.status !== 'registered') select(references.byCode.get(manifest.units[0].itil_code));
+  else select(selectedReference || references.items[0]);
+}
+$('#inventory-view').onclick = () => setView('inventory'); $('#references-view').onclick = () => setView('references');
+$('#show-model').onclick = () => setView('inventory'); $('#reference-filter').onchange = event => { filter = event.target.value; renderList(); };
+
+try {
+  const responses = await Promise.all([fetch('./manifest.json'), fetch('./references.json')]);
+  if (responses.some(response => !response.ok)) throw Error(en ? 'Reload to try again.' : 'Recarga para volver a intentarlo.');
+  const documents = await Promise.all(responses.map(response => response.json()));
+  [manifest] = documents; references = indexReferences(documents[1], manifest.units);
+  $('#inventory-view').disabled = false; $('#references-view').disabled = false;
+  const initial = selectReference(references, manifest.units, params); view = initial.view; select(initial.reference);
+  if (params.get('ref') && !references.byId.has(params.get('ref'))) { $('#page-error').hidden = false; $('#page-error').textContent = en ? 'The requested reference does not exist; showing the first available reference.' : 'La referencia solicitada no existe; se muestra la primera referencia disponible.'; }
+} catch (error) {
+  $('#page-error').hidden = false; $('#page-error').textContent = copy.error + error.message; $('#view-count').textContent = ''; $('#viewer').hidden = true;
+}
+window.addEventListener('pagehide', () => { revision++; dispose?.(); });
