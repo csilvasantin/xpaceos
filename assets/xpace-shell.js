@@ -187,8 +187,102 @@
     return {value: a[1] + commonPrefix(pool), options: pool};
   }
 
+  // ─── Marca blanca (FLT-101337): el verbo /marca, con los textos de admira.app y Pixeria ───
+  // Semilla del catálogo de admiranext.com/marcablanca: vale para el Tab sin red. Con la
+  // marca blanca cargada se usa la lista real (AdmiraMarca.conocidas()).
+  const BRAND_SEED = ['admira', 'lumbre', 'brumelle', 'frescaria'];
+  const MARCA_VERB = /^\/?(?:marca|brand|marcablanca)$/i;
+  const MB_SESSION_KEY = 'mb:marca';
+  const SITE = 'https://www.xpaceos.com';
+  // ¿Pide marca esta pestaña? (?marca=<algo> en la URL o una marca recordada en la pestaña)
+  function wantsBrand(search, storage) {
+    let q = null;
+    try { q = new URLSearchParams(search || '').get('marca'); } catch (_) {}
+    if (q != null) return true;
+    try { return !!(storage && storage.getItem(MB_SESSION_KEY)); } catch (_) { return false; }
+  }
+  // /marca <id|off|web> (alias /brand). M es window.AdmiraMarca (assets/marca-blanca.js);
+  // write pinta una línea en la consola. → Promise<{ok}>
+  function runMarca(arg, M, en, write) {
+    function t(es, english) { return en ? english : es; }
+    function tag(b) { return b && b.propuesta ? t(' · propuesta automática, no es la marca oficial', ' · automatic proposal, not the official brand') : b && b.ejemplo ? t(' · marca ficticia de ejemplo', ' · fictional sample brand') : ''; }
+    function list(items) { return items.map(function (b) { return b.id + (b.propuesta ? t(' (propuesta)', ' (proposal)') : b.ejemplo ? t(' (ejemplo)', ' (sample)') : ''); }).join(', '); }
+    if (!M) { write(t('La marca blanca aún no está lista en esta página. Vuelve a intentarlo en un momento.', 'White label is not ready on this page yet. Try again in a moment.')); return Promise.resolve({ok: false}); }
+    var p = M.parseArg(arg);
+    if (p.kind === 'invalid') {
+      write(t('Marca no válida: «' + p.input + '».', 'Invalid brand: “' + p.input + '”.') + '\n' +
+        t('Usa un id del catálogo (' + M.conocidas().map(function (b) { return b.id; }).join(', ') + '), off para volver a Admira o una web (starbucks.es) para analizarla.',
+          'Use a catalogue id (' + M.conocidas().map(function (b) { return b.id; }).join(', ') + '), off to return to Admira or a website (starbucks.es) to analyse it.'));
+      return Promise.resolve({ok: false});
+    }
+    if (p.kind === 'status') {
+      var now = M.actual();
+      write(now
+        ? t('Marca activa: ' + now.nombre + ' (' + now.id + ')' + tag(now) + '. /marca off vuelve a Admira.', 'Active brand: ' + now.nombre + ' (' + now.id + ')' + tag(now) + '. /marca off returns to Admira.')
+        : t('Sin marca blanca: ves el aspecto de Admira.', 'No white label: you see the Admira look.'));
+      return M.listar().then(function (items) { write(t('Disponibles: ', 'Available: ') + list(items) + '.'); return {ok: true}; },
+        function () { write(t('No se pudo leer el catálogo de admiranext.com. Conocidas: ', 'Could not read the admiranext.com catalogue. Known: ') + list(M.conocidas()) + '.'); return {ok: false}; });
+    }
+    if (p.kind === 'off') {
+      var r = M.desactivar();
+      write(r.changed && r.previous
+        ? t('Marca ' + r.previous.nombre + ' desactivada: vuelve Admira.', r.previous.nombre + ' brand turned off: back to Admira.')
+        : t('No había ninguna marca blanca activa: ya ves Admira.', 'No white label was active: you already see Admira.'));
+      return Promise.resolve({ok: true});
+    }
+    if (p.kind === 'web') {
+      var w = M.analizar(p.url);
+      write(t('Abriendo el analizador de marca blanca en otra pestaña: ' + w.href, 'Opening the white-label analyser in a new tab: ' + w.href) + '\n' +
+        t('Allí se analiza la web y se guarda en el catálogo; después actívala aquí con /marca <id>.', 'There the site is analysed and saved to the catalogue; then turn it on here with /marca <id>.'));
+      return Promise.resolve({ok: !!w.ok});
+    }
+    write(t('Aplicando la marca ' + p.id + '…', 'Applying the ' + p.id + ' brand…'));
+    return M.activar(p.id).then(function (res) {
+      if (res.ok) { write(t('Marca ' + res.nombre + ' (' + res.id + ') activa' + tag(res) + '. Se mantiene al navegar en esta pestaña; /marca off vuelve a Admira.', res.nombre + ' (' + res.id + ') brand on' + tag(res) + '. It stays while you browse in this tab; /marca off returns to Admira.')); return {ok: true}; }
+      if (res.reason === 'unknown') {
+        write(t('La marca «' + p.id + '» no está en el catálogo de admiranext.com. No se ha aplicado nada.', 'The brand “' + p.id + '” is not in the admiranext.com catalogue. Nothing was applied.') + '\n' +
+          t('Disponibles: ', 'Available: ') + list(M.conocidas()) + t('. Para crearla: /marca <web de la marca>.', '. To create it: /marca <brand website>.'));
+        return {ok: false};
+      }
+      write(t('No se pudo contactar con admiranext.com. No se ha aplicado nada; vuelve a intentarlo.', 'Could not reach admiranext.com. Nothing was applied; try again.'));
+      return {ok: false};
+    });
+  }
+  // /marca desde Telegram, el MCP o /twin/cmd (__xtExec, xtAPI.command): ahí no hay un
+  // navegador que vestir. Se responde con el enlace que la abre, sin cambiar ninguna pantalla.
+  function remoteMarca(arg, en, site) {
+    const base = (site || SITE).replace(/\/+$/, '');
+    const t = (es, english) => (en ? english : es);
+    const raw = String(arg == null ? '' : arg).trim().replace(/^(?:marca|brand|id|web|url)\s*=\s*/i, '');
+    const off = /^(?:off|admira|ninguna|ninguno|none|default|apagar|quitar|reset)$/i;
+    const note = t(' La marca blanca se aplica en el navegador que abre el enlace; desde aquí no cambia ninguna pantalla.', ' White label applies in the browser that opens the link; nothing changes on any screen from here.');
+    if (!raw) {
+      const url = base + '/admira-xp/?marca=starbucks';
+      return {ok: true, url, message: t('Marca blanca del catálogo de admiranext.com/marcablanca. Abre el gemelo con ?marca=<id>, p. ej. ' + url + ', o escribe /marca <id> en ⌘ Experto de cualquier página de XpaceOS. /marca off vuelve a Admira.', 'White label from the admiranext.com/marcablanca catalogue. Open the twin with ?marca=<id>, e.g. ' + url + ', or type /marca <id> in ⌘ Expert on any XpaceOS page. /marca off returns to Admira.') + note};
+    }
+    if (off.test(raw)) {
+      const url = base + '/admira-xp/?marca=admira';
+      return {ok: true, url, message: t('Para volver a Admira: ' + url + ' (o /marca off en ⌘ Experto).', 'To return to Admira: ' + url + ' (or /marca off in ⌘ Expert).') + note};
+    }
+    if (/[.:/]/.test(raw)) {
+      let web = raw;
+      if (!/^https?:\/\//i.test(web)) web = 'https://' + web;
+      let ok = false;
+      try { const u = new URL(web); ok = /^https?:$/.test(u.protocol) && /\./.test(u.hostname) && !u.username && !u.password; web = u.href; } catch (_) {}
+      if (ok) {
+        const url = 'https://www.admiranext.com/marcablanca/?web=' + encodeURIComponent(web);
+        return {ok: true, url, message: t('Analizador de marca blanca: ' + url + ' . Allí se analiza la web y se guarda en el catálogo; después: ' + base + '/admira-xp/?marca=<id>.', 'White-label analyser: ' + url + ' . There the site is analysed and saved to the catalogue; then: ' + base + '/admira-xp/?marca=<id>.')};
+      }
+    }
+    const id = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]{0,40}$/.test(id)) return {ok: false, message: t('Marca no válida: «' + raw + '». Usa un id del catálogo (starbucks, lumbre…), off o una web.', 'Invalid brand: “' + raw + '”. Use a catalogue id (starbucks, lumbre…), off or a website.')};
+    const url = base + '/admira-xp/?marca=' + encodeURIComponent(id);
+    return {ok: true, url, message: t('Marca «' + id + '»: abre ' + url + ' para ver el gemelo con esa marca (vale en cualquier página de XpaceOS con ?marca=' + id + ').', 'Brand “' + id + '”: open ' + url + ' to see the twin wearing it (works on any XpaceOS page with ?marca=' + id + ').') + note};
+  }
+
   const api = {PANELS_KEY, HISTORY_KEY, PENDING_KEY, PENDING_TTL, TWIN_HOME, TWIN_VERBS, BARE_TWIN, SHELL_VERBS, COMMON_OPTIONS,
-    esc, normalizeConfig, markup, parseCommand, isTwinVerb, twinCommand, savePending, takePending, complete};
+    BRAND_SEED, MARCA_VERB, MB_SESSION_KEY,
+    esc, normalizeConfig, markup, parseCommand, isTwinVerb, twinCommand, savePending, takePending, complete, wantsBrand, runMarca, remoteMarca};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document === 'undefined') return;
 
@@ -202,7 +296,38 @@
   const T = (es, en) => (lang() === 'en' ? en : es);
   const shared = Object.assign({}, api, {version: VERSION, session: () => session});
 
-  // El gemelo trae la barra en línea: no se duplica nada (solo queda el API).
+  // ─── Marca blanca: el único enganche. assets/marca-blanca.js se inserta con el sello de
+  // este fichero solo si la pestaña pide marca o se usa /marca; sin marca, una visita no
+  // descarga nada más ni habla con admiranext.com. ───
+  let marcaPromise = null;
+  function cargarMarca() {
+    if (root.AdmiraMarca) return Promise.resolve(root.AdmiraMarca);
+    if (!marcaPromise) {
+      marcaPromise = new Promise(resolve => {
+        const s = doc.createElement('script');
+        let src = '/assets/marca-blanca.js';
+        try { src = new URL('marca-blanca.js', script.src).pathname; } catch (_) {}
+        s.src = src + (VERSION ? '?v=' + encodeURIComponent(VERSION) : '');
+        s.async = true;
+        s.setAttribute('data-xpace-marca', '');
+        s.onload = () => resolve(root.AdmiraMarca || null);
+        s.onerror = () => { s.remove(); marcaPromise = null; resolve(null); };
+        doc.head.append(s);
+      });
+    }
+    return marcaPromise;
+  }
+  Object.assign(shared, {
+    brandSeed: BRAND_SEED,
+    cargarMarca,
+    marca: (arg, write) => cargarMarca().then(M => runMarca(arg, M, lang() === 'en', write)),
+    marcaCatalog: () => cargarMarca().then(M => (M ? M.listar().catch(() => null) : null)),
+  });
+  // Una página muy pintada a mano (CMDB) pide que la marca vista solo la barra y los paneles.
+  if (script && script.dataset.marca === 'barra') html.setAttribute('data-mb-alcance', 'barra');
+  if (wantsBrand(root.location && root.location.search, session)) cargarMarca();
+
+  // El gemelo trae la barra en línea: no se duplica nada (solo queda el API y la marca).
   if (doc.getElementById('topBar') && !doc.querySelector('[data-xpace-shell]')) {
     root.XpaceShell = Object.assign(shared, {inline: true});
     return;
@@ -346,6 +471,8 @@
     L.push(T('  /help (/ayuda) — esta ayuda', '  /help (/ayuda) — this help'));
     L.push(T('  /limpiar (/clear) — vacía la consola', '  /limpiar (/clear) — clear the console'));
     L.push(T('  /gemelo [orden] — abre el gemelo y, si la das, ejecuta allí la orden', '  /gemelo [command] — open the twin and, if given, run the command there'));
+    L.push(T('  /marca [marca] — Marca blanca del catálogo de admiranext.com/marcablanca: /marca <id> viste la web con esa marca, /marca off vuelve a Admira, /marca sola dice cuál está activa y lista las disponibles, /marca <web> abre el analizador en otra pestaña. Alias: /brand.',
+      '  /marca [brand] — White label from the admiranext.com/marcablanca catalogue: /marca <id> dresses the site in that brand, /marca off returns to Admira, /marca alone shows the active one and lists them, /marca <website> opens the analyser in a new tab. Alias: /brand.'));
     for (const def of new Set(pageVerbs.values())) L.push('  /' + def.id + (def.aliases && def.aliases.length ? ' (/' + def.aliases.join(', /') + ')' : '') + ' — ' + pick(lang(), def));
     L.push(T('Verbos del gemelo (se abren y se ejecutan en /admira-xp/): ', 'Twin verbs (opened and run in /admira-xp/): ') +
       '/distribuir · matrix · better · /status · /stock · /music · /ds · /layout · /inventario · /sincro · /xpacio …');
@@ -372,7 +499,7 @@
         if (!p.args) { log(T('Abriendo el gemelo…', 'Opening the twin…')); setTimeout(() => root.location.assign(TWIN_HOME), 250); return; }
         handoff(p.args); return;
       }
-      if (/^(marca|brand|marcablanca)$/.test(verb) && typeof shared.marca === 'function') { await shared.marca(p.args, log); return; }
+      if (MARCA_VERB.test(verb)) { await shared.marca(p.args, log); return; }
       if (pageVerbs.has(verb)) {
         const out = await pageVerbs.get(verb).run(p.args, {log, lang: lang(), shell: root.XpaceShell}, lang());
         if (out != null && out !== '') log(typeof out === 'string' ? out : JSON.stringify(out));
@@ -405,10 +532,11 @@
     });
     input.addEventListener('keydown', ev => {
       if (ev.key === 'Tab' && !ev.shiftKey) {
-        const brands = root.AdmiraMarca ? root.AdmiraMarca.conocidas().map(b => b.id) : (shared.brandSeed || []);
+        const brands = root.AdmiraMarca ? root.AdmiraMarca.conocidas().map(b => b.id) : BRAND_SEED;
         const c = complete(input.value, allVerbs(), brands);
         if (c.options.length) { ev.preventDefault(); input.value = c.value; if (c.options.length > 1) log(c.options.join('  ')); }
-        if (/^\s*\/?(?:marca|brand|marcablanca)\s/i.test(input.value) && typeof shared.marcaCatalog === 'function') shared.marcaCatalog();
+        // Con /marca se trae el catálogo real para el siguiente Tab (solo al usar /marca).
+        if (/^\s*\/?(?:marca|brand|marcablanca)\s/i.test(input.value)) shared.marcaCatalog();
         return;
       }
       if (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') return;

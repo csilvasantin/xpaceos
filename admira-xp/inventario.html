@@ -8,7 +8,8 @@
 <link rel="icon" href="favicon.ico">
 <script src="qrcode.min.js"></script>
 <style>
-  :root{
+  /* Con marca blanca, la CMDB conserva su paleta (data-marca="barra"): solo la barra y los paneles. */
+  :root,:root[data-mb-alcance="barra"][data-mb-marca]{
     --bg:#05080f; --bg2:#0a1320; --panel:rgba(10,19,32,.92);
     --cyan:#78f3ff; --cyan-dim:rgba(120,243,255,.55); --line:rgba(120,243,255,.18);
     --ink:#dff8ff; --ink-dim:#8fb3c4; --muted:#5f7b8b;
@@ -162,8 +163,8 @@
   .empty{color:var(--muted); padding:24px; text-align:center}
   @media(max-width:560px){ .field{grid-template-columns:1fr} }
 </style>
-<link rel="stylesheet" href="/assets/xpace-shell.css?v=20261001-shell-1">
-<script defer src="/assets/xpace-shell.js?v=20261001-shell-1" data-section="/ CMDB" data-section-en="/ CMDB"></script>
+<link rel="stylesheet" href="/assets/xpace-shell.css?v=20261001-marca-1">
+<script defer src="/assets/xpace-shell.js?v=20261001-marca-1" data-section="/ CMDB" data-section-en="/ CMDB" data-marca="barra"></script>
 </head>
 <body>
 <header class="top">

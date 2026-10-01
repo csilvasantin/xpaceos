@@ -20,8 +20,8 @@ Los paneles son independientes (pueden estar abiertos a la vez), empiezan cerrad
 En el `<head>`, **después de todo el CSS propio**:
 
 ```html
-<link rel="stylesheet" href="/assets/xpace-shell.css?v=20261001-shell-1">
-<script defer src="/assets/xpace-shell.js?v=20261001-shell-1" data-section="/ ayuda" data-section-en="/ help"></script>
+<link rel="stylesheet" href="/assets/xpace-shell.css?v=20261001-marca-1">
+<script defer src="/assets/xpace-shell.js?v=20261001-marca-1" data-section="/ ayuda" data-section-en="/ help"></script>
 ```
 
 Opcionalmente, antes del script, `window.XPACE_SHELL = {...}`:
@@ -34,6 +34,7 @@ Opcionalmente, antes del script, `window.XPACE_SHELL = {...}`:
 | `verbs` | Verbos propios del CLI: `{id, aliases, es, en, run(args, ctx, lang)}`. Solo valen en esa página. |
 | `home` | Destino de la marca (por defecto `/`). |
 | `common` | `false` para quitar los enlaces comunes de Opciones. |
+| `data-marca="barra"` (atributo del script) | Con marca blanca, viste solo la barra y los paneles; la página conserva su paleta (CMDB). Ver `admira-xp/docs/marca-blanca.md`. |
 
 Para conservar los manejadores de lo que ya existe, la página marca los elementos y el shell los **mueve** (no los copia):
 
@@ -57,9 +58,13 @@ Un enlace común que la página ya trae (mismo destino) no se repite. El enlace 
 - **Puertas privadas**: backoffice y `leads.html` siguen con su puerta de token igual; el perímetro (`functions/_middleware.js`, `_perimetro.js`) no se toca.
 - **Caché**: si cambia `xpace-shell.js/.css`, se sube el `?v=` en todas las páginas a la vez (el guardián lo exige).
 
+## Marca blanca
+
+El shell es el único enganche de la marca blanca del catálogo de admiranext.com/marcablanca (plataforma `store`): con `?marca=<id>` o `/marca <id>` carga `assets/marca-blanca.js` con su mismo sello; sin marca no carga nada. El gemelo carga `xpace-shell.js` en modo barra en línea solo para esto y para el API. Detalles en `admira-xp/docs/marca-blanca.md`.
+
 ## Modo experto fuera del gemelo
 
-`/help`, `/limpiar` (`/clear`), `/gemelo [orden]` y los verbos de la página se ejecutan en la página. Los **verbos del gemelo** (`/distribuir`, `matrix`, `better`, `/status`, `/stock`, `/music`, `/ds`, `/layout`, `/inventario`, `/sincro`, `/xpacio`… la lista sale de `helpSections()` y la vigila el guardián) se guardan en `sessionStorage` (`xpaceos_expert_pending_v1`: `{cmd, at, from}`, caduca a los 2 minutos, **nunca en la URL**), se abre `/admira-xp/` y el gemelo la ejecuta **una sola vez**, con el Xpacio ya en marcha, como si se hubiera escrito en su consola: abre ⌘ y muestra la respuesta (sin reenviarla a Telegram). Un verbo desconocido no navega: el CLI sugiere `/help` o `/gemelo <orden>`. Historial compartido (`xpaceos_expert_history_v1`, ↑/↓) y Tab para completar.
+`/help`, `/limpiar` (`/clear`), `/gemelo [orden]`, `/marca` (alias `/brand`) y los verbos de la página se ejecutan en la página. Los **verbos del gemelo** (`/distribuir`, `matrix`, `better`, `/status`, `/stock`, `/music`, `/ds`, `/layout`, `/inventario`, `/sincro`, `/xpacio`… la lista sale de `helpSections()` y la vigila el guardián) se guardan en `sessionStorage` (`xpaceos_expert_pending_v1`: `{cmd, at, from}`, caduca a los 2 minutos, **nunca en la URL**), se abre `/admira-xp/` y el gemelo la ejecuta **una sola vez**, con el Xpacio ya en marcha, como si se hubiera escrito en su consola: abre ⌘ y muestra la respuesta (sin reenviarla a Telegram). Un verbo desconocido no navega: el CLI sugiere `/help` o `/gemelo <orden>`. Historial compartido (`xpaceos_expert_history_v1`, ↑/↓) y Tab para completar.
 
 ## Páginas
 

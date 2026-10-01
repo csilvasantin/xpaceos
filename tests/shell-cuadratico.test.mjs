@@ -126,6 +126,8 @@ test('el gemelo conserva su barra en línea con los mismos glifos y clases', () 
   assert.match(game, /<button\b[^>]*id="pfExpert"[^>]*>⌘<\/button>/);
   assert.match(game, /<nav class="quad-menu quad-left is-collapsed"/);
   assert.match(game, /<nav class="quad-menu quad-right is-collapsed"/);
+  // Carga el shell común en modo barra en línea (API, /marca y marca blanca) con el sello vigente.
+  assert.ok(game.includes(`<script defer src="/assets/xpace-shell.js?v=${VERSION}" data-shell="inline"></script>`), 'el gemelo carga xpace-shell.js con el sello vigente');
   // Ejecuta una vez la orden que le pasa el shell común (sessionStorage, nunca la URL).
   assert.match(game, /sessionStorage\.getItem\('xpaceos_expert_pending_v1'\)/);
   assert.match(game, /sessionStorage\.removeItem\('xpaceos_expert_pending_v1'\)/);

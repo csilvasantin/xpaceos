@@ -743,6 +743,9 @@
 <!-- Orbitron: tipografía tecnológica de la cuadrática (misma que admira.live/status) -->
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="../inventario/store.js?v=inventory-cli-3"></script>
+<!-- Shell común (FLT-101337): con la barra en línea solo deja su API (CLI, /marca) y la
+     marca blanca; sin ?marca= ni marca recordada no carga nada más ni habla con admiranext.com. -->
+<script defer src="/assets/xpace-shell.js?v=20261001-marca-1" data-shell="inline"></script>
 </head>
 <body>
 <!-- ── Modal Guardar como Plantilla (sustituye prompt() nativo) ── -->
@@ -28004,6 +28007,11 @@ window.xtAPI = (function(){
       const parts=normalized.split(/\s+/).filter(Boolean);
       const cmd=(parts.shift()||'').toLowerCase();
       const arg=parts.join(' ');
+      if(['marca','brand','marcablanca'].includes(cmd)){
+        const XS=window.XpaceShell;
+        const r=XS&&typeof XS.remoteMarca==='function'?XS.remoteMarca(arg,typeof lang!=='undefined'&&lang==='en'):{ok:true,url:'https://www.xpaceos.com/admira-xp/?marca=starbucks',message:'Marca blanca: abre https://www.xpaceos.com/admira-xp/?marca=<id>.'};
+        return {ok:r.ok,message:r.message,data:{url:r.url||null,applied:false}};
+      }
       const weather=window.XpaceWeatherCommand.parse(raw,G&&G.weather);
       if(weather){
         if(!weather.ok)return {ok:false,message:weather.error};
@@ -30943,6 +30951,7 @@ window.xtAPI = (function(){
       {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit / Matrix Starbucks Alsea',items:['good','better','best','matrix','/layout','/layout off','/sincro','/sincrototal','/sincro off','/sync','/synctotal','/sync off','/mudanza','/modo estado']},
       {title:'Estilo del render clásico',items:['/render 8bit','/render 16bit','/render habbo','/render real']},
       {title:'Mapa de navegacion',items:['/xpacio','/mapa','/map','/red','/sd list','/streamdeck','/help','/debug']},
+      {title:'Marca blanca · White label (admiranext.com/marcablanca)',items:['/marca','/marca starbucks','/marca off','/marca starbucks.es','/brand lumbre']},
     ];
   }
 
@@ -31527,6 +31536,14 @@ window.xtAPI = (function(){
 
     try{
       if(cmd==='start'||cmd==='help') return commandHelp();
+      // /marca <id|off|web> (FLT-101337). Aquí llega de Telegram, el MCP o /twin/cmd: no hay
+      // un navegador que vestir, así que responde con el enlace que abre la marca. En la
+      // consola local la aplica sendComposerText (XpaceShell.marca) antes de llegar aquí.
+      if(['marca','brand','marcablanca'].includes(cmd)){
+        const XS=window.XpaceShell;
+        if(XS&&typeof XS.remoteMarca==='function') return XS.remoteMarca(arg,typeof lang!=='undefined'&&lang==='en').message;
+        return 'Marca blanca: abre https://www.xpaceos.com/admira-xp/?marca=<id> (p. ej. ?marca=starbucks). /marca off → ?marca=admira.';
+      }
       // /present [next|prev|close|auto|stop|<n>] — popup-presentación del gemelo
       // (controlable por Telegram, StreamDeck y remote.html). Solo explica.
       if(['present','presentacion','presentación','explainer','presenta'].includes(cmd)){
@@ -32697,6 +32714,17 @@ window.xtAPI = (function(){
     if(!clean) return;
     // The visual command belongs to this browser, never to a remote bot.
     // Intercept before command/session logging and the normal Telegram echo.
+    // /marca viste este navegador (marca blanca, FLT-101337): nunca va a Telegram.
+    if(/^\/?(?:marca|brand|marcablanca)(?:@\w+)?(?:\s|$)/i.test(clean)&&window.XpaceShell&&typeof window.XpaceShell.marca==='function'){
+      hideHelpPanel();
+      appendTelegramLog('out','Experto',clean);
+      const lines=[];
+      try{ await window.XpaceShell.marca(clean.replace(/^\/?\S+\s*/,''),t=>{ lines.push(t); appendTelegramLog('bot','XpaceOS',t); }); }
+      catch(e){ lines.push('Error: '+(e&&e.message||e)); }
+      showLastResponse(lines.join('\n'),'ok','local-visual');
+      if(composer)composer.value='';
+      renderQuickActionButtons();return;
+    }
     const visual=await executeLocalVisualCommand(clean);
     if(visual){
       hideHelpPanel();showLastResponse(visual.message,visual.ok?'ok':'err',visual.kind==='inventory'?'local-inventory':'local-visual');
