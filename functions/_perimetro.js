@@ -19,7 +19,8 @@
 
 const CLIENT_ID = '861856772040-e1ri6kpu6maagtb6crdfbb923hsaalgb.apps.googleusercontent.com';
 // dominio propio: LaLiga bloquea workers.dev en horas de fútbol, FLT-1633
-const ACCESS_URL = 'https://whitelist.admira.store/access';
+const WHITELIST_URL = 'https://whitelist.admira.store';
+const ACCESS_URL = WHITELIST_URL + '/access';
 const SESSION_COOKIE = '__Host-perimetro_session';
 const NONCE_COOKIE = '__Host-perimetro_nonce';
 const RETURN_COOKIE = '__Host-perimetro_return';
@@ -141,11 +142,15 @@ async function hmac(secret, message) {
 // que un corte no deje a Carlos fuera de su propia web.
 const ACCESS_CACHE = new Map();
 export async function emailAllowed(env, siteId, email, fetchImpl = fetch, now = Date.now()) {
+  return (await accessInfo(env, siteId, email, fetchImpl, now)).allowed;
+}
+
+export async function accessInfo(env, siteId, email, fetchImpl = fetch, now = Date.now()) {
   const normalized = normalEmail(email);
-  if (!normalized) return false;
+  if (!normalized) return {allowed:false, superuser:false};
   const key = siteId + '|' + normalized;
   const cached = ACCESS_CACHE.get(key);
-  if (cached && cached.until > now) return cached.allowed;
+  if (cached && cached.until > now) return cached.info;
   try {
     if (!env.WHITELIST_SITE_TOKEN) throw new Error('sin token de la lista');
     const query = `?site=${encodeURIComponent(siteId)}&email=${encodeURIComponent(normalized)}`;
@@ -154,11 +159,12 @@ export async function emailAllowed(env, siteId, email, fetchImpl = fetch, now = 
     });
     if (!response.ok) throw new Error('lista no disponible');
     const payload = await response.json();
-    const allowed = payload.ok === true && payload.allowed === true;
-    ACCESS_CACHE.set(key, {allowed, until:now + ACCESS_TTL_MS});
-    return allowed;
+    const info = {allowed:payload.ok === true && payload.allowed === true, superuser:payload.superuser === true};
+    ACCESS_CACHE.set(key, {info, until:now + ACCESS_TTL_MS});
+    return info;
   } catch (_) {
-    return OWNER_FALLBACK.has(normalized);
+    const owner = OWNER_FALLBACK.has(normalized);
+    return {allowed:owner, superuser:owner};
   }
 }
 
@@ -220,8 +226,10 @@ export async function readSession(request, env, site, fetchImpl = fetch) {
     // aud = la web: una sesión de xpaceos no abre admira.store aunque compartan clave.
     if (payload.v !== 1 || payload.aud !== site.id || Number(payload.exp) <= now || Number(payload.iat) > now + 60) return null;
     const email = normalEmail(payload.email);
-    if (!email || !(await emailAllowed(env, site.id, email, fetchImpl))) return null;
-    return {email};
+    if (!email) return null;
+    const info = await accessInfo(env, site.id, email, fetchImpl);
+    if (!info.allowed) return null;
+    return {email, superuser:info.superuser};
   } catch (_) {
     return null;
   }
@@ -307,6 +315,8 @@ export async function handleAuth(request, env, site, fetchImpl = fetch) {
     ]);
   }
 
+  if (url.pathname === '/auth/permisos') return permisos(request, env, site, fetchImpl);
+
   if (url.pathname === '/auth/session' && request.method === 'GET') {
     const session = await readSession(request, env, site, fetchImpl);
     return Response.json(session ? {ok:true, email:session.email, site:site.id} : {ok:false}, {
@@ -322,6 +332,60 @@ export async function handleAuth(request, env, site, fetchImpl = fetch) {
   }
 
   return new Response('Not found', {status:404, headers:{'cache-control':'no-store'}});
+}
+
+// ── /auth/permisos: casillas de ESTA web, para superusers de AdmiraNeXT ──
+// Vive dentro del perímetro (Carlos, 1-oct-2026: «conectamos con AdmiraNeXT y
+// la gestión de permisos»). Lista los usuarios de AdmiraNeXT y quién tiene la
+// casilla de esta web; escribe en la lista vía /site-grant nombrando al
+// superuser cuya sesión acabamos de verificar. Sin JavaScript: formularios.
+function permisosPage(site, me, data, notice) {
+  const granted = new Set((data.sites && data.sites[site.id]) || []);
+  const owners = new Set(data.owners || []);
+  const emails = Array.from(new Set([...(data.users || []), ...granted, ...owners])).sort();
+  const row = (email) => {
+    const owner = owners.has(email);
+    const on = owner || granted.has(email);
+    const action = owner ? '<span class="tag">owner · siempre</span>'
+      : `<form method="post"><input type="hidden" name="email" value="${escapeHtml(email)}"><input type="hidden" name="allow" value="${on ? '0' : '1'}"><button class="${on ? 'off' : 'on'}">${on ? 'Quitar acceso' : 'Dar acceso'}</button></form>`;
+    return `<tr class="${on ? 'yes' : ''}"><td>${on ? '✅' : '·'}</td><td>${escapeHtml(email)}</td><td>${action}</td></tr>`;
+  };
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${escapeHtml(site.name)} · Permisos</title><style>
+  :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;padding:28px 16px;background:${site.background};color:#e9f1f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:760px;margin:0 auto}.mark{color:${site.accent};font:700 12px ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase}h1{margin:10px 0 6px;font-size:26px}p{color:#9fb1bb;line-height:1.55;margin:0 0 18px}table{width:100%;border-collapse:collapse;margin-top:8px}td{padding:9px 8px;border-bottom:1px solid #ffffff14;font-size:14px;overflow-wrap:anywhere}td:first-child{width:32px;text-align:center}td:last-child{text-align:right;white-space:nowrap}tr.yes td:nth-child(2){color:#fff;font-weight:600}button{font:600 12px ui-monospace,monospace;padding:7px 11px;border-radius:7px;cursor:pointer;border:1px solid ${site.accent};background:transparent;color:${site.accent}}button.off{border-color:#ff8f7a;color:#ff8f7a}.tag{font:11px ui-monospace,monospace;color:#7d909b}.add{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.add input[type=email]{flex:1;min-width:200px;padding:9px 10px;border-radius:7px;border:1px solid #ffffff2a;background:#0008;color:#fff;font-size:14px}.notice{padding:10px 12px;border-radius:8px;background:#ffffff0d;margin-bottom:14px;font:13px ui-monospace,monospace}.foot{margin-top:24px;font:11px ui-monospace,monospace;color:#5d707b}a{color:${site.accent}}</style></head><body><main><div class="mark">${escapeHtml(site.name)} · perímetro de seguridad</div><h1>Quién entra en ${escapeHtml(site.name)}</h1><p>Usuarios de AdmiraNeXT y su casilla para esta web. La casilla no da acceso a admira.live ni a otras webs; quitarla corta la entrada en un minuto.</p>${notice ? `<div class="notice">${escapeHtml(notice)}</div>` : ''}<form method="post" class="add"><input type="email" name="email" placeholder="email@empresa.com" required><input type="hidden" name="allow" value="1"><button class="on">Dar acceso</button></form><table>${emails.map(row).join('')}</table><div class="foot">Sesión: ${escapeHtml(me)} · <a href="/auth/logout">salir</a> · usuarios de AdmiraNeXT en <a href="https://www.admira.live/usuarios">admira.live/usuarios</a></div></main></body></html>`;
+}
+
+async function permisos(request, env, site, fetchImpl) {
+  const url = new URL(request.url);
+  const session = await readSession(request, env, site, fetchImpl);
+  if (!session) return redirect(`/auth/login?return_to=${encodeURIComponent('/')}`);
+  const headers = {...secureHeaders(), 'content-security-policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'"};
+  if (!session.superuser) {
+    return new Response(`<!doctype html><meta charset="utf-8"><title>Permisos</title><body style="background:#000;color:#ccc;font-family:system-ui;padding:40px">Solo los superusuarios de AdmiraNeXT gestionan los permisos de ${escapeHtml(site.name)}.</body>`, {status:403, headers});
+  }
+  const token = {'X-Whitelist-Token':env.WHITELIST_SITE_TOKEN || ''};
+  let notice = '';
+  if (request.method === 'POST') {
+    // CSRF: solo formularios de esta misma página (cookie Lax + Origin propio).
+    const origin = request.headers.get('Origin');
+    if (origin !== url.origin) return new Response('Origen no válido', {status:403, headers:{'cache-control':'no-store'}});
+    const form = await request.formData();
+    const email = normalEmail(form.get('email'));
+    const allow = String(form.get('allow')) !== '0';
+    if (!email) {
+      notice = 'Email no válido.';
+    } else {
+      const r = await fetchImpl(WHITELIST_URL + '/site-grant', {
+        method:'POST', headers:{...token, 'Content-Type':'application/json'},
+        body:JSON.stringify({email, site:site.id, allow, actor:session.email})
+      }).catch(() => null);
+      ACCESS_CACHE.delete(site.id + '|' + email);
+      notice = r && r.ok ? `${allow ? 'Acceso dado a' : 'Acceso quitado a'} ${email}.` : 'No se pudo guardar el cambio en AdmiraNeXT.';
+    }
+  }
+  const r = await fetchImpl(`${WHITELIST_URL}/sites?actor=${encodeURIComponent(session.email)}`, {headers:token}).catch(() => null);
+  const data = r && r.ok ? await r.json() : null;
+  if (!data) return new Response('No se pudo leer la lista de AdmiraNeXT.', {status:502, headers:{'cache-control':'no-store'}});
+  return new Response(permisosPage(site, session.email, data, notice), {status:200, headers});
 }
 
 // Punto de entrada del middleware de Pages.

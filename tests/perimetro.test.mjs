@@ -74,3 +74,62 @@ test('return_to no puede salir del sitio', () => {
   assert.equal(safeReturnTo('/auth/callback'), '/');
   assert.equal(safeReturnTo('/xpacios/?a=1'), '/xpacios/?a=1');
 });
+
+test('/auth/permisos sin sesión manda al login', async () => {
+  const r = await perimetro(ctx('https://www.xpaceos.com/auth/permisos'), noFetch);
+  assert.equal(r.status, 302);
+  assert.match(r.headers.get('location'), /\/auth\/login/);
+});
+
+async function sesion(email, aud = 'xpaceos') {
+  const b64 = (s) => Buffer.from(s).toString('base64url');
+  const now = Math.floor(Date.now() / 1000);
+  const payload = b64(JSON.stringify({v:1, aud, email, sub:'1', iat:now, exp:now + 3600}));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.PERIMETRO_SIGNING_KEY), {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+  const sig = Buffer.from(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode('perimetro:' + payload))).toString('base64url');
+  return `__Host-perimetro_session=${payload}.${sig}`;
+}
+const lista = (grants) => async (url, opts = {}) => {
+  const u = new URL(url);
+  if (u.pathname === '/access') {
+    const email = u.searchParams.get('email');
+    const owner = email === 'csilva@admira.com';
+    return Response.json({ok:true, allowed:owner || grants.includes(email), superuser:owner});
+  }
+  if (u.pathname === '/sites') return Response.json({ok:true, owners:['csilva@admira.com'], users:['ana@admira.com', 'luis@admira.com'], sites:{xpaceos:grants}});
+  if (u.pathname === '/site-grant') { const b = JSON.parse(opts.body); grants.push(b.email); return Response.json({ok:true}); }
+  throw new Error('inesperado ' + url);
+};
+
+test('con sesión y permiso, la portada sale; con sesión de otra web, no', async () => {
+  const f = lista(['ana@admira.com']);
+  const ok = await perimetro(ctx('https://www.xpaceos.com/', {Cookie:await sesion('ana@admira.com')}), f);
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('cache-control'), 'private, no-store');
+  const otra = await perimetro(ctx('https://www.xpaceos.com/', {Cookie:await sesion('ana@admira.com', 'admira-store')}), f);
+  assert.equal(otra.status, 302);
+});
+
+test('sesión válida pero sin casilla → login', async () => {
+  const r = await perimetro(ctx('https://www.xpaceos.com/', {Cookie:await sesion('luis@admira.com')}), lista([]));
+  assert.equal(r.status, 302);
+});
+
+test('/auth/permisos: superuser ve las casillas y puede dar acceso; usuario normal, 403', async () => {
+  const grants = [];
+  const f = lista(grants);
+  const page = await perimetro(ctx('https://www.xpaceos.com/auth/permisos', {Cookie:await sesion('csilva@admira.com')}), f);
+  assert.equal(page.status, 200);
+  const html = await page.text();
+  assert.match(html, /luis@admira\.com/);
+  assert.match(html, /owner · siempre/);
+  const form = new FormData(); form.set('email', 'luis@admira.com'); form.set('allow', '1');
+  const post = await perimetro({request:new Request('https://www.xpaceos.com/auth/permisos', {method:'POST', body:form, headers:{Cookie:await sesion('csilva@admira.com'), Origin:'https://www.xpaceos.com'}}), env, next:async () => new Response('x')}, f);
+  assert.equal(post.status, 200);
+  assert.deepEqual(grants, ['luis@admira.com']);
+  const csrf = await perimetro({request:new Request('https://www.xpaceos.com/auth/permisos', {method:'POST', body:form, headers:{Cookie:await sesion('csilva@admira.com'), Origin:'https://evil.example'}}), env, next:async () => new Response('x')}, f);
+  assert.equal(csrf.status, 403);
+  grants.push('ana@admira.com');
+  const normal = await perimetro(ctx('https://www.xpaceos.com/auth/permisos', {Cookie:await sesion('ana@admira.com')}), f);
+  assert.equal(normal.status, 403);
+});
