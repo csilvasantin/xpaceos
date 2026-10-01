@@ -35662,6 +35662,7 @@ window.xtAPI = (function(){
   // dock inferior del modo experto. Publicamos la altura del dock VISIBLE en la var
   // --xp-dock-clear para que ambos paneles paren justo encima (sin pisarlo).
   function syncDockClear(){
+    window.XpaceSidePanelBounds?.();
     try{
       var dock=document.getElementById('telegramDock');
       // OJO: #telegramDock es position:fixed → offsetParent es null aunque sea visible.
@@ -35809,5 +35810,6 @@ window.xtAPI = (function(){
 <script type="module" src="scripts/expert-composer.mjs?v=aviso-1"></script>
 <link rel="stylesheet" href="scripts/side-panel-resize.css?v=1">
 <script type="module" src="scripts/side-panel-resize.mjs?v=2"></script>
+<script type="module" src="scripts/side-panel-bounds.mjs?v=2"></script>
 </body>
 </html>

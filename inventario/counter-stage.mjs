@@ -1,5 +1,5 @@
 import * as T from '../admira-xp/scripts/premium-three.mjs';
-import {cloneFurniture} from '../admira-xp/scripts/furniture-asset.mjs';
+import {cloneFurniture} from '../admira-xp/scripts/furniture-asset.mjs?v=starbucks-49';
 
 export async function mountCounterStage(host,asset={number:1,name:'Mostrador'}){
  const canvas=host.querySelector('canvas'),status=host.querySelector('[data-status]');

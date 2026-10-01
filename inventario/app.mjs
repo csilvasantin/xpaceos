@@ -1,6 +1,6 @@
 import {preview} from './viewer.mjs?v=catalog-43';
 import {mountCounterStage} from './counter-stage.mjs?v=catalog-43';
-import {furnitureURL} from '../admira-xp/scripts/furniture-asset.mjs';
+import {furnitureURL} from '../admira-xp/scripts/furniture-asset.mjs?v=starbucks-49';
 let disposePilot,stageQueue=Promise.resolve();
 function inspectAsset(asset){
  const select=document.querySelector('#model-select');select.value=String(asset.number);

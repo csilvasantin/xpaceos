@@ -1,10 +1,10 @@
 {
-  "version": "v.01.10.2026.r9.12:01",
-  "signature": "MerovingioGrokBotBox · GrokBotBox",
-  "machine": "GrokBotBox",
-  "agent": "MerovingioGrokBotBox",
-  "deployer": "MerovingioGrokBotBox",
-  "evidence": "Matrix Starbucks: pulsar la pantalla averiada abre la ficha de SU incidencia en Yokup (https://www.yokup.com/ticket?id=INC-…, la activa más reciente del equipo) en vez del listado genérico; sin ticket válido sigue en /incidencias. Ayuda ES/EN, MCP y docs. Retorno: tag retorno/pre-incidencia-detalle-20261001.",
+  "version": "v.01.10.2026.r10.17:48",
+  "signature": "OraculoMacMini · MacMini",
+  "machine": "MacMini",
+  "agent": "OraculoMacMini",
+  "deployer": "OraculoMacMini",
+  "evidence": "Yokup #193 DCL-a58b6d20a4f192ea68dcd57c: ten Starbucks furniture CIs, independent Blender/GLB assets 44–49 and corrected side-panel bounds.",
   "day": "01.10.2026",
-  "time": "12:01"
+  "time": "17:48"
 }
