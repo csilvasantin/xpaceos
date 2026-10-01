@@ -752,5 +752,10 @@
     "es": "En las páginas del inventario, /inventario sin argumentos abre el catálogo; /inventario con argumentos conserva la ejecución en el gemelo de XpaceOS. Desde Yokup se indica abrir el gemelo. Navegación: /inventario, /starbucks, /referencias, /ref PG103-001, /equipo PDG103-BOT-01, /xpaceos, /yokup y /ayuda. La unidad seleccionada conserva su código ITIL al abrir Yokup o volver a XpaceOS. Los candidatos enlazan el portal sin inventar fichas ITIL. Añadir, eliminar o mover muebles se realiza en la Xperience; las fichas patrimoniales se editan en Yokup con sus permisos existentes.",
     "en": "On inventory pages, /inventario without arguments opens the catalogue; arguments retain execution in the XpaceOS twin. From Yokup it prompts opening the twin. Navigation: /inventory, /starbucks, /references, /ref PG103-001, /equipment PDG103-BOT-01, /xpaceos, /yokup and /help. A selected unit retains its ITIL code when opening Yokup or returning to XpaceOS. Candidates link to the portal without inventing ITIL records. Add, remove or move furniture in the Xperience; edit lifecycle records in Yokup with existing permissions.",
     "new_remote_tools": false
+  },
+  "expert_entry": {
+    "es": "Al entrar en el gemelo, Opciones, Avanzados y Experto empiezan replegados: solo se ve la barra superior. La carga de Better, Best o Matrix no abre Experto. El botón ⌘ permite abrirlo y cerrarlo.",
+    "en": "On twin entry, Options, Advanced and Expert start collapsed: only the top bar is visible. Loading Better, Best or Matrix does not open Expert. The ⌘ button opens and closes it.",
+    "help": "/help/#expert-entry"
   }
 }
