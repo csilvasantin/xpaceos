@@ -696,5 +696,25 @@
       "autoRegistration": false,
       "yokup": "ITIL cards and equipment sheets map registered references by exact venue and code; public fetch without credentials"
     }
+  },
+  "common_shell": {
+    "guide": "https://www.xpaceos.com/admira-xp/docs/shell-cuadratico.md",
+    "assets": [
+      "https://www.xpaceos.com/assets/xpace-shell.js",
+      "https://www.xpaceos.com/assets/xpace-shell.css"
+    ],
+    "pending_key": "sessionStorage xpaceos_expert_pending_v1 · {cmd, at, from} · 2 min · never in the URL",
+    "es": "Todas las páginas de xpaceos.com (= admira.store) llevan la barra de 4 bandas del gemelo: ☰ Opciones, ▤ Avanzado y ⌘ Experto. Fuera del gemelo, ⌘ Experto ofrece /help, /limpiar, /gemelo [orden] y /marca; los verbos del gemelo viajan por sessionStorage y el gemelo los ejecuta una vez al abrirse. No es una herramienta MCP.",
+    "en": "Every xpaceos.com (= admira.store) page carries the twin's four-band bar: ☰ Options, ▤ Advanced and ⌘ Expert. Outside the twin, ⌘ Expert offers /help, /limpiar, /gemelo [command] and /marca; twin verbs travel through sessionStorage and the twin runs them once on load. Not an MCP tool."
+  },
+  "white_label": {
+    "guide": "https://www.xpaceos.com/admira-xp/docs/marca-blanca.md",
+    "catalog": "https://www.admiranext.com/marcablanca/api/marcas",
+    "platform": "store",
+    "activate": "?marca=<id> on any page with the shell or the twin (e.g. https://www.xpaceos.com/admira-xp/?marca=starbucks), or /marca <id> (alias /brand) in ⌘ Expert",
+    "deactivate": "/marca off, ?marca=admira or «Volver a Admira» in ☰ Options",
+    "remote": "__xtExec (Telegram, MCP, /twin/cmd) and xtAPI.command answer with the ?marca= link; they never restyle a screen",
+    "es": "Marca blanca del catálogo único de admiranext.com/marcablanca, plataforma store. Sin marca no se carga nada ni se contacta admiranext.com; con marca se comprueba el catálogo antes de cargar el cargador común y las hojas. La barra muestra el logo del cliente │ powered by XpaceOS; Opciones, Avanzado, Experto y la interfaz del gemelo toman la marca con textos AA; la escena 3D, los modelos y las texturas no se recolorean. No es una herramienta MCP.",
+    "en": "White label from the single admiranext.com/marcablanca catalogue, platform store. Without a brand nothing is loaded and admiranext.com is never contacted; with one, the catalogue is checked before the common loader and sheets load. The bar shows the client logo │ powered by XpaceOS; Options, Advanced, Expert and the twin's interface take the brand with AA texts; the 3D scene, models and textures are never recoloured. Not an MCP tool."
   }
 }

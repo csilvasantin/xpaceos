@@ -1,10 +1,10 @@
 {
-  "version": "v.01.10.2026.r12.18:58",
-  "signature": "OraculoMacMini · MacMini",
+  "version": "v.01.10.2026.r13.20:15",
+  "signature": "MorfeoMacMini · MacMini",
   "machine": "MacMini",
-  "agent": "OraculoMacMini",
-  "deployer": "OraculoMacMini",
-  "evidence": "Yokup #220 DCL-bb662c8fab19e8d9e344e0aa: sixty numbered real photo references, eleven registered units, gallery and catalog thumbnails.",
+  "agent": "MorfeoMacMini",
+  "deployer": "MorfeoMacMini",
+  "evidence": "Yokup FLT-101337: shell cuadrático común (xpace-shell.js/.css) en 35 páginas + gemelo, guardián tests/shell-cuadratico.test.mjs con 21 excepciones; marca blanca store del catálogo admiranext.com/marcablanca con /marca (alias /brand) en shell, gemelo, __xtExec y xtAPI.command.",
   "day": "01.10.2026",
-  "time": "18:58"
+  "time": "20:15"
 }

@@ -439,7 +439,9 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
   ]
 }
 </script>
-<meta name="admiranext-version" content="v.01.10.2026.r12.18:58">
+<meta name="admiranext-version" content="v.01.10.2026.r13.20:15">
+<link rel="stylesheet" href="/assets/xpace-shell.css?v=20261001-marca-1">
+<script defer src="/assets/xpace-shell.js?v=20261001-marca-1" data-section="" data-section-en=""></script>
 </head>
 <body id="top">
 <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -451,13 +453,13 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
 
 <!-- barra superior Admira · Xperience eliminada (a petición) -->
 
-<header>
+<header data-shell-replace>
   <div class="wrap">
     <a class="brand-logo" href="#top" aria-label="XpaceOS">
       <img src="/assets/xpaceos-logo-transparent.webp" alt="XpaceOS">
     </a>
     <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav"><span class="bars" aria-hidden="true"></span></button>
-    <nav id="primary-nav">
+    <nav id="primary-nav" data-shell-nav>
       <a class="nav-link" href="#booth" data-i18n="nav.booth">Case study</a>
       <a class="nav-link" href="#plataforma" data-i18n="nav.platform">Platform</a>
       <a class="nav-link" href="#capas" data-i18n="nav.layers">3 layers</a>
@@ -470,7 +472,7 @@ j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNo
       <span class="language-switcher" aria-label="Language selection">
         <button type="button" class="lang-toggle" id="lang-toggle" data-lang-target="es" aria-label="Switch to Spanish">ESP</button>
       </span>
-      <a class="nav-contact" href="#contact" data-admira-contact data-i18n="contact">Contact</a>
+      <a class="nav-contact" href="#contact" data-admira-contact data-i18n="contact" data-shell-slot="options">Contact</a>
     </nav>
   </div>
   <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
