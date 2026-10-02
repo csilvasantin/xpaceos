@@ -32712,6 +32712,18 @@ window.xtAPI = (function(){
   async function sendComposerText(text){
     const clean=String(text||'').trim();
     if(!clean) return;
+    // Avatar digital (FLT-101350): interruptor local. No sale a Telegram.
+    if(window.XpaceShell&&typeof window.XpaceShell.isAvatarCommand==='function'&&window.XpaceShell.isAvatarCommand(clean)){
+      hideHelpPanel();
+      appendTelegramLog('out','Experto',clean);
+      let line='';
+      try{ line=await window.XpaceShell.avatar(clean); }
+      catch(e){ line='Error: '+(e&&e.message||e); }
+      appendTelegramLog('bot','XpaceOS',line||'');
+      showLastResponse(line||'','ok','local-visual');
+      if(composer)composer.value='';
+      renderQuickActionButtons();return;
+    }
     // The visual command belongs to this browser, never to a remote bot.
     // Intercept before command/session logging and the normal Telegram echo.
     // /marca viste este navegador (marca blanca, FLT-101337): nunca va a Telegram.
