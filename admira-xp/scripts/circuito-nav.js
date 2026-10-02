@@ -93,7 +93,8 @@
   var API = 'https://api.admira.store/da/locations';
   function goTo(id) {
     var p = new URLSearchParams(location.search); p.set('loc', id);
-    if (!p.get('autostart')) p.set('autostart', 'xtanco');
+    if (/^altadis-bcn-\d+$/.test(id)) { p.set('autostart', 'cafeteria'); if (!p.get('project')) p.set('project', 'estancos'); }
+    else if (!p.get('autostart')) p.set('autostart', 'xtanco');
     location.href = location.pathname + '?' + p.toString() + location.hash;
   }
   function hud(items, idx, tourSec) {
@@ -132,7 +133,8 @@
     var tourSec = Math.max(0, Math.min(600, parseInt(qs.get('tour') || '0', 10) || 0));
     var label = { altadis_bcn: 'Altadis · Estancos Barcelona', alsea_mexico: 'Alsea México' }[me.circuit];
     items.forEach(function (x) { x.circuitLabel = label || me.circuit; });
-    var mount = function () { hud(items, idx, tourSec); };
+    var waited = 0; // espera a STORE_CFG (orientaciones de pantalla) hasta ~6 s
+    var mount = function () { if (!window.STORE_CFG_READY && !screenSurfaces().length && waited++ < 30) return setTimeout(mount, 200); hud(items, idx, tourSec); };
     if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
   }).catch(function () {});
 })();
