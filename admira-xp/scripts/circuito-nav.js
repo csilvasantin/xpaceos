@@ -6,7 +6,8 @@
  *    mostrador) se queda la primera horizontal; el resto va, en orden, a las
  *    pantallas DS de la pared corta. Una DS vertical se dibuja 9:16 y una
  *    horizontal 16:9 dentro de su tramo de pared (mismo quad para el div y para
- *    el hueco del canvas). Sin `orient` → comportamiento de siempre.
+ *    el hueco del canvas). Sin `orient` → comportamiento de siempre. Si todas
+ *    traen `media` (vídeo del Stock adaptado), cada una va a una DS y lo reproduce.
  * 2) ANTERIOR / SIGUIENTE entre los puntos del circuito, en su `tourOrder`
  *    (como el recorrido de admira.app / CanalKiosk): HUD inferior, teclas
  *    [ y ], y `&tour=<segundos>` para el recorrido automático.
@@ -24,10 +25,15 @@
     var c = window.STORE_CFG; if (!c || !Array.isArray(c.surfaces)) return [];
     return c.surfaces.filter(function (s) { return s && (s.surface === 'pantalla' || s.surface === 'escaparate'); });
   }
+  // Si TODAS las pantallas del punto traen `media` (vídeo del Stock ya adaptado a
+  // su formato), cada una va a una DS de pared corta con su vídeo; la TFT larga
+  // sigue con su contenido de siempre.
+  function allMedia() { var ss = screenSurfaces(); return ss.length > 0 && ss.length <= 2 && ss.every(function (s) { return s.media && /^https:\/\//.test(s.media); }); }
   // Orientaciones de las DS de pared corta (índice 0, 1).
   function dsOrients() {
     var o = screenSurfaces().map(function (s) { return s.orient || ''; });
     if (!o.some(Boolean)) return [];
+    if (allMedia()) return o;
     var iH = o.indexOf('horizontal'); if (iH >= 0) o.splice(iH, 1); else o.shift();
     return o;
   }
@@ -57,6 +63,12 @@
       el.style.width = (q.w * sx) + 'px'; el.style.height = (q.h * sy) + 'px';
       el.style.transformOrigin = 'bottom left'; el.style.transform = 'skewY(' + q.skew + 'deg)';
       el.dataset.orient = q.or;
+      var sf = allMedia() ? screenSurfaces()[i] : null;
+      if (sf) {
+        var mv = el.querySelector('video.circuito-media');
+        if (!mv) { mv = document.createElement('video'); mv.className = 'circuito-media'; mv.muted = true; mv.loop = true; mv.playsInline = true; mv.autoplay = true; mv.setAttribute('playsinline', ''); mv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;background:#000'; el.appendChild(mv); }
+        if (mv.getAttribute('src') !== sf.media) { mv.setAttribute('src', sf.media); var pr = mv.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      }
       try { var v = el.querySelector('video') || (el.tagName === 'VIDEO' ? el : null); if (v) v.style.objectFit = 'cover'; } catch (e) {}
     };
     window.punchDsScreenHoles = function () {
@@ -72,6 +84,9 @@
     };
     return true;
   }
+  // Con vídeo propio en cada pantalla se muestran tantas DS como pantallas tenga el punto.
+  function ensureScreens() { var c = window.STORE_CFG; if (c && allMedia()) { var n = screenSurfaces().length + 1; if ((c.screens | 0) < n) c.screens = n; } }
+  window.addEventListener('storecfg', ensureScreens); setTimeout(ensureScreens, 0);
   (function waitInstall(n) { if (!install() && n < 80) setTimeout(function () { waitInstall(n + 1); }, 250); })(0);
 
   // ── 2) Anterior / siguiente ──────────────────────────────────────────────
