@@ -74,7 +74,12 @@ export async function onRequest(context, fetchImpl = fetch) {
     });
     const data = await r.json().catch(() => ({}));
     const text = String((data && (data.text || data.answer)) || '').trim();
-    if (r.ok && text) return json({text: text.slice(0, 1200)});
+    const sheet = sheetAnswer(question, lang);
+    const sheetMiss = /no consta en la ficha|not in the sheet/i.test(sheet);
+    // El cerebro a veces dice «no consta» aunque la ficha sí trae el párrafo.
+    // En ese caso manda la ficha: es el dato que sí tenemos.
+    if (r.ok && text && !(/no consta|not in the sheet/i.test(text) && !sheetMiss)) return json({text: text.slice(0, 1200)});
+    return json({text: sheet});
   } catch (_) {}
   return json({text: sheetAnswer(question, lang)});
 }
