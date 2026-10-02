@@ -12,6 +12,17 @@
   (function(){
     var q=new URLSearchParams(location.search),visual=q.get('visual')??q.get('quality');
     var saved='';try{saved=localStorage.getItem('xtanco_visual_tier_v2')||'';}catch(e){}
+    // Estancos Altadis BCN (FLT-101352): escena cafetería rotulada como el estanco,
+    // nunca Matrix (Matrix = Starbucks Pg. de Gràcia aunque el nivel venga guardado).
+    var altadisLoc=(q.get('loc')||'').trim().toLowerCase();
+    if(/^altadis-bcn-\d+$/.test(altadisLoc)){
+      var tier=(visual==='good'||visual==='better')?visual:(saved==='good'||saved==='better')?saved:'good';
+      if(q.get('autostart')!=='cafeteria'||!q.get('project')||visual!==tier){
+        q.set('autostart','cafeteria');if(!q.get('project'))q.set('project','estancos');q.delete('visual');q.set('quality',tier);
+        try{history.replaceState(history.state,'',location.pathname+'?'+q.toString()+location.hash);}catch(e){}
+      }
+      return;
+    }
     var matrix=visual==='matrix'||(visual===null&&((q.get('loc')||'').trim().toLowerCase()==='alsea-sbux-021'||saved==='matrix'));
     if(!matrix)return;
     window.__xpaceMatrixEntry=true;document.documentElement.classList.add('matrix-entry','matrix-boot');
@@ -1387,7 +1398,7 @@
 })();
 </script>
 <script src="xtanco-version.js?v=20260924-1339"></script>
-<script src="xtanco-runtime-config.js?r=25"></script>
+<script src="xtanco-runtime-config.js?r=26"></script>
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
 <script src="xtanco-marketplace-client.js"></script>
