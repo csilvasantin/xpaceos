@@ -1,3 +1,4 @@
+import {recordFor, recordURL, recordFields} from './ci-record.mjs?v=ci-record-1';
 import {mountCounterStage} from '../counter-stage.mjs?v=inventory-frame-1';
 import {indexReferences, referenceLabel, referencePhotoURL, selectReference, selectionURL, nameFor} from './reference-model.mjs?v=photo-references-1';
 
@@ -84,6 +85,7 @@ function showReferenceDetails(reference, unit) {
   $('#selected-name').textContent = label + ' · ' + name;
   $('#selected-status').replaceChildren(node('span', copy[reference.status], 'status ' + reference.status));
   $('#selected-identity').textContent = reference.reference_id + (unit ? ' · ' + unit.itil_code + ' · ' + copy.asset + ' ' + unit.asset_number : '');
+  renderCIRecord(reference);
   const image = $('#selected-photo'); image.hidden = false; image.src = referencePhotoURL(reference, location.href); image.alt = copy.photo + ': ' + name;
   image.onerror = () => { image.hidden = true; $('#photo-caption').textContent = copy.unavailable + ' · ' + label; };
   $('#photo-caption').textContent = copy.photo + ' · ' + label + '. ' + (copy[reference.photo_scope] || copy.element) + '. ' + (field(reference, 'photo_basis') || (unit ? field(unit, 'photo_basis') : '') || '');
@@ -100,6 +102,25 @@ function showReferenceDetails(reference, unit) {
   $('#unit-basis').textContent = filling ? (en ? 'Photo/360 interpretation with nominal dimensions. The 19 editable bottles form a visual composition; actual stock is unknown. Embedded PBR textures; approximate label.' : 'Interpretación de foto/360 con dimensiones nominales. Las 19 botellas editables forman una composición visual; las existencias reales son desconocidas. Texturas PBR embebidas y etiqueta aproximada.') : '';
   for (const [selector, url] of [['[data-bottle-glb]', filling?.model3d], ['[data-bottle-blend]', filling?.master]]) { const link = $(selector); link.hidden = !url; if (url) link.href = url; }
   return show3d;
+}
+
+function renderCIRecord(reference) {
+  const record = recordFor(manifest, reference), panel = $('#ci-record');
+  panel.hidden = !record;
+  $('#ci-record-fields').replaceChildren(); $('#ci-record-history').replaceChildren();
+  $('#ci-record-link').removeAttribute('href');
+  if (!record) return;
+  $('#ci-record-title').textContent = en ? 'ITIL and 3D record' : 'Ficha ITIL y 3D';
+  $('#ci-record-note').textContent = en ? 'Public link confirmed on ' + record.confirmed_on + '. Yokup owns lifecycle data and history. This view does not verify current operational status.' : 'Vínculo público confirmado el ' + record.confirmed_on + '. Yokup mantiene los datos y el histórico patrimonial. Esta vista no verifica el estado operativo actual.';
+  for (const [label, value] of recordFields(record, en)) $('#ci-record-fields').append(node('dt', label), node('dd', value));
+  $('#ci-record-link').textContent = en ? 'Open master record and history in Yokup ↗' : 'Abrir ficha maestra e histórico en Yokup ↗';
+  $('#ci-record-link').href = recordURL(record.code, location.href);
+  $('#ci-history-title').textContent = en ? 'History of this visual link' : 'Histórico de este vínculo visual';
+  for (const event of record.history) {
+    const item = node('li', event.date + ' · ' + (en ? event.description_en : event.description));
+    const link = node('a', en ? ' Source' : ' Fuente'); link.href = event.source; item.append(link); $('#ci-record-history').append(item);
+  }
+  // Shared shell remains the owner of /marca, CLI history and the forthcoming /avatarDigital.
 }
 
 function select(reference) {
@@ -131,6 +152,7 @@ try {
   const documents = await Promise.all(responses.map(response => response.json()));
   [manifest] = documents; references = indexReferences(documents[1], manifest.units);
   $('#inventory-view').disabled = false; $('#references-view').disabled = false;
+  if (params.get('item') && !manifest.units.some(unit => [unit.itil_code,unit.instance_id].includes(params.get('item')))) throw Error(en ? 'The requested unit has no confirmed 3D link.' : 'La unidad solicitada no tiene un vínculo 3D confirmado.');
   const initial = selectReference(references, manifest.units, params); view = initial.view; select(initial.reference);
   if (params.get('ref') && !references.byId.has(params.get('ref'))) { $('#page-error').hidden = false; $('#page-error').textContent = en ? 'The requested reference does not exist; showing the first available reference.' : 'La referencia solicitada no existe; se muestra la primera referencia disponible.'; }
 } catch (error) {

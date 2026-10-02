@@ -6,7 +6,7 @@ const en = new URLSearchParams(location.search).get('lang') === 'en';
 const tr = (es, english) => en ? english : es;
 if (en) document.documentElement.lang = 'en';
 const node = (tag, text, cls) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (cls) n.className = cls; return n; };
-const localized = href => { const u = new URL(href, location.href); if (en && u.origin === X) u.searchParams.set('lang','en'); return u.href; };
+const localized = href => { const u = new URL(href, location.href); if (en && (u.origin === X || u.origin === Y)) u.searchParams.set('lang','en'); const q=new URLSearchParams(location.search); if(q.has('marca') && (u.origin === X || u.origin === Y))u.searchParams.set('marca',q.get('marca')); return u.href; };
 function currentCode() { const selected = document.querySelector('#selected-identity'); const q = new URLSearchParams(location.search); return selected ? selected.textContent.match(/\bPDG103-[A-Z]+-\d+\b/)?.[0] || '' : q.get('code') || q.get('itil') || ''; }
 function xpaceURL() { const code = currentCode(); return code ? X + '/inventario/starbucks/?view=inventory&item=' + encodeURIComponent(code) : X + '/inventario/'; }
 function yokupURL() { const code = currentCode(); return code ? Y + '/equipo-inventario?code=' + encodeURIComponent(code) : Y + '/retailer#itil'; }
@@ -24,6 +24,7 @@ function install() {
  const go=href=>location.assign(localized(href));
  const verb=(id,aliases,es,english,run)=>shell.registerVerb({id,aliases,es,en:english,run});
  verb('inventario',['inventory'],'Abrir catálogo; con argumentos, usar el gemelo','Open catalogue; arguments run in the twin',args=>{if(!args)go(X+'/inventario/');else if(!yokup)shell.handoff('/inventario '+args);else return tr('Abre XpaceOS y ejecuta /inventario '+args+' en el CLI del gemelo.','Open XpaceOS and run /inventario '+args+' in the twin CLI.');});
+ verb('ficha',['record'],'Ficha visual ITIL y 3D; /ficha PDG103-BOT-01','Visual ITIL and 3D record; /record PDG103-BOT-01',args=>{const code=args.trim().toUpperCase()||currentCode();if(!/^[A-Z0-9]{2,12}(-[A-Z0-9]{2,12}){1,3}$/.test(code))return tr('Selecciona una unidad registrada o usa /ficha PDG103-BOT-01.','Select a registered unit or use /record PDG103-BOT-01.');go(X+'/inventario/starbucks/?view=inventory&item='+encodeURIComponent(code));});
  verb('starbucks',[],'Unidades 3D Starbucks','Starbucks 3D units',()=>go(X+'/inventario/starbucks/?view=inventory'));
  verb('referencias',['references'],'Fotos y referencias numeradas','Numbered photo references',()=>go(X+'/inventario/starbucks/?view=references'));
  verb('ref',[],'Abrir /ref PG103-001','Open /ref PG103-001',args=>{if(!/^PG103-\d{3}$/i.test(args))return tr('Usa /ref PG103-001.','Use /ref PG103-001.');go(X+'/inventario/starbucks/?view=references&ref='+args.toUpperCase());});

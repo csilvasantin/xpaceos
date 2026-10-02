@@ -47,3 +47,11 @@ En las páginas del inventario, /inventario sin argumentos abre el catálogo; /i
 On inventory pages, /inventario without arguments opens the catalogue; arguments retain execution in the XpaceOS twin. From Yokup it prompts opening the twin. Navigation: /inventory, /starbucks, /references, /ref PG103-001, /equipment PDG103-BOT-01, /xpaceos, /yokup and /help. A selected unit retains its ITIL code when opening Yokup or returning to XpaceOS. Candidates link to the portal without inventing ITIL records. Add, remove or move furniture in the Xperience; edit lifecycle records in Yokup with existing permissions.
 
 Contrato: https://www.xpaceos.com/admira-xp/docs/inventory-frame.md · Misión DCL-1be5b59b234e7be48381c4ee.
+
+## Ficha unificada / Unified record
+
+En Inventario → Starbucks PG103, selecciona una unidad: «Ficha ITIL y 3D» reúne código, instancia, modelo compartido, zona observada y medidas pendientes. Abre el histórico del vínculo visual y la ficha maestra de Yokup con sus permisos. En Experto: /ficha PDG103-MES-02; /marca y /marca off conservan el cambio de aspecto. /avatarDigital de Woz sigue pendiente de publicación. Los candidatos no se dan de alta y la ficha no acredita telemetría real.
+
+In Inventory → Starbucks PG103 select a unit: “ITIL and 3D record” shows code, instance, shared model, photo-observed zone and pending measurements. Open visual-link history and the Yokup master record with its existing permissions. In Expert: /record PDG103-MES-02; /marca and /marca off retain appearance changes. Woz’s /avatarDigital is pending publication. Candidates are not registered automatically; this record does not establish real telemetry.
+
+[Contrato / Contract](https://www.xpaceos.com/admira-xp/docs/itil-3d-record.md)

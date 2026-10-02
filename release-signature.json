@@ -1,10 +1,10 @@
 {
-  "version": "v.01.10.2026.r15.20:53",
-  "signature": "OraculoMacMini · MacMini",
-  "machine": "MacMini",
-  "agent": "OraculoMacMini",
-  "deployer": "OraculoMacMini",
-  "evidence": "Yokup Hoy #241 DCL-1be5b59b234e7be48381c4ee: inventario con shell canónico, dos barras, controles 3D laterales y conexión ITIL XpaceOS–Yokup; ayuda ES/EN.",
-  "day": "01.10.2026",
-  "time": "20:53"
+  "version": "v.02.10.2026.r1.11:22",
+  "signature": "TrinityMBP14 · MacBookProNegro14",
+  "machine": "MacBookProNegro14",
+  "agent": "TrinityMBP14",
+  "deployer": "TrinityMBP14",
+  "evidence": "Yokup Hoy #68 DCL-8d385725c93e5609c146afeb: ficha CI/3D preservando histórico, shell y marca; minitutorial oficial verificado.",
+  "day": "02.10.2026",
+  "time": "11:22"
 }

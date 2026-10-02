@@ -28,3 +28,11 @@ ES: Componente canónico `assets/xpace-shell.js/css`; adaptador de inventario `i
 EN: Canonical component `assets/xpace-shell.js/css`; inventory adapter `inventario/frame.mjs/css`, installed in Yokup as `inventory-shell.js/css` and `inventory-frame.mjs/css`. CLI help retains common verbs and registers inventory verbs. The layer uses overflow:clip to remain fixed when controls gain focus. Moved 3D controls retain their DOM nodes; the viewer receives `controlsHost` to bind controls outside its canvas. References without models hide camera controls and downloads. Actual MCP help: https://mcp.admira.store/help and resource `xpaceos://help`.
 
 Misión / Mission: Hoy #241 · DCL-1be5b59b234e7be48381c4ee · OraculoMacMini.
+
+## Ficha unificada / Unified record
+
+En Inventario → Starbucks PG103, selecciona una unidad: «Ficha ITIL y 3D» reúne código, instancia, modelo compartido, zona observada y medidas pendientes. Abre el histórico del vínculo visual y la ficha maestra de Yokup con sus permisos. En Experto: /ficha PDG103-MES-02; /marca y /marca off conservan el cambio de aspecto. /avatarDigital de Woz sigue pendiente de publicación. Los candidatos no se dan de alta y la ficha no acredita telemetría real.
+
+In Inventory → Starbucks PG103 select a unit: “ITIL and 3D record” shows code, instance, shared model, photo-observed zone and pending measurements. Open visual-link history and the Yokup master record with its existing permissions. In Expert: /record PDG103-MES-02; /marca and /marca off retain appearance changes. Woz’s /avatarDigital is pending publication. Candidates are not registered automatically; this record does not establish real telemetry.
+
+[Contrato / Contract](https://www.xpaceos.com/admira-xp/docs/itil-3d-record.md)

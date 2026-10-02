@@ -179,5 +179,47 @@
       "photo_basis": "Recorte real del panorama Matrix; las zonas ocultas y las medidas no están verificadas.",
       "photo_basis_en": "Real Matrix panorama crop; hidden areas and dimensions are not verified."
     }
+  ],
+  "record_history": [
+    {
+      "date": "2026-10-01",
+      "kind": "identity_confirmation",
+      "codes": [
+        "PDG103-BAR-01",
+        "PDG103-MOS-01",
+        "PDG103-VIT-01",
+        "PDG103-EST-01",
+        "PDG103-MES-01",
+        "PDG103-MES-02",
+        "PDG103-SIL-01",
+        "PDG103-SIL-02",
+        "PDG103-SIL-03",
+        "PDG103-SIL-04",
+        "PDG103-BOT-01"
+      ],
+      "description": "Listado confirmado por Carlos; vínculo público entre CI, instancia y modelo. No es una auditoría de cambios del equipo.",
+      "description_en": "List confirmed by Carlos; public link between CI, instance and model. This is not an equipment change audit.",
+      "source": "https://www.xpaceos.com/admira-xp/docs/starbucks-furniture.md"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "record_view",
+      "codes": [
+        "PDG103-BAR-01",
+        "PDG103-MOS-01",
+        "PDG103-VIT-01",
+        "PDG103-EST-01",
+        "PDG103-MES-01",
+        "PDG103-MES-02",
+        "PDG103-SIL-01",
+        "PDG103-SIL-02",
+        "PDG103-SIL-03",
+        "PDG103-SIL-04",
+        "PDG103-BOT-01"
+      ],
+      "description": "Ficha visual unificada añadida; identidades y modelos conservados. El histórico patrimonial permanece en Yokup.",
+      "description_en": "Unified visual record added; identities and models retained. Lifecycle history remains in Yokup.",
+      "source": "https://www.xpaceos.com/admira-xp/docs/itil-3d-record.md"
+    }
   ]
 }
