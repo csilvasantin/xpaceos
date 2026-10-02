@@ -22,8 +22,15 @@ test('rutas públicas acordadas: gemelo, xpacios y MCP', () => {
   assert.ok(isPublicPath('/admira-xp/index.html'));
   assert.ok(isPublicPath('/xpacios/cafebreria/'));
   assert.ok(isPublicPath('/mcp/'));
+  assert.ok(isPublicPath('/avatar-ask'));
+  assert.ok(!isPublicPath('/avatar-ask-falso'));
   assert.ok(!isPublicPath('/'));
   assert.ok(!isPublicPath('/admira-xpfalso/'));
+});
+
+test('la pregunta del avatar no exige sesión y no abre la portada', async () => {
+  assert.equal((await perimetro(ctx('https://www.xpaceos.com/avatar-ask', {Accept:'application/json'}), noFetch)).status, 200);
+  assert.equal((await perimetro(ctx('https://abc.xpaceos.pages.dev/avatar-ask', {Accept:'*/*'}), noFetch)).status, 200);
 });
 
 test('sin sesión, la portada redirige al login y no entrega el HTML', async () => {
