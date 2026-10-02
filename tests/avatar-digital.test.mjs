@@ -67,6 +67,21 @@ test('si el cerebro dice que no consta y la ficha sí lo tiene, manda la ficha',
   assert.equal(JSON.stringify(body).includes('audioBase64'), false);
 });
 
+test('un saludo o «isn\'t in the sheet» no tapa la ficha', async () => {
+  const greet = async () => ({ok: true, json: async () => ({answer: 'Entendido. Soy el avatar de AdmiraNeXT. Dime en qué te puedo ayudar.'})});
+  const isnt = async () => ({ok: true, json: async () => ({answer: "I'm sorry, that information isn't in the sheet."})});
+  const es = new Request('https://www.xpaceos.com/avatar-ask', {
+    method: 'POST', headers: {'content-type': 'application/json'},
+    body: JSON.stringify({question: '¿Qué es Yokup?', lang: 'es'}),
+  });
+  const en = new Request('https://www.xpaceos.com/avatar-ask', {
+    method: 'POST', headers: {'content-type': 'application/json'},
+    body: JSON.stringify({question: 'What is Store?', lang: 'en'}),
+  });
+  assert.match((await (await onRequest({request: es}, greet)).json()).text, /yokup\.com/i);
+  assert.match((await (await onRequest({request: en}, isnt)).json()).text, /xpaceos\.com/i);
+});
+
 test('si el cerebro falla, queda la ficha', async () => {
   const request = new Request('https://preview.xpaceos.pages.dev/avatar-ask', {
     method: 'POST', headers: {'content-type': 'application/json'},
