@@ -90,13 +90,9 @@
   }
 
   function applyLift() {
-    const h = Math.max(
-      96,
-      barHeight(doc.getElementById('xsExpert')),
-      barHeight(doc.getElementById('telegramDock')),
-      barHeight(doc.getElementById('expertBar')),
-      barHeight(doc.querySelector('.yk-expert, .expert-bar, #ykExpert'))
-    );
+    let h = 96;
+    for (const id of ['xsExpert', 'telegramDock', 'expert-panel', 'yk-rail-bottom']) h = Math.max(h, barHeight(doc.getElementById(id)));
+    doc.querySelectorAll('.xs-expert, .yk-rail-bottom').forEach(el => { h = Math.max(h, barHeight(el)); });
     doc.documentElement.style.setProperty('--da-lift', h + 'px');
   }
 

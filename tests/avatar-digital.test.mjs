@@ -56,6 +56,17 @@ test('el proxy devuelve solo texto: el audio del cerebro no sale', async () => {
   assert.equal(JSON.stringify(body).includes('audioBase64'), false);
 });
 
+test('si el cerebro dice que no consta y la ficha sí lo tiene, manda la ficha', async () => {
+  const fetchImpl = async () => ({ok: true, json: async () => ({answer: 'No consta en la ficha.', audioBase64: 'qq'})});
+  const request = new Request('https://www.xpaceos.com/avatar-ask', {
+    method: 'POST', headers: {'content-type': 'application/json'},
+    body: JSON.stringify({question: '¿Qué es XpaceOS?', lang: 'es'}),
+  });
+  const body = await (await onRequest({request}, fetchImpl)).json();
+  assert.match(body.text, /xpaceos\.com/);
+  assert.equal(JSON.stringify(body).includes('audioBase64'), false);
+});
+
 test('si el cerebro falla, queda la ficha', async () => {
   const request = new Request('https://preview.xpaceos.pages.dev/avatar-ask', {
     method: 'POST', headers: {'content-type': 'application/json'},
