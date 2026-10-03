@@ -1,10 +1,7 @@
-# Gemelo por punto · media por orientación (`&media=`) — Altadis BCN 9
+# Circuito · orientación y archivos / Circuit · orientation and files
 
-**ES.** `admira-xp/scripts/circuito-nav.js` ya honra `surfaces[].orient` (vertical/horizontal) y `surfaces[].media` de la ficha del punto (`api.admira.store/da/locations`) y añade anterior/siguiente entre los puntos del circuito en su `tourOrder`. Nuevo (rama de vista previa `altadis/gemelos-formatos18`, sin fusionar):
+ES: Los gemelos Altadis usan la lista local `altadis/demo.json`. Se prepararon 18 destinos en nueve estancos, cada uno con su original y su adaptación. En el preview #4970 los archivos están pendientes y todas las superficies de contenido muestran marcadores grises. La ficha pública de Admira no aporta vídeos ni campañas al preview Altadis. El recorrido preserva el modo elegido.
 
-- `&media=formatos18` → cada pantalla vertical reproduce `/altadis/media/01-vertical-1080x1920.mp4` (9:16) y cada horizontal `/altadis/media/02-horizontal-1920x1080.mp4` (16:9): pieza JTI «Tu sitio de siempre» renderizada a los 18 formatos Altadis.
-- `&mv=<url>` / `&mh=<url>` → vídeo propio para vertical / horizontal (https o ruta del sitio).
-- Sin parámetro → media de la ficha, como siempre. No modifica la ficha del punto (KV). La navegación ◀ ▶ y `&tour=` conservan el parámetro. El HUD lo indica.
-- Ejemplo: `/admira-xp/?autostart=cafeteria&project=estancos&loc=altadis-bcn-001&media=formatos18`
+EN: Altadis twins use the local `altadis/demo.json` file list: 18 screen assignments in nine shops, each with its own original and adapted file. Official media is pending in preview #4970, so content surfaces show grey placeholders. Live Admira catalogue videos cannot override this preview. Navigation preserves the selected mode.
 
-**EN.** `&media=formatos18` (or `&mv=` / `&mh=`) overrides each twin screen's video by orientation (vertical → 9:16, horizontal → 16:9) without touching the location record. Without the parameter the record's `media` is used. Prev/next and `&tour=` keep the parameter. Preview branch only; not merged.
+Full contract / Contrato: [altadis-pixeria.md](altadis-pixeria.md). Other circuits keep their existing catalogue behavior.

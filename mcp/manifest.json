@@ -1373,5 +1373,17 @@
     ],
     "new_remote_tools": false,
     "physical_publication": false
+  },
+  "altadis_pixeria_preview": {
+    "status": "local-preview-official-content-pending",
+    "mission_encargo": 4967,
+    "latest_change_encargo": 4970,
+    "contract": "/altadis/demo.json",
+    "docs": "/admira-xp/docs/altadis-pixeria.md",
+    "locations": 9,
+    "registered_screens": 18,
+    "new_tools": false,
+    "physical_delivery_verified": false,
+    "production_published": false
   }
 }
