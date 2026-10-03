@@ -19,11 +19,12 @@ html[data-xpace-shell="on"]{--xs-bar-h:46px;scroll-padding-top:calc(var(--xs-bar
 }
 #topBar.xs-bar *,.xs-panel *,.xs-expert *{box-sizing:border-box}
 
-/* El contenido empieza bajo la barra y, en pantallas anchas, junto a los paneles abiertos. */
-body.xs-page{padding-top:var(--xs-bar-h)!important;padding-bottom:var(--xs-bottom)}
-html.xs-docked body.xs-page{padding-left:var(--xs-left);padding-right:var(--xs-right)}
-body.xs-page{transition:padding .22s ease}
-html.xs-no-anim body.xs-page,html.xs-no-anim .xs-panel,html.xs-no-anim .xs-expert{transition:none!important}
+/* El contenido empieza bajo la barra y no se mueve nunca (Carlos, 3-oct-2026): ☰, ▤ y ⌘
+   se SUPERPONEN en todos los anchos. Abrirlos no cambia la posición, el ancho ni el alto del
+   cuerpo de la página. --xs-left/--xs-right/--xs-bottom solo sirven a elementos flotantes
+   (p. ej. una barra pegajosa que quiera quedar sobre ⌘); nunca al padding/margin/tamaño del contenido. */
+body.xs-page{padding-top:var(--xs-bar-h)!important}
+html.xs-no-anim .xs-panel,html.xs-no-anim .xs-expert{transition:none!important}
 
 /* ─── Barra (la del gemelo: 46 px, degradado, borde cian) ─── */
 #topBar.xs-bar{position:fixed;top:0;left:0;right:0;z-index:8900;display:flex;align-items:center;gap:9px;
@@ -110,5 +111,5 @@ html.xs-no-anim body.xs-page,html.xs-no-anim .xs-panel,html.xs-no-anim .xs-exper
   .xs-expert.quad-menu{height:min(55vh,360px)}
 }
 @media (max-width:420px){#topBar.xs-bar .xs-section{display:none}}
-@media (prefers-reduced-motion:reduce){.xs-panel,.xs-expert,body.xs-page{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.xs-panel,.xs-expert{transition:none!important}}
 @media print{#topBar.xs-bar,.xs-panel,.xs-expert{display:none!important}body.xs-page{padding:0!important}}
