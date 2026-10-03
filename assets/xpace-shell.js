@@ -122,15 +122,20 @@
   <p class="qm-hint xs-empty"${bilingual(lang, {es: 'Esta página no tiene acciones avanzadas.', en: 'This page has no advanced actions.'})}</p>
 </nav>`;
     const expert = `<section class="quad-menu quad-bottom xs-expert is-collapsed" id="xsExpert" aria-label="${T('Modo experto', 'Expert mode')}" data-shell-label-es="Modo experto" data-shell-label-en="Expert mode">
-  <div class="xs-expert-head"><strong class="qm-head"${bilingual(lang, {es: 'Modo experto · CLI', en: 'Expert mode · CLI'})}</strong><button type="button" class="xs-close" data-shell-close="expert" aria-label="${T('Cerrar', 'Close')}">×</button></div>
-  <div class="xs-expert-slot"></div>
-  <ol class="xs-log" id="xsLog" role="log" aria-live="polite"></ol>
-  <form class="xs-cli" id="xsCliForm" autocomplete="off">
-    <span class="xs-prompt" aria-hidden="true">›</span>
-    <input id="xsCli" type="text" spellcheck="false" autocapitalize="off" placeholder="/help" aria-label="${T('Orden del modo experto', 'Expert mode command')}" data-shell-label-es="Orden del modo experto" data-shell-label-en="Expert mode command">
-    <button type="submit"${bilingual(lang, {es: 'Ejecutar', en: 'Run'})}</button>
-  </form>
-  <p class="xs-hint"${bilingual(lang, {es: 'Tab completa · ↑/↓ historial · /help ayuda', en: 'Tab completes · ↑/↓ history · /help help'})}</p>
+  <div class="expert-workspace">
+    <div class="tg-cli-row">
+      <form class="xs-cli" id="xsCliForm" autocomplete="off">
+        <div class="xs-command-head"><strong class="expert-section-label">⠿ CONTROL XTORE</strong><button type="submit" data-shell-label-es="Ejecutar orden" data-shell-label-en="Run command" aria-label="${T('Ejecutar orden','Run command')}" title="${T('Enter: ejecutar · Mayús+Enter: nueva línea','Enter: run · Shift+Enter: newline')}">↵</button></div>
+        <textarea id="xsCli" rows="2" spellcheck="false" autocapitalize="off" placeholder="/help" aria-label="${T('Orden del modo experto', 'Expert mode command')}" data-shell-label-es="Orden del modo experto" data-shell-label-en="Expert mode command"></textarea>
+      </form>
+      <section class="expert-category-panel" aria-labelledby="expertCategoriesLabel"><strong class="expert-section-label" id="expertCategoriesLabel"${bilingual(lang,{es:'CATEGORÍAS',en:'CATEGORIES'})}</strong><div id="expertQuickIcons"></div></section>
+      <p class="xs-hint"${bilingual(lang, {es: 'Tab completa · ↑/↓ historial · /help ayuda', en: 'Tab completes · ↑/↓ history · /help help'})}</p>
+    </div>
+    <div class="expert-divider" data-expert-divider="0" role="separator" aria-orientation="vertical" tabindex="0"></div>
+    <div class="expert-controls-pane" aria-labelledby="expertControlsLabel"><strong class="expert-section-label" id="expertControlsLabel"${bilingual(lang,{es:'OPCIONES DE CATEGORÍA',en:'CATEGORY OPTIONS'})}</strong><div class="xs-expert-slot"></div><div id="expertCategoryDetail"></div></div>
+    <div class="expert-divider" data-expert-divider="1" role="separator" aria-orientation="vertical" tabindex="0"></div>
+    <div class="expert-view-pane"><div class="xs-expert-head"><strong class="expert-section-label" id="expertPreviewLabel"${bilingual(lang,{es:'PREVIOS',en:'PREVIEWS'})}</strong><button type="button" class="xs-close" data-shell-close="expert" data-shell-label-es="Cerrar modo experto" data-shell-label-en="Close Expert mode" aria-label="${T('Cerrar modo experto','Close Expert mode')}">×</button></div><ol class="xs-log" id="xsLog" role="log" aria-live="polite"></ol></div>
+  </div>
 </section>`;
     // Los paneles viven en una capa fija que recorta su desplazamiento: plegados no crean scroll horizontal.
     return {bar, options, advanced, expert, html: [bar, '<div class="xs-layer">', options, advanced, expert, '</div>'].join('\n')};
@@ -579,6 +584,7 @@
       run(value);
     });
     input.addEventListener('keydown', ev => {
+      if(ev.key==='Enter'&&!ev.shiftKey&&!ev.isComposing){ev.preventDefault();form.requestSubmit();return;}
       if (ev.key === 'Tab' && !ev.shiftKey) {
         const brands = root.AdmiraMarca ? root.AdmiraMarca.conocidas().map(b => b.id) : BRAND_SEED;
         const c = complete(input.value, allVerbs(), brands);
@@ -625,7 +631,7 @@
     if (root.ResizeObserver) new ResizeObserver(layout).observe(parts.expert);
     new MutationObserver(translate).observe(html, {attributes: true, attributeFilter: ['lang']});
     // Los paneles conservan su anclaje cuadrático mientras se mueve su borde interior (superpuestos).
-    import(new URL('../admira-xp/scripts/panel-resize.mjs?v=20261003-panels-2',script.src).href).then(({attachPanelResize})=>{
+    import(new URL('../admira-xp/scripts/panel-resize.mjs?v=20261003-expert-1',script.src).href).then(({attachPanelResize})=>{
       for(const name of ['left','right','expert']){
         const panel=doc.getElementById(PANEL[name]),vertical=name==='expert';
         const resize=attachPanelResize(panel,{
@@ -665,6 +671,10 @@
       toggle: name => setPanel(name, !state[name]), state: () => Object.assign({}, state),
       run, print: log, registerVerb, handoff,
     });
+    import(new URL('./expert-workspace.mjs?v=20261003-expert-1',script.src).href).then(({mountExpertWorkspace})=>{
+      shared.expertWorkspace=mountExpertWorkspace({panel:parts.expert,shell:shared,config:cfg});
+      doc.dispatchEvent(new CustomEvent('xpace:expert-ready'));
+    }).catch(error=>console.warn('xpace-shell expert',error));
     doc.dispatchEvent(new CustomEvent('xpace:shell-ready'));
   }
 

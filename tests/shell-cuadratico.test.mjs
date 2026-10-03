@@ -39,7 +39,7 @@ export const SHELL_EXCEPTIONS = {
   'game.html': 'Redirección inmediata al gemelo /admira-xp/.',
   'arcade/index.html': 'Redirección inmediata al arcade del gemelo.',
   'inventari/index.html': 'Redirección inmediata a /inventario/.',
-  'xpacios/cafebreria/index.html': 'Redirección inmediata al Xpacio Cafebrería del gemelo.',
+  'inventario/cafebreria/index.html': 'Redirección inmediata al inventario local del Xpacio Cafebrería.',
   // Fragmentos.
   'admira-xp/tools/walk-sprites/bake.html': 'Fragmento: herramienta interna de horneado de sprites, sin interfaz de página.',
 };
