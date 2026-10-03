@@ -93,7 +93,7 @@
   var API = 'https://api.admira.store/da/locations';
   function goTo(id) {
     var p = new URLSearchParams(location.search); p.set('loc', id);
-    if (/^altadis-bcn-\d+$/.test(id)) { p.set('autostart', 'cafeteria'); if (!p.get('project')) p.set('project', 'estancos'); }
+    if (/^altadis-bcn-\d+$/.test(id)) { p.set('autostart', 'xtanco'); if (!p.get('project')) p.set('project', 'estancos'); }
     else if (!p.get('autostart')) p.set('autostart', 'xtanco');
     location.href = location.pathname + '?' + p.toString() + location.hash;
   }
