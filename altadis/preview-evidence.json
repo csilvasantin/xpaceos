@@ -6,8 +6,8 @@
   "comparison": "Placeholder screenshots in both modes, not a comparison of actual videos",
   "browser": "Chrome on MacBookProNegro14",
   "checks": {
-    "unit_and_shell_tests": 9,
-    "unit_and_shell_tests_passed": 9,
+    "unit_and_shell_tests": 10,
+    "unit_and_shell_tests_passed": 10,
     "locations_verified": 9,
     "registered_screens": 18,
     "official_media_connected": false,
@@ -63,5 +63,6 @@
       "sha256": "c996db7cfa2dc3809ea35f95d1937fe360266d87c5c5b689e453b4a217552242",
       "verified": true
     }
-  ]
+  ],
+  "verified_code_commit": "0b1cf761a5c1c258401b66f7fdddc2bdbfc68187"
 }
