@@ -24,7 +24,7 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (!root.document || !root.location) return;
   var params = new URLSearchParams(root.location.search);
-  if (!/^altadis-bcn-00[1-9]$/.test(params.get('loc') || '')) return;
+  if (!/^altadis-bcn-00[1-9]$/.test((params.get('loc') || '').trim().toLowerCase())) return;
   var mode = params.get('adaptado') === '0' ? 'original' : 'adapted';
   var bindings = [], mainVideo = null, statusTimer;
   function surfaces() {
@@ -67,7 +67,7 @@
   function bindVideo(v, s) {
     if (!s) return;
     var binding = bindings.find(function (b) { return b.video === v; });
-    if (binding) { binding.surface = s; return; }
+    if (binding) { if (binding.surface !== s) { binding.surface = s; apply(binding, mainVideo && mainVideo.currentTime || 0); } return; }
     binding = { video: v, surface: s }; bindings.push(binding);
     v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
     v.setAttribute('playsinline', ''); v.crossOrigin = 'anonymous';
@@ -96,8 +96,9 @@
     root.STORE_CFG.screens = ss.length;
     if (!mainVideo) {
       mainVideo = document.createElement('video'); mainVideo.id = 'altadis-main-video';
-      mainVideo.hidden = true; document.body.appendChild(mainVideo); bindVideo(mainVideo, mainSurface());
+      mainVideo.hidden = true; document.body.appendChild(mainVideo);
     }
+    bindVideo(mainVideo, mainSurface());
     if (!statusTimer) statusTimer = setInterval(status, 500);
   }
   function drawMostrador(ctx, w, h) {
