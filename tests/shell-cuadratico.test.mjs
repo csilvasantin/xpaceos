@@ -83,6 +83,47 @@ export function shellProblems(html, version = VERSION) {
 
 const pages = htmlFiles();
 
+// ─── Paneles superpuestos (Carlos, 3-oct-2026) ───
+// «El cuerpo central del sitio (contenido) no se desplaza al abrir las barras opcionales, ni
+// verticales ni la horizontal inferior». ☰, ▤ y ⌘ se superponen en todos los anchos: nada aplica
+// padding, margin, width ni height al contenido según el estado de los paneles. --xs-left,
+// --xs-right y --xs-bottom solo valen para lo flotante (p. ej. bottom de una barra pegajosa).
+const BOX = /^(?:padding|margin|scroll-padding|scroll-margin)(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?$|^(?:min-|max-)?(?:width|height|inline-size|block-size)$/;
+const PANEL_VARS = /var\(\s*--xs-(?:left|right|bottom)\b/;
+const OPEN_STATE = /\bxs-docked\b|\.(?:quad-left-open|quad-right-open|xs-expert-open)\b/;
+const SHELL_OWN = /^\s*(?:#topBar|\.xs-(?:layer|panel|expert|bar)|\.xp-panel-resize)/;
+
+export function panelShiftProblems(css) {
+  const problems = [];
+  const clean = String(css).replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const [, rawSelector, body] of clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selector = rawSelector.trim().replace(/\s+/g, ' ');
+    if (selector.startsWith('@')) continue;
+    const decls = body.split(';').map(d => d.split(':')).filter(p => p.length > 1)
+      .map(([prop, ...value]) => [prop.trim().toLowerCase(), value.join(':').trim()]);
+    for (const [prop, value] of decls) {
+      if (BOX.test(prop) && PANEL_VARS.test(value)) problems.push(`${selector} { ${prop}: ${value} } encoge o desplaza el contenido según los paneles`);
+    }
+    if (/\bxs-docked\b/.test(selector)) problems.push(`${selector}: no hay modo acoplado (los paneles se superponen)`);
+    else if (OPEN_STATE.test(selector)) {
+      // Lo del propio shell (paneles, barra) puede reaccionar; el contenido de la página, no.
+      const targets = selector.split(',').filter(part => OPEN_STATE.test(part) && !SHELL_OWN.test(part.replace(/^.*?(?:-open|xs-docked)\S*\s*/, '')));
+      if (targets.length && decls.some(([prop]) => BOX.test(prop))) problems.push(`${selector}: el contenido cambia de caja al abrir un panel`);
+    }
+  }
+  return problems;
+}
+
+function cssFiles(dir = repo, out = []) {
+  for (const name of readdirSync(dir)) {
+    if (name === 'node_modules' || name.startsWith('.')) continue;
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) cssFiles(full, out);
+    else if (name.endsWith('.css')) out.push(relative(repo, full).split('\\').join('/'));
+  }
+  return out.sort();
+}
+
 test('hay sello vigente del shell y el componente existe', () => {
   assert.match(VERSION || '', /^\d{8}-[a-z0-9-]+$/, 'la portada debe cargar el shell con ?v=AAAAMMDD-…');
   assert.ok(read('assets/xpace-shell.css').includes('#topBar.xs-bar'));
@@ -195,4 +236,66 @@ test('Tab completa verbos e ids de marca', () => {
   assert.equal(shell.complete('/marca sta', ['marca'], ['admira', 'starbucks']).value, '/marca starbucks');
   assert.deepEqual(shell.complete('/marca o', ['marca'], ['admira']).options, ['off']);
   assert.deepEqual(shell.complete('/status x', ['status'], ['admira']).options, []);
+});
+
+test('paneles superpuestos: ningún CSS encoge ni desplaza el contenido según ☰, ▤ o ⌘', () => {
+  const failures = [];
+  for (const file of cssFiles()) for (const p of panelShiftProblems(read(file))) failures.push(`${file}: ${p}`);
+  for (const page of pages) {
+    if (page in SHELL_EXCEPTIONS) continue;
+    const html = read(page);
+    for (const [, css] of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) for (const p of panelShiftProblems(css)) failures.push(`${page}: ${p}`);
+    for (const [, style] of html.matchAll(/\sstyle="([^"]*)"/gi)) for (const p of panelShiftProblems(`x{${style}}`)) failures.push(`${page} (style=""): ${p}`);
+  }
+  assert.deepEqual(failures, [], 'El contenido no se desplaza al abrir los paneles (Carlos, 3-oct-2026):\n' + failures.join('\n'));
+});
+
+test('paneles superpuestos: el guardián detecta acoples y acepta lo flotante', () => {
+  const bad = [
+    'html.xs-docked body.xs-page{padding-left:var(--xs-left);padding-right:var(--xs-right)}',
+    'body.xs-page{padding-top:var(--xs-bar-h)!important;padding-bottom:var(--xs-bottom)}',
+    '#frame{display:grid;height:calc(100dvh - var(--xs-bar-h,0px) - var(--xs-bottom,0px))}',
+    '@media (min-width:1100px){main{margin-right:var( --xs-right )}}',
+    'body.quad-left-open main{margin-left:280px}',
+    '.xs-expert-open .wrap{max-height:50vh}',
+  ];
+  for (const css of bad) assert.ok(panelShiftProblems(css).length, css);
+  const good = [
+    'body.xs-page{padding-top:var(--xs-bar-h)!important}',
+    '.xs-panel.quad-menu{position:absolute;top:var(--xs-bar-h);bottom:var(--xs-bottom);width:min(280px,86vw)}',
+    '.bar{position:sticky;bottom:var(--xs-bottom,0px)}',
+    '#frame{height:calc(100dvh - var(--xs-bar-h,0px))}',
+    'body.xs-expert-open .xs-expert .xs-log{max-height:40vh}',
+    '/* html.xs-docked body{padding-left:var(--xs-left)} */ main{margin:0 auto}',
+  ];
+  for (const css of good) assert.deepEqual(panelShiftProblems(css), [], css);
+});
+
+test('paneles superpuestos: el shell no acopla y los paneles entran cerrados en cada carga', () => {
+  const js = read('assets/xpace-shell.js');
+  const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1');
+  assert.doesNotMatch(code, /xs-docked/, 'sin modo acoplado');
+  assert.doesNotMatch(code, /getItem\(\s*(?:PANELS_KEY|['"]xpaceos_shell_panels_v1['"])/, 'no se restaura el estado abierto de los paneles');
+  assert.doesNotMatch(code, /setItem\(\s*(?:PANELS_KEY|['"]xpaceos_shell_panels_v1['"])/, 'no se guarda el estado abierto de los paneles');
+  assert.match(code, /const state = \{left: false, right: false, expert: false\};/, 'los tres paneles empiezan cerrados');
+  assert.doesNotMatch(code, /\b(?:body|main|html)\.style\.(?:padding|margin|width|height)/i, 'el shell no toca la caja del contenido');
+  assert.doesNotMatch(code, /setProperty\(\s*['"](?:padding|margin|width|height)/, 'el shell no toca la caja del contenido');
+  // Nadie más lee ni escribe el estado abierto de los paneles.
+  const offenders = [];
+  const walk = dir => {
+    for (const name of readdirSync(dir)) {
+      if (name === 'node_modules' || name.startsWith('.') || name === 'tests') continue;
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) { walk(full); continue; }
+      if (!/\.(?:html|m?js)$/.test(name)) continue;
+      const rel = relative(repo, full).split('\\').join('/');
+      if (rel === 'assets/xpace-shell.js') continue;
+      if (/(?:getItem|setItem)\(\s*['"]xpaceos_shell_panels_v1['"]/.test(readFileSync(full, 'utf8'))) offenders.push(rel);
+    }
+  };
+  walk(repo);
+  assert.deepEqual(offenders, [], 'el estado abierto de los paneles no se persiste');
+  // El CSS del shell no anima ni rellena el cuerpo según los paneles.
+  const css = read('assets/xpace-shell.css');
+  assert.doesNotMatch(css.replace(/\/\*[\s\S]*?\*\//g, ''), /body\.xs-page\s*\{[^}]*transition\s*:[^}]*padding/, 'sin transición de padding del contenido');
 });

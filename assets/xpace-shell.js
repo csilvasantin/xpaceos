@@ -20,7 +20,10 @@
 (function (root) {
   'use strict';
 
-  const PANELS_KEY = 'xpaceos_shell_panels_v1';      // {left, right, expert}: estado compartido entre páginas
+  // Clave antigua del estado abierto/cerrado. Ya no se restaura: los paneles entran CERRADOS en
+  // cada carga (Carlos, 3-oct-2026). Se borra al arrancar; el tamaño sí se recuerda
+  // (xpaceos_shell_size_v1:<panel>).
+  const PANELS_KEY = 'xpaceos_shell_panels_v1';
   const HISTORY_KEY = 'xpaceos_expert_history_v1';   // historial del CLI (↑/↓)
   const PENDING_KEY = 'xpaceos_expert_pending_v1';   // orden para el gemelo (nunca en la URL)
   const PENDING_TTL = 2 * 60 * 1000;
@@ -432,19 +435,17 @@
   const state = {left: false, right: false, expert: false};
   const PANEL = {left: 'xsOptions', right: 'xsAdvanced', expert: 'xsExpert'};
 
-  function loadPanels() {
-    try { const s = JSON.parse(local.getItem(PANELS_KEY) || '{}'); for (const k of Object.keys(state)) state[k] = s[k] === true; } catch (_) {}
-  }
-  function savePanels() { try { local.setItem(PANELS_KEY, JSON.stringify(state)); } catch (_) {} }
+  // Los paneles entran cerrados en cada página: el estado abierto no se guarda ni se restaura.
+  function forgetPanels() { try { local.removeItem(PANELS_KEY); } catch (_) {} }
 
+  // Los paneles se SUPERPONEN al contenido en todos los anchos: el cuerpo de la página no cambia
+  // de posición, ancho ni alto al abrir ☰, ▤ o ⌘. Las variables solo informan a lo flotante
+  // (los laterales se detienen sobre ⌘ con bottom:var(--xs-bottom)).
   function layout() {
-    const dock = wide();
-    const width = id => { const el = doc.getElementById(id); return el ? Math.round(el.getBoundingClientRect().width) : 0; };
-    html.style.setProperty('--xs-left', state.left && dock ? width('xsOptions') + 'px' : '0px');
-    html.style.setProperty('--xs-right', state.right && dock ? width('xsAdvanced') + 'px' : '0px');
-    const ex = doc.getElementById('xsExpert');
-    html.style.setProperty('--xs-bottom', state.expert && ex ? Math.round(ex.getBoundingClientRect().height) + 'px' : '0px');
-    html.classList.toggle('xs-docked', dock);
+    const size = (id, prop) => { const el = doc.getElementById(id); return el ? Math.round(el.getBoundingClientRect()[prop]) : 0; };
+    html.style.setProperty('--xs-left', state.left ? size('xsOptions', 'width') + 'px' : '0px');
+    html.style.setProperty('--xs-right', state.right ? size('xsAdvanced', 'width') + 'px' : '0px');
+    html.style.setProperty('--xs-bottom', state.expert ? size('xsExpert', 'height') + 'px' : '0px');
   }
 
   function paintPanel(name) {
@@ -465,7 +466,6 @@
     if (!(name in state)) return;
     state[name] = !!open;
     paintPanel(name);
-    savePanels();
     layout();
     if (open && name === 'expert' && opts.focus !== false) { const input = doc.getElementById('xsCli'); if (input) setTimeout(() => input.focus({preventScroll: true}), 30); }
     doc.dispatchEvent(new CustomEvent('xpace:shell-panel', {detail: {panel: name, open: !!open}}));
@@ -599,8 +599,8 @@
     parts = mount();
     cfg = parts.cfg;
     for (const verb of cfg.verbs) { try { registerVerb(verb); } catch (e) { console.warn(e); } }
-    loadPanels();
-    // Primer pintado sin animación (el estado viene de la visita anterior).
+    forgetPanels();
+    // Primer pintado sin animación: los tres paneles entran cerrados.
     html.classList.add('xs-no-anim');
     for (const name of Object.keys(state)) paintPanel(name);
     translate();
@@ -624,7 +624,7 @@
     root.addEventListener('resize', layout);
     if (root.ResizeObserver) new ResizeObserver(layout).observe(parts.expert);
     new MutationObserver(translate).observe(html, {attributes: true, attributeFilter: ['lang']});
-    // Docked panels keep their quadratic anchors while their inside edges move.
+    // Los paneles conservan su anclaje cuadrático mientras se mueve su borde interior (superpuestos).
     import(new URL('../admira-xp/scripts/panel-resize.mjs?v=20261003-panels-2',script.src).href).then(({attachPanelResize})=>{
       for(const name of ['left','right','expert']){
         const panel=doc.getElementById(PANEL[name]),vertical=name==='expert';
