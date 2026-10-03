@@ -1,8 +1,8 @@
 {
-  "version": "v.03.10.2026.r3.15:56",
-  "signature": "NeoMacMini · MacMini",
-  "machine": "MacMini",
-  "agent": "NeoMacMini",
-  "deployer": "NeoMacMini",
-  "evidence": "Estancos Altadis BCN: cada uno de los 9 puntos (?loc=altadis-bcn-NNN) entra en su escena de estanco propia (distribución, pared y hueco de guardado) en lugar de la cafetería · FLT-101401."
+  "version": "v.03.10.2026.r4.22:40",
+  "signature": "NeoMBP14 · MBP14",
+  "machine": "MBP14",
+  "agent": "NeoMBP14",
+  "deployer": "NeoMBP14",
+  "evidence": "Perímetro: entrada de servicio para agentes en /auth/agente con token de bóveda (ADMIRA_AGENT_LOGIN_TOKEN); sin token sigue pidiendo Google; cada uso queda registrado · encargo #4955."
 }
