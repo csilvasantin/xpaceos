@@ -62,7 +62,7 @@ const bootMarca = opts => browser(Object.assign({file: 'assets/marca-blanca.js',
 // Única excepción (encargo avatar · 4-oct-2026): el shell inserta el cargador común del
 // avatar de admiranext.com, que decide con la bandera del proyecto (apagada en XpaceOS).
 // Se comprueba aparte que sea exactamente uno y nada más; el resto del contrato sigue igual.
-const AVATAR_LOADER = 'https://www.admiranext.com/assets/avatar.js?v=20261004-avatar-3';
+const AVATAR_LOADER = 'https://www.admiranext.com/assets/avatar.js?v=20261004-avatar-5';
 const bootShell = opts => {
   const r = browser(Object.assign({file: 'assets/xpace-shell.js', src: 'https://www.xpaceos.com/assets/xpace-shell.js' + STAMP}, opts));
   const loaders = r.created.filter(n => n.tagName === 'SCRIPT' && n.src === AVATAR_LOADER);
