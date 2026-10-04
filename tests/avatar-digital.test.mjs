@@ -18,6 +18,13 @@ test('el shell reconoce solo el interruptor, no el resto de /cli', () => {
   assert.equal(shell.isAvatarCommand('/cli'), false);
   assert.equal(shell.isAvatarCommand('/status'), false);
   assert.equal(shell.isAvatarCommand(''), false);
+  assert.equal(shell.isAvatarCommand('/avatar'), true);
+  assert.equal(shell.isAvatarCommand('/avatar good'), true);
+  assert.equal(shell.isAvatarCommand('/avatar better'), true);
+  assert.equal(shell.isAvatarCommand('/avatar best'), true);
+  assert.equal(shell.isAvatarCommand('/avatarON'), true);
+  assert.equal(shell.isAvatarCommand('/avatarOFF'), true);
+  assert.equal(shell.isAvatarCommand('/avatar quizas'), false);
 });
 
 test('on/off/alternar y la línea en el idioma de la página', () => {
