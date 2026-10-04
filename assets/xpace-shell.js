@@ -456,7 +456,12 @@
     return avatarPromise;
   }
   Object.assign(shared, {
-    avatar: (text) => cargarAvatar().then(A => (A ? A.handle(text) : T('Avatar digital no disponible', 'Digital avatar unavailable'))),
+    // /cli y /cli good|better|best (como en admira.app) son /avatar y /avatar <nivel>; también en el gemelo.
+    avatar: (text) => {
+      const p = parseCommand(text);
+      if (p && p.verb === 'cli' && /^(good|better|best)?$/i.test(p.args)) text = ('/avatar ' + p.args.toLowerCase()).trim();
+      return cargarAvatar().then(A => (A ? A.handle(text) : T('Avatar digital no disponible', 'Digital avatar unavailable')));
+    },
   });
 
   // El gemelo trae la barra en línea: no se duplica nada (solo queda el API y la marca).
