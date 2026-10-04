@@ -18078,6 +18078,8 @@ function drawModelSelect(){
 // Screen nuevo (S.NETWORK): plotea TODOS los puntos del KV de OmniPublicity
 // como pins sobre un mapa estilizado; al elegir uno se entra a SU twin.
 window.STORE_LIST = window.STORE_LIST || [];
+// Red de tiendas por cliente activo (/assets/xpace-cliente.js): Admira ve todas; al cambiar de cliente se vuelve a pedir.
+document.addEventListener('xpace:cliente', () => { window.STORE_LIST = []; });
 let netSel = 0, netLoading = false, _netReturnState = null;
 function openNetworkView(){
   _netReturnState = (state===S.GAME) ? null : state;
@@ -18085,7 +18087,7 @@ function openNetworkView(){
   if(!Array.isArray(window.STORE_LIST) || !window.STORE_LIST.length){
     netLoading = true;
     fetch('https://api.admira.store/da/locations',{cache:'no-store'})
-      .then(rs=>rs.json()).then(d=>{ window.STORE_LIST=(d&&Array.isArray(d.locations))?d.locations:[]; netLoading=false; netSel=0; })
+      .then(rs=>rs.json()).then(d=>{ const all=(d&&Array.isArray(d.locations))?d.locations:[]; window.STORE_LIST=window.XpaceCliente?window.XpaceCliente.filtrar(all):all; netLoading=false; netSel=0; })
       .catch(()=>{ netLoading=false; });
   }
 }
