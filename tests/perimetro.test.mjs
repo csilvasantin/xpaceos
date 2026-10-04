@@ -161,12 +161,12 @@ test('sin secret configurado, la entrada de agentes no existe', async () => {
   assert.equal(corto.status, 404);
 });
 
-test('token correcto por Bearer: sesión de 24 h, entra en la portada y queda registrado', async () => {
+test('token correcto por Bearer: 200 JSON, cookie, entra en la portada y queda registrado', async () => {
   const usos = [];
   const f = registro(usos);
   const login = await perimetro(pide('https://www.xpaceos.com/auth/agente', {method:'POST', headers:{Authorization:`Bearer ${TOKEN}`, 'X-Agente':'NeoMBP14', 'X-Return-To':'/inventario/'}}), f);
-  assert.equal(login.status, 303);
-  assert.equal(login.headers.get('location'), '/inventario/');
+  assert.equal(login.status, 200);
+  assert.deepEqual(await login.json(), {ok:true, email:'agentes@silicio.admiranext.com', name:'NeoMBP14', agent:true});
   assert.match(login.headers.get('set-cookie'), /^__Host-perimetro_session=.+; Path=\/; Max-Age=86400; HttpOnly; Secure; SameSite=Lax$/);
   assert.equal(usos.length, 1);
   assert.equal(usos[0].ok, true);
@@ -179,6 +179,16 @@ test('token correcto por Bearer: sesión de 24 h, entra en la portada y queda re
   assert.equal(portada.status, 200);
   const quien = await perimetro(pide('https://www.xpaceos.com/auth/session', {headers:{Cookie}}), noFetch);
   assert.deepEqual(await quien.json(), {ok:true, email:'agentes@silicio.admiranext.com', site:'xpaceos', agent:true});
+});
+
+test('Bearer sin X-Agente → 200 con nombre «agente»', async () => {
+  const usos = [];
+  const f = registro(usos);
+  const login = await perimetro(pide('https://www.admira.store/auth/agente', {method:'POST', headers:{Authorization:`Bearer ${TOKEN}`}}), f);
+  assert.equal(login.status, 200);
+  assert.deepEqual(await login.json(), {ok:true, email:'agentes@silicio.admiranext.com', name:'agente', agent:true});
+  assert.match(login.headers.get('set-cookie'), /^__Host-perimetro_session=/);
+  assert.equal(usos[0].agente, 'agente');
 });
 
 test('token por formulario también entra; token malo, no, y queda registrado el intento', async () => {
