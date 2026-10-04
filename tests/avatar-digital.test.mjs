@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const shell = require('../assets/xpace-shell.js');
 const avatar = require('../assets/avatar-digital.js');
 
-test('el shell reconoce solo el interruptor, no el resto de /cli', () => {
+test('el shell reconoce el interruptor y /cli [good|better|best], no el resto de /cli', () => {
   assert.equal(shell.isAvatarCommand('/avatarDigital'), true);
   assert.equal(shell.isAvatarCommand('/digitalAvatar off'), true);
   assert.equal(shell.isAvatarCommand('avatarDigital on'), true);
@@ -15,7 +15,11 @@ test('el shell reconoce solo el interruptor, no el resto de /cli', () => {
   assert.equal(shell.isAvatarCommand('/cli helper mostrar'), true);
   assert.equal(shell.isAvatarCommand('/CLI@bot ayudante'), true);
   assert.equal(shell.isAvatarCommand('/cli distribuir'), false);
-  assert.equal(shell.isAvatarCommand('/cli'), false);
+  // Carlos (4-oct-2026): /cli solo dice el estado del avatar, como en admira.app (tool #33).
+  assert.equal(shell.isAvatarCommand('/cli'), true);
+  assert.equal(shell.isAvatarCommand('/cli good'), true);
+  assert.equal(shell.isAvatarCommand('/cli best'), true);
+  assert.equal(shell.isAvatarCommand('/cli good extra'), false);
   assert.equal(shell.isAvatarCommand('/status'), false);
   assert.equal(shell.isAvatarCommand(''), false);
   assert.equal(shell.isAvatarCommand('/avatar'), true);
