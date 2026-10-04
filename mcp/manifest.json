@@ -1,12 +1,12 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.02.10.2026.r2.11:23",
+  "version": "v.04.10.2026.r5.01:40",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.12.19",
+    "version": "2.12.28",
     "health": "https://mcp.admira.store/",
     "tool_count": 35
   },
@@ -209,7 +209,7 @@
     }
   ],
   "people_visibility": {
-    "updated_at": "2026-09-29",
+    "updated_at": "2026-10-04",
     "entrypoints": [
       "Expert composer",
       "window.__xtExec",
@@ -219,7 +219,7 @@
       {
         "es": "/gente on|off",
         "en": "/people on|off",
-        "target": "staff_and_customers"
+        "target": "all_human_scene_actors"
       },
       {
         "es": "/personal on|off",
@@ -255,12 +255,17 @@
     "tutorial": "https://www.xpaceos.com/help/#people-tutorial",
     "default": {
       "staff": false,
-      "customers": false
+      "customers": false,
+      "passersby": false,
+      "specials": false
     },
     "startup": {
-      "es": "Por defecto las tiendas empiezan con /gente OFF: personal y clientes ocultos hasta activarlos. Se conserva una elección explícita guardada en la partida.",
-      "en": "Stores default to /people OFF: staff and customers stay hidden until enabled. An explicit choice saved in the game is preserved."
-    }
+      "es": "Todos los Xpacios empiezan con /people OFF (/gente OFF): personal, clientes, viandantes y personajes especiales humanos ocultos. /people on los activa; /personal y /clientes permiten activar sólo su grupo. Se conservan personas, aforo, simulación y elecciones explícitas guardadas. Los robots y los equipos IoT mantienen sus controles. Good, Better y Best comparten colisiones físicas de personas y robots; una ruta cerrada espera. La vinculación con equipos físicos y la telemetría IoT sigue pendiente.",
+      "en": "All Xpaces default to /people OFF (/gente OFF): staff, customers, passersby and special human characters stay hidden. /people on enables them; /staff and /customers enable only their own group. People, audience counts, simulation and explicit saved choices are retained. Robots and IoT devices keep their controls. Good, Better and Best share physical collisions for people and robots; a closed route waits. Physical equipment binding and IoT telemetry remain pending."
+    },
+    "pending": "physical robot binding, real Stock and IoT telemetry",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/people-visibility.md",
+    "collision_contract": "https://www.xpaceos.com/admira-xp/docs/actor-collision.md"
   },
   "expert_layout": {
     "es": "Experto queda anclado al borde inferior, de extremo a extremo y sin margen exterior. Arrastra su tirador superior hacia arriba para ganar altura o hacia abajo para reducirla; el borde inferior no se mueve. Las posiciones flotantes antiguas se ignoran. Hay tres bloques: izquierda CLI con las categorías debajo de la entrada, centro opciones de la categoría seleccionada, derecha vistas y previos con Local view. Los dos separadores verticales ajustan el ancho de bloques contiguos; usa las flechas o doble clic/Inicio para restablecer. La altura y los anchos se guardan en este navegador. Opciones y Avanzadas conservan sus barras laterales independientes.",
@@ -788,7 +793,8 @@
     "shelf_best": "https://www.xpaceos.com/admira-xp/docs/shelf-best.md",
     "inventory_breakdown": "https://www.xpaceos.com/admira-xp/docs/inventory-breakdown.md",
     "inventory_finish_compare": "https://www.xpaceos.com/admira-xp/docs/inventory-finishes.md",
-    "shelf_product_content": "https://www.xpaceos.com/admira-xp/docs/shelf-product-content.md"
+    "shelf_product_content": "https://www.xpaceos.com/admira-xp/docs/shelf-product-content.md",
+    "actor_collision": "https://www.xpaceos.com/admira-xp/docs/actor-collision.md"
   },
   "surface_editor": {
     "es": "Inventario → Starbucks PG103 → selecciona una unidad → Editar, en la esquina del modelo. Elige una superficie en la lista o tocando el modelo; cambia el color, importa PNG/JPG/WebP (hasta 20 MB, optimizados a 1024 px) o usa Cuadros, Rayas o Terrazo. Ajusta repetición, rotación, rugosidad y metalizado; compara con el original y usa Deshacer/Rehacer. Aplicar al Xpacio guarda una versión por local + instancia + CI y actualiza sus superficies en Better/Best, también en otra pestaña del mismo navegador y dominio. Histórico permite recuperar un acabado y aplicarlo como nueva versión. Exportar copia JSON conserva imágenes e histórico; importar recupera el acabado actual como una nueva versión, sin reemplazar el histórico local. Guardado local, sin sincronización entre usuarios ni escritura en el histórico patrimonial de Yokup. Good, Matrix y los archivos GLB/Blender originales conservan su vista. El botellero no está colocado en la escena de referencia; editarlo no añade una ubicación. /marca y el shell Experto se conservan; /avatarDigital continúa a cargo de Woz.",
@@ -805,11 +811,12 @@
     "new_remote_tools": false
   },
   "itil_inventory_link": {
-    "es": "ITIL está debajo de Percepción, a la derecha de Pixeria: abre en otra pestaña https://www.xpaceos.com/inventario/, con catálogo de muebles detallados, modelos 3D y editor. Yokup conserva el inventario maestro ITIL. Inventario mantiene sus acciones locales de añadir/eliminar.",
-    "en": "ITIL sits below Perception, to the right of Pixeria: it opens https://www.xpaceos.com/inventario/ in a new tab, with detailed furniture, 3D models and the editor. Yokup remains the master ITIL inventory. Inventory keeps its local add/remove actions.",
-    "url": "https://www.xpaceos.com/inventario/",
-    "category_id": "itil",
-    "action": "open_new_tab"
+    "es": "Inventory/ITIL unifica Inventario e ITIL en la posición anterior de Inventory, junto a Percepción. Debajo muestra el número total de items propios del Xpacio. La cuadrícula tiene diez subcategorías y elimina la ficha Pixeria. Al pulsar Inventory/ITIL, la lista y la búsqueda aparecen en la segunda columna; seleccionar un objeto muestra su detalle en la tercera. Se conservan las acciones de añadir/eliminar, las identidades, el historial y las fichas editables de Cafebrería. La importación desde PixerIA sigue disponible en Mobiliario → Distribuir. Yokup sigue siendo el maestro ITIL; esta interfaz no acredita vinculación física IoT.",
+    "en": "Inventory/ITIL merges Inventory and ITIL at the former Inventory position, next to Perception. Its subtitle shows the total number of items owned by the Xpace. The grid has ten subcategories and removes the Pixeria card. Press Inventory/ITIL for the list and search in the second column; select an object for details in the third. Add/remove actions, identities, history and editable Cafebrería records are retained. PixerIA import remains available under Furniture → Distribute. Yokup remains the ITIL master; this interface does not establish physical IoT binding.",
+    "url": null,
+    "category_id": "inventory",
+    "action": "open_expert_second_column",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/inventory-merged.md"
   },
   "shelf_best": {
     "status": "implemented",
@@ -1342,8 +1349,8 @@
     "physical_publication": false
   },
   "expert_workspace": {
-    "es": "El modo Experto comparte el patrón de Starbucks en Cafebrería y las páginas con el shell común: CONTROL XTORE y categorías a la izquierda, opciones de la categoría en el centro y PREVIOS con las respuestas a la derecha. Las doce categorías mantienen los mismos iconos y orden; ITIL está debajo de Percepción, a la derecha de Pixeria. Arrastra los dos separadores para ajustar las columnas; las flechas también funcionan y Inicio o doble clic restaura 32/38/30. El borde superior sigue redimensionando la altura. En Cafebrería, Mobiliario → Distribuir muebles abre el editor real en el centro; Inventario e ITIL muestran las mismas fichas locales. ↗ desacopla la herramienta como ventana movible, redimensionable y cerrable. Cerrar Experto devuelve las herramientas abiertas a su ubicación flotante. Enter ejecuta la orden y Mayús+Enter añade una línea. Se conservan historial CLI, /marca (/brand), /avatarDigital y la distribución guardada. Las acciones disponibles en el gemelo se abren allí cuando la página no tiene una herramienta local. Los paneles se superponen a la escena y entran cerrados en cada carga. El gemelo nativo conserva su menú y sus controles originales.",
-    "en": "Expert mode shares the Starbucks pattern in Cafebrería and common-shell pages: CONTROL XTORE and categories on the left, category options in the centre and PREVIEWS with responses on the right. The twelve categories retain the same icons and order; ITIL sits below Perception, to the right of Pixeria. Drag the two separators to resize columns; arrow keys also work and Home or double-click restores 32/38/30. The upper edge still resizes the dock height. In Cafebrería, Furniture → Distribute furniture opens the real editor in the centre; Inventory and ITIL show the same local records. ↗ detaches the tool as a movable, resizable, closable window. Closing Expert restores open tools to their floating location. Enter runs the command and Shift+Enter adds a line. CLI history, /brand (/marca), /avatarDigital and saved layout are preserved. Actions available in the twin open there when a page has no local tool. Panels overlay the scene and start closed on every page load. The native twin retains its original menu and controls.",
+    "es": "El modo Experto comparte el patrón de Starbucks en Cafebrería y las páginas con el shell común: CONTROL XTORE y categorías a la izquierda, opciones de la categoría en el centro y PREVIOS con las respuestas a la derecha. Las diez categorías conservan su orden; Inventory/ITIL ocupa el lugar anterior de Inventory y muestra el número de items. La ficha Pixeria se retira de la cuadrícula. Arrastra los dos separadores para ajustar las columnas; las flechas también funcionan y Inicio o doble clic restaura 32/38/30. El borde superior sigue redimensionando la altura. En Cafebrería, Mobiliario → Distribuir muebles abre el editor real en el centro; Inventory/ITIL muestra las fichas locales en la segunda columna y el detalle seleccionado en la tercera. ↗ desacopla la herramienta como ventana movible, redimensionable y cerrable. Cerrar Experto devuelve las herramientas abiertas a su ubicación flotante. Enter ejecuta la orden y Mayús+Enter añade una línea. Se conservan historial CLI, /marca (/brand), /avatarDigital y la distribución guardada. Las acciones disponibles en el gemelo se abren allí cuando la página no tiene una herramienta local. Los paneles se superponen a la escena y entran cerrados en cada carga. El gemelo nativo conserva su menú y sus controles originales.",
+    "en": "Expert mode shares the Starbucks pattern in Cafebrería and common-shell pages: CONTROL XTORE and categories on the left, category options in the centre and PREVIEWS with responses on the right. The ten categories retain their order; Inventory/ITIL occupies the former Inventory position and shows the item count. The Pixeria card is removed from the grid. Drag the two separators to resize columns; arrow keys also work and Home or double-click restores 32/38/30. The upper edge still resizes the dock height. In Cafebrería, Furniture → Distribute furniture opens the real editor in the centre; Inventory/ITIL shows local records in the second column and selected details in the third. ↗ detaches the tool as a movable, resizable, closable window. Closing Expert restores open tools to their floating location. Enter runs the command and Shift+Enter adds a line. CLI history, /brand (/marca), /avatarDigital and saved layout are preserved. Actions available in the twin open there when a page has no local tool. Panels overlay the scene and start closed on every page load. The native twin retains its original menu and controls.",
     "guide": "https://www.xpaceos.com/admira-xp/docs/expert-workspace.md",
     "implementation": "assets/expert-workspace.mjs",
     "columns": [
@@ -1361,9 +1368,7 @@
       "avatar3d",
       "impactos",
       "inventory",
-      "perception",
-      "pixerai",
-      "itil"
+      "perception"
     ],
     "columns_key": "xpace_expert_columns_v1",
     "history_key": "xpaceos_expert_history_v1",
@@ -1373,6 +1378,172 @@
     ],
     "new_remote_tools": false,
     "physical_publication": false
+  },
+  "topbar_core": {
+    "es": "La barra superior usa el formato de Cafebrería: ☰, XpaceOS (con esta escritura) y el nombre del espacio activo como texto, por ejemplo Cafebrería, Estancos o Starbucks; ▤ Avanzado y ⌘ Experto quedan a la derecha. El nombre no es un combo ni cambia al preseleccionar otro proyecto: identifica la escena abierta. Se ocultan el acceso de proyecto/local junto a Opciones y los indicadores de ventas, beneficio, satisfacción, tráfico, aforo, embudo, estado y cuotas de marcas. Proyecto y local se eligen desde Opciones → Proyecto y local. Los nodos, IDs, cálculos, conexiones y datos guardados se conservan. La futura selección de indicadores queda pendiente hasta completar el núcleo de la interfaz gráfica y verificar los elementos IoT operativos; este cambio no acredita su conexión.",
+    "en": "The top bar uses the Cafebrería format: ☰, XpaceOS (with this capitalization) and the active space name as text, such as Cafebrería, Estancos or Starbucks; ▤ Advanced and ⌘ Expert stay on the right. The name is not a combo box and does not change when another project is preselected: it identifies the open scene. The project/venue shortcut next to Options and the sales, profit, satisfaction, traffic, occupancy, funnel, status and brand-share indicators are hidden. Select a project and venue through Options → Project and venue. Nodes, IDs, calculations, connections and saved data are retained. Future indicator selection is pending until the graphical interface core is complete and operational IoT elements are verified; this change does not confirm their connection.",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/topbar-core.md",
+    "implementation": "admira-xp/index.html#topbarCoreStyle",
+    "status": "implemented",
+    "pending": "indicator selection after GUI core and verified operational IoT",
+    "preserves": [
+      "projectSelector",
+      "projectVenueSelector",
+      "telemetry nodes and producers",
+      "saved context",
+      "Expert CLI history",
+      "/marca",
+      "/avatarDigital"
+    ]
+  },
+  "inventory_scope": {
+    "es": "ITIL abre el inventario del Xpacio visitado en la segunda columna de Experto y el detalle seleccionado en la tercera. El enlace opcional al catálogo conserva el mismo dominio, proyecto, local, idioma y marca y publica primero la distribución actual en este navegador. Tarjetas, selector 3D, desgloses y descargas se limitan a sus modelos; un enlace a una pieza ajena no la carga. Un Xpacio desconocido muestra un inventario vacío y pide abrir ITIL desde la escena. /inventario en el gemelo lista sólo sus modelos, conservando los números permanentes y las piezas retiradas para su recuperación. Las importaciones explícitas y Deshacer mantienen su funcionamiento. Starbucks PG103 conserva sus unidades y modelos 44–50 e incluye sus seis pantallas virtuales, TPV y altavoz; no acredita vinculación ni telemetría física. Cafebrería conserva su inventario completo de la escena y su librería 51. El catálogo general sin contexto sigue disponible para consultar plantillas. No crea altas patrimoniales en Yokup.",
+    "en": "ITIL opens the inventory of the Xpace being visited in the second Expert column and the selected details in the third. The optional catalogue link preserves the same origin, project, venue, language and brand and first publishes the current layout in this browser. Cards, the 3D selector, breakdowns and downloads are limited to its models; links to foreign pieces do not load them. Unknown Xpacios show an empty inventory and ask users to open ITIL from the scene. /inventario in the twin lists only its models, preserving permanent numbers and removed pieces for recovery. Explicit imports and Undo retain their behavior. Starbucks PG103 keeps its units and models 44–50 and includes its six virtual screens, POS and speaker; this does not establish physical binding or telemetry. Cafebrería retains its full scene inventory and bookcase 51. The general catalogue without context remains available for browsing templates. No Yokup lifecycle assets are created.",
+    "route": "/inventario/?space=<active-space>&project=<active-project>",
+    "same_origin": true,
+    "layout_key": "xpaceos:inventory-layout:<active-space>",
+    "scope_sources": [
+      "active native layout and existing per-space ledger",
+      "Starbucks registered instance/model manifest and virtual device mappings",
+      "Cafebrería existing full scene inventory"
+    ],
+    "stable_ids": {
+      "starbucks_models": [
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "cafebreria_library": 51
+    },
+    "unknown_scope": "empty; no global fallback",
+    "foreign_asset": "not loaded; choose an owned model",
+    "physical_binding": "pending; no new remote write tool",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/inventory-scope.md",
+    "tutorial": "https://www.xpaceos.com/help/#inventory-scope",
+    "entry": "Inventory/ITIL: second-column inventory and third-column details"
+  },
+  "inventory_columns": {
+    "es": "La ficha Inventory/ITIL muestra el número de piezas y fichas propias del Xpacio, incluidas las registradas pendientes y las retiradas conservadas para recuperación; dos unidades de un modelo cuentan como dos piezas. Al pulsar Inventory/ITIL o ejecutar /inventario se abre Experto: lista y búsqueda en la segunda columna; al seleccionar una pieza, detalle en la tercera. La escena permanece visible. El contador refleja el inventario completo, también al buscar. Cafebrería conserva sus campos editables, visibilidad, editor y exportación JSON/CSV. Starbucks incluye sus unidades registradas y ocho fichas IoT virtuales. La vinculación física IoT sigue pendiente; las colisiones del gemelo se describen en actor-collision.md.",
+    "en": "The Inventory/ITIL card shows the number of items and records owned by the Xpace, including pending registered records and removed items retained for recovery; two units of one model count as two items. Press Inventory/ITIL or run /inventario to open Expert: list and search in the second column; select an item for details in the third column. The scene remains visible. The count reflects the full inventory, including while searching. Cafebrería retains its editable fields, visibility, editor and JSON/CSV export. Starbucks includes its registered units and eight virtual IoT records. Physical IoT binding remains pending; twin collisions are described in actor-collision.md.",
+    "entry": "Inventory/ITIL or /inventario",
+    "count": "owned unit/record IDs, including pending registered and retained removed items; not model count",
+    "columns": {
+      "second": "owned inventory list and search",
+      "third": "selected item details"
+    },
+    "cafebreria": "existing full scene records and editing/export preserved",
+    "source": "inventario/workspace-model.mjs; inventario/workspace.mjs; Cafebrería inventory-panel.mjs",
+    "physical_binding": "pending; no new remote write tool",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/inventory-columns.md",
+    "tutorial": "https://www.xpaceos.com/help/#inventory-columns",
+    "status": "implemented"
+  },
+  "inventory_merged": {
+    "es": "Inventory/ITIL unifica Inventario e ITIL en la posición anterior de Inventory, junto a Percepción. Debajo muestra el número total de items propios del Xpacio. La cuadrícula tiene diez subcategorías y elimina la ficha Pixeria. Al pulsar Inventory/ITIL, la lista y la búsqueda aparecen en la segunda columna; seleccionar un objeto muestra su detalle en la tercera. Se conservan las acciones de añadir/eliminar, las identidades, el historial y las fichas editables de Cafebrería. La importación desde PixerIA sigue disponible en Mobiliario → Distribuir. Yokup sigue siendo el maestro ITIL; esta interfaz no acredita vinculación física IoT.",
+    "en": "Inventory/ITIL merges Inventory and ITIL at the former Inventory position, next to Perception. Its subtitle shows the total number of items owned by the Xpace. The grid has ten subcategories and removes the Pixeria card. Press Inventory/ITIL for the list and search in the second column; select an object for details in the third. Add/remove actions, identities, history and editable Cafebrería records are retained. PixerIA import remains available under Furniture → Distribute. Yokup remains the ITIL master; this interface does not establish physical IoT binding.",
+    "category_id": "inventory",
+    "label": {
+      "es": "Inventario/ITIL",
+      "en": "Inventory/ITIL"
+    },
+    "subtitle": {
+      "es": "<count> elementos",
+      "en": "<count> items"
+    },
+    "category_ids": [
+      "signage",
+      "admiralive",
+      "livecam",
+      "dvr",
+      "anonymizer",
+      "editor",
+      "avatar3d",
+      "impactos",
+      "inventory",
+      "perception"
+    ],
+    "category_count": 10,
+    "removed_cards": [
+      "pixerai",
+      "itil"
+    ],
+    "legacy_alias": "itil -> inventory",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/inventory-merged.md",
+    "tutorial": "https://www.xpaceos.com/help/#inventory-merged",
+    "new_remote_tools": false
+  },
+  "inventory_language": {
+    "es": "Inventario/ITIL sigue el idioma activo del Xpacio: en castellano muestra Inventario/ITIL y elementos; en inglés, Inventory/ITIL e items. Nombres estándar de mobiliario e IoT, categorías, búsqueda, modelo y detalle se presentan en ese idioma. Cambiar el idioma actualiza las columnas sin perder la selección ni el texto de búsqueda. Cafebrería traduce sus fichas, campos y acciones; conserva las ediciones sin guardar. Los nombres personalizados, identificadores, códigos ITIL, fichas guardadas y exportaciones JSON/CSV conservan sus datos originales. La traducción es de presentación. Continúan las diez subcategorías y el inventario propio de cada Xpacio.",
+    "en": "Inventory/ITIL follows the active Xpace language: Spanish displays Inventario/ITIL and elementos; English displays Inventory/ITIL and items. Standard furniture and IoT names, categories, search, model and details use that language. Changing language updates the columns without losing selection or search text. Cafebrería translates records, fields and actions while retaining unsaved edits. Custom names, identifiers, ITIL codes, saved records and JSON/CSV exports retain their original data. Translation affects presentation. The ten subcategories and each Xpace’s own inventory remain available.",
+    "supported_languages": [
+      "es",
+      "en"
+    ],
+    "source": "document.documentElement.lang",
+    "category_id": "inventory",
+    "labels": {
+      "es": "Inventario/ITIL",
+      "en": "Inventory/ITIL"
+    },
+    "subtitle": {
+      "es": "<count> elementos",
+      "en": "<count> items"
+    },
+    "presentation_only": true,
+    "preserves": [
+      "ids",
+      "itil_codes",
+      "custom_names",
+      "saved_records",
+      "exports",
+      "selection",
+      "search",
+      "unsaved_edits"
+    ],
+    "guide": "https://www.xpaceos.com/admira-xp/docs/inventory-language.md",
+    "tutorial": "https://www.xpaceos.com/help/#inventory-language",
+    "new_remote_tools": false
+  },
+  "actor_collision": {
+    "es": "En Good, Better y Best, las personas y robots del interior usan el mismo mapa físico: perímetro, puertas, arquitectura y envolventes de las mallas de los muebles. Se comprueba el cuerpo completo y cada tramo del recorrido. Una ruta cerrada espera y se recalcula cuando cambia el espacio; no atraviesa el obstáculo ni registra entrada o salida sin llegar al destino correcto. La recuperación de una partida o de un actor cubierto por un mueble conserva su componente accesible; si queda lleno, se oculta temporalmente y reaparece al existir una posición válida. People sigue OFF por defecto y conserva elecciones guardadas. Matrix aplica este mapa a sus actores heredados conservando fotografía y proyección. La conexión con robots físicos, stock real y telemetría IoT sigue pendiente.",
+    "en": "In Good, Better and Best, interior people and robots use the same physical map: perimeter, doors, architecture and furniture mesh envelopes. The full body and every swept movement segment are checked. A closed route waits and is recalculated when the space changes; it cannot bypass an obstacle or complete an entry or exit without reaching the correct destination. Save recovery or furniture covering an actor retains its reachable component; if full, the actor stays temporarily hidden and reappears when a valid position exists. People remains OFF by default and retains saved choices. Matrix applies this map to its legacy actors while preserving its photograph and projection. Connection to physical robots, real stock and IoT telemetry remains pending.",
+    "status": "implemented",
+    "help_topic": "actor-collision",
+    "qualities": [
+      "good",
+      "better",
+      "best"
+    ],
+    "matrix": "same physical map for legacy actors; photograph and projection retained",
+    "radius_floor_tiles": {
+      "human": 0.72,
+      "unitree": 0.52,
+      "scale": "may increase; never reduced by quality"
+    },
+    "physical_geometry": [
+      "perimeter and door aperture",
+      "architecture and fixed hardness",
+      "nominal footprints and transformed mesh envelopes"
+    ],
+    "route_contract": "full swept body; preserve destination region; exact valid exit; blocked paths wait and replan",
+    "recovery": "previous reachable component retained while temporarily hidden; resume when valid space exists",
+    "people_default": "OFF; explicit saved visibility retained",
+    "source": [
+      "admira-xp/scripts/customer-navigation.mjs",
+      "admira-xp/scripts/customer-motion.mjs",
+      "admira-xp/scripts/physical-colliders.mjs",
+      "admira-xp/scripts/catalog-collision-bounds.mjs",
+      "admira-xp/scripts/life-scene.mjs",
+      "admira-xp/index.html"
+    ],
+    "guide": "https://www.xpaceos.com/admira-xp/docs/actor-collision.md",
+    "tutorial": "https://www.xpaceos.com/help/#actor-collision",
+    "pending": "physical robot binding, real Stock and IoT telemetry",
+    "new_remote_tools": false
   },
   "altadis_pixeria_preview": {
     "status": "local-preview-official-content-pending",

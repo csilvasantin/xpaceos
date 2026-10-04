@@ -140,3 +140,93 @@ test('/auth/permisos: superuser ve las casillas y puede dar acceso; usuario norm
   const normal = await perimetro(ctx('https://www.xpaceos.com/auth/permisos', {Cookie:await sesion('ana@admira.com')}), f);
   assert.equal(normal.status, 403);
 });
+
+// ── Entrada de servicio de agentes (/auth/agente) ──
+const TOKEN = 'a'.repeat(48);
+const envAgente = {...env, ADMIRA_AGENT_LOGIN_TOKEN:TOKEN};
+const pide = (url, init = {}, e = envAgente) => ({
+  request:new Request(url, init), env:e,
+  next:async () => new Response('<html>contenido</html>', {headers:{'content-type':'text/html'}})
+});
+const registro = (usos) => async (url, opts = {}) => {
+  if (new URL(url).pathname === '/agent-log') { usos.push(JSON.parse(opts.body)); return Response.json({ok:true}); }
+  throw new Error('inesperado ' + url);
+};
+const cookieDe = (r) => r.headers.get('set-cookie').split(';')[0];
+
+test('sin secret configurado, la entrada de agentes no existe', async () => {
+  const r = await perimetro(pide('https://www.xpaceos.com/auth/agente', {method:'POST', headers:{Authorization:`Bearer ${TOKEN}`}}, env), noFetch);
+  assert.equal(r.status, 404);
+  const corto = await perimetro(pide('https://www.xpaceos.com/auth/agente', {}, {...env, ADMIRA_AGENT_LOGIN_TOKEN:'corto'}), noFetch);
+  assert.equal(corto.status, 404);
+});
+
+test('token correcto por Bearer: sesión de 24 h, entra en la portada y queda registrado', async () => {
+  const usos = [];
+  const f = registro(usos);
+  const login = await perimetro(pide('https://www.xpaceos.com/auth/agente', {method:'POST', headers:{Authorization:`Bearer ${TOKEN}`, 'X-Agente':'NeoMBP14', 'X-Return-To':'/inventario/'}}), f);
+  assert.equal(login.status, 303);
+  assert.equal(login.headers.get('location'), '/inventario/');
+  assert.match(login.headers.get('set-cookie'), /^__Host-perimetro_session=.+; Path=\/; Max-Age=86400; HttpOnly; Secure; SameSite=Lax$/);
+  assert.equal(usos.length, 1);
+  assert.equal(usos[0].ok, true);
+  assert.equal(usos[0].agente, 'NeoMBP14');
+  assert.equal(usos[0].site, 'xpaceos');
+  assert.ok(!JSON.stringify(usos).includes(TOKEN));
+  const Cookie = cookieDe(login);
+  // La sesión de agente no consulta la lista: ni /access ni red.
+  const portada = await perimetro(pide('https://www.xpaceos.com/', {headers:{Cookie}}), noFetch);
+  assert.equal(portada.status, 200);
+  const quien = await perimetro(pide('https://www.xpaceos.com/auth/session', {headers:{Cookie}}), noFetch);
+  assert.deepEqual(await quien.json(), {ok:true, email:'agentes@silicio.admiranext.com', site:'xpaceos', agent:true});
+});
+
+test('token por formulario también entra; token malo, no, y queda registrado el intento', async () => {
+  const usos = [];
+  const f = registro(usos);
+  const bueno = new FormData(); bueno.set('token', TOKEN); bueno.set('agente', 'TrinityMBP14');
+  const ok = await perimetro(pide('https://www.admira.store/auth/agente', {method:'POST', body:bueno, headers:{Origin:'https://www.admira.store'}}), f);
+  assert.equal(ok.status, 303);
+  const malo = new FormData(); malo.set('token', 'b'.repeat(48)); malo.set('agente', 'Intruso');
+  const no = await perimetro(pide('https://www.admira.store/auth/agente', {method:'POST', body:malo}), f);
+  assert.equal(no.status, 401);
+  assert.equal(no.headers.get('set-cookie'), null);
+  assert.match(await no.text(), /Token no válido/);
+  const bearerMalo = await perimetro(pide('https://www.admira.store/auth/agente', {method:'POST', headers:{Authorization:'Bearer ' + 'c'.repeat(48)}}), f);
+  assert.equal(bearerMalo.status, 401);
+  const vacio = await perimetro(pide('https://www.admira.store/auth/agente', {method:'POST'}), f);
+  assert.equal(vacio.status, 401);
+  assert.deepEqual(usos.map((u) => u.ok), [true, false, false, false]);
+  const ajeno = await perimetro(pide('https://www.admira.store/auth/agente', {method:'POST', body:bueno, headers:{Origin:'https://evil.example'}}), f);
+  assert.equal(ajeno.status, 403);
+});
+
+test('el token no se acepta en la URL y sin él la web sigue pidiendo Google', async () => {
+  const f = registro([]);
+  const enUrl = await perimetro(pide(`https://www.xpaceos.com/auth/agente?token=${TOKEN}`), f);
+  assert.equal(enUrl.status, 200);
+  assert.equal(enUrl.headers.get('set-cookie'), null);
+  assert.ok(!(await enUrl.text()).includes(TOKEN));
+  const portada = await perimetro(pide(`https://www.xpaceos.com/?token=${TOKEN}`, {headers:{Authorization:`Bearer ${TOKEN}`}}), f);
+  assert.equal(portada.status, 302);
+  assert.match(portada.headers.get('location'), /\/auth\/login/);
+});
+
+test('la sesión de agente es de su web, no gestiona permisos y muere al cambiar el token', async () => {
+  const f = registro([]);
+  const login = await perimetro(pide('https://www.xpaceos.com/auth/agente', {method:'POST', headers:{Authorization:`Bearer ${TOKEN}`}}), f);
+  const Cookie = cookieDe(login);
+  const otraWeb = await perimetro(pide('https://www.admira.store/', {headers:{Cookie}}), noFetch);
+  assert.equal(otraWeb.status, 302);
+  const permisos = await perimetro(pide('https://www.xpaceos.com/auth/permisos', {headers:{Cookie}}), noFetch);
+  assert.equal(permisos.status, 403);
+  const rotado = {...env, ADMIRA_AGENT_LOGIN_TOKEN:'z'.repeat(48)};
+  assert.equal((await perimetro(pide('https://www.xpaceos.com/', {headers:{Cookie}}, rotado), noFetch)).status, 302);
+  assert.equal((await perimetro(pide('https://www.xpaceos.com/', {headers:{Cookie}}, env), noFetch)).status, 302);
+});
+
+test('una sesión de Google con el correo de agente, sin huella, no entra', async () => {
+  const todos = async () => Response.json({ok:true, allowed:true, superuser:true});
+  const r = await perimetro(pide('https://www.xpaceos.com/', {headers:{Cookie:await sesion('agentes@silicio.admiranext.com')}}), todos);
+  assert.equal(r.status, 302);
+});

@@ -1,11 +1,13 @@
 {
-  "version": "v.08.09.2026.r2.10:27",
+  "version": "v.04.10.2026.r1.00:08",
   "deployedAt": "2026-09-08T08:27:09Z",
-  "deployer": "TrinityMBP16",
-  "machine": "MacBookPro16",
-  "signature": "TrinityMBP16 · MacBookPro16",
+  "deployer": "OraculoMacMini",
+  "machine": "MacMini",
+  "signature": "OraculoMacMini · MacMini",
   "git": "8e4650a641b2ad2e3e3ed0ad1aaf227902114440",
   "gitShort": "8e4650a",
   "gitFull": "8e4650a641b2ad2e3e3ed0ad1aaf227902114440",
-  "dirty": false
+  "dirty": false,
+  "agent": "OraculoMacMini",
+  "evidence": "ITIL por Xpacio: mobiliario e IoT del proyecto activo, enlaces y modelos aislados; ayuda bilingüe web y MCP actualizada."
 }

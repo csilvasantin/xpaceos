@@ -1,3 +1,4 @@
+import {inventoryContext,inventoryURL} from '../inventario/context.mjs?v=scope-20261004-1';
 import '../admira-xp/scripts/expert-categories.js?v=20261003-expert-1';
 import '../admira-xp/scripts/expert-dock.js?v=20261003-expert-1';
 
@@ -11,10 +12,8 @@ export const EXPERT_CATEGORIES=[
  {id:'editor',es:'Mobiliario',en:'Furniture',detail:{es:'editor',en:'editor'},actions:[action('Distribuir muebles','Distribute furniture','/distribuir')]},
  {id:'avatar3d',es:'Avatar3D',en:'Avatar3D',detail:{es:'en vivo',en:'live'},actions:[action('Encender tótem en el gemelo','Turn on twin totem','/avatar3d on'),action('Apagar tótem en el gemelo','Turn off twin totem','/avatar3d off'),action('Avatar digital · on','Digital avatar · on','/avatardigital on'),action('Avatar digital · off','Digital avatar · off','/avatardigital off')]},
  {id:'impactos',es:'Audiencia',en:'Audience',detail:{es:'impactos · CPM',en:'impacts · CPM'},actions:[action('Mostrar audiencia','Show audience','/impactos on'),action('Ocultar audiencia','Hide audience','/impactos off')]},
- {id:'inventory',es:'Inventario',en:'Inventory',detail:{es:'consultar · CLI',en:'view · CLI'},actions:[action('Consultar inventario','View inventory','/inventario')]},
+ {id:'inventory',es:'Inventario/ITIL',en:'Inventory/ITIL',detail:{es:'… elementos',en:'… items'},actions:[action('Consultar inventario','View inventory','/inventario')]},
  {id:'perception',es:'Percepción',en:'Perception',detail:{es:'La pantalla te ve',en:'The screen sees you'},actions:[{es:'Abrir el gemelo · categoría Percepción',en:'Open the twin · Perception category',href:'/admira-xp/?autostart=xtanco&quality=better'}]},
- {id:'pixerai',es:'Pixeria',en:'Pixeria',detail:{es:'muebles · contenidos',en:'furniture · contents'},actions:[{es:'Abrir Pixeria',en:'Open Pixeria',href:'https://www.pixeria.com/'}]},
- {id:'itil',es:'ITIL',en:'ITIL',detail:{es:'Catálogo · Editor 3D',en:'Catalogue · 3D editor'},actions:[{es:'Abrir catálogo ITIL',en:'Open ITIL catalogue',href:'/inventario/'}]},
 ];
 export function expertCategories(overrides={}){return EXPERT_CATEGORIES.map(def=>({...def,...overrides[def.id],id:def.id}));}
 
@@ -62,7 +61,7 @@ export function mountExpertWorkspace({panel,shell,config}){
   if(def.input){const label=el('label'),caption=el('span',t(def.input));caption.dataset.shellEs=def.input.es;caption.dataset.shellEn=def.input.en;input=el('input');input.type='text';label.append(caption,input);host.append(label);}
   for(const spec of def.actions||[]){
    const button=el(spec.href?'a':'button',t(spec));button.dataset.shellEs=spec.es;button.dataset.shellEn=spec.en;
-   if(spec.href){button.href=spec.href;if(/^https:/.test(spec.href)){button.target='_blank';button.rel='noopener noreferrer';}}
+   if(spec.href){const context=inventoryContext(doc.location?.href||view.location.href);button.href=spec.href==='/inventario/'&&context.scoped?inventoryURL(doc.location?.href||view.location.href,context).href:spec.href;if(/^https:/.test(spec.href)){button.target='_blank';button.rel='noopener noreferrer';}}
    else{button.type='button';listen(button,'click',async()=>{
     if(spec.input&&!input?.value.trim())return;
     released=new WeakSet();
@@ -77,19 +76,26 @@ export function mountExpertWorkspace({panel,shell,config}){
   return host;
  }
  function select(id){
+  id=id==='itil'?'inventory':id==='pixerai'?'editor':id;
   const def=definitions.find(d=>d.id===id);if(!def)return;
   selected=id;released=new WeakSet();section(def);heading.textContent=t(def);heading.dataset.shellEs=def.es;heading.dataset.shellEn=def.en;
   for(const [id,host]of sections)host.hidden=id!==selected;
   for(const button of cards.children){const active=button.dataset.categoryId===selected;button.classList.toggle('is-selected',active);button.setAttribute('aria-pressed',String(active));}
+  const preview=panel.querySelector('#expertPreviewLabel');if(preview){const inventory=['inventory','itil'].includes(id);preview.dataset.shellEs=inventory?'DETALLE':'PREVIOS';preview.dataset.shellEn=inventory?'DETAIL':'PREVIEWS';preview.textContent=t({es:preview.dataset.shellEs,en:preview.dataset.shellEn});}
+  panel.querySelector('.expert-workspace').dataset.activeCategory=id;
+  doc.dispatchEvent(new view.CustomEvent('xpace:expert-category',{detail:{id}}));
   dockTools();
+  if(['inventory','itil'].includes(id)&&view.XpaceInventoryUI)shell.run('/inventario');
  }
  function renderCards(){
   const focused=cards.contains(doc.activeElement)?doc.activeElement.dataset.categoryId:null;
   for(const def of definitions){
    let button=[...cards.children].find(b=>b.dataset.categoryId===def.id);
    if(!button){button=el('button');button.type='button';button.dataset.quickAction=def.id;listen(button,'click',()=>select(def.id));cards.append(button);}
-   button.replaceChildren(el('strong',t(def)),el('span',t(def.detail)));
+   const count=def.id==='inventory'?view.XpaceInventoryUI?.count:null;
+   button.replaceChildren(el('strong',t(def)),el('span',Number.isFinite(count)?count+' '+t({es:'elementos',en:'items'}):t(def.detail)));
    view.XpaceExpertCategories.decorate(button,{en:doc.documentElement.lang==='en'});
+   if(Number.isFinite(count))button.title=t(def)+' · '+count+' '+t({es:'elementos',en:'items'});
    button.classList.toggle('is-selected',def.id===selected);button.setAttribute('aria-pressed',String(def.id===selected));
   }
   if(focused)[...cards.children].find(b=>b.dataset.categoryId===focused)?.focus({preventScroll:true});
