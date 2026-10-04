@@ -2,7 +2,7 @@
 
 **ES.** `admira-xp/scripts/circuito-nav.js` ya honra `surfaces[].orient` (vertical/horizontal) y `surfaces[].media` de la ficha del punto (`api.admira.store/da/locations`) y añade anterior/siguiente entre los puntos del circuito en su `tourOrder`. Nuevo (rama de vista previa `altadis/gemelos-formatos18`, sin fusionar):
 
-- `&media=formatos18` → cada pantalla vertical reproduce `/altadis/media/01-vertical-1080x1920.mp4` (9:16) y cada horizontal `/altadis/media/02-horizontal-1920x1080.mp4` (16:9): pieza JTI «Tu sitio de siempre» renderizada a los 18 formatos Altadis.
+- `&media=formatos18` → cada pantalla vertical reproduce `/altadis/media/01-vertical-1080x1920.mp4` (9:16) y cada horizontal `/altadis/media/02-horizontal-1920x1080.mp4` (16:9): pieza neutra de Admira «La chispa antes del pixel» (Stock auto-3910e930b0a79ff8384f) adaptada con el Adaptador de Pixeria (9:16 recorte exacto, 16:9 con fondo desenfocado); la pieza JTI anterior se retiró el 4-oct-2026 (Altadis y JTI nunca se mezclan).
 - `&mv=<url>` / `&mh=<url>` → vídeo propio para vertical / horizontal (https o ruta del sitio).
 - Sin parámetro → media de la ficha, como siempre. No modifica la ficha del punto (KV). La navegación ◀ ▶ y `&tour=` conservan el parámetro. El HUD lo indica.
 - Ejemplo: `/admira-xp/?autostart=cafeteria&project=estancos&loc=altadis-bcn-001&media=formatos18`
