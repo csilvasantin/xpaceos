@@ -1,8 +1,8 @@
 {
-  "version": "v.04.10.2026.r9.20:42",
+  "version": "v.04.10.2026.r10.20:52",
   "signature": "LucasGrokBotBox · GrokBotBox",
   "machine": "GrokBotBox",
   "agent": "LucasGrokBotBox",
   "deployer": "LucasGrokBotBox",
-  "evidence": "Cliente activo en XpaceOS: Admira lo ve todo; /marca <cliente> o ?cliente= filtra portada, Xpacios, inventario y red de tiendas; mapeo editable data/clientes-mapeo.json; ayuda ES/EN y catálogo MCP."
+  "evidence": "Gemelo Altadis BCN (&media=formatos18): la pieza JTI se sustituye por una pieza neutra de Admira del Stock (auto-3910e930b0a79ff8384f), adaptada a 9:16 y 16:9 con el Adaptador de Pixeria."
 }
