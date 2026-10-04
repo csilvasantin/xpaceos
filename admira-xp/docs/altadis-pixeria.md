@@ -1,40 +1,37 @@
-# Altadis · Pixeria · contrato del preview #4970
+# Altadis · Adaptador Pixeria · demo neutra
 
-Estado: preview local, contenido oficial pendiente de Carlos/Lucas. Cambio #4970 incorporado a #4967 y #4969. No publicado en producción.
+Encargo #5038 · demo Pixeria en nueve estancos Altadis.
+Encargo #4967 · demo del Adaptador con estancos Altadis.
+Encargo #4969 · exclusión de contenido competidor en Altadis.
 
-## ES · Uso
+## ES · Cómo usar la demo
 
-Abre `/admira-xp/?autostart=xtanco&loc=altadis-bcn-001&adaptado=1&quality=good&lang=es`. En «Recorrido del circuito», alterna «Sin adaptar / Adaptado con Pixeria», y recorre los nueve locales con anterior/siguiente o [ y ]. La navegación conserva el modo. La ventana sigue siendo movible y redimensionable, con Opciones, Avanzadas y Experto del shell existente.
+Abre https://altadis-adaptador.xpaceos.pages.dev/admira-xp/?autostart=xtanco&loc=altadis-bcn-001&adaptado=1&quality=good&lang=es
 
-Los marcadores dicen «contenido Altadis». No son vídeos, renders ni una comparación visual final. Dos pantallas registradas por estanco: P1 escaparate 1080×1920; P2 mostrador 1920×1080. Las superficies publicitarias decorativas de la escena también se neutralizan; no se cuentan como hardware registrado. Sin entrega física verificada.
+En «Recorrido del circuito», alterna **Sin adaptar / Adaptado con Pixeria**. En el mostrador horizontal, Sin adaptar muestra la pieza vertical completa con bandas negras; Adaptado con Pixeria reproduce su MP4 1920×1080 con fondo desenfocado. La pantalla del escaparate conserva 9:16 con MP4 1080×1920. Usa anterior/siguiente o [ y ] para recorrer los nueve locales. El modo elegido se conserva, incluida la vuelta del noveno al primero. El indicador cuenta las pantallas que realmente están reproduciendo. La ventana mantiene movimiento, cambio de tamaño y reapertura desde Avanzado → Ventanas.
 
-## Conectar archivos, cuando lleguen
+Reserva autorizada por Carlos: naturaleza sin marca del Stock de Pixeria, referencia 1783975679206-g3u9ej. El motor `assets/signage-perfiles.js` y `scripts/signage-bateria.mjs --fondo-desenfocado` de Pixeria generó y comprobó las dos adaptaciones. No se generaron laterales con IA ni se contrataron modelos. El original pequeño se escala; no se crea detalle nuevo. Los MP4 servidos son silenciosos. La demostración es reproducción en gemelos; no envía contenido a equipos físicos. Dos formatos cubren 18 destinos registrados; no hay LED o videowall registrados.
 
-Fuente prevista por Carlos: `/workspace/altadis-estancos/neutro/` en GrokBotBox. No se selecciona ni genera otra pieza. Cada `locations[].surfaces[]` de `altadis/demo.json` tiene `screen`, `w`, `h`, `files.original`, `files.adapted` y `expectedFiles`. Cada entrada `files` queda en null hasta disponer del archivo oficial. `expectedFiles` sólo describe el destino esperado, nunca dispara una descarga.
+La campaña oficial de Altadis sigue pendiente. Cuando Carlos avise, Lucas dejará sus composiciones en `/workspace/altadis-estancos/neutro/` de GrokBotBox. Se sustituirán las asignaciones por estanco y pantalla tras comprobar contenido, medidas reales y reproducción.
 
-Ejemplo de conexión, únicamente tras verificar archivo y contenido:
+## Contrato de ficheros / File contract
 
-```json
-{"files":{"original":{"url":"/altadis/media/altadis-bcn-001/original.mp4","width":1080,"height":1920},"adapted":{"url":"/altadis/media/altadis-bcn-001/p2-1920x1080.mp4","width":1920,"height":1080}}}
-```
+Manifiesto público: `/admira-xp/altadis/demo.json`; copia compatible `/altadis/demo.json`. `locations[].surfaces[]` declara `screen`, `w`, `h`, `files.original`, `files.adapted` y `expectedFiles`. Cada entrada real contiene `url`, `width` y `height`. `expectedFiles` describe los destinos de futuras composiciones oficiales; nunca dispara descargas. La reserva utiliza archivos compartidos, pero cada pantalla tiene su propia asignación y puede recibir una composición diferente.
 
-Usar las dimensiones reales de ffprobe, no copiar el ejemplo. URL HTTPS o relativa al sitio. El adaptado debe coincidir exactamente con w/h del destino. El reproductor vuelve a comprobar videoWidth/videoHeight; un archivo mal asignado se oculta y muestra un error. El original se contiene completo, conservando su relación de aspecto. Recargar el preview tras editar la lista. Cada estanco puede llevar composiciones diferentes: no hay un vídeo global compartido por resolución.
+URL HTTPS o relativa al sitio. Adaptado debe coincidir exactamente con w/h de la pantalla. Se comprueba otra vez videoWidth/videoHeight al cargar: un archivo equivocado se oculta y muestra error. Null produce marcador gris, sin campaña alternativa. Original conserva su relación completa. Recarga tras cambiar asignaciones. El manifiesto técnico de los MP4 está en `/admira-xp/altadis/media-manifest.json`.
 
-Próximo paso de #4967: verificar las composiciones oficiales, conectar los 18 destinos, comprobar movimiento y encaje, capturar comparación real en tres estancos, publicar XpaceOS/Admira Store/Pixeria y actualizar la ayuda del MCP real. Hasta entonces no se acredita vídeo final, producción ni emisión en pantallas físicas.
+## EN · Usage and limits
 
-## EN · Usage and pending delivery
+Open the demo URL. Original / Adapted with Pixeria compares the complete vertical source with the native output for each screen. The landscape version fills its frame using a blurred background derived from the source; portrait stays 9:16. Previous/next and [ / ] navigate all nine shops and preserve mode. The playback counter reflects running video elements. Existing window, Expert, inventory and brand controls are retained.
 
-Open the URL above. Original / Adapted with Pixeria changes mode; previous/next ([ and ]) preserves it across nine shops. The existing draggable/resizable circuit window and Options, Advanced and Expert controls are retained. Grey placeholders are not videos or completed adaptations.
+This is a neutral, silent nature reserve from Pixeria Stock. Two native formats serve 18 assigned surfaces. Upscaling adds no new detail; blurred fill is not generative AI. No physical delivery or proof of play is asserted. The official Altadis campaign remains pending. Replace each shop/screen assignment only after validating the official files and metadata. Expected paths never download anything. Wrong dimensions fail to an error or neutral marker.
 
-The JSON contract assigns files per shop and screen, never globally by orientation. Null means pending. Expected paths never trigger downloads. Only HTTPS or site-relative media URLs are accepted. Adapted dimensions must exactly match the registered screen; actual video metadata is checked again before rendering. Original files retain their complete aspect ratio. Reload after updating the file list.
+## Minitutorial / Mini tutorial
 
-Official Altadis content is pending. Production delivery, real MCP help deployment, actual video comparisons and physical proof of play remain unverified.
+Guion para el generador oficial https://www.admiranext.com/tiktok/:
+1. Dónde: demo Altadis, ventana Recorrido del circuito.
+2. Cómo: alterna Sin adaptar / Adaptado con Pixeria; pulsa anterior o siguiente.
+3. Resultado: cada pantalla reproduce su formato; el mostrador cambia de bandas negras a fondo desenfocado, el escaparate mantiene 9:16.
+4. Límite: reserva neutra, sin audio, sin IA de pago ni entrega física; campaña oficial pendiente.
 
-## Guion de minitutorial (pendiente, no vídeo exportado)
-
-1. Dónde: demo Altadis → ventana Recorrido del circuito.
-2. Cómo: cambia Sin adaptar / Adaptado con Pixeria; navega anterior y siguiente.
-3. Resultado actual: 18 destinos correctos y marcadores grises; el vídeo oficial aún no está conectado.
-4. Resultado final pendiente: comparación con las composiciones oficiales verificadas.
-
-No se ha generado un minitutorial MP4: Carlos indicó en #4970 no generar ningún vídeo hasta recibir el suyo. Al levantar esa espera, usar el generador oficial de ADmiraNeXT y registrar el enlace duradero en Yokup; indicar animación si no es captura real.
+El generador produce una animación explicativa, no una grabación real de pantalla. Registrar aquí y en Yokup el enlace del vídeo exportado únicamente tras verificar el archivo.

@@ -18,13 +18,13 @@ test('original keeps its own aspect while the native adapted file fills',()=>{
  assert.equal(player.sourceFor(s,'original').src,'/original.mp4');
  assert.equal(player.sourceFor(s,'adapted').src,null);
 });
-test('all nine locations have 18 distinct pending screen assignments and no video fallback',()=>{
+test('all nine locations have 18 distinct neutral assignments with exact adapted dimensions',()=>{
  const d=JSON.parse(readFileSync(new URL('../../altadis/demo.json','file://'+__filename)));
- assert.equal(d.locations.length,9);assert.equal(d.source,null);
+ assert.equal(d.locations.length,9);assert.equal(d.source.official_altadis_pending,true);assert.equal(d.source.no_brand,true);
  const ids=new Set();
  d.locations.forEach((l,i)=>{
   assert.equal(l.id,'altadis-bcn-'+String(i+1).padStart(3,'0'));assert.equal(l.tourOrder,i+1);assert.equal(l.surfaces.length,2);
-  l.surfaces.forEach(s=>{assert.equal(s.media,null);assert.equal(s.files.original,null);assert.equal(s.files.adapted,null);assert.ok(s.expectedFiles.adapted.includes(l.id));assert.ok(!ids.has(s.screen));ids.add(s.screen);});
+  l.surfaces.forEach(s=>{assert.equal(player.sourceFor(s,'adapted').src,s.files.adapted.url);assert.equal(s.files.adapted.width,s.w);assert.equal(s.files.adapted.height,s.h);assert.equal(player.sourceFor(s,'original').width,360);assert.equal(player.sourceFor(s,'original').height,640);assert.ok(s.expectedFiles.adapted.includes(l.id));assert.ok(!ids.has(s.screen));ids.add(s.screen);});
  });
  assert.equal(ids.size,18);
  assert.doesNotMatch(JSON.stringify(d),/jti|tu sitio de siempre|1790932601282|1790932708532/i);

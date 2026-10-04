@@ -1464,7 +1464,7 @@ window.STORE_CFG=window.ALTADIS_PIXERIA_DEMO?{id:new URLSearchParams(location.se
   let loc=''; try{ loc=(new URLSearchParams(window.location.search).get('loc')||'').trim().toLowerCase(); }catch(e){}
   if(!loc){ window.STORE_CFG_READY=true; return; }
   // Dominio propio: LaLiga bloquea workers.dev/r2.dev en horas de fútbol (FLT-1633).
-  const API=window.ALTADIS_PIXERIA_DEMO ? '/altadis/demo.json' : 'https://api.admira.store/da/locations';
+  const API=window.ALTADIS_PIXERIA_DEMO ? '/admira-xp/altadis/demo.json' : 'https://api.admira.store/da/locations';
   // Reintentos: el worker omnipublicity puede estar "frío" y fallar el primer
   // fetch → sin reintento el twin se quedaba sin config (sin pantallas/nombre).
   const MAX=4;

@@ -90,7 +90,7 @@
         if (ALTADIS && window.altadisDemo) {
           var marker=el.querySelector('.altadis-placeholder');
           if (!marker) { marker=document.createElement('div'); marker.className='altadis-placeholder'; marker.textContent='contenido Altadis'; marker.style.cssText='position:absolute;inset:0;display:grid;place-items:center;background:#70757b;color:white;font:12px sans-serif'; el.appendChild(marker); }
-          el.dataset.screen=sf.screen; el.setAttribute('aria-label',sf.name+' '+sf.w+'×'+sf.h+' · contenido Altadis');
+          el.dataset.screen=sf.screen; el.setAttribute('aria-label',sf.name+' '+sf.w+'×'+sf.h+' · reserva neutra Pixeria');
           window.altadisDemo.bindVideo(mv, sf);
         }
         else if (mv.getAttribute('src') !== sf.media) { mv.setAttribute('src', sf.media); var pr = mv.play(); if (pr && pr.catch) pr.catch(function () {}); }
@@ -116,7 +116,7 @@
   (function waitInstall(n) { if (!install() && n < 80) setTimeout(function () { waitInstall(n + 1); }, 250); })(0);
 
   // ── 2) Anterior / siguiente ──────────────────────────────────────────────
-  var API = ALTADIS ? '/altadis/demo.json' : 'https://api.admira.store/da/locations';
+  var API = ALTADIS ? '/admira-xp/altadis/demo.json' : 'https://api.admira.store/da/locations';
   function goTo(id) {
     var p = new URLSearchParams(location.search); p.set('loc', id);
     if (ALTADIS && window.altadisDemo) p.set('adaptado', window.altadisDemo.mode() === 'adapted' ? '1' : '0');
@@ -133,13 +133,13 @@
     var ors = screenSurfaces().map(function (s) { return s.orient === 'vertical' ? '▯ vertical' : s.orient === 'horizontal' ? '▭ horizontal' : ''; }).filter(Boolean).join(' + ');
     d.innerHTML = (ALTADIS ? '<a class="altadis-admiranext-brand" href="https://www.admiranext.com/" target="_blank" rel="noopener" aria-label="ADmiraNeXT · Inicio" style="font:800 16px/1 Montserrat,Helvetica Neue,system-ui,sans-serif;display:inline-flex;align-items:baseline;text-decoration:none;white-space:nowrap"><span style="color:#fff">ADmira</span><span style="color:#FF3366">N</span><span style="color:#FFCC00">e</span><span style="color:#33FF99">X</span><span style="color:#FF33CC">T</span></a>' : '') + '<button data-go="prev" style="' + b + '" title="Anterior ([)">◀ ' + (prev.tourOrder || '') + '</button>' +
       '<span style="padding:0 6px;text-align:center;line-height:1.25"><span style="color:#ff6a3d">' + (cur.circuitLabel || cur.circuit) + '</span> · ' + (idx + 1) + '/' + items.length +
-      '<br><span style="font-weight:400">' + (cur.name || cur.id) + (ors ? ' · ' + ors : '') + (MEDIA_OVR ? ' · <span style="color:#ff6a3d">contenido Altadis pendiente</span>' : '') + '</span></span>' +
+      '<br><span style="font-weight:400">' + (cur.name || cur.id) + (ors ? ' · ' + ors : '') + (ALTADIS ? ' · <span style="color:#ff6a3d">reserva neutra · vídeo Altadis pendiente</span>' : '') + '</span></span>' +
       '<button data-go="tour" style="' + b + '">' + (tourSec ? '■' : '▶ Recorrido') + '</button>' +
       '<button data-go="next" style="' + b + '" title="Siguiente (])">' + (next.tourOrder || '') + ' ▶</button>' +
       (ALTADIS ? '<div id="altadis-comparison" role="group" aria-label="Comparación de contenido Altadis" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
         '<button data-altadis-mode="original" aria-pressed="false" style="' + b + '">Sin adaptar</button>' +
         '<button data-altadis-mode="adapted" aria-pressed="true" style="' + b + '">Adaptado con Pixeria</button>' +
-        '<a href="https://www.pixeria.com/adaptaciones/?demo=altadis" target="_blank" rel="noopener" style="color:#76e0e9">Abrir Adaptador ↗</a>' +
+        '<a href="https://altadis-adaptador.pixeria.pages.dev/adaptaciones/?demo=altadis" target="_blank" rel="noopener" style="color:#76e0e9">Abrir Adaptador ↗</a>' +
         '<span id="altadis-screen-status" role="status" style="font-weight:400">Cargando pantallas…</span></div>' : '');
     d.addEventListener('click', function (ev) {
       var g = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-go'); if (!g) return;

@@ -1546,15 +1546,21 @@
     "new_remote_tools": false
   },
   "altadis_pixeria_preview": {
-    "status": "local-preview-official-content-pending",
+    "status": "published-neutral-stock-demo",
     "mission_encargo": 4967,
-    "latest_change_encargo": 4970,
+    "latest_change_encargo": 5038,
     "contract": "/altadis/demo.json",
     "docs": "/admira-xp/docs/altadis-pixeria.md",
     "locations": 9,
     "registered_screens": 18,
     "new_tools": false,
     "physical_delivery_verified": false,
-    "production_published": false
+    "production_published": false,
+    "content_status": "neutral-stock-reserve",
+    "demo_url": "https://altadis-adaptador.xpaceos.pages.dev/admira-xp/?autostart=xtanco&loc=altadis-bcn-001&adaptado=1&quality=good&lang=es",
+    "manifest_url": "https://altadis-adaptador.xpaceos.pages.dev/admira-xp/altadis/demo.json",
+    "official_altadis_pending": true,
+    "adapter_url": "https://altadis-adaptador.pixeria.pages.dev/adaptaciones/?demo=altadis",
+    "preview_published": true
   }
 }
