@@ -321,7 +321,7 @@
   function clientePedido() {
     let id = '';
     try { id = new URLSearchParams(root.location.search).get('cliente') || ''; } catch (_) {}
-    if (!id) { try { id = (JSON.parse(local && local.getItem('pixeria:cliente:v2') || 'null') || {}).id || ''; } catch (_) {} }
+    if (!id) { try { id = (JSON.parse(session && session.getItem('pixeria:cliente:v2') || 'null') || {}).id || ''; } catch (_) {} }
     return !!id && !/^(admira|todos|todas|all|off|ninguno)$/i.test(id);
   }
   function cargarCliente() {

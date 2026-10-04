@@ -2,8 +2,8 @@
  * - Por defecto el cliente es Admira y Admira lo ve TODO: no se filtra nada y no hay selector visible.
  * - `/marca <cliente>` en ⌘ Experto (assets/xpace-shell.js) o `?cliente=<id>` en la URL (los enlaces
  *   desde pixeria.com lo traen) filtra las listas de Xpacios: lo de ese cliente más lo genérico de Admira.
- *   `/marca off` vuelve a Admira. Se recuerda en este navegador (localStorage pixeria:cliente:v2, la
- *   misma clave que Pixeria; al ser otro dominio no se comparte, por eso manda ?cliente=).
+ *   `/marca off` vuelve a Admira. Vale para la sesión de esta pestaña (sessionStorage pixeria:cliente:v2,
+ *   la misma clave que Pixeria; al ser otro dominio no se comparte, por eso manda ?cliente=).
  * - Qué cliente es cada ficha: /data/clientes-mapeo.json (editable). Ambiguas: solo con Admira.
  * - Lista de clientes: https://www.admiranext.com/api/clientes (Admira = por_defecto).
  * API: window.XpaceCliente = {listo, activo, nombre, lista, resolver, fijar, clientesDe, visible, filtrar}
@@ -23,13 +23,13 @@
   // Cliente pedido, ya en la primera pintura (sin esperar a la red).
   var activo = null, q = null, g = null;
   try { q = new URLSearchParams(location.search).get('cliente'); } catch (_) {}
-  try { g = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) {}
+  try { g = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (_) {}
   var pedido = slug(q != null ? q : g && g.id);
   activo = pedido && !TODOS.test(pedido) ? pedido : null;
   if (q != null) guardar();
 
   function guardar() {
-    try { if (activo) localStorage.setItem(KEY, JSON.stringify({id: activo, nombre: nombre()})); else localStorage.removeItem(KEY); } catch (_) {}
+    try { if (activo) sessionStorage.setItem(KEY, JSON.stringify({id: activo, nombre: nombre()})); else sessionStorage.removeItem(KEY); } catch (_) {}
   }
   function nombre() { var c = lista.filter(function (x) { return x.id === activo; })[0]; return c ? c.nombre : activo; }
   function avisar() { aplicarDom(); document.dispatchEvent(new CustomEvent('xpace:cliente', {detail: {id: activo}})); }
