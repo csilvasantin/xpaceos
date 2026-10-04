@@ -155,6 +155,9 @@
     const parsed = parseCommand(text);
     if (!parsed) return false;
     if (parsed.verb === 'avatardigital' || parsed.verb === 'digitalavatar') return true;
+    // Cargador común (encargo avatar · 4-oct-2026): /avatarON, /avatarOFF, /avatar [on|off|reset].
+    if (parsed.verb === 'avataron' || parsed.verb === 'avataroff') return true;
+    if (parsed.verb === 'avatar') return /^(on|off|reset)?$/i.test(parsed.args);
     if (parsed.verb !== 'cli') return false;
     return /^(ayudante|helper)(?:\s|$)/i.test(parsed.args);
   }
@@ -396,8 +399,13 @@
   if (script && script.dataset.marca === 'barra') html.setAttribute('data-mb-alcance', 'barra');
   if (wantsBrand(root.location && root.location.search, session)) cargarMarca();
 
-  // Avatar digital: no se descarga en una visita normal. Solo si el sitio lo dejó
-  // encendido, o cuando el CLI llama a shared.avatar (FLT-101350).
+  // Avatar digital (encargo avatar · 4-oct-2026). Lo gobierna el cargador común de
+  // admiranext.com: elección del visitante > interruptor del proyecto > apagado. El
+  // cargador pesa poco y, apagado, solo consulta la bandera: el avatar en sí no se
+  // descarga. Sin data-brain: GitHub Pages no ejecuta /avatar-ask, así que las
+  // preguntas van al relevo central https://www.admiranext.com/api/avatar-ask.
+  // Si el cargador no llega, queda el módulo antiguo /assets/avatar-digital.js.
+  const AVATAR_LOADER = 'https://www.admiranext.com/assets/avatar.js?v=20261004-avatar-1';
   function avatarKey() {
     try { return 'da-avatar:' + ((root.location && root.location.host) || ''); } catch (_) { return 'da-avatar:'; }
   }
@@ -405,7 +413,32 @@
     try { return !!(local && local.getItem(avatarKey()) === '1'); } catch (_) { return false; }
   }
   let avatarPromise = null;
+  let loaderPromise = null;
+  function cargarCargador() {
+    if (root.AdmiraAvatar) return Promise.resolve(root.AdmiraAvatar);
+    if (!loaderPromise) {
+      loaderPromise = new Promise(resolve => {
+        const s = doc.querySelector('script[data-admira-avatar]') || doc.createElement('script');
+        if (s.isConnected) {
+          s.addEventListener('load', () => resolve(root.AdmiraAvatar || null), {once: true});
+          s.addEventListener('error', () => resolve(null), {once: true});
+          return;
+        }
+        s.src = AVATAR_LOADER;
+        s.async = true;
+        s.setAttribute('data-admira-avatar', '');
+        s.onload = () => resolve(root.AdmiraAvatar || null);
+        s.onerror = () => { s.remove(); loaderPromise = null; resolve(null); };
+        (doc.head || doc.documentElement).append(s);
+      });
+    }
+    return loaderPromise;
+  }
   function cargarAvatar() {
+    if (root.AdmiraAvatar) return Promise.resolve(root.AdmiraAvatar);
+    return cargarCargador().then(A => A || cargarAvatarAntiguo());
+  }
+  function cargarAvatarAntiguo() {
     if (root.AvatarDigital) return Promise.resolve(root.AvatarDigital);
     if (!avatarPromise) {
       avatarPromise = new Promise(resolve => {
@@ -429,7 +462,9 @@
   // El gemelo trae la barra en línea: no se duplica nada (solo queda el API y la marca).
   if (doc.getElementById('topBar') && !doc.querySelector('[data-xpace-shell]')) {
     root.XpaceShell = Object.assign(shared, {inline: true});
-    if (avatarStoredOn()) cargarAvatar();
+    let enIframe = false;
+    try { enIframe = root.self !== root.top; } catch (_) { enIframe = true; }
+    if (!enIframe) cargarCargador();
     return;
   }
   if (root.XpaceShell) return;
@@ -441,6 +476,8 @@
     root.XpaceShell = Object.assign(shared, {inline: false, framed: true});
     return;
   }
+  // Un solo avatar por pestaña: dentro de un iframe nunca se carga.
+  if (!framed) cargarCargador();
 
   function mount() {
     const cfg = normalizeConfig(root.XPACE_SHELL, script ? script.dataset : {});
@@ -706,6 +743,24 @@
       run: (args) => shared.avatar('/avatardigital' + (args ? ' ' + args : '')),
     });
     registerVerb({
+      id: 'avatarON',
+      es: 'Muestra el avatar digital en esta web y lo recuerda.',
+      en: 'Show the digital avatar on this site and remember it.',
+      run: () => shared.avatar('/avatarON'),
+    });
+    registerVerb({
+      id: 'avatarOFF',
+      es: 'Oculta el avatar digital en esta web y lo recuerda.',
+      en: 'Hide the digital avatar on this site and remember it.',
+      run: () => shared.avatar('/avatarOFF'),
+    });
+    registerVerb({
+      id: 'avatar',
+      es: 'Avatar digital: /avatar on|off lo fija; /avatar reset vuelve a lo que diga el proyecto; sin argumento alterna.',
+      en: 'Digital avatar: /avatar on|off pins it; /avatar reset returns to the project setting; no argument toggles.',
+      run: (args) => shared.avatar('/avatar' + (args ? ' ' + args : '')),
+    });
+    registerVerb({
       id: 'cli',
       es: 'Interruptor del avatar: /cli ayudante [on|off]. El resto de /cli sigue al gemelo.',
       en: 'Avatar switch: /cli helper [on|off]. Any other /cli still goes to the twin.',
@@ -715,7 +770,6 @@
         handoff('/cli' + (args ? ' ' + args : ''));
       },
     });
-    if (avatarStoredOn()) cargarAvatar();
     log(T('XpaceOS · consola lista. Escribe /help.', 'XpaceOS · console ready. Type /help.'));
 
     Object.assign(shared, {

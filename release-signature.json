@@ -1,8 +1,8 @@
 {
-  "version": "v.04.10.2026.r11.20:57",
-  "signature": "LucasGrokBotBox · GrokBotBox",
-  "machine": "GrokBotBox",
-  "agent": "LucasGrokBotBox",
-  "deployer": "LucasGrokBotBox",
-  "evidence": "Gemelo Altadis BCN: el escaparate de la puerta deja de mostrar la parrilla CanalKiosk (catálogo de otros clientes) y reproduce la pieza neutra de Admira con rótulo ADMIRA en los 9 altadis-bcn-*."
+  "version": "v.04.10.2026.r12.21:02",
+  "signature": "HuangMacMini · MacMini",
+  "machine": "MacMini",
+  "agent": "HuangMacMini",
+  "deployer": "HuangMacMini",
+  "evidence": "Avatar digital: xpace-shell.js carga el cargador común de admiranext.com (bandera xpaceos apagada) y añade /avatarON, /avatarOFF y /avatar; preguntas al relevo central."
 }

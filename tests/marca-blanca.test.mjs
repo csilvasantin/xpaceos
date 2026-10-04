@@ -59,7 +59,17 @@ function browser({file, src, search = '', session = memory(), loadNodes = false,
   return {created, fetched, session, context};
 }
 const bootMarca = opts => browser(Object.assign({file: 'assets/marca-blanca.js', src: 'https://www.xpaceos.com/assets/marca-blanca.js' + STAMP}, opts));
-const bootShell = opts => browser(Object.assign({file: 'assets/xpace-shell.js', src: 'https://www.xpaceos.com/assets/xpace-shell.js' + STAMP}, opts));
+// Única excepción (encargo avatar · 4-oct-2026): el shell inserta el cargador común del
+// avatar de admiranext.com, que decide con la bandera del proyecto (apagada en XpaceOS).
+// Se comprueba aparte que sea exactamente uno y nada más; el resto del contrato sigue igual.
+const AVATAR_LOADER = 'https://www.admiranext.com/assets/avatar.js?v=20261004-avatar-1';
+const bootShell = opts => {
+  const r = browser(Object.assign({file: 'assets/xpace-shell.js', src: 'https://www.xpaceos.com/assets/xpace-shell.js' + STAMP}, opts));
+  const loaders = r.created.filter(n => n.tagName === 'SCRIPT' && n.src === AVATAR_LOADER);
+  assert.equal(loaders.length, 1, 'el shell inserta una vez el cargador del avatar');
+  r.created = r.created.filter(n => !loaders.includes(n));
+  return r;
+};
 const json = (status, body) => Promise.resolve({ok: status >= 200 && status < 300, status, json: () => Promise.resolve(body)});
 
 test('sin marca activa XpaceOS no carga nada nuevo ni habla con admiranext.com', () => {
