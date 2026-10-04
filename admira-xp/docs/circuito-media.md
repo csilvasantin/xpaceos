@@ -8,3 +8,7 @@
 - Ejemplo: `/admira-xp/?autostart=cafeteria&project=estancos&loc=altadis-bcn-001&media=formatos18`
 
 **EN.** `&media=formatos18` (or `&mv=` / `&mh=`) overrides each twin screen's video by orientation (vertical → 9:16, horizontal → 16:9) without touching the location record. Without the parameter the record's `media` is used. Prev/next and `&tour=` keep the parameter. Preview branch only; not merged.
+
+## Escaparate de la puerta · Door display
+- ES: en los gemelos Altadis (`loc=altadis-*` o `STORE_CFG` de Altadis) el escaparate de la puerta ya no carga la parrilla CanalKiosk (`sim-gracia-kiosko`, con piezas de otros clientes): reproduce la misma pieza neutra de Admira y el rótulo dice «ADMIRA». El resto de gemelos Xtanco mantienen CanalKiosk.
+- EN: in Altadis twins (`loc=altadis-*` or an Altadis `STORE_CFG`) the door display no longer loads the CanalKiosk grid (`sim-gracia-kiosko`, which carries other clients' content): it plays the same neutral Admira piece and the label reads "ADMIRA". Other Xtanco twins keep CanalKiosk.

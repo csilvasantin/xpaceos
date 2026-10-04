@@ -1,8 +1,8 @@
 {
-  "version": "v.04.10.2026.r10.20:52",
+  "version": "v.04.10.2026.r11.20:57",
   "signature": "LucasGrokBotBox · GrokBotBox",
   "machine": "GrokBotBox",
   "agent": "LucasGrokBotBox",
   "deployer": "LucasGrokBotBox",
-  "evidence": "Gemelo Altadis BCN (&media=formatos18): la pieza JTI se sustituye por una pieza neutra de Admira del Stock (auto-3910e930b0a79ff8384f), adaptada a 9:16 y 16:9 con el Adaptador de Pixeria."
+  "evidence": "Gemelo Altadis BCN: el escaparate de la puerta deja de mostrar la parrilla CanalKiosk (catálogo de otros clientes) y reproduce la pieza neutra de Admira con rótulo ADMIRA en los 9 altadis-bcn-*."
 }
