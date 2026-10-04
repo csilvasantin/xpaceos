@@ -1,8 +1,8 @@
 {
-  "version": "v.04.10.2026.r8.18:39",
-  "signature": "OraculoMacMini · MacMini",
-  "machine": "MacMini",
-  "agent": "OraculoMacMini",
-  "deployer": "OraculoMacMini",
-  "evidence": "Comprobar paso Persona/Unitree dentro de Distribuir: física compartida, puerta virtual, rutas completas, bloqueos, recálculo, ayuda ES/EN y MCP 2.12.29; Altadis y catálogo actuales conservados."
+  "version": "v.04.10.2026.r9.20:42",
+  "signature": "LucasGrokBotBox · GrokBotBox",
+  "machine": "GrokBotBox",
+  "agent": "LucasGrokBotBox",
+  "deployer": "LucasGrokBotBox",
+  "evidence": "Cliente activo en XpaceOS: Admira lo ve todo; /marca <cliente> o ?cliente= filtra portada, Xpacios, inventario y red de tiendas; mapeo editable data/clientes-mapeo.json; ayuda ES/EN y catálogo MCP."
 }
