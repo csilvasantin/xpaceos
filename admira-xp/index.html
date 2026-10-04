@@ -1428,7 +1428,7 @@
 })();
 </script>
 <script src="xtanco-version.js?v=20261004-1639"></script>
-<script src="xtanco-runtime-config.js?r=27"></script>
+<script src="xtanco-runtime-config.js?r=28"></script>
 <script src="qrcode.min.js"></script>
 <script src="xtanco-loyalty-client.js"></script>
 <script src="xtanco-marketplace-client.js"></script>
@@ -22295,7 +22295,7 @@ function drawExteriorAd(g,age,vW,vH){
     }
     cx.textAlign='center';
     cx.fillStyle='rgba(0,0,0,.55)'; cx.fillRect(0,0,vW,11);
-    cx.fillStyle='#8defff'; cx.font='bold 7px sans-serif'; cx.fillText('CANALKIOSK',vW/2,8);
+    cx.fillStyle='#8defff'; cx.font='bold 7px sans-serif'; cx.fillText(dm.canal||'CANALKIOSK',vW/2,8);
     cx.fillStyle='rgba(0,0,0,.55)'; cx.fillRect(0,vH-12,vW,12);
     cx.fillStyle='#ffffff'; cx.font='bold 7px sans-serif';
     cx.fillText(String(dm.title||'').toUpperCase().slice(0,22),vW/2,vH-4);
