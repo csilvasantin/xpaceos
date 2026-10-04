@@ -27517,7 +27517,7 @@ window.__xtancoFurnitureEditor={
     const layout=(store?.retained(space,shopLayout)||shopLayout).map(item=>({...cloneLayoutData(item),mount:getItemMount(item.type),inventoryHidden:store?.visible(space,item.id)===false,nativeFixed:item.id==='sb-pillar',locked:!!item.locked||item.id==='sb-pillar'}));
     const owned=new Set();
     for(const item of shopLayout){if(['rug','led','tft','aroma'].includes(item.type))continue;const fp=getFurnitureFootprint(item);for(let c=fp.col;c<fp.col+fp.w;c++)for(let r=fp.row;r<fp.row+fp.d;r++)owned.add(c+','+r);}
-    return {roomId,active:source.active&&!source.moving,cols:ISO.cols,rows:ISO.rows,layout,footprints:FURNITURE_SIZE,hardness:{fixed:source.hardness.blocked.filter(cell=>!owned.has(cell))}};
+    return {roomId,active:source.active&&!source.moving,venue:source.venue,cols:ISO.cols,rows:ISO.rows,doorRow:source.hardness.doorRow,doorHalfWidth:source.hardness.doorHalfWidth,outsideDepth:source.hardness.outsideDepth,doorOpen:source.hardness.doorOpen,colliders:cloneLayoutData(source.hardness.colliders||[]),layout,footprints:FURNITURE_SIZE,hardness:{fixed:source.hardness.blocked.filter(cell=>!owned.has(cell))}};
   },
   begin(){
     const scene=this.read();if(!scene.active)throw Error('room');
@@ -31710,7 +31710,7 @@ window.xtAPI = (function(){
     if(/^\/?(?:cli\s+)?(?:distribuir|distribute|distribuit)(?:\s+(?:off|close|cerrar|salir|on))?$/i.test(text)){
       try{
         const {executeDistribuitCommand}=await import('./scripts/distribuit.mjs?v=distribuir-3');
-        const {openLifeEditor,closeLifeEditor}=await import('./scripts/life-ui.mjs?v=actor-collision-20261004-1');
+        const {openLifeEditor,closeLifeEditor}=await import('./scripts/life-ui.mjs?v=check-passage-20261004-1');
         return await executeDistribuitCommand(text,{router:window.__xtancoVisualTiers,open:openLifeEditor,close:closeLifeEditor,lang:typeof lang==='undefined'?'es':lang});
       }catch{return {ok:false,local:true,message:typeof lang!=='undefined'&&lang==='en'?'Distribute unavailable. Open an Xpace and retry.':'Distribuir no disponible. Abre un Xpacio y reintenta.'};}
     }
@@ -36110,7 +36110,7 @@ window.xtAPI = (function(){
 <link rel="stylesheet" href="scripts/xtanco-premium.css?v=panel-scene-1">
 <link rel="stylesheet" href="scripts/life-ui.css?v=floating-panels-1">
 <link rel="stylesheet" href="../inventario/shelf-product-panel.css?v=shelf-products-1">
-<link rel="stylesheet" href="scripts/distribuit.css?v=distribuir-3">
+<link rel="stylesheet" href="scripts/distribuit.css?v=check-passage-20261004-1">
 <link rel="stylesheet" href="scripts/best-preview.css?v=best-people-1">
 <link rel="stylesheet" href="scripts/matrix-furniture.css?v=matrix-furniture-1">
 <link rel="stylesheet" href="scripts/visitor-matrix.css?v=walk-1">
@@ -36121,7 +36121,7 @@ const installShelfProducts=()=>mountShelfProductsRuntime({acquireSurface:id=>dsE
 installShelfProducts();
 window.addEventListener('pageshow',()=>{if(!window.__shelfProductsRuntime)installShelfProducts();});
 </script>
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=actor-collision-20261004-1"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=check-passage-20261004-1"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=aviso-1"></script>
 <link rel="stylesheet" href="scripts/side-panel-resize.css?v=1">
 <script type="module" src="scripts/side-panel-resize.mjs?v=2"></script>

@@ -1,8 +1,8 @@
 {
-  "version": "v.04.10.2026.r7.18:26",
-  "signature": "MorfeoMacMini · MacMini",
+  "version": "v.04.10.2026.r8.18:39",
+  "signature": "OraculoMacMini · MacMini",
   "machine": "MacMini",
-  "agent": "MorfeoMacMini",
-  "deployer": "MorfeoMacMini",
-  "evidence": "Intercambio de dominios admira.biz/admira.app, paso 1C: control y catálogo de proyectos leen de www.clearchannel.tv; rama puesta al día con main (Interruptor Altadis incluido)."
+  "agent": "OraculoMacMini",
+  "deployer": "OraculoMacMini",
+  "evidence": "Comprobar paso Persona/Unitree dentro de Distribuir: física compartida, puerta virtual, rutas completas, bloqueos, recálculo, ayuda ES/EN y MCP 2.12.29; Altadis y catálogo actuales conservados."
 }
