@@ -704,7 +704,7 @@
   // Con la piel el panel queda abierto para el shell (sin inert): manda el estado de la piel.
   function suiteExperto() {
     if (root.top !== root.self || /(^|[?&])embed=/.test(location.search)) return;
-    const V = '20261004-experto-store-1', BASE = 'https://www.admiranext.com/suite/experto';
+    const V = '20261004-experto-store-2', BASE = 'https://www.admiranext.com/suite/experto';
     const css = doc.createElement('link');
     css.rel = 'stylesheet'; css.href = BASE + '.css?v=' + V;
     doc.head.appendChild(css);
