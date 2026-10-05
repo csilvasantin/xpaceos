@@ -2,7 +2,7 @@
 
 XpaceOS (xpaceos.com = admira.store, la pata «Store distribuye») puede vestirse con la marca de un cliente del **catálogo único** de https://www.admiranext.com/marcablanca (semillas Admira, Lumbre, BRUMELLE y Frescaria, y las marcas guardadas después, p. ej. `starbucks`), con la plataforma `store`. Sigue el mismo diseño, textos y reglas que admira.app (FLT-101331, `clearchannel-tv/docs/marca-blanca.md`) y Pixeria (FLT-101333, `pixeria/docs/marca-blanca.md`).
 
-Estado: implementado en la rama `morfeo/shell-marca-store` (pendiente de push y despliegue por el coordinador).
+Estado: al cambiar de proyecto se aplica la marca del catálogo. Sello v.05.10.2026.r3.10:26. Punto de retorno: tag `retorno/pre-marcablanca-proyecto-20261005`.
 
 ## Cómo se activa
 
@@ -61,7 +61,7 @@ Los textos son los de admira.app y Pixeria. **Sin navegador** (Telegram, el MCP 
 | Fichero | Papel |
 |---|---|
 | `assets/xpace-shell.js` | Único enganche (`cargarMarca`), verbo `/marca` del CLI (`runMarca`, textos de admira.app y Pixeria) y respuesta sin navegador (`remoteMarca`). |
-| `assets/marca-blanca.js` | Decide la marca, comprueba el catálogo, carga lo necesario, aplica, deshace y expone `window.AdmiraMarca` (`actual`, `conocidas`, `listar`, `activar`, `desactivar`, `analizar`). |
+| `assets/marca-blanca.js` | Decide la marca, comprueba el catálogo, carga lo necesario, aplica, deshace y expone `window.AdmiraMarca` (`actual`, `conocidas`, `listar`, `activar`, `desactivar`, `analizar`, `aplicarProyecto`). |
 | `assets/marca-blanca.css` | Todo bajo `:root[data-mb-marca][data-mb-plataforma="store"]`. Solo se descarga con marca. |
 | `admira-xp/index.html` | Carga `xpace-shell.js` en modo barra en línea; `/marca` en la consola local, en `__xtExec`, en `xtAPI.command` y en `/help`. |
 | `tests/marca-blanca.test.mjs` | Sin marca no se carga nada; catálogo antes que nada; AA; hoja acotada; verbo, alias, Tab y respuesta remota; ayuda y MCP. |
