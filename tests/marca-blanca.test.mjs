@@ -64,10 +64,14 @@ const bootMarca = opts => browser(Object.assign({file: 'assets/marca-blanca.js',
 // avatar de admiranext.com, que decide con la bandera del proyecto (apagada en XpaceOS).
 // Se comprueba aparte que sea exactamente uno y nada más; el resto del contrato sigue igual.
 const AVATAR_LOADER = 'https://www.admiranext.com/assets/avatar.js?v=20261004-avatar-5';
+// Segunda excepción, del mismo tipo (sello con novedades · 6-oct-2026): el cargador común del sello
+// de versión, que solo lee el /version.json de ESTE sitio. Exactamente uno, y nada más.
+const SELLO_LOADER = 'https://www.admiranext.com/assets/sello-novedades.js?v=20261006-sello-1';
 const bootShell = opts => {
   const r = browser(Object.assign({file: 'assets/xpace-shell.js', src: 'https://www.xpaceos.com/assets/xpace-shell.js' + STAMP}, opts));
-  const loaders = r.created.filter(n => n.tagName === 'SCRIPT' && n.src === AVATAR_LOADER);
-  assert.equal(loaders.length, 1, 'el shell inserta una vez el cargador del avatar');
+  const loaders = r.created.filter(n => n.tagName === 'SCRIPT' && (n.src === AVATAR_LOADER || n.src === SELLO_LOADER));
+  assert.equal(loaders.filter(n => n.src === AVATAR_LOADER).length, 1, 'el shell inserta una vez el cargador del avatar');
+  assert.equal(loaders.filter(n => n.src === SELLO_LOADER).length, 1, 'el shell inserta una vez el cargador del sello');
   // El mismo array: un cambio de proyecto inserta la marca después, y tiene que verse aquí.
   for (let i = r.created.length - 1; i >= 0; i--) if (loaders.includes(r.created[i])) r.created.splice(i, 1);
   return r;
