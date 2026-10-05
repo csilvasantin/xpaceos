@@ -272,8 +272,8 @@ test('la hoja local solo actúa bajo una marca store y nunca recolorea medios ni
   const js = read('assets/marca-blanca.js');
   assert.match(js, /propuesta generada automáticamente, no es la marca oficial/);
   assert.match(js, /marca ficticia de ejemplo/);
-  assert.match(js, /T\('Volver a Admira', 'Back to Admira'\)/);
-  assert.match(js, /querySelector\('#xsOptions, nav\.quad-menu\.quad-left'\)/, '«Volver a Admira» vive en Opciones');
+  assert.doesNotMatch(js, /T\('Volver a Admira', 'Back to Admira'\)/);
+  assert.doesNotMatch(js, /function backButton\(/, 'se retira el acceso duplicado de Opciones');
   assert.match(js, /current\.nombre \+ ' · '/, 'título «Nombre · título»');
 });
 
