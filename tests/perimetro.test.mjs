@@ -179,6 +179,7 @@ test('token correcto por Bearer: 200 JSON, cookie, entra en la portada y queda r
   assert.equal(portada.status, 200);
   const quien = await perimetro(pide('https://www.xpaceos.com/auth/session', {headers:{Cookie}}), noFetch);
   assert.deepEqual(await quien.json(), {ok:true, email:'agentes@silicio.admiranext.com', site:'xpaceos', agent:true});
+  assert.equal(quien.headers.get('set-cookie'), null, 'agent lifetime is not extended');
 });
 
 test('Bearer sin X-Agente → 200 con nombre «agente»', async () => {
