@@ -35,7 +35,8 @@ const ticks = async (n = 20) => { for (let i = 0; i < n; i++) await new Promise(
 
 // Ejecuta un script en un navegador mínimo y anota todo lo que intenta cargar o pedir.
 function browser({file, src, search = '', session = memory(), loadNodes = false, fetchImpl, topBar = false}) {
-  const created = [], fetched = [];
+  const created = [], fetched = [], listeners = {};
+  const listen = (name, fn) => { (listeners[name] || (listeners[name] = [])).push(fn); };
   const node = tag => ({tagName: tag.toUpperCase(), attrs: {}, style: {}, dataset: {}, setAttribute(k, v) { this.attrs[k] = v; }, getAttribute(k) { return this.attrs[k]; }, remove() {}});
   const append = n => { created.push(n); if (loadNodes && n.onload) setImmediate(() => n.onload()); };
   const document = {
@@ -47,16 +48,16 @@ function browser({file, src, search = '', session = memory(), loadNodes = false,
     createElement: tag => node(tag),
     querySelector: () => null, querySelectorAll: () => [],
     getElementById: id => (topBar && id === 'topBar' ? {id} : null),
-    dispatchEvent() {}, addEventListener() {},
+    dispatchEvent() {}, addEventListener: listen,
   };
   const window = {document, sessionStorage: session, localStorage: memory(), location: {search, href: 'https://www.xpaceos.com/help/' + search, pathname: '/help/', origin: 'https://www.xpaceos.com'},
-    setTimeout: () => 0, clearTimeout() {}, history: {replaceState() {}}, console,
+    setTimeout: () => 0, clearTimeout() {}, history: {replaceState() {}}, console, addEventListener: listen,
     fetch: url => { fetched.push(url); return fetchImpl ? fetchImpl(url) : new Promise(() => {}); }};
   window.window = window;
   window.self = window; window.top = window;
   const context = vm.createContext(Object.assign(window, {URL, URLSearchParams, CustomEvent: class {}, MutationObserver: class { observe() {} disconnect() {} }, Promise}));
   vm.runInContext(read(file), context);
-  return {created, fetched, session, context};
+  return {created, fetched, session, context, listeners};
 }
 const bootMarca = opts => browser(Object.assign({file: 'assets/marca-blanca.js', src: 'https://www.xpaceos.com/assets/marca-blanca.js' + STAMP}, opts));
 // Única excepción (encargo avatar · 4-oct-2026): el shell inserta el cargador común del
@@ -67,7 +68,8 @@ const bootShell = opts => {
   const r = browser(Object.assign({file: 'assets/xpace-shell.js', src: 'https://www.xpaceos.com/assets/xpace-shell.js' + STAMP}, opts));
   const loaders = r.created.filter(n => n.tagName === 'SCRIPT' && n.src === AVATAR_LOADER);
   assert.equal(loaders.length, 1, 'el shell inserta una vez el cargador del avatar');
-  r.created = r.created.filter(n => !loaders.includes(n));
+  // El mismo array: un cambio de proyecto inserta la marca después, y tiene que verse aquí.
+  for (let i = r.created.length - 1; i >= 0; i--) if (loaders.includes(r.created[i])) r.created.splice(i, 1);
   return r;
 };
 const json = (status, body) => Promise.resolve({ok: status >= 200 && status < 300, status, json: () => Promise.resolve(body)});
@@ -151,7 +153,83 @@ test('la decisión sigue al cargador común: ?marca= manda y se recuerda; admira
   assert.equal(M.PLATAFORMA, 'store');
   assert.ok(SHELL.wantsBrand('?marca=starbucks', memory()));
   assert.ok(SHELL.wantsBrand('', memory({'mb:marca': 'lumbre'})));
+  assert.ok(SHELL.wantsBrand('?project=altadis', memory()));
+  assert.ok(SHELL.wantsBrand('?loc=alsea-sbux-021', memory()));
+  assert.ok(SHELL.wantsBrand('', memory({'mb:proyecto': 'starbucks'})));
   assert.ok(!SHELL.wantsBrand('?lang=en', memory()));
+});
+
+test('el proyecto aplica su marca, estancos vuelve a Admira y ?marca= gana', async () => {
+  assert.deepEqual(M.decide('?project=starbucks', memory()), {id: 'starbucks', project: 'starbucks', fromProject: true});
+  assert.deepEqual(M.decide('?project=starbucks-mexico', memory()), {id: 'starbucks', project: 'starbucks', fromProject: true});
+  assert.deepEqual(M.decide('?loc=alsea-sbux-021&project=estancos', memory()), {id: 'starbucks', project: 'starbucks', fromProject: true});
+  assert.deepEqual(M.decide('?project=altadis', memory()), {id: 'altadis', project: 'altadis', fromProject: true});
+  assert.deepEqual(M.decide('?marca=lumbre&project=starbucks', memory()), {id: 'lumbre', remember: true, project: 'starbucks'});
+  const held = memory({'mb:marca': 'lumbre', 'mb:proyecto': 'starbucks', 'mb:manual': '1'});
+  assert.deepEqual(M.decide('?project=starbucks', held), {id: 'lumbre', project: 'starbucks', hold: true});
+  assert.deepEqual(M.decide('?project=altadis', held), {id: 'altadis', project: 'altadis', fromProject: true});
+  assert.deepEqual(M.decide('', memory({'mb:marca': 'starbucks', 'mb:proyecto': 'starbucks'})), {id: 'starbucks'});
+  const quiet = bootMarca({search: '', session: memory()});
+  assert.deepEqual(quiet.fetched, [], 'sin proyecto ni marca: cero peticiones');
+  assert.deepEqual(bootShell({search: '?lang=es', session: memory()}).created, []);
+
+  const wear = id => ({version: 1, aplicar: () => Promise.resolve({id, modo: 'marca', variables: {}, marca: {id, nombre: id}})});
+  const brand = {id: 'starbucks', nombre: 'Starbucks', catalogo: {propuesta: true}};
+  const sb = bootMarca({search: '?project=starbucks', loadNodes: true, fetchImpl: url => json(url.endsWith('/starbucks') ? 200 : 404, url.endsWith('/starbucks') ? brand : {})});
+  assert.deepEqual(sb.fetched, [M.BASE + 'api/marcas/starbucks']);
+  sb.context.MarcaBlanca = wear('starbucks');
+  await ticks();
+  assert.equal(sb.session.getItem('mb:marca'), 'starbucks');
+  assert.equal(sb.session.getItem('mb:proyecto'), 'starbucks');
+  assert.equal(sb.context.AdmiraMarca.actual().id, 'starbucks');
+
+  const alt = bootMarca({search: '?project=altadis', loadNodes: true, fetchImpl: () => json(200, {id: 'altadis', nombre: 'Altadis'})});
+  alt.context.MarcaBlanca = wear('altadis');
+  await ticks();
+  assert.equal(alt.session.getItem('mb:marca'), 'altadis');
+  assert.equal(alt.context.AdmiraMarca.actual().id, 'altadis');
+
+  const est = bootMarca({search: '?project=estancos', session: memory({'mb:marca': 'starbucks', 'mb:proyecto': 'starbucks'}), fetchImpl: () => json(404, {})});
+  await ticks();
+  assert.deepEqual(est.fetched, [M.BASE + 'api/marcas/estancos']);
+  assert.deepEqual(est.created, []);
+  assert.equal(est.session.getItem('mb:marca'), null, 'estancos quita la marca anterior');
+  assert.equal(est.session.getItem('mb:proyecto'), 'estancos');
+  assert.equal(est.context.AdmiraMarca.actual(), null);
+
+  const again = bootMarca({search: '', session: memory({'mb:marca': 'altadis', 'mb:proyecto': 'altadis'}), fetchImpl: () => json(200, {id: 'altadis', nombre: 'Altadis'})});
+  await ticks();
+  assert.equal(again.session.getItem('mb:marca'), 'altadis', 'la recarga conserva la marca');
+
+  const manual = bootMarca({search: '?marca=lumbre&project=starbucks', loadNodes: true, fetchImpl: url => json(200, {id: url.endsWith('/lumbre') ? 'lumbre' : 'starbucks', nombre: 'X'})});
+  manual.context.MarcaBlanca = wear('lumbre');
+  await ticks();
+  assert.equal(manual.fetched[0], M.BASE + 'api/marcas/lumbre');
+  assert.ok(!manual.fetched.includes(M.BASE + 'api/marcas/starbucks'));
+  assert.equal(manual.session.getItem('mb:marca'), 'lumbre');
+  assert.equal(manual.session.getItem('mb:manual'), '1');
+
+  const shell = bootShell({search: '?project=starbucks', session: memory()});
+  assert.equal(shell.created.filter(n => n.tagName === 'SCRIPT').length, 1);
+  assert.equal(shell.created[0].src, '/assets/marca-blanca.js' + STAMP);
+  assert.deepEqual(shell.fetched, [], 'el shell no habla con admiranext.com');
+
+  const live = bootShell({search: '', session: memory(), loadNodes: true});
+  assert.deepEqual(live.created.filter(n => /marca-blanca/.test(n.src || '')), []);
+  live.listeners['xpaceos:project-change'][0]({detail: {id: 'altadis'}});
+  await ticks();
+  assert.ok(live.created.some(n => n.src === '/assets/marca-blanca.js' + STAMP), 'el cambio de proyecto carga la marca sin recargar');
+  const cliente = bootShell({search: '', session: memory()});
+  cliente.listeners['xpace:cliente'][0]({detail: {id: 'jti'}});
+  assert.ok(cliente.created.some(n => n.src === '/assets/marca-blanca.js' + STAMP), 'xpace:cliente también carga la marca');
+  const verb = bootMarca({search: '?project=starbucks', session: memory(), loadNodes: true, fetchImpl: url => json(String(url).endsWith('/lumbre') ? 200 : 404, String(url).endsWith('/lumbre') ? {id: 'lumbre', nombre: 'Lumbre'} : {})});
+  verb.context.MarcaBlanca = wear('lumbre');
+  await ticks();
+  const turned = await verb.context.AdmiraMarca.activar('lumbre');
+  assert.equal(turned.ok, true);
+  assert.equal(verb.session.getItem('mb:manual'), '1', '/marca manda hasta el siguiente proyecto');
+  assert.equal(verb.session.getItem('mb:marca'), 'lumbre');
+  assert.match(read('admira-xp/scripts/project-selector.mjs'), /aplicarProyecto/);
 });
 
 test('los textos llegan a AA con marcas claras, oscuras y hostiles (Starbucks primero)', () => {
