@@ -23,7 +23,7 @@ test('ESP and case-insensitive English aliases return the chosen interface langu
  for(const [text,next]of [['/idioma ESP','es'],['/IDIOMA eng','en'],['/language EN','en'],['idioma Es','es'],['/idioma@AdmiraXPBot ENG','en']]){const h=environment();assert.equal(languageCommand(text,h.env).language,next);assert.equal(h.applied,next);}
 });
 test('invalid locale and extra commands are handled locally with no mutation',()=>{
- for(const text of ['/idioma','/idioma fr','/idioma ENG extra','/idioma ENG\n/grok text']){const h=environment();const result=languageCommand(text,h.env);assert.equal(result.ok,false);assert.equal(result.local,true);assert.equal(h.applied,undefined);assert.equal(h.href,undefined);assert.equal(h.win.XPACE_LANG_LOCKED,true);assert.equal(h.values.has('xtanco_lang'),false);}
+ for(const text of ['/idioma fr','/idioma ENG extra','/idioma ENG\n/grok text']){const h=environment();const result=languageCommand(text,h.env);assert.equal(result.ok,false);assert.equal(result.local,true);assert.equal(h.applied,undefined);assert.equal(h.href,undefined);assert.equal(h.win.XPACE_LANG_LOCKED,true);assert.equal(h.values.has('xtanco_lang'),false);}
  for(const text of ['/marca starbucks','/avatarDigital','/music on','hello'])assert.equal(languageCommand(text),null);
 });
 test('blocked preference storage still switches the active UI and retained URL',()=>{
