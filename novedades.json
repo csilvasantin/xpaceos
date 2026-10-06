@@ -1,5 +1,11 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.06.10.2026.r22.21:13": [
+    "Matrix: la burbuja del avatar lleva a la pared de ladrillo y el avatar se ve allí (ya no abre un panel lateral aparte)",
+    "Calidad → avatar: Good = good, Better = better, Best y Matrix = best (Matrix ya no cae a good)",
+    "Chips y respuestas del avatar en el idioma de la página, también si cambia con el panel abierto",
+    "Si Neo no está emitiendo se ve el avatar web en lugar de una pantalla negra"
+  ],
   "v.06.10.2026.r17.20:38": [
     "El relevo /avatar-ask manda la pregunta entera al cerebro y la ficha aparte: ya no se pierde la pregunta",
     "Respuestas del relevo sólo en texto, sin gastar voz",
