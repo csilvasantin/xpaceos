@@ -8,7 +8,7 @@ const source=readFileSync(new URL('../assets/xpace-shell.js',import.meta.url),'u
 function browser({fallback=false,fail=false}={}){
  const calls=[];let visible=false;
  const avatar={decide: fallback?legacy.decide:text=>/quizas/.test(text)?'bad':'on',async handle(text){calls.push(text);if(fail)throw Error('renderer unavailable');visible=!/off|apagar|ocultar/.test(text);return visible?'Avatar digital activado':'Avatar digital desactivado';}};
- const doc={documentElement:{lang:'es'},currentScript:{src:'https://www.xpaceos.com/assets/xpace-shell.js',dataset:{}},querySelector:()=>null,getElementById:id=>id==='topBar'?{}:null,createElement:()=>({setAttribute(){},remove(){}}),head:{append(script){queueMicrotask(()=>script.onerror());}}};
+ const doc={documentElement:{lang:'es'},currentScript:{src:'https://www.xpaceos.com/assets/xpace-shell.js',dataset:{}},querySelector:()=>null,getElementById:id=>id==='topBar'?{}:null,createElement:()=>({setAttribute(){},remove(){}}),head:{append(script){queueMicrotask(()=>script.onerror?.());}}};
  const win={document:doc,location:{host:'www.xpaceos.com',href:'https://www.xpaceos.com/admira-xp/',search:''},self:1,top:2};
  if(fallback)win.AvatarDigital=avatar;else win.AdmiraAvatar=avatar;
  const ctx=vm.createContext({window:win,document:doc,URL,URLSearchParams,queueMicrotask});vm.runInContext(source,ctx);
