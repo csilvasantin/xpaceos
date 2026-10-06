@@ -72,8 +72,11 @@ const bootShell = opts => {
   const loaders = r.created.filter(n => n.tagName === 'SCRIPT' && (n.src === AVATAR_LOADER || n.src === SELLO_LOADER));
   assert.equal(loaders.filter(n => n.src === AVATAR_LOADER).length, 1, 'el shell inserta una vez el cargador del avatar');
   assert.equal(loaders.filter(n => n.src === SELLO_LOADER).length, 1, 'el shell inserta una vez el cargador del sello');
+  // Contrato entregado: contraste local limitado al panel Experto, sin red externa.
+  const legibility = r.created.filter(n => n.tagName === 'LINK' && n.href === '/assets/expert-legibility.css' + STAMP);
+  assert.equal(legibility.length, 1, 'una hoja local de contraste Experto');
   // El mismo array: un cambio de proyecto inserta la marca después, y tiene que verse aquí.
-  for (let i = r.created.length - 1; i >= 0; i--) if (loaders.includes(r.created[i])) r.created.splice(i, 1);
+  for (let i = r.created.length - 1; i >= 0; i--) if (loaders.includes(r.created[i]) || legibility.includes(r.created[i])) r.created.splice(i, 1);
   return r;
 };
 const json = (status, body) => Promise.resolve({ok: status >= 200 && status < 300, status, json: () => Promise.resolve(body)});
