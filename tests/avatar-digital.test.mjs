@@ -103,3 +103,19 @@ test('si el cerebro falla, queda la ficha', async () => {
   assert.match(body.text, /yokup\.com/i);
   assert.equal('audioBase64' in body, false);
 });
+
+test('la ficha viaja en context y la pregunta llega entera al cerebro, sin voz', async () => {
+  let sent = null;
+  const fetchImpl = async (url, init) => { sent = JSON.parse(init.body); return {ok: true, json: async () => ({answer: 'Yokup (yokup.com) es la bandeja de la flota.'})}; };
+  const question = '¿Qué es Yokup? ' + 'x'.repeat(300);
+  const request = new Request('https://www.xpaceos.com/avatar-ask', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({question, lang: 'es'})});
+  const body = await (await onRequest({request}, fetchImpl)).json();
+  assert.equal(sent.question, question.trim());
+  assert.ok(sent.context.length > 200 && sent.context.length <= 2000);
+  assert.match(sent.context, /cuatro pilares/);
+  assert.equal(sent.strict, true);
+  assert.equal(sent.voice, false);
+  assert.equal(sent.sector, 'generic');
+  assert.equal('room' in sent, false);
+  assert.match(body.text, /yokup/i);
+});
