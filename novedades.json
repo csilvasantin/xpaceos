@@ -9,7 +9,7 @@
   "default": [
     "El CLI conserva /avatar digital good, better y best al escribir",
     "Chica: Sara Martín en castellano o Cassidy en inglés; chico: David Martín o James",
-    "Se reutiliza la última locución guardada en Stock, sin generar al pulsar",
+    "Locuciones antiguas recuperadas desde el servidor y las nuevas por voz e idioma",
     "Segundo clic detiene; se conservan PREVIOS, contraste y arrastre centrado"
   ],
   "v.06.10.2026.r2.13:14": [
@@ -55,6 +55,12 @@
     "El CLI conserva /avatar digital good, better y best al escribir",
     "Chica: Sara Martín en castellano o Cassidy en inglés; chico: David Martín o James",
     "Se reutiliza la última locución guardada en Stock, sin generar al pulsar",
+    "Segundo clic detiene; se conservan PREVIOS, contraste y arrastre centrado"
+  ],
+  "v.06.10.2026.r16.20:36": [
+    "El CLI conserva /avatar digital good, better y best al escribir",
+    "Chica: Sara Martín en castellano o Cassidy en inglés; chico: David Martín o James",
+    "Locuciones antiguas recuperadas desde el servidor y las nuevas por voz e idioma",
     "Segundo clic detiene; se conservan PREVIOS, contraste y arrastre centrado"
   ]
 }

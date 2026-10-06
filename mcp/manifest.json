@@ -2133,7 +2133,8 @@
       "admira-xp/scripts/voice-receipts.js",
       "admira-xp/scripts/matrix-person-announcements.mjs",
       "admira-xp/scripts/expert-composer.mjs",
-      "admira-xp/docs/matrix-person-voice.md"
+      "admira-xp/docs/matrix-person-voice.md",
+      "functions/admira-xp/voice-receipts.js"
     ]
   },
   "media_creation_experience": {
@@ -2205,6 +2206,7 @@
     "receipts_key": "xpaceos.voice-receipts.v1:<Xpacio>",
     "reads": 3,
     "generation_on_click": false,
-    "historical_recovery": "published XpaceOS Stock audio with explicit voice/language metadata"
+    "historical_recovery": "published XpaceOS Stock audio with explicit voice/language metadata",
+    "recovery_endpoint": "/admira-xp/voice-receipts"
   }
 }

@@ -4320,6 +4320,7 @@
     "receipts_key": "xpaceos.voice-receipts.v1:<Xpacio>",
     "reads": 3,
     "generation_on_click": false,
-    "historical_recovery": "published XpaceOS Stock audio with explicit voice/language metadata"
+    "historical_recovery": "published XpaceOS Stock audio with explicit voice/language metadata",
+    "recovery_endpoint": "/admira-xp/voice-receipts"
   }
 }
