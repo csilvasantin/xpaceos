@@ -1,19 +1,19 @@
 {
-  "version": "v.07.10.2026.r11.08:07",
-  "deployedAt": "2026-10-07T05:56:02.589557+00:00",
+  "version": "v.07.10.2026.r12.08:14",
+  "deployedAt": "2026-10-07T06:15:24.492705+00:00",
   "deployer": "OraculoMacMini",
   "machine": "MacMini",
   "signature": "OraculoMacMini · MacMini",
-  "git": "1a1a5a2c971e5915cb52b02bae54e64ff0be5a60",
-  "gitShort": "1a1a5a2",
-  "gitFull": "1a1a5a2c971e5915cb52b02bae54e64ff0be5a60",
+  "git": "691a7528e6dcdfc22d7e50d016bcc49274dea774",
+  "gitShort": "691a752",
+  "gitFull": "691a7528e6dcdfc22d7e50d016bcc49274dea774",
   "dirty": false,
   "agent": "OraculoMacMini",
-  "evidence": "Iconos avanzados y compra en TPV; contrato local y ayudas bilingües.",
+  "evidence": "Continuidad Consejo, catálogo demos y contrato del futuro tour.",
   "novedades": [
-    "Avanzado: tarjetas con iconos y texto legible para Player y cámara",
-    "Matrix arranca por defecto sin una calidad explícita en la URL",
-    "La compra aparece en el TPV al entregar productos a caja; editar y añadir café desde la pantalla",
-    "Cesta vacía recupera la publicidad; ayudas y MCP actualizados en español e inglés"
+    "Guía de continuidad del Consejo: funciones Xtore entregadas y contratos compartidos",
+    "Catálogo de demos para agentes con escenarios, pasos, comprobaciones y limpieza",
+    "Demo TPV disponible; tour general, selector y pausa/continuación especificados como pendientes",
+    "Help web, tutorial, CLI y MCP real actualizados en español e inglés"
   ]
 }
