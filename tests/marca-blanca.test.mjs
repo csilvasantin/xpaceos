@@ -265,7 +265,7 @@ test('la hoja local solo actúa bajo una marca store y nunca recolorea medios ni
   // Separa una lista de selectores por las comas de primer nivel (no las de :is()/:not()).
   const split = list => { const out = []; let depth = 0, cur = ''; for (const ch of list) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && !depth) { out.push(cur); cur = ''; } else cur += ch; } return [...out, cur]; };
   for (const rule of rules) for (const sel of split(rule.slice(0, rule.indexOf('{')))) {
-    assert.match(sel.trim(), /^:root\[data-mb-marca\]\[data-mb-plataforma="store"\]/, 'selector sin acotar: ' + sel.trim());
+    assert.match(sel.trim(), /^:root\[data-mb-marca(?:="starbucks")?\]\[data-mb-plataforma="store"\]/, 'selector sin acotar: ' + sel.trim());
   }
   assert.ok(!/\bfilter\s*:\s*(?!none)/.test(css), 'sin filtros de color');
   assert.ok(!/mix-blend-mode\s*:\s*(?!normal)/.test(css));
