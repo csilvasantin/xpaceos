@@ -1,5 +1,5 @@
 {
-  "version": "v.04.10.2026.r1.00:08",
+  "version": "v.07.10.2026.r3.06:56",
   "deployedAt": "2026-09-08T08:27:09Z",
   "deployer": "OraculoMacMini",
   "machine": "MacMini",
@@ -9,5 +9,11 @@
   "gitFull": "8e4650a641b2ad2e3e3ed0ad1aaf227902114440",
   "dirty": false,
   "agent": "OraculoMacMini",
-  "evidence": "ITIL por Xpacio: mobiliario e IoT del proyecto activo, enlaces y modelos aislados; ayuda bilingüe web y MCP actualizada."
+  "evidence": "ITIL por Xpacio: mobiliario e IoT del proyecto activo, enlaces y modelos aislados; ayuda bilingüe web y MCP actualizada.",
+  "novedades": [
+    "/ifthendothat: reglas visuales muffin → canción de Pixeria",
+    "Elige canción y disparador: coger el muffin o llevarlo a caja",
+    "Arrastre manual y /demo tpv aplican la misma regla guardada",
+    "La barra con marca Starbucks muestra su logo sin XpaceOS genérico"
+  ]
 }
