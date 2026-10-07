@@ -1,14 +1,15 @@
 {
-  "version": "v.07.10.2026.r44.20:53",
-  "deployer": "NeoMBP16",
-  "machine": "MacBookPro16",
-  "signature": "NeoMBP16 · MacBookPro16",
-  "deployedAt": "2026-10-07T18:38:52Z",
+  "version": "v.07.10.2026.r45.21:06",
+  "deployer": "GrokBot",
+  "machine": "MacMini",
+  "signature": "GrokBot · MacMini",
+  "deployedAt": "2026-10-07T19:06:02Z",
   "git": "d2303181007e7eac7934364706b03a3247795168",
   "gitShort": "d230318",
   "gitFull": "d2303181007e7eac7934364706b03a3247795168",
   "dirty": false,
   "novedades": [
-    "Matrix · incidencias: la tarjeta CERRADA/ABIERTA cabe siempre en el marco de la pantalla (la letra se ajusta al tamaño, nota y líneas largas a 2 líneas con «…»)"
+    "Modo experto: /crear incidencia abre una incidencia demo en una pantalla vertical del lineal elegida al azar, con un motivo técnico o circunstancial realista",
+    "/cerrar incidencia va a la pantalla, pulsa el ticket, la finaliza en la ficha de admira.app con una nota acorde y envía el informe PDF a csilvasantin@gmail.com"
   ]
 }
