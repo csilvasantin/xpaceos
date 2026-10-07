@@ -1,19 +1,17 @@
 {
-  "version": "v.07.10.2026.r12.08:14",
-  "deployedAt": "2026-10-07T06:15:24.492705+00:00",
-  "deployer": "OraculoMacMini",
+  "version": "v.07.10.2026.r13.09:27",
+  "deployedAt": "2026-10-07T07:27:53Z",
+  "deployer": "GrokBot",
   "machine": "MacMini",
-  "signature": "OraculoMacMini · MacMini",
-  "git": "691a7528e6dcdfc22d7e50d016bcc49274dea774",
-  "gitShort": "691a752",
-  "gitFull": "691a7528e6dcdfc22d7e50d016bcc49274dea774",
+  "signature": "GrokBot · MacMini",
+  "git": "36a3ff659ee58c0a6dac90665aeb7182d2151cf8",
+  "gitShort": "36a3ff6",
+  "gitFull": "36a3ff659ee58c0a6dac90665aeb7182d2151cf8",
   "dirty": false,
-  "agent": "OraculoMacMini",
-  "evidence": "Continuidad Consejo, catálogo demos y contrato del futuro tour.",
+  "agent": "GrokBot",
+  "evidence": "Pastilla de categoría del avatar (Admirito / Luna / Neo) y pines 20261007-pill-1.",
   "novedades": [
-    "Guía de continuidad del Consejo: funciones Xtore entregadas y contratos compartidos",
-    "Catálogo de demos para agentes con escenarios, pasos, comprobaciones y limpieza",
-    "Demo TPV disponible; tour general, selector y pausa/continuación especificados como pendientes",
-    "Help web, tutorial, CLI y MCP real actualizados en español e inglés"
+    "Pastilla de categoría del avatar: toca AVATAR·Admirito / HUMAN·Luna / METAHUMAN·Neo para cambiar de personalidad",
+    "Cargador del avatar (avatar.js) y ⌘ Experto (suite/experto.js) fijados a la versión 20261007-pill-1"
   ]
 }
