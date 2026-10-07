@@ -1,16 +1,16 @@
 {
-  "version": "v.07.10.2026.r39.19:36",
+  "version": "v.07.10.2026.r40.20:01",
   "deployer": "GrokBot",
-  "machine": "MacMini",
-  "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-07T13:25:48.146954Z",
+  "machine": "MacBookPro16",
+  "signature": "GrokBot · MacBookPro16",
+  "deployedAt": "2026-10-07T18:01:55Z",
   "git": "d2303181007e7eac7934364706b03a3247795168",
   "gitShort": "d230318",
   "gitFull": "d2303181007e7eac7934364706b03a3247795168",
   "dirty": false,
   "novedades": [
-    "Admirito ocupa toda la pantalla del iPad cuando la cola está vacía",
-    "Recibido, En preparación y Preparado reaparecen al llegar pedidos",
-    "Vista de escena y ampliada sin controles del avatar; ayuda y MCP ES/EN actualizados"
+    "Gemelo Starbucks: una incidencia abierta ya se puede cerrar desde la pantalla (✓ Cerrar incidencia) con nota de resolución",
+    "Al cerrarla la pantalla vuelve a OK y el estado muestra quién la cerró, cuándo y la nota",
+    "El cierre se refleja también en Yokup / admira.app (Mi comercio y ficha)"
   ]
 }
