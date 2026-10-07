@@ -3,6 +3,8 @@
  * /totem url <https://…>    → cualquier interactivo HTTPS en el tótem (recibe toques: es un iframe)
  * /totem off                → retira el pin (vuelve el tótem a su estado anterior)
  * /totem luna · /totem admiratv [espacio] → atajos a los modos de siempre (/avatar3d on · /admiratv)
+ * /totem clave <clave> · /totem clave off · /totem clave → clave de barra de la cola en ESTE dispositivo
+ *                             (localStorage xpace:cola-barra; nunca en el repo ni en la URL). ↺ Reset la manda.
  * Los pedidos llegan por postMessage {source:'ainimation-xperiencia', event:'order', order} y se
  * pintan en el panel «Pedidos · TPV». DEMO SIMULADA: sin TPV real ni dinero real. */
 (function(){
@@ -59,14 +61,14 @@
     panel(false); try{ touch(false); }catch(_){} return true;
   }
   function kioskOn(){ const p=(typeof DS_PIN==='object'&&DS_PIN)?DS_PIN['metahuman']:null; return !!(p&&p.kiosk); }
-  function toast(msg){ try{ if(typeof showEv==='function') showEv(msg,'#00a862'); }catch(_){} }
+  function toast(msg,color){ try{ if(typeof showEv==='function') showEv(msg,color||'#00a862'); }catch(_){} }
   function totemCommand(arg){
     const raw=String(arg||'').trim(), a=raw.toLowerCase();
     const parts=raw.split(/\s+/), head=(parts[0]||'').toLowerCase();
     if(!a||a==='kiosko'||a==='quiosco'||a==='kiosk'||a==='on'||a==='interactivo'){
       setTotem(true,'');
       if(inMatrix()||kioskOn()){ toast(en()?'🛒 Kiosk ON · totem':'🛒 Quiosco ON · tótem');
-        return {ok:true,message:(en()?'🛒 Ordering kiosk on the totem (simulated demo). Touch it to order. /totem off to remove.':'🛒 Quiosco de pedido en el tótem (demo simulada). Tócalo para pedir. /totem off para quitarlo.')+'\n'+kioskUrl()}; }
+        return {ok:true,message:(en()?'🛒 Ordering kiosk on the totem (simulated demo). Touch it to order. /totem off to remove.':'🛒 Quiosco de pedido en el tótem (demo simulada). Tócalo para pedir. /totem off para quitarlo.')+'\n'+kioskUrl()+'\n'+barraEstado()}; }
       return {ok:false,message:en()?'No totem in this Xpace.':'No hay tótem en este Xpacio.'};
     }
     if(head==='url'){
@@ -79,10 +81,12 @@
     if(a==='luna'||a==='avatar'){ remember(false); unpin(); announce(); try{ if(typeof setAvatar3dTotem==='function'&&setAvatar3dTotem(true)){ try{emitTotemNow(true);}catch(_){} return {ok:true,message:'🧑‍💻 Luna / Avatar 3D en el tótem.'}; } }catch(_){} return {ok:false,message:'Avatar3D no disponible.'}; }
     if(head==='admiratv'||head==='tv'){ remember(false); unpin(); announce(); try{ return setAdmiraTvCommand(parts.slice(1).join(' ')||'on'); }catch(_){ return {ok:false,message:'admira.tv no disponible.'}; } }
     if(a==='pedidos'||a==='orders'){ panel(true); return {ok:true,message:orders.length+(en()?' orders':' pedidos')}; }
-    if(a==='reset'||a==='reiniciar'||a==='cero'){ colaReset(); return {ok:true,message:en()?'↺ Queue reset: open orders closed; Admirito goes back to his demo.':'↺ Cola a cero: pedidos abiertos cerrados; Admirito vuelve a su demo.'}; }
+    if(a==='reset'||a==='reiniciar'||a==='cero'){ colaReset(); const c=barraClave();
+      return {ok:true,message:(en()?'↺ Queue reset: closing the open orders; Admirito goes back to his demo.':'↺ Cola a cero: se cierran los pedidos abiertos; Admirito vuelve a su demo.')+'\n'+(c?barraEstado():(en()?'If the counter is closed you will see the warning in «Orders · POS»: /totem clave <key>.':'Si la barra está cerrada verás el aviso en «Pedidos · TPV»: /totem clave <clave>.'))}; }
+    if(head==='clave'||head==='key'||head==='barra'){ return claveCommand(raw.slice(parts[0].length).trim()); }
     if(head==='audio'||head==='voz'||head==='avisos'){ const v=(parts[1]||'toggle').toLowerCase(), on=/^(on|si|sí|1|activar|unmute)$/.test(v)?true:/^(off|no|0|parar|mute|silencio)$/.test(v)?false:!colaAudioOn(); setColaAudio(on); return {ok:true,message:on?(en()?'🔊 Queue announcements ON':'🔊 Avisos de la cola activados'):(en()?'🔇 Queue announcements OFF':'🔇 Avisos de la cola parados')}; }
     if(a==='menu'||a==='menú'||a==='atajos'){ try{ atajosWin&&atajosWin.open(); }catch(_){} tocado=true; return {ok:true,message:en()?'Queue shortcuts shown.':'Atajos de colas a la vista.'}; }
-    return {ok:false,message:'/totem on|off · /totem kiosko · /totem url <https> · /totem luna · /totem admiratv · /totem pedidos · /totem reset · /totem audio on|off · /totem menu'};
+    return {ok:false,message:'/totem on|off · /totem kiosko · /totem url <https> · /totem luna · /totem admiratv · /totem pedidos · /totem reset · /totem clave <clave>|off · /totem audio on|off · /totem menu\n'+barraEstado()};
   }
   // ── panel «Pedidos · TPV» ─────────────────────────────────────────────
   let box=null, btn=null, modal=null, tbtn=null, atajos=null, atajosWin=null, boxWin=null;
@@ -95,14 +99,72 @@
     if(!on){ try{ if(vozAudio) vozAudio.pause(); }catch(_){} try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(_){} colaPend.length=0; }
     render(); toast(on?(en()?'🔊 Queue announcements ON':'🔊 Avisos de la cola activados'):(en()?'🔇 Queue announcements OFF':'🔇 Avisos de la cola parados'));
     try{ window.dispatchEvent(new CustomEvent('xpace:cola-audio',{detail:{on:on}})); }catch(_){} return on; }
+  // ── Barra cerrada (Carlos, 7-oct-2026) ──────────────────────────────────────────────────────────────
+  // El relé de la cola exige la clave de barra para ESCRIBIR: POST /cola/avanzar sin la cabecera x-cola-clave → 401.
+  // Las lecturas (/cola/estado, cada 3 s) siguen siendo públicas, solo con el nombre de pila, y no la llevan.
+  // La clave vive SOLO en este dispositivo (localStorage xpace:cola-barra, por origen): nunca en el repo ni en la
+  // URL de forma permanente. /totem clave <clave> la guarda, /totem clave off la borra, /totem clave dice si hay
+  // (••••1234, sin enseñarla). También se guarda desde el panel «Pedidos · TPV» (campo de contraseña) o abriendo
+  // el gemelo UNA vez con #cola-barra=<clave>: se guarda y el fragmento desaparece de la URL al instante.
+  const BARRA_KEY='xpace:cola-barra', BARRA_HDR='x-cola-clave', HIST_KEY='xpaceos_expert_history_v1';
+  const CLAVE_OFF=/^(off|no|borrar|quitar|olvidar|clear|delete|remove|forget)$/i;
+  const CLAVE_RX=/^(\s*\/?t[oó]tem\s+(?:clave|key|barra)\s+)(?!(?:off|no|borrar|quitar|olvidar|clear|delete|remove|forget|estado|status|\?)\s*$)\S.*$/i;
+  let colaAviso='', claveForm=false;
+  function barraClave(){ try{ return String(window.localStorage.getItem(BARRA_KEY)||'').trim(); }catch(_){ return ''; } }
+  function barraMascara(c){ c=c==null?barraClave():String(c); return c?'••••'+(c.length>=8?c.slice(-4):''):''; }
+  function barraEstado(){ const c=barraClave();
+    return en()?(c?'🔑 counter key: saved '+barraMascara(c):'🔒 counter key: not saved (/totem clave <key>)'):(c?'🔑 clave de barra: guardada '+barraMascara(c):'🔒 clave de barra: no guardada (/totem clave <clave>)'); }
+  // Las escrituras del gemelo a la cola llevan la clave de barra si hay una guardada.
+  function colaCabeceras(){ const h={'content-type':'application/json'}; const c=barraClave(); if(c) h[BARRA_HDR]=c; return h; }
+  function setBarraClave(v){ v=String(v==null?'':v).trim().slice(0,256); let ok=true;
+    try{ if(v) window.localStorage.setItem(BARRA_KEY,v); else window.localStorage.removeItem(BARRA_KEY); }catch(_){ ok=false; }
+    if(ok){ colaAviso=''; claveForm=false; } limpiaRastros(); render();
+    try{ window.dispatchEvent(new CustomEvent('xpace:cola-barra',{detail:{guardada:!!barraClave()}})); }catch(_){} return ok; }
+  // La orden tecleada no debe dejar la clave a la vista: se tapa en el historial del CLI (↑/↓) y en el log de sesión.
+  function tapaClave(t,con){ const s=String(t==null?'':t); return CLAVE_RX.test(s)?s.replace(CLAVE_RX,(m,p)=>p.trim()+(con===false?'':' ••••')):s; }
+  function limpiaRastros(){
+    try{ const ls=window.localStorage, raw=ls.getItem(HIST_KEY); if(raw&&/t[oó]tem\s+(?:clave|key|barra)\s+\S/i.test(raw)){ const h=JSON.parse(raw); if(Array.isArray(h)&&h.some(x=>typeof x==='string'&&CLAVE_RX.test(x))) ls.setItem(HIST_KEY,JSON.stringify(h.map(x=>typeof x==='string'?tapaClave(x,false):x))); } }catch(_){}
+    try{ const L=window.AdmiraXP_SessionLog; if(L&&Array.isArray(L.commands)) L.commands.forEach((x,i)=>{ if(typeof x==='string'&&CLAVE_RX.test(x)) L.commands[i]=tapaClave(x); });
+      if(L&&typeof L.logCommand==='function'&&!L.__colaBarra){ const f=L.logCommand; L.logCommand=function(c){ return f.call(this,tapaClave(c)); }; L.__colaBarra=true; } }catch(_){} }
+  window.addEventListener('pagehide',limpiaRastros);
+  function avisoTexto(m){
+    if(m==='sin-clave') return en()?'🔒 The counter is closed: save the key with /totem clave <key> (or below) and press ↺ Reset again.':'🔒 La barra está cerrada: guarda la clave con /totem clave <clave> (o aquí abajo) y vuelve a pulsar ↺ Reset.';
+    if(m==='rechazada') return en()?'🔒 The counter is closed and rejects the saved key (401): save the right one with /totem clave <key>.':'🔒 La barra está cerrada y no acepta la clave guardada (401): guarda la buena con /totem clave <clave>.';
+    if(m==='rele') return en()?'⚠ The queue relay did not answer: the reset was not done. Try again in a moment.':'⚠ El relé de la cola no responde: el Reset no se ha hecho. Prueba otra vez en un momento.';
+    return ''; }
+  function claveCommand(v){ v=String(v||'').trim();
+    if(!v||/^(estado|status|\?)$/i.test(v)){ claveForm=true; panel(true); return {ok:true,message:barraEstado()+(en()?' · /totem clave <key> saves it on this device · /totem clave off deletes it':' · /totem clave <clave> la guarda en este dispositivo · /totem clave off la borra')}; }
+    if(CLAVE_OFF.test(v)){ const ok=setBarraClave(''); return {ok:ok,message:ok?(en()?'🔓 Counter key deleted from this device. ↺ Reset will warn that the counter is closed.':'🔓 Clave de barra borrada de este dispositivo. ↺ Reset avisará de que la barra está cerrada.'):(en()?'Could not delete the key (storage not available).':'No se pudo borrar la clave (almacenamiento no disponible).')}; }
+    if(/^[•*·.\s]+$/.test(v)) return {ok:false,message:en()?'That is the mask, not the key. Usage: /totem clave <key>':'Eso es la máscara, no la clave. Uso: /totem clave <clave>'};
+    const ok=setBarraClave(v);
+    return {ok:ok,message:ok?(en()?'🔑 Counter key saved on this device ('+barraMascara()+'). ↺ Reset can close orders again.':'🔑 Clave de barra guardada en este dispositivo ('+barraMascara()+'). ↺ Reset ya puede cerrar pedidos.'):(en()?'Could not save the key (storage not available in this browser).':'No se pudo guardar la clave (este navegador no deja guardar).')}; }
+  // Aprovisionar una sola vez: #cola-barra=<clave> (o =off). Se guarda y se quita del fragmento sin recargar.
+  function barraDesdeFragmento(){ try{ const loc=window.location||{}, h=String(loc.hash||''); if(!/(^#|&)cola-barra=/.test(h)) return false;
+      let clave=''; const resto=h.replace(/^#/,'').split('&').filter(p=>{ if(/^cola-barra=/.test(p)){ const v=p.slice(p.indexOf('=')+1); try{ clave=decodeURIComponent(v.replace(/\+/g,' ')); }catch(_){ clave=v; } return false; } return true; });
+      const limpia=String(loc.pathname||'')+String(loc.search||'')+(resto.length?'#'+resto.join('&'):'');
+      let fuera=false; try{ window.history.replaceState(window.history.state,'',limpia); fuera=true; }catch(_){}
+      if(!fuera){ try{ loc.hash=resto.join('&'); }catch(_){} }
+      clave=clave.trim(); if(!clave) return false;
+      const r=claveCommand(CLAVE_OFF.test(clave)?'off':clave); toast(r.message,r.ok?'#00a862':'#c0392b'); return r.ok; }catch(_){ return false; } }
+  barraDesdeFragmento(); window.addEventListener('hashchange',barraDesdeFragmento);
+  function colaAvisar(motivo,st,n){ colaAviso=motivo; panel(true); toast(avisoTexto(motivo),'#c0392b');
+    try{ window.dispatchEvent(new CustomEvent('xpace:cola-reset',{detail:{store:st,cerrados:n||0,aviso:motivo}})); }catch(_){} return n||0; }
   // Reset de la demo: cierra (recogido) todos los pedidos abiertos de la cola del quiosco y vacía la lista
   // local; con la cola a cero el iPad vuelve solo a Admirito haciendo su demo. La numeración no vuelve a A001
-  // (eso exige la clave de servicio del relé, que no vive en el navegador).
-  async function colaReset(){ const st=colaStore()||'starbucks-paseo-de-gracia'; let n=0;
-    try{ const d=await (await fetch(COLA_RELAY+'/cola/estado?store='+encodeURIComponent(st),{cache:'no-store'})).json();
+  // (eso exige la clave de servicio del relé, que no vive en el navegador). Con la barra cerrada hace falta la
+  // clave de barra (x-cola-clave); sin ella o con 401 avisa en «Pedidos · TPV» en vez de fallar en silencio.
+  async function colaReset(){ const st=colaStore()||'starbucks-paseo-de-gracia'; let n=0,rechazos=0,fallo=false; const clave=barraClave();
+    try{ const r0=await fetch(COLA_RELAY+'/cola/estado?store='+encodeURIComponent(st),{cache:'no-store'}); if(r0&&r0.ok===false) throw new Error('estado '+r0.status);
+      const d=await r0.json();
       const todos=[].concat(d.recibido||[],d.preparando||[],d.listo||[]);
-      await Promise.all(todos.map(p=>fetch(COLA_RELAY+'/cola/avanzar?store='+encodeURIComponent(st),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:p.id,numero:p.numero,a:'recogido'})}).then(r=>{ if(r.ok) n++; }).catch(()=>{})));
-    }catch(_){}
+      // El relé anuncia acceso.barra='cerrada': sin clave guardada no se escribe nada (sería un 401 seguro).
+      if(!clave&&d&&d.acceso&&d.acceso.barra==='cerrada') return colaAvisar('sin-clave',st,0);
+      const hdr=colaCabeceras();
+      await Promise.all(todos.map(p=>fetch(COLA_RELAY+'/cola/avanzar?store='+encodeURIComponent(st),{method:'POST',headers:hdr,body:JSON.stringify({id:p.id,numero:p.numero,a:'recogido'})}).then(r=>{ if(r.ok) n++; else if(r.status===401||r.status===403) rechazos++; else fallo=true; }).catch(()=>{ fallo=true; })));
+    }catch(_){ fallo=true; }
+    if(rechazos) return colaAvisar(clave?'rechazada':'sin-clave',st,n);
+    if(fallo&&!n) return colaAvisar('rele',st,0);
+    colaAviso='';
     orders.length=0; colaPend.length=0; try{ window.speechSynthesis&&window.speechSynthesis.cancel(); if(vozAudio) vozAudio.pause(); }catch(_){}
     render(); toast(en()?'↺ Queue reset · '+n+' orders closed':'↺ Cola a cero · '+n+' pedidos cerrados');
     try{ window.dispatchEvent(new CustomEvent('xpace:cola-reset',{detail:{store:st,cerrados:n}})); }catch(_){} return n; }
@@ -117,12 +179,16 @@
   function ensure(){
     if(box) return;
     const css=document.createElement('style');
-    css.textContent='#kioskOrders{position:fixed;right:14px;bottom:86px;width:300px;max-height:46vh;overflow:auto;background:#0f1f1a;color:#f2f5f3;border:2px solid #00a862;border-radius:14px;font:13px/1.35 Inter,system-ui,sans-serif;z-index:9000;box-shadow:0 10px 30px rgba(0,0,0,.4);display:none}#kioskOrders.on{display:block}#kioskOrders h4{margin:0;padding:10px 12px;background:#00704a;font-size:14px;display:flex;justify-content:space-between;align-items:center}#kioskOrders h4 small{font-weight:600;opacity:.85}#kioskOrders h4{gap:6px;cursor:move}#kioskOrders h4 .kt{flex:1}#kioskOrders h4 button{font:700 11px Inter,system-ui,sans-serif;border:0;border-radius:99px;padding:3px 8px;cursor:pointer;background:#ffffff26;color:#fff}#kioskOrders h4 button:hover{background:#ffffff44}#kioskOrders h4 .xp-floating-close{background:transparent;font-size:16px;padding:0 4px}#colaAtajos{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:9400;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:0 8px 8px;background:#0f1f1af2;border:1px solid #00a862;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);font:13px Inter,system-ui,sans-serif;color:#f2f5f3}#colaAtajos.vacio,#colaAtajos[hidden]{display:none}#colaAtajos .xp-floating-header{flex:1 0 100%}#colaAtajos>button:not(.xp-floating-close){position:static;transform:none;box-shadow:none}#kioskOrders .o{padding:9px 12px;border-bottom:1px solid #2f4a40}#kioskOrders .o b{font-size:20px;color:#d4b072}#kioskOrders .o i{font-style:normal;float:right;font-size:11px;padding:2px 7px;border-radius:99px;background:#2e5248}#kioskOrders .o i.paid{background:#2f7d4f}#kioskOrders .empty{padding:12px;opacity:.7}#kioskModal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;display:none;align-items:center;justify-content:center}#kioskModal.on{display:flex}#kioskModal .wrap{position:relative;height:92vh;aspect-ratio:9/16}#kioskModal iframe{width:100%;height:100%;border:0;border-radius:18px;background:#000;box-shadow:0 20px 60px rgba(0,0,0,.5)}#kioskModal .x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;font:700 20px system-ui;cursor:pointer}#kioskTouch{position:fixed;right:150px;bottom:40px;z-index:9000;background:#d4b072;color:#1e1a12;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;display:none}#kioskBtn{display:none;position:fixed;right:14px;bottom:40px;z-index:9000;background:#00704a;color:#fff;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35)}';
+    css.textContent='#kioskOrders{position:fixed;right:14px;bottom:86px;width:300px;max-height:46vh;overflow:auto;background:#0f1f1a;color:#f2f5f3;border:2px solid #00a862;border-radius:14px;font:13px/1.35 Inter,system-ui,sans-serif;z-index:9000;box-shadow:0 10px 30px rgba(0,0,0,.4);display:none}#kioskOrders.on{display:block}#kioskOrders h4{margin:0;padding:10px 12px;background:#00704a;font-size:14px;display:flex;justify-content:space-between;align-items:center}#kioskOrders h4 small{font-weight:600;opacity:.85}#kioskOrders h4{gap:6px;cursor:move}#kioskOrders h4 .kt{flex:1}#kioskOrders h4 button{font:700 11px Inter,system-ui,sans-serif;border:0;border-radius:99px;padding:3px 8px;cursor:pointer;background:#ffffff26;color:#fff}#kioskOrders h4 button:hover{background:#ffffff44}#kioskOrders h4 .xp-floating-close{background:transparent;font-size:16px;padding:0 4px}#colaAtajos{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:9400;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:0 8px 8px;background:#0f1f1af2;border:1px solid #00a862;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);font:13px Inter,system-ui,sans-serif;color:#f2f5f3}#colaAtajos.vacio,#colaAtajos[hidden]{display:none}#colaAtajos .xp-floating-header{flex:1 0 100%}#colaAtajos>button:not(.xp-floating-close){position:static;transform:none;box-shadow:none}#kioskOrders .o{padding:9px 12px;border-bottom:1px solid #2f4a40}#kioskOrders .o b{font-size:20px;color:#d4b072}#kioskOrders .o i{font-style:normal;float:right;font-size:11px;padding:2px 7px;border-radius:99px;background:#2e5248}#kioskOrders .o i.paid{background:#2f7d4f}#kioskOrders .empty{padding:12px;opacity:.7}#kioskOrders .kw{padding:9px 12px;background:#4a1d1a;border-bottom:1px solid #c0392b;color:#ffe3df;font-weight:600}#kioskOrders .kw[hidden]{display:none}#kioskOrders .kw form{display:flex;gap:6px;margin-top:7px}#kioskOrders .kw input{flex:1;min-width:0;font:13px Inter,system-ui,sans-serif;padding:5px 8px;border-radius:8px;border:1px solid #c0392b;background:#1d0d0c;color:#fff}#kioskOrders .kw button{font:700 12px Inter,system-ui,sans-serif;border:0;border-radius:99px;padding:5px 10px;cursor:pointer;background:#00a862;color:#fff}#kioskOrders .kw.okc{background:#123327;border-bottom-color:#00a862;color:#dff5ea}#kioskModal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;display:none;align-items:center;justify-content:center}#kioskModal.on{display:flex}#kioskModal .wrap{position:relative;height:92vh;aspect-ratio:9/16}#kioskModal iframe{width:100%;height:100%;border:0;border-radius:18px;background:#000;box-shadow:0 20px 60px rgba(0,0,0,.5)}#kioskModal .x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;font:700 20px system-ui;cursor:pointer}#kioskTouch{position:fixed;right:150px;bottom:40px;z-index:9000;background:#d4b072;color:#1e1a12;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;display:none}#kioskBtn{display:none;position:fixed;right:14px;bottom:40px;z-index:9000;background:#00704a;color:#fff;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35)}';
     document.head.appendChild(css);
     box=document.createElement('div'); box.id='kioskOrders'; document.body.appendChild(box);
-    box.innerHTML='<h4><span class="kt"></span><small>DEMO</small><button class="kr" type="button"></button><button class="ka" type="button"></button></h4><div class="kb" aria-live="polite"></div>';
+    box.innerHTML='<h4><span class="kt"></span><small>DEMO</small><button class="kr" type="button"></button><button class="ka" type="button"></button></h4><div class="kw" role="alert" hidden><span class="kwt"></span><form class="kc"><input class="kci" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="kcb" type="submit"></button></form></div><div class="kb" aria-live="polite"></div>';
     box.querySelector('.kr').addEventListener('click',e=>{ e.stopPropagation(); colaReset(); });
     box.querySelector('.ka').addEventListener('click',e=>{ e.stopPropagation(); setColaAudio(!colaAudioOn()); });
+    // Clave de barra desde el propio panel: campo de contraseña (no queda en el CLI ni en la URL).
+    const kc=box.querySelector('.kc'); if(kc) kc.addEventListener('submit',e=>{ try{ e.preventDefault(); e.stopPropagation(); }catch(_){}
+      const i=box.querySelector('.kci'), v=String(i&&i.value||'').trim(); if(i) i.value=''; if(!v) return;
+      const r=claveCommand(v); toast(r.message,r.ok?'#00a862':'#c0392b'); });
     // Barra de atajos («Abrir gestor de colas», «Quiosco», «Tocar el tótem»): una ventana como las demás.
     atajos=document.createElement('div'); atajos.id='colaAtajos'; atajos.className='vacio'; document.body.appendChild(atajos);
     window.XpaceColaAtajos={host:atajos};
@@ -146,7 +212,10 @@
     btn.textContent=kioskOn()?(en()?'🛒 Kiosk · off':'🛒 Quiosco · quitar'):(en()?'🛒 Kiosk':'🛒 Quiosco');
     box.querySelector('.kt').textContent=en()?'Orders · POS':'Pedidos · TPV';
     const kr=box.querySelector('.kr'),ka=box.querySelector('.ka'),audio=colaAudioOn();
-    kr.textContent='↺ Reset'; kr.title=en()?'Reset the kiosk queue to zero (Admirito goes back to his demo)':'Dejar a cero la cola del quiosco (Admirito vuelve a su demo)';
+    kr.textContent='↺ Reset'; kr.title=(en()?'Reset the kiosk queue to zero (Admirito goes back to his demo)':'Dejar a cero la cola del quiosco (Admirito vuelve a su demo)')+' · '+barraEstado();
+    const kw=box.querySelector('.kw'); if(kw){ const txt=colaAviso?avisoTexto(colaAviso):(claveForm?barraEstado():''); kw.hidden=!txt; kw.classList.toggle('okc',!colaAviso&&!!barraClave());
+      const kwt=kw.querySelector('.kwt'); if(kwt) kwt.textContent=txt; const kci=kw.querySelector('.kci'); if(kci) kci.placeholder=en()?'Counter key':'Clave de barra';
+      const kcb=kw.querySelector('.kcb'); if(kcb) kcb.textContent=en()?'Save':'Guardar'; }
     ka.textContent=audio?'🔊':'🔇'; ka.title=audio?(en()?'Stop the queue announcements':'Parar los avisos de la cola'):(en()?'Turn the queue announcements on':'Activar los avisos de la cola'); ka.setAttribute('aria-pressed',String(audio));
     if(atajos) atajos.classList.toggle('vacio',![].some.call(atajos.querySelectorAll('#kioskBtn,#kioskTouch,#ipadColaChip'),b=>b.id==='ipadColaChip'?b.classList.contains('on'):b.style.display==='block'));
     box.querySelector('.kb').innerHTML=(orders.length?orders.slice().reverse().map(o=>{
@@ -238,10 +307,11 @@
       (d.listo||[]).forEach(p=>{ if(!colaVistos.has(p.numero)){ colaVistos.add(p.numero); if(!colaPrimera) colaPend.push(p); } });
       colaPrimera=false; colaSiguiente(); }catch(_){} }
   setInterval(colaTic,3000);
-  function boot(){ ensure(); setInterval(()=>{ try{ if(!tocado&&esTotem(document.activeElement)) tocado=true; /* clic dentro del iframe del tótem = foco */ btn.style.display=(tocado&&(kioskOn()||(window.XpaceStarbucks&&window.XpaceStarbucks.active())||new URLSearchParams(location.search).has('kiosko')))?'block':'none'; render(); const t=document.getElementById('totemAvatar'); if(t){ t.style.zIndex=kioskOn()?'60':'6'; } }catch(_){} },1500);
+  function boot(){ ensure(); limpiaRastros(); setInterval(()=>{ try{ limpiaRastros(); if(!tocado&&esTotem(document.activeElement)) tocado=true; /* clic dentro del iframe del tótem = foco */ btn.style.display=(tocado&&(kioskOn()||(window.XpaceStarbucks&&window.XpaceStarbucks.active())||new URLSearchParams(location.search).has('kiosko')))?'block':'none'; render(); const t=document.getElementById('totemAvatar'); if(t){ t.style.zIndex=kioskOn()?'60':'6'; } }catch(_){} },1500);
     try{ const q=new URLSearchParams(location.search); if(q.has('kiosko')) setTimeout(()=>totemCommand('kiosko'),2500); else if(stored()) setTimeout(()=>{ if(stored()) setTotem(true,storedUrl()); },2500); /* si en esos 2,5 s se apagó (Tótem OFF o /avatar <nivel> on), no se vuelve a encender */ }catch(_){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   window.totemKioskCommand=function(a){ tocado=true; return totemCommand(a); }; // /totem tecleado = interacción
   window.XpaceTotem={on:stored,url:()=>storedUrl()||kioskUrl(),kioskUrl:kioskUrl,set:setTotem,formato:formatoDe,key:MODE_KEY};
-  window.XpaceTotemKiosk={touched:()=>tocado,reset:colaReset,audio:colaAudioOn,setAudio:setColaAudio,cola:()=>window.__gemeloColaAvisos.slice(),colaTexto:colaTexto,say:totemSpeak,touch:touch,on:()=>totemCommand('kiosko'),off:()=>totemCommand('off'),orders:()=>orders.slice(),url:kioskUrl};
+  window.XpaceTotemKiosk={touched:()=>tocado,reset:colaReset,audio:colaAudioOn,setAudio:setColaAudio,
+    clave:{guardada:()=>!!barraClave(),mascara:()=>barraMascara(),estado:barraEstado,guardar:v=>claveCommand(v),borrar:()=>claveCommand('off'),cabeceras:()=>Object.keys(colaCabeceras())},aviso:()=>colaAviso,cola:()=>window.__gemeloColaAvisos.slice(),colaTexto:colaTexto,say:totemSpeak,touch:touch,on:()=>totemCommand('kiosko'),off:()=>totemCommand('off'),orders:()=>orders.slice(),url:kioskUrl};
 })();
