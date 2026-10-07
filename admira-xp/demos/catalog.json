@@ -24,11 +24,35 @@
   "runtime": {
     "guided_commands": [
       "/demo",
-      "/demo tpv",
+      "/demo help",
+      "/demo 1",
+      "/demo 2",
+      "/demo 3",
+      "/demo 4",
+      "/demo 5",
+      "/demo locucion",
+      "/demo musica",
+      "/demo imagenes",
+      "/demo video",
+      "/demo caja",
+      "/demo auto",
+      "/demo todas",
+      "/demo pausa",
+      "/demo pause",
+      "/demo reanudar",
+      "/demo resume",
+      "/demo siguiente",
+      "/demo next",
+      "/demo stop",
       "/demo estado",
       "/demo status",
-      "/demo off",
-      "/demo tpv off"
+      "/demo tpv",
+      "/demo tpv off",
+      "/demo studio",
+      "/demo store",
+      "/demo tv",
+      "/demo app",
+      "/demo biz"
     ],
     "api": "window.XpacePOSExperience.demo.start/stop/state",
     "phases": [
@@ -43,15 +67,28 @@
       "error"
     ],
     "nominal_drop_ms": 6400,
-    "remote_mcp_launch_tool": false
+    "remote_mcp_launch_tool": false,
+    "url_autostart": "?demo=tpv (first gesture if the tab has none)",
+    "local_management": {
+      "engine": "https://www.admiranext.com/suite/experto.js",
+      "manifest": "https://www.admiranext.com/subdemos/store.subdemos.json",
+      "api": "window.AdmiraExperto.demo/demoEstado",
+      "ids": [
+        "store/voz",
+        "store/musica",
+        "store/imagenes",
+        "store/video",
+        "store/tpv"
+      ],
+      "prepared_data_only": true,
+      "native_tpv_command": "/demo tpv",
+      "native_pause_resume": false
+    }
   },
   "proposed_general_tour": {
     "status": "pending",
     "commands_not_implemented": [
-      "/demo lista",
-      "/demo tour",
-      "/demo pausa",
-      "/demo continuar"
+      "/demo tour"
     ],
     "states": [
       "idle",
@@ -635,5 +672,6 @@
         "Preference changes locally; do not force day advancement in tour"
       ]
     }
-  ]
+  ],
+  "solutions_guide": "https://www.admira.store/admira-xp/docs/demo-soluciones.md"
 }
