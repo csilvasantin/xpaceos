@@ -383,5 +383,10 @@
   "v.07.10.2026.r30.16:22": [
     "iPad de Starbucks: un toque abre el gestor de colas también en Matrix",
     "La vista ampliada se abre por encima de la escena y ✕ cierra con un toque"
+  ],
+  "v.07.10.2026.r53.23:28": [
+    "Gemelo: el ↺ Reset de la cola del tótem vuelve a funcionar con la barra cerrada",
+    "/totem clave guarda la clave de barra en el dispositivo (o el campo del aviso, o #cola-barra=)",
+    "Si falta la clave, el tótem lo explica en vez de fallar en silencio"
   ]
 }
