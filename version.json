@@ -1,6 +1,6 @@
 {
-  "version": "v.07.10.2026.r16.11:17",
-  "deployedAt": "2026-10-07T07:27:53Z",
+  "version": "v.07.10.2026.r17.12:28",
+  "deployedAt": "2026-10-07T10:28:59Z",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
@@ -9,9 +9,11 @@
   "gitFull": "36a3ff659ee58c0a6dac90665aeb7182d2151cf8",
   "dirty": false,
   "agent": "GrokBot",
-  "evidence": "Pastilla de categoría del avatar (Admirito / Luna / Neo) y pines 20261007-pill-1.",
+  "evidence": "Watcher de cola en totem-kiosko.js (admirito-cola-1)",
   "novedades": [
-    "Pastilla de categoría del avatar: toca AVATAR·Admirito / HUMAN·Luna / METAHUMAN·Neo para cambiar de personalidad",
-    "Cargador del avatar (avatar.js) y ⌘ Experto (suite/experto.js) fijados a la versión 20261007-pill-1"
+    "El Admirito del gemelo de Starbucks lee la cola de pedidos de Paseo de Gracia y anuncia cada pedido listo una sola vez",
+    "Llama por el nombre que diste en el quiosco: «Carlos, tu pedido Starbucks está preparado»; sin nombre, dice el número",
+    "Habla con la cara del avatar si está activa y, si no, con la voz del navegador en castellano (es-ES); el aviso también sale en pantalla",
+    "Con ?cola=<tienda> se puede escuchar la cola de otra tienda"
   ]
 }
