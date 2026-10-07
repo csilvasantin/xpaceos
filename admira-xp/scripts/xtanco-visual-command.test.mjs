@@ -297,3 +297,20 @@ test('/ifthendothat commands use the shipped dispatcher without bot or session w
  globalThis.XPLComposer={open(){},close(){},toggle(){}};
  try{for(const input of ['/ifthendothat','/ifthendothat on','/ifthendothat off','/ifthendothat typo']){const h=consoleHarness();await h.send(input);assert.equal(h.responses.length,1);assert.deepEqual(h.sent,[]);assert.deepEqual(h.sessionCommands,[]);assert.deepEqual(h.logs,[]);assert.equal(h.responses[0][2],'local-visual');}}finally{delete globalThis.XPLComposer;}
 });
+
+test('Store numbers and names use the shared local engine, named platforms remain explicit, native TPV stays native',async()=>{
+  for(const arg of ['help','1','2','3','4','5','locucion','musica','imagenes','video','caja','auto','todas','pausa','resume','siguiente','studio','store','tv','app','admira.biz'])
+    assert.deepEqual(parseVisualCommand('/demo '+arg),{guided:'suite',text:'/demo '+arg});
+  assert.deepEqual(parseVisualCommand('/DEMO@AdmiraXPBot MÚSICA'),{guided:'suite',text:'/demo musica'});
+  assert.deepEqual(parseVisualCommand('/demo tpv'),{guided:'tpv'});
+  assert.deepEqual(parseVisualCommand('/demo off'),{guided:'stop'});
+  assert.deepEqual(parseVisualCommand('/demo tpv stop'),{guided:'stop',native:true});
+  assert.deepEqual(parseVisualCommand('/demo tpv estado'),{guided:'status',native:true});
+  const previous=globalThis.XpacePOSExperience;let starts=0,stops=0;
+  globalThis.XpacePOSExperience={demo:{start(){starts++;return {ok:true};},stop(){stops++;},state(){return {phase:'travel',song:true,songTitle:'Prepared music'};}}};
+  try{
+    const f=publicRouter();const started=await executeVisualCommand('/demo tpv',f);assert.equal(started.ok,true);assert.equal(starts,1);
+    assert.match((await executeVisualCommand('/demo estado')).message,/llevando a caja.*Prepared music/);
+    assert.equal((await executeVisualCommand('/demo stop')).ok,true);assert.equal(stops,1);
+  }finally{globalThis.XpacePOSExperience=previous;}
+});

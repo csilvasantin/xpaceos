@@ -1,5 +1,11 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.07.10.2026.r20.13:05": [
+    "XpaceOS publica el contrato de demos locales de Store: /demo 1–5, /demo auto, pausa, reanudar, siguiente y stop, con /demo tpv como recorrido nativo del muffin",
+    "Mismo puente, avatar de primer uso, guía y ayuda bilingüe que admira.store, para que el espejo diario no los borre",
+    "Catálogo y manifiesto MCP con demo_soluciones, demo_catalog y store_demo_contract (store-local-autopilot-1)",
+    "Ensayos con datos preparados: sin altas, ventas ni emisiones reales"
+  ],
   "v.07.10.2026.r18.13:00": [
     "El iPad del mostrador de Starbucks (starbucks-ipad-01) enseña el gestor de colas: Admirito, «¡Listo!» con nombres y «En preparación», adaptado a su formato horizontal",
     "Al pulsar el iPad en la escena se abre en grande la pantalla real de la cola (ainimation.studio/cola/ipad.html), como el avatar y el quiosco",
