@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "title": "Catálogo funcional del Xpacio · Good / Better / Best",
-  "updated_at": "2026-10-05",
+  "updated_at": "2026-10-07",
   "audit": {
     "basis": "Revisión estática del código del gemelo; inventario MCP contrastado con tools/list y resources/list públicos. No se ejecutaron operaciones físicas, envíos, compras ni generación de pago.",
     "source_commit": "a7b8d62eacfcbb166d2ddc1e3a6758bec0fdc178",
@@ -3542,7 +3542,7 @@
       "visualQualityOptions"
     ]
   },
-  "version": "v.05.10.2026.r19.23:18",
+  "version": "v.07.10.2026.r53.23:28",
   "inventory_scope": {
     "es": "ITIL abre el inventario del Xpacio visitado en la segunda columna de Experto y el detalle seleccionado en la tercera. El enlace opcional al catálogo conserva el mismo dominio, proyecto, local, idioma y marca y publica primero la distribución actual en este navegador. Tarjetas, selector 3D, desgloses y descargas se limitan a sus modelos; un enlace a una pieza ajena no la carga. Un Xpacio desconocido muestra un inventario vacío y pide abrir ITIL desde la escena. /inventario en el gemelo lista sólo sus modelos, conservando los números permanentes y las piezas retiradas para su recuperación. Las importaciones explícitas y Deshacer mantienen su funcionamiento. Starbucks PG103 conserva sus unidades y modelos 44–50 e incluye sus seis pantallas virtuales, TPV y altavoz; no acredita vinculación ni telemetría física. Cafebrería conserva su inventario completo de la escena y su librería 51. El catálogo general sin contexto sigue disponible para consultar plantillas. No crea altas patrimoniales en Yokup.",
     "en": "ITIL opens the inventory of the Xpace being visited in the second Expert column and the selected details in the third. The optional catalogue link preserves the same origin, project, venue, language and brand and first publishes the current layout in this browser. Cards, the 3D selector, breakdowns and downloads are limited to its models; links to foreign pieces do not load them. Unknown Xpacios show an empty inventory and ask users to open ITIL from the scene. /inventario in the twin lists only its models, preserving permanent numbers and removed pieces for recovery. Explicit imports and Undo retain their behavior. Starbucks PG103 keeps its units and models 44–50 and includes its six virtual screens, POS and speaker; this does not establish physical binding or telemetry. Cafebrería retains its full scene inventory and bookcase 51. The general catalogue without context remains available for browsing templates. No Yokup lifecycle assets are created.",
@@ -4650,6 +4650,19 @@
     "guide": "https://www.admira.store/admira-xp/docs/ipad-queue-idle.md",
     "es": "Sin pedidos en Recibido, En preparación ni Preparado, Admirito ocupa toda la pantalla del iPad. Al llegar un pedido reaparecen las tres fases; al recogerse el último vuelve al avatar completo. Una pérdida de conexión conserva el último estado conocido. /ipad cola activa la cola, /ipad abrir la amplía (también doble clic), /ipad off recupera la playlist. Los previos de Pixeria conservan prioridad. La vista de escena no activa voz propia; la voz ampliada requiere un toque. Las pruebas usan starbucks-qa, sin alterar la cola real de Carlos.",
     "en": "With no Received, Preparing or Ready orders, Admirito fills the iPad screen. Any active order restores all three phases; collecting the last order restores the full avatar. A connection failure retains the last known state. /ipad cola enables the queue, /ipad abrir expands it (also double-click), /ipad off restores its playlist. Pixeria previews retain priority. Scene mode has no independent voice; expanded voice requires a user gesture. Tests use starbucks-qa without changing Carlos’s live queue."
+  },
+  "queue_counter_key": {
+    "help_topic": "cola-barra-clave",
+    "es": "Con la barra cerrada, el relé de la cola solo acepta escrituras con la clave de barra: POST /cola/avanzar sin la cabecera x-cola-clave devuelve 401. La clave se guarda solo en el dispositivo del gemelo (localStorage xpace:cola-barra, uno por origen) y nunca en el repositorio ni en la URL. Hay tres formas de guardarla. La primera es el campo de contraseña del aviso de «Pedidos · TPV» (recomendada). La segunda es /totem clave <clave>: la respuesta solo enseña ••••1234 y la orden se tapa en el historial del CLI y en el log de sesión. La tercera es abrir el gemelo una vez con #cola-barra=<clave>: se guarda y el fragmento desaparece de la URL. /totem clave dice si hay clave sin enseñarla, /totem clave off la borra y /totem también informa. «↺ Reset» (/totem reset) manda la clave. Sin clave o con 401, avisa en «Pedidos · TPV» («La barra está cerrada: guarda la clave con /totem clave …») en vez de fallar en silencio. Las lecturas de /cola/estado siguen siendo públicas, ahora solo con el nombre de pila, y el aviso «NOMBRE, tu pedido Starbucks está preparado» sigue funcionando.",
+    "en": "With the counter closed, the queue relay only accepts writes that carry the counter key: POST /cola/avanzar without the x-cola-clave header returns 401. The key is stored only on the twin's device (localStorage xpace:cola-barra, one per origin) and never in the repository or the URL. There are three ways to save it. The first is the password field in the “Orders · POS” warning (recommended). The second is /totem clave <key>: the reply only shows ••••1234 and the command is masked in the CLI history and the session log. The third is to open the twin once with #cola-barra=<key>: the key is saved and the fragment is removed from the URL. /totem clave reports whether a key is saved without showing it, /totem clave off deletes it and /totem reports it too. “↺ Reset” (/totem reset) sends the key. With no key or a 401 it shows a warning in “Orders · POS” instead of failing silently. Reads from /cola/estado stay public, now with the first name only, and the “NAME, your Starbucks order is ready” announcement keeps working.",
+    "commands": ["/totem clave <clave>", "/totem clave", "/totem clave off", "/totem reset"],
+    "storage_key": "xpace:cola-barra",
+    "header": "x-cola-clave",
+    "provisioning": "#cola-barra=<clave>",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/cola-barra-clave.md",
+    "source": "admira-xp/scripts/totem-kiosko.js",
+    "mcp_tools": null,
+    "updated_at": "2026-10-07"
   },
   "incident_close": {
     "guide": "https://www.admira.store/admira-xp/help.html#incident-close",
