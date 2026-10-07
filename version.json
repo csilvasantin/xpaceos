@@ -1,19 +1,19 @@
 {
-  "version": "v.07.10.2026.r9.07:37",
-  "deployedAt": "2026-10-07T05:45:17.860644+00:00",
+  "version": "v.07.10.2026.r10.07:55",
+  "deployedAt": "2026-10-07T05:56:02.589557+00:00",
   "deployer": "OraculoMacMini",
   "machine": "MacMini",
   "signature": "OraculoMacMini · MacMini",
-  "git": "63d00c16c967856ea1502c0da5531ac1911f3a1c",
-  "gitShort": "63d00c1",
-  "gitFull": "63d00c16c967856ea1502c0da5531ac1911f3a1c",
+  "git": "1a1a5a2c971e5915cb52b02bae54e64ff0be5a60",
+  "gitShort": "1a1a5a2",
+  "gitFull": "1a1a5a2c971e5915cb52b02bae54e64ff0be5a60",
   "dirty": false,
   "agent": "OraculoMacMini",
-  "evidence": "ITIL por Xpacio: mobiliario e IoT del proyecto activo, enlaces y modelos aislados; ayuda bilingüe web y MCP actualizada.",
+  "evidence": "Iconos avanzados y compra en TPV; contrato local y ayudas bilingües.",
   "novedades": [
-    "Experto: un botón ON/OFF con luz verde o roja para tótem, avatar y audiencia",
-    "IF·THEN·DO THAT: varios DO simultáneos y selección de una o varias pantallas",
-    "Catálogo completo de Pixeria; Todos quita el filtro sin limitar vídeos a 200",
-    "Resumen del día OFF por defecto; /resumen dia on|off guarda tu elección"
+    "Avanzado: tarjetas con iconos y texto legible para Player y cámara",
+    "Matrix arranca por defecto sin una calidad explícita en la URL",
+    "La compra aparece en el TPV al entregar productos a caja; editar y añadir café desde la pantalla",
+    "Cesta vacía recupera la publicidad; ayudas y MCP actualizados en español e inglés"
   ]
 }
