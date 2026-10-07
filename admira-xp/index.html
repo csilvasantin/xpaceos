@@ -759,7 +759,7 @@
 <script src="../inventario/store.js?v=inventory-cli-3"></script>
 <!-- Shell común (FLT-101337): con la barra en línea solo deja su API (CLI, /marca) y la
      marca blanca; sin ?marca= ni marca recordada no carga nada más ni habla con admiranext.com. -->
-<script defer src="/assets/xpace-shell.js?v=retail-rules-2" data-shell="inline"></script>
+<script defer src="/assets/xpace-shell.js?v=20261007-luna-1" data-shell="inline"></script>
 </head>
 <body>
 <!-- ── Modal Guardar como Plantilla (sustituye prompt() nativo) ── -->
@@ -20662,16 +20662,16 @@ async function askMetahuman(text){
 // Usa el endpoint nuevo POST /metahuman/ask {loc, question} → {answer, audioBase64, mime}.
 // A diferencia del Grok-proxy (solo texto), ESTE además devuelve y reproduce la VOZ.
 const AVATAR3D_CFG=(typeof RUNTIME_CONFIG!=='undefined'&&RUNTIME_CONFIG.avatar3d&&typeof RUNTIME_CONFIG.avatar3d==='object')?RUNTIME_CONFIG.avatar3d:{};
-// Identidad del avatar = calidad del gemelo (good→admirito, better→alex, best/matrix→neo).
+// Identidad del avatar = calidad del gemelo (Good 8 bits→avatar/Admirito, Better 16→human/Luna, Best 32 y Matrix 64→metahuman/Neo).
 function avatarIdentityFromQuality(){
   var q='';
   try{ q=String(avatar3dVisualLevel&&avatar3dVisualLevel()||''); }catch(e){}
   if(!q){ try{ q=String((window.__xtancoVisualTiers&&window.__xtancoVisualTiers.mode)||new URLSearchParams(location.search).get('quality')||new URLSearchParams(location.search).get('visual')||'').toLowerCase(); }catch(e){} }
   if(q==='matrix') q='best';
   if(q==='best') return {tier:'best', avatar:'neo'};
-  if(q==='better') return {tier:'better', avatar:'alex'};
+  if(q==='better') return {tier:'better', avatar:'luna'};
   if(q==='good') return {tier:'good', avatar:'admirito'};
-  return {tier:'better', avatar:'alex'};
+  return {tier:'better', avatar:'luna'};
 }
 
 const AVATAR3D={
@@ -21231,7 +21231,7 @@ function avatar3dContextQS(url){
   try{ const v=avatar3dVisualLevel(); if(v) tier=v; }catch(_){}
   if(!tier) tier='better';
   // avatar= identidad solo si no hay modelo RPM (ese también usa &avatar=).
-  const av=(!avatar3dModel&&{good:'admirito',better:'alex',best:'neo'}[tier])||'';
+  const av=(!avatar3dModel&&{good:'admirito',better:'luna',best:'neo'}[tier])||'';
   return (loc?'loc='+encodeURIComponent(loc)+'&':'')+'sector='+encodeURIComponent(avatar3dSector())+(brand?'&brand='+encodeURIComponent(brand):'')+'&tier='+tier+(av?'&avatar='+av:'');
 }
 // Calidad visual del gemelo → nivel del avatar (06-10-2026): Good 8 bits = good,
@@ -21359,7 +21359,7 @@ function setAvatar3dWall(on){
 }
 window.setAvatar3dWall=setAvatar3dWall;
 // ── /metahuman — Keanu (MetaHuman Pixel Streaming) en la pantalla de la PARED LARGA ──
-// Independiente de /avatar3d (que es la chica del mupi central). Aparece/desaparece.
+// Independiente de /avatar3d (que es Luna, el mupi central). Aparece/desaparece.
 function metahumanWallOn(){ return !!(avatar3dWall && avatar3dWallSrc); }
 function toggleMetahumanWall(arg){
   const en=(typeof lang!=='undefined'&&lang==='en');
