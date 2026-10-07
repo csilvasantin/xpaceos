@@ -267,5 +267,10 @@
     "Catálogo de demos para agentes con escenarios, pasos, comprobaciones y limpieza",
     "Demo TPV disponible; tour general, selector y pausa/continuación especificados como pendientes",
     "Help web, tutorial, CLI y MCP real actualizados en español e inglés"
+  ],
+  "v.07.10.2026.r27.15:21": [
+    "Admirito ocupa toda la pantalla del iPad cuando la cola está vacía",
+    "Recibido, En preparación y Preparado reaparecen al llegar pedidos",
+    "Vista de escena y ampliada sin controles del avatar; ayuda y MCP ES/EN actualizados"
   ]
 }
