@@ -1,16 +1,16 @@
 {
-  "version": "v.08.10.2026.r1.00:25",
+  "version": "v.08.10.2026.r2.00:29",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-07T22:25:20Z",
-  "git": "3bd1254acc406fe76280ea901f22e607ab58cacc",
-  "gitShort": "3bd1254",
-  "gitFull": "3bd1254acc406fe76280ea901f22e607ab58cacc",
+  "deployedAt": "2026-10-07T22:29:27Z",
+  "git": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
+  "gitShort": "f42de26",
+  "gitFull": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
   "dirty": false,
   "novedades": [
-    "/demo all: la demo de incidencia siempre cierra el ticket que abre (reintenta si falla el cierre)",
-    "iPad: el gestor de colas se precarga durante la tarjeta y la demo espera a que cargue; al terminar desaparece el botón «Abrir gestor de colas» si no estaba",
-    "Sello con la fecha del día en Madrid (v.DD.MM.AAAA tras medianoche)"
+    "Tótem segmentado: /totem segmentado on — la cámara de este equipo cuenta personas, género, edad e individuo/grupo y el quiosco Starbucks elige la carta",
+    "Solo recuentos anónimos, nunca imágenes ni huellas faciales; aviso «Cámara en uso»; reglas y audiencia en admira.tv/audiencia",
+    "Ayuda ES/EN y atajo en la lista de comandos de la cola"
   ]
 }

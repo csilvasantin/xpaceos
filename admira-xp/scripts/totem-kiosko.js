@@ -3,6 +3,9 @@
  * /totem url <https://…>    → cualquier interactivo HTTPS en el tótem (recibe toques: es un iframe)
  * /totem off                → retira el pin (vuelve el tótem a su estado anterior)
  * /totem luna · /totem admiratv [espacio] → atajos a los modos de siempre (/avatar3d on · /admiratv)
+ * /totem segmentado on|off → quiosco SEGMENTADO (8-oct-2026): la webcam del equipo que emula el tótem cuenta personas,
+ *                             género, edad e individuo/grupo y el quiosco elige la carta (reglas en admira.tv/audiencia).
+ *                             Solo recuentos anónimos; nunca imágenes. Se recuerda en xpace:totem-seg.
  * /totem clave <clave> · /totem clave off · /totem clave → clave de barra de la cola en ESTE dispositivo
  *                             (localStorage xpace:cola-barra; nunca en el repo ni en la URL). ↺ Reset la manda.
  * Los pedidos llegan por postMessage {source:'ainimation-xperiencia', event:'order', order} y se
@@ -20,8 +23,15 @@
     let u=DEFAULT_URL;
     try{ if(!(window.XpaceStarbucks&&window.XpaceStarbucks.active())&&!window.XpaceStarbucksDemo) u=KIOSK_BASE+'?store=xpacio&marca=starbucks'; }catch(_){}
     let f=''; try{ if(size) f=formatoDe(size.w,size.h); else { const t=document.getElementById('totemAvatar'); const r=t&&t.getBoundingClientRect(); f=r&&r.width?formatoDe(r.width,r.height):'&formato=vertical&w=1080&h=1920'; } }catch(_){}
-    return u+'&lang='+l+'&host=gemelo'+f;
+    return u+'&lang='+l+'&host=gemelo'+(segOn()?'&seg=1':'')+f;
   }
+  // Quiosco segmentado (8-oct-2026, Carlos): cámara del equipo que emula el tótem → carta por audiencia.
+  const SEG_KEY='xpace:totem-seg';
+  function segOn(){ try{ const q=new URLSearchParams(location.search).get('seg'); if(q==='1') return true; if(q==='0') return false; return localStorage.getItem(SEG_KEY)==='on'; }catch(_){ return false; } }
+  function setSeg(on){ try{ if(on) localStorage.setItem(SEG_KEY,'on'); else localStorage.removeItem(SEG_KEY); }catch(_){}
+    // re-pin para que el iframe del tótem (y el modal) carguen la URL con o sin &seg=1
+    // encenderlo pone el quiosco en el tótem si no estaba (salvo una URL propia, que se respeta)
+    if(!storedUrl()&&(stored()||on)) setTotem(true,''); try{ if(modal&&modal.classList.contains('on')) touch(true); }catch(_){} return on; }
   // ── Interruptor Tótem (7-oct-2026, Carlos): ON = el player del tótem enseña el interactivo
   // (Starbucks → quiosco de pedido de Paseo de Gracia); OFF = el avatar digital de siempre.
   // Se recuerda en este navegador como los demás interruptores.
@@ -83,10 +93,17 @@
     if(a==='pedidos'||a==='orders'){ panel(true); return {ok:true,message:orders.length+(en()?' orders':' pedidos')}; }
     if(a==='reset'||a==='reiniciar'||a==='cero'){ colaReset(); const c=barraClave();
       return {ok:true,message:(en()?'↺ Queue reset: closing the open orders; Admirito goes back to his demo.':'↺ Cola a cero: se cierran los pedidos abiertos; Admirito vuelve a su demo.')+'\n'+(c?barraEstado():(en()?'If the counter is closed you will see the warning in «Orders · POS»: /totem clave <key>.':'Si la barra está cerrada verás el aviso en «Pedidos · TPV»: /totem clave <clave>.'))}; }
+    if(head==='segmentado'||head==='segmento'||head==='seg'||head==='segmented'||head==='camara'||head==='cámara'){
+      const v=(parts[1]||'').toLowerCase();
+      if(!v||v==='estado'||v==='status') return {ok:true,message:(segOn()?(en()?'📷 Segmented kiosk ON':'📷 Quiosco segmentado ON'):(en()?'Segmented kiosk OFF':'Quiosco segmentado OFF'))+(en()?' · /totem segmentado on|off · rules and audience: https://admira.tv/audiencia/':' · /totem segmentado on|off · reglas y audiencia: https://admira.tv/audiencia/')};
+      const on=/^(on|si|sí|1|activar)$/.test(v)?true:/^(off|no|0|apagar)$/.test(v)?false:!segOn();
+      setSeg(on); toast(on?(en()?'📷 Segmented kiosk ON':'📷 Quiosco segmentado ON'):(en()?'Segmented kiosk OFF':'Quiosco segmentado OFF'));
+      return {ok:true,message:on?(en()?'📷 Segmented kiosk: the camera of this computer counts people, gender, age and individual/group and the kiosk picks the menu. Anonymous counts only, never images. The browser will ask for camera permission. Audience and rules: https://admira.tv/audiencia/':'📷 Quiosco segmentado: la cámara de este equipo cuenta personas, género, edad e individuo/grupo y el quiosco elige la carta. Solo recuentos anónimos, nunca imágenes. El navegador pedirá permiso de cámara. Audiencia y reglas: https://admira.tv/audiencia/')+'\n'+kioskUrl():(en()?'Segmented kiosk OFF · general menu, camera off.':'Quiosco segmentado OFF · carta general, cámara apagada.')};
+    }
     if(head==='clave'||head==='key'||head==='barra'){ return claveCommand(raw.slice(parts[0].length).trim()); }
     if(head==='audio'||head==='voz'||head==='avisos'){ const v=(parts[1]||'toggle').toLowerCase(), on=/^(on|si|sí|1|activar|unmute)$/.test(v)?true:/^(off|no|0|parar|mute|silencio)$/.test(v)?false:!colaAudioOn(); setColaAudio(on); return {ok:true,message:on?(en()?'🔊 Queue announcements ON':'🔊 Avisos de la cola activados'):(en()?'🔇 Queue announcements OFF':'🔇 Avisos de la cola parados')}; }
     if(a==='menu'||a==='menú'||a==='atajos'){ try{ atajosWin&&atajosWin.open(); }catch(_){} tocado=true; return {ok:true,message:en()?'Queue shortcuts shown.':'Atajos de colas a la vista.'}; }
-    return {ok:false,message:'/totem on|off · /totem kiosko · /totem url <https> · /totem luna · /totem admiratv · /totem pedidos · /totem reset · /totem clave <clave>|off · /totem audio on|off · /totem menu\n'+barraEstado()};
+    return {ok:false,message:'/totem on|off · /totem kiosko · /totem url <https> · /totem luna · /totem admiratv · /totem pedidos · /totem reset · /totem clave <clave>|off · /totem audio on|off · /totem segmentado on|off · /totem menu\n'+barraEstado()};
   }
   // ── panel «Pedidos · TPV» ─────────────────────────────────────────────
   let box=null, btn=null, modal=null, tbtn=null, atajos=null, atajosWin=null, boxWin=null;
@@ -195,7 +212,7 @@
     btn=document.createElement('button'); btn.id='kioskBtn'; btn.type='button';
     btn.addEventListener('click',()=>{ const r=kioskOn()?totemCommand('off'):totemCommand('kiosko'); if(r&&!r.ok) toast(r.message); });
     atajos.appendChild(btn);
-    modal=document.createElement('div'); modal.id='kioskModal'; modal.innerHTML='<div class="wrap"><iframe title="Quiosco · tótem" allow="autoplay; fullscreen"></iframe><button class="x" type="button" aria-label="Cerrar">✕</button></div>';
+    modal=document.createElement('div'); modal.id='kioskModal'; modal.innerHTML='<div class="wrap"><iframe title="Quiosco · tótem" allow="autoplay; fullscreen; camera"></iframe><button class="x" type="button" aria-label="Cerrar">✕</button></div>';
     modal.addEventListener('click',e=>{ if(e.target===modal||e.target.classList.contains('x')) touch(false); });
     document.body.appendChild(modal);
     tbtn=document.createElement('button'); tbtn.id='kioskTouch'; tbtn.type='button'; tbtn.addEventListener('click',()=>touch(true)); atajos.appendChild(tbtn);
@@ -311,7 +328,7 @@
     try{ const q=new URLSearchParams(location.search); if(q.has('kiosko')) setTimeout(()=>totemCommand('kiosko'),2500); else if(stored()) setTimeout(()=>{ if(stored()) setTotem(true,storedUrl()); },2500); /* si en esos 2,5 s se apagó (Tótem OFF o /avatar <nivel> on), no se vuelve a encender */ }catch(_){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   window.totemKioskCommand=function(a){ tocado=true; return totemCommand(a); }; // /totem tecleado = interacción
-  window.XpaceTotem={on:stored,url:()=>storedUrl()||kioskUrl(),kioskUrl:kioskUrl,set:setTotem,formato:formatoDe,key:MODE_KEY};
+  window.XpaceTotem={on:stored,url:()=>storedUrl()||kioskUrl(),kioskUrl:kioskUrl,set:setTotem,formato:formatoDe,key:MODE_KEY,segmentado:{on:segOn,set:setSeg,key:SEG_KEY}};
   window.XpaceTotemKiosk={touched:()=>tocado,reset:colaReset,audio:colaAudioOn,setAudio:setColaAudio,
     clave:{guardada:()=>!!barraClave(),mascara:()=>barraMascara(),estado:barraEstado,guardar:v=>claveCommand(v),borrar:()=>claveCommand('off'),cabeceras:()=>Object.keys(colaCabeceras())},aviso:()=>colaAviso,cola:()=>window.__gemeloColaAvisos.slice(),colaTexto:colaTexto,say:totemSpeak,touch:touch,on:()=>totemCommand('kiosko'),off:()=>totemCommand('off'),orders:()=>orders.slice(),url:kioskUrl};
 })();
