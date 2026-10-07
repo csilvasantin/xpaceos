@@ -1,6 +1,6 @@
 {
-  "version": "v.07.10.2026.r20.13:05",
-  "deployedAt": "2026-10-07T11:05:21Z",
+  "version": "v.07.10.2026.r21.13:23",
+  "deployedAt": "2026-10-07T11:23:09Z",
   "deployer": "NeoMBP16",
   "machine": "MacBookPro16",
   "signature": "NeoMBP16 · MacBookPro16",
@@ -9,11 +9,10 @@
   "gitFull": "0cfc054836dd341ebaa64f83f86fe65ca242c9b8",
   "dirty": false,
   "agent": "NeoMBP16",
-  "evidence": "mcp/manifest.json store_demo_contract (store-local-autopilot-1); validate-mirror-contract acepta este origen frente a admira-store d7918310",
+  "evidence": "ipad-cola.js modo demo (ipad-demo-1)",
   "novedades": [
-    "XpaceOS publica el contrato de demos locales de Store: /demo 1–5, /demo auto, pausa, reanudar, siguiente y stop, con /demo tpv como recorrido nativo del muffin",
-    "Mismo puente, avatar de primer uso, guía y ayuda bilingüe que admira.store, para que el espejo diario no los borre",
-    "Catálogo y manifiesto MCP con demo_soluciones, demo_catalog y store_demo_contract (store-local-autopilot-1)",
-    "Ensayos con datos preparados: sin altas, ventas ni emisiones reales"
+    "Sin pedidos pendientes, el Admirito del iPad del mostrador hace gracias en la escena (saltos, giros, latidos, bailes) e invita a pedir en el quiosco con frases simpáticas",
+    "Cuando un pedido pasa a «listo», deja la demo y enseña el aviso por nombre",
+    "El quiosco del tótem, abierto en grande, pide ahora el nombre en una pantalla propia y obligatoria antes de pagar"
   ]
 }
