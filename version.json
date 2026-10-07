@@ -1,19 +1,19 @@
 {
-  "version": "v.07.10.2026.r8.07:25",
-  "deployedAt": "2026-10-07T05:26:30.672556+00:00",
+  "version": "v.07.10.2026.r9.07:37",
+  "deployedAt": "2026-10-07T05:36:50.832580+00:00",
   "deployer": "OraculoMacMini",
   "machine": "MacMini",
   "signature": "OraculoMacMini · MacMini",
-  "git": "1bccb504275ac24c174287234b0cb529b5ecc463",
-  "gitShort": "1bccb50",
-  "gitFull": "1bccb504275ac24c174287234b0cb529b5ecc463",
+  "git": "0ec83866fc7fc1d987d6c88bf17081a58e910a40",
+  "gitShort": "0ec8386",
+  "gitFull": "0ec83866fc7fc1d987d6c88bf17081a58e910a40",
   "dirty": false,
   "agent": "OraculoMacMini",
   "evidence": "ITIL por Xpacio: mobiliario e IoT del proyecto activo, enlaces y modelos aislados; ayuda bilingüe web y MCP actualizada.",
   "novedades": [
-    "IF → reacción → contenido: música, locución, imagen o vídeo de Pixeria",
-    "Filtro editable con #musica, #locucion, #imagen o #video preseleccionado",
-    "Las reacciones visuales se reproducen temporalmente en el TPV del gemelo",
-    "Matrix por defecto y Starbucks con imagotipo y texto blanco"
+    "Experto: un botón ON/OFF con luz verde o roja para tótem, avatar y audiencia",
+    "IF·THEN·DO THAT: varios DO simultáneos y selección de una o varias pantallas",
+    "Catálogo completo de Pixeria; Todos quita el filtro sin limitar vídeos a 200",
+    "Resumen del día OFF por defecto; /resumen dia on|off guarda tu elección"
   ]
 }
