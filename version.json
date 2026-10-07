@@ -1,16 +1,16 @@
 {
-  "version": "v.07.10.2026.r47.21:20",
-  "deployer": "NeoMBP16",
-  "machine": "MacBookPro16",
-  "signature": "NeoMBP16 · MacBookPro16",
-  "deployedAt": "2026-10-07T19:18:02Z",
-  "git": "6f7a2290144a76ef0d35682483276eb7ee76f616",
-  "gitShort": "6f7a229",
-  "gitFull": "6f7a2290144a76ef0d35682483276eb7ee76f616",
+  "version": "v.07.10.2026.r48.21:35",
+  "deployer": "GrokBot",
+  "machine": "MacMini",
+  "signature": "GrokBot · MacMini",
+  "deployedAt": "2026-10-07T19:35:39Z",
+  "git": "3bd1254acc406fe76280ea901f22e607ab58cacc",
+  "gitShort": "3bd1254",
+  "gitFull": "3bd1254acc406fe76280ea901f22e607ab58cacc",
   "dirty": false,
   "novedades": [
-    "Experto → Avatar3D: «Opciones del avatar» pasa a ser tres interruptores con estado ON/OFF: Good · Admirito, Better · Luna y Best · Neo; uno a la vez en el tótem",
-    "Encender uno quita el quiosco del tótem y enseña ese avatar; apagar el activo deja el tótem sin avatar (/totem on vuelve al quiosco)",
-    "CLI: /avatar good|better|best on|off, y a secas alternan; /help los lista en «Avatar de la escena · tótem»"
+    "Avatar ampliado (Matrix): el idioma ESP/ENG sube a la barra superior, junto al desplegable del avatar, en Good · Admirito, Better · Luna y Best · Neo",
+    "Cambiar el idioma ya no recarga el avatar: se le pasa al momento y la barra de chat queda limpia",
+    "Neo vuelve a hablar en el stream: sus respuestas llegan a la sala que locuta el render (digitalavatar.ai r21)"
   ]
 }
