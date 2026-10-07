@@ -1,6 +1,6 @@
 {
-  "version": "v.07.10.2026.r22.13:45",
-  "deployedAt": "2026-10-07T11:45:17Z",
+  "version": "v.07.10.2026.r23.13:54",
+  "deployedAt": "2026-10-07T11:54:17Z",
   "deployer": "NeoMBP16",
   "machine": "MacBookPro16",
   "signature": "NeoMBP16 · MacBookPro16",
@@ -9,10 +9,10 @@
   "gitFull": "0cfc054836dd341ebaa64f83f86fe65ca242c9b8",
   "dirty": false,
   "agent": "NeoMBP16",
-  "evidence": "ipad-cola.js en Matrix 360 (ipad-matrix-1)",
+  "evidence": "ipad-cola.js doble clic + tres fases (ipad-fases-1)",
   "novedades": [
-    "En Matrix · Starbucks (360) el iPad del mostrador enseña ya el gestor de colas con Admirito: antes seguía en verde con «iPad» porque esa vista no usaba la cola",
-    "Sin pedidos, Admirito hace gracias; con pedidos listos (también los que ya estaban) muestra número, nombre y aviso",
-    "Pulsar el iPad lo abre en grande; un vídeo o imagen de su playlist o arrastrado desde Pixeria sigue mandando"
+    "Doble clic en el iPad del mostrador abre la web de la cola en grande, como el tótem (✕, clic fuera o Escape para cerrar), en Good, Better/Best y Matrix · 360",
+    "El iPad enseña las tres fases del pedido: Recibido, En preparación y ¡Preparado!",
+    "Admirito te llama por tu nombre al pasar a Preparado; sin pedidos preparados vuelve a hacer gracias"
   ]
 }
