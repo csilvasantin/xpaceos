@@ -1,9 +1,9 @@
 {
-  "version": "v.07.10.2026.r40.20:01",
+  "version": "v.07.10.2026.r41.20:03",
   "deployer": "GrokBot",
   "machine": "MacBookPro16",
   "signature": "GrokBot · MacBookPro16",
-  "deployedAt": "2026-10-07T18:01:55Z",
+  "deployedAt": "2026-10-07T18:03:18Z",
   "git": "d2303181007e7eac7934364706b03a3247795168",
   "gitShort": "d230318",
   "gitFull": "d2303181007e7eac7934364706b03a3247795168",
