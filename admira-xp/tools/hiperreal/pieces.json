@@ -161,6 +161,38 @@
     "Landscape display · 4:3": "screen",
     "Stand rubber": "rubber"
    }
+  },
+  "2": {
+   "name": "Estantería",
+   "front": "+X",
+   "kick_plate": {
+    "h": 0.07,
+    "inset": 0.03
+   }
+  },
+  "3": {
+   "name": "Botellero"
+  },
+  "7": {
+   "name": "Escritorio",
+   "detail": {
+    "handles": true
+   }
+  },
+  "9": {
+   "name": "Planta"
+  },
+  "10": {
+   "name": "Lámpara"
+  },
+  "13": {
+   "name": "Pantalla TFT"
+  },
+  "15": {
+   "name": "Tablet Satisf."
+  },
+  "51": {
+   "name": "Librería"
   }
  }
 }

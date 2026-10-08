@@ -1,16 +1,17 @@
 {
-  "version": "v.08.10.2026.r14.17:46",
+  "version": "v.08.10.2026.r15.18:01",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T15:46:51Z",
-  "git": "9a65346757c210b168643e30fd08a39897429ffb",
-  "gitShort": "9a65346",
-  "gitFull": "9a65346757c210b168643e30fd08a39897429ffb",
+  "deployedAt": "2026-10-08T16:01:26Z",
+  "git": "7e42b16320b37377cacd5b3e652d7ba72631fb24",
+  "gitShort": "7e42b16",
+  "gitFull": "7e42b16320b37377cacd5b3e652d7ba72631fb24",
   "dirty": false,
   "novedades": [
-    "En el Starbucks, la vista Better vuelve a ser la de antes: los muebles añadidos y el botellero solo aparecen en Best",
-    "Las demos de la tienda (/demo taza, /demo kiosko y el arranque ?ax_demo=store) se publican también en XpaceOS",
-    "El espejo nocturno de admira.store vuelve a funcionar sin copias a mano y sin borrar lo propio de la tienda"
+    "Hiperreal tanda 2: estantería, botellero, escritorio, planta, lámpara, pantalla TFT, tablet de satisfacción y librería con materiales PBR reales",
+    "Detalle geométrico real en las piezas de cajas: biseles, cantos de ABS, paneles con ranura y zócalo empotrado",
+    "Comparativas sobre un fondo de cafetería neutro y limpio; GLB web de 0,07 a 3,4 MB y GLB HD para Unreal",
+    "En el gemelo, con Best, /inventario añadir coloca estas piezas en Hiperreal (si falla, Best)"
   ]
 }

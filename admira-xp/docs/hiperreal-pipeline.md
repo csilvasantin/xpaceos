@@ -49,3 +49,22 @@ Se conservan los nombres de objeto y todas las propiedades de inventario (`inven
 - Hiperreal mejora materiales, luz e imperfección; no remodela. Las piezas de geometría muy simple (silla 49, mesa 48, cajas de la barra) siguen siendo cajas bien acabadas.
 - El botellero 50 ya era PBR: gana sobre todo peso web (4,96 MB → 1,0 MB) y la luz Hiperreal.
 - Las medidas siguen siendo interpretativas, no un levantamiento.
+
+## Tanda 2 · piezas nativas de demo (08-10-2026)
+
+Piezas: 2 Estantería, 3 Botellero, 7 Escritorio, 9 Planta, 10 Lámpara, 13 Pantalla TFT, 15 Tablet de satisfacción, 51 Librería
+(no existe `catalog/01`). `admira-xp/demos/catalog.json` solo tiene escenarios Starbucks: no hay escena 365/Lenovo con piezas del catálogo que priorizar.
+
+**Detalle geométrico real** (`detail()` en `pipeline.py`, tras los materiales y antes de las UV):
+- cajas de 8 vértices (madera, lacado, metal, plástico, piedra): bisel real de hasta 4 mm (2 segmentos);
+- tableros finos de madera: cantos de ABS (material propio, un 16 % más oscuro y satinado);
+- tableros verticales grandes (>35 cm): panel con ranura perimetral (inset 4 cm, 3 mm de fondo);
+- por pieza: `kick_plate` (zócalo empotrado de aluminio oscuro) y `detail.handles` (tirador de barra en frentes de cajón/puerta);
+- las cajas ya redondeadas de las piezas nativas (98 vértices) y las mallas trianguladas no se tocan.
+- los textos 3D (letreros) se exportan también (tipo FONT) para no perder la identidad visual.
+
+**Encuadre**: `front` admite `-Y`, `+Y`, `+X`, `-X` (la estantería 2 mira a `+X`). La pared, el zócalo de pared y las luces se colocan según ese frente.
+
+**Fondo de las comparativas**: microcemento cálido liso y pared pintada mate con rodapié; sin texturas de hormigón ni yeso. El polvo de las superficies superiores baja a la mitad.
+
+**Límites honestos**: las piezas nativas 3, 7, 9, 10, 13 y 15 están hechas con cajas ya redondeadas o mallas trianguladas, así que el detalle geométrico automático no les añade nada; mejoran solo por materiales. El escritorio 7 no recibió tirador (su cajonera no es una caja simple). Donde más se nota el detalle es en la librería 51 (biseles, cantos y panel trasero) y en la estantería 2 (paneles laterales y zócalo).
