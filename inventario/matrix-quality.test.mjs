@@ -9,14 +9,14 @@ import {preciseTextureSampling} from './finish-rendering.mjs';
 import {createMatrixEnvironmentRoom,configureMatrixRenderer} from './matrix-rendering.mjs';
 import {stageCamera} from './stage-camera.mjs';
 
-test('Matrix is an independent fourth finish only for model 47; other model URLs reject it',()=>{
+test('Matrix and Hiperreal are independent finishes only for model 47; other model URLs reject them',()=>{
  for(let number=1;number<=52;number++){
-  assert.deepEqual(comparisonProfiles(number,'all'),number===47?['good','better','best','matrix']:['good','better','best']);
+  assert.deepEqual(comparisonProfiles(number,'all'),number===47?['good','better','best','matrix','hiperreal']:['good','better','best']);
   assert.equal(selectedQuality(number,'matrix'),number===47?'matrix':'best');
-  if(number!==47)assert.throws(()=>furnitureURL(number,'matrix'),/perfil no válido/);
+  if(number!==47){assert.throws(()=>furnitureURL(number,'matrix'),/perfil no válido/);assert.throws(()=>furnitureURL(number,'hiperreal'),/perfil no válido/);}
  }
  for(const extension of ['glb','blend']){const url=new URL(furnitureURL(47,'matrix',extension));assert.match(url.pathname,new RegExp('/47/matrix\\.'+extension+'$'));assert.equal(url.searchParams.get('v'),'coffee47-matrix-20261008-1');}
- const profiles=qualityProfiles(47);profiles.pop();assert.equal(qualityProfiles(47).length,4);
+ const profiles=qualityProfiles(47);profiles.pop();assert.equal(qualityProfiles(47).length,5);
  assert.equal(selectedQuality(47,'invalid'),'best');
 });
 
@@ -67,8 +67,8 @@ test('Matrix reflections use local HDR light panels, and their resources are dis
  const renderer={shadowMap:{}};configureMatrixRenderer(renderer);assert.equal(renderer.toneMapping,T.ACESFilmicToneMapping);assert.equal(renderer.outputColorSpace,T.SRGBColorSpace);assert.equal(renderer.shadowMap.type,T.PCFSoftShadowMap);assert.equal(renderer.shadowMap.enabled,true);
 });
 
-test('all four finishes share one camera and model 47 frontal view faces the +X cabinet front',()=>{
+test('all five finishes share one camera and model 47 frontal view faces the +X cabinet front',()=>{
  const camera=stageCamera(),views=qualityProfiles(47).map(()=>[]),detach=views.map(view=>camera.subscribe(state=>view.push(state)));
  camera.update({angle:catalogFrontAngle(47),elevation:.25,zoom:1.4});assert.equal(catalogFrontAngle(47),Math.PI/2);assert.equal(catalogFrontAngle(2),Math.PI/2);assert.equal(catalogFrontAngle(1),0);
- assert.deepEqual(views.map(view=>view[0]),Array(4).fill(camera.get()));detach[3]();camera.update({zoom:2});assert.equal(views[3].length,1);assert.equal(views[0].length,2);
+ assert.deepEqual(views.map(view=>view[0]),Array(5).fill(camera.get()));detach[3]();camera.update({zoom:2});assert.equal(views[3].length,1);assert.equal(views[0].length,2);
 });

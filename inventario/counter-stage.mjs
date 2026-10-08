@@ -1,17 +1,17 @@
 import * as T from '../admira-xp/scripts/premium-three.mjs';
 import {createSurfaceBinding} from '../admira-xp/scripts/surface-materials.mjs?v=surfaces-1';
-import {cloneFurniture} from '../admira-xp/scripts/furniture-asset.mjs?v=matrix47-20261008-1';
+import {cloneFurniture} from '../admira-xp/scripts/furniture-asset.mjs?v=hiperreal47-20261008-1';
 import {stageCamera} from './stage-camera.mjs?v=shelf-products-1';
-import {pixelFinish,pixelLayout,preciseTextureSampling} from './finish-rendering.mjs?v=matrix47-20261008-1';
+import {pixelFinish,pixelLayout,preciseTextureSampling} from './finish-rendering.mjs?v=hiperreal47-20261008-1';
 import {createPartHighlight,numericPartForHit} from '../admira-xp/scripts/shelf-parts.mjs?v=shelf-products-1';
-import {createMatrixStudio} from './matrix-rendering.mjs?v=matrix47-20261008-1';
-import {catalogFrontAngle} from './quality-model.mjs?v=matrix47-20261008-1';
+import {createMatrixStudio,createHiperrealStudio} from './matrix-rendering.mjs?v=hiperreal47-20261008-1';
+import {catalogFrontAngle,isPhotoreal} from './quality-model.mjs?v=hiperreal47-20261008-1';
 
 export async function mountCounterStage(host,asset={number:1,name:'Mostrador'},{controlsHost=host,onReady=()=>{},quality='best',cameraState}={}){
  const canvas=host.querySelector('canvas'),status=host.querySelector('[data-status]');
  const en=document.documentElement.lang==='en',t=(es,enText)=>en?enText:es;
  const homeZoom=asset.number===50?1.12:1;
- const matrix=asset.number===47&&quality==='matrix',frontAngle=catalogFrontAngle(asset.number);
+ const matrix=isPhotoreal(asset.number,quality),hiperreal=matrix&&quality==='hiperreal',frontAngle=catalogFrontAngle(asset.number);
  const pixel=quality==='good',state=cameraState||stageCamera(homeZoom),output=pixel?canvas.getContext('2d'):null;
  let renderer,object,binding,editorDispose,finishDispose,partHighlight,studio,disposed=false,drag=null;
  const owned=new Set(),events=[];
@@ -24,7 +24,7 @@ export async function mountCounterStage(host,asset={number:1,name:'Mostrador'},{
   const ambient=pixel?new T.AmbientLight('#ffffff',.9):new T.HemisphereLight('#ffffff','#80927f',2.5);
   const key=new T.DirectionalLight(pixel?'#ffffff':'#fff3dc',pixel?.8:3.5);key.position.set(3,7,4);key.castShadow=!pixel;key.shadow.mapSize.set(1024,1024);key.shadow.bias=-.0003;
   const fill=new T.DirectionalLight('#d9e8f3',pixel?0:1.5);fill.position.set(-4,3,-3);
-  if(matrix)studio=createMatrixStudio(renderer,scene);else scene.add(ambient,key,fill);
+  if(matrix)studio=hiperreal?await createHiperrealStudio(renderer,scene):createMatrixStudio(renderer,scene);else scene.add(ambient,key,fill);
   if(asset.number===50&&!pixel){
    // Reflection panels let blue PET and thin black wire show their PBR finish.
    renderer.toneMappingExposure=.9;ambient.intensity=.75;key.intensity=2.6;fill.intensity=.65;
@@ -40,7 +40,7 @@ export async function mountCounterStage(host,asset={number:1,name:'Mostrador'},{
   }
   if(!matrix){const floor=new T.Mesh(new T.PlaneGeometry(200,200),pixel?new T.MeshBasicMaterial({color:'#edf0e7'}):new T.MeshStandardMaterial({color:'#edf0e7',roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.012;floor.receiveShadow=!pixel;scene.add(floor);owned.add(floor.geometry);owned.add(floor.material);}
   object=await cloneFurniture(asset.number,quality);if(disposed)return;
-  finishDispose=pixel?pixelFinish(object):preciseTextureSampling(object,renderer.capabilities.getMaxAnisotropy(),{physical:matrix});binding=createSurfaceBinding(object);const materials=new Map();object.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.set(m,m);});scene.add(object);host.dataset.assetStatus='ready';
+  finishDispose=pixel?pixelFinish(object):preciseTextureSampling(object,renderer.capabilities.getMaxAnisotropy(),{physical:matrix});binding=createSurfaceBinding(object);const materials=new Map();object.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.set(m,m);});scene.add(object);studio?.ground?.(object);host.dataset.assetStatus='ready';
   const camera=new T.PerspectiveCamera(36,1,.01,100),bounds=new T.Box3().setFromObject(object),center=bounds.getCenter(new T.Vector3()),span=bounds.getSize(new T.Vector3()),extent=Math.max(span.x,span.y,span.z,.2);
   partHighlight=createPartHighlight(object,scene);
   function draw(){
@@ -69,5 +69,5 @@ export async function mountCounterStage(host,asset={number:1,name:'Mostrador'},{
   status.textContent=asset.number+'. '+asset.name+' · '+quality.toUpperCase()+t(' · modelo 3D completo · arrastra para girar',' · complete 3D model · drag to orbit');draw();
   editorDispose=await onReady(api);
   return ()=>{editorDispose?.();disposed=true;partHighlight?.dispose();binding?.dispose();finishDispose?.();studio?.dispose();events.forEach(off=>off());owned.forEach(r=>r.dispose());key.shadow.dispose();scene.clear();renderer.dispose();renderer.forceContextLoss();};
- }catch(error){host.dataset.assetStatus='error';editorDispose?.();partHighlight?.dispose();binding?.dispose();finishDispose?.();studio?.dispose();renderer?.dispose();renderer?.forceContextLoss();status.textContent=matrix?t('Matrix no disponible. Elige otro perfil o recarga para reintentar.','Matrix is unavailable. Choose another profile or reload to retry.'):t('No se pudo abrir la vista 3D. Recarga para reintentar; el archivo GLB sigue disponible para descargar.','The 3D view could not open. Reload to retry; the GLB file is still available to download.');return ()=>{disposed=true;events.forEach(off=>off());owned.forEach(r=>r.dispose());};}
+ }catch(error){host.dataset.assetStatus='error';editorDispose?.();partHighlight?.dispose();binding?.dispose();finishDispose?.();studio?.dispose();renderer?.dispose();renderer?.forceContextLoss();status.textContent=hiperreal?t('Hiperreal no disponible. Elige otro perfil o recarga para reintentar.','Hiperreal is unavailable. Choose another profile or reload to retry.'):matrix?t('Matrix no disponible. Elige otro perfil o recarga para reintentar.','Matrix is unavailable. Choose another profile or reload to retry.'):t('No se pudo abrir la vista 3D. Recarga para reintentar; el archivo GLB sigue disponible para descargar.','The 3D view could not open. Reload to retry; the GLB file is still available to download.');return ()=>{disposed=true;events.forEach(off=>off());owned.forEach(r=>r.dispose());};}
 }

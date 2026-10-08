@@ -1,7 +1,7 @@
 import {GLTFLoader} from './vendor/GLTFLoader.mjs';
 import {cloneCounter,counterURL} from './counter-asset.mjs';
 import {assetForInstance} from '../../inventario/model.mjs?v=ipad-20261005-1';
-import {supportsQuality} from '../../inventario/quality-model.mjs?v=matrix47-20261008-1';
+import {supportsQuality} from '../../inventario/quality-model.mjs?v=hiperreal47-20261008-1';
 const cache=new Map();let registryPromise;
 export const inventoryIdFor=assetForInstance;
 export function furnitureURL(number,tier='best',extension='glb'){
@@ -11,6 +11,7 @@ export function furnitureURL(number,tier='best',extension='glb'){
  if(number===2&&tier==='best')url.searchParams.set('v','shelves-parts-20261002-3');
  if(number===47&&tier==='best')url.searchParams.set('v','coffee47-photo-20261008-1');
  if(number===47&&tier==='matrix')url.searchParams.set('v','coffee47-matrix-20261008-1');
+ if(number===47&&tier==='hiperreal')url.searchParams.set('v','coffee47-hiperreal-20261008-1');
  return url.href;
 }
 export async function cloneFurniture(number,tier='best'){
