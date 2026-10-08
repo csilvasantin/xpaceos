@@ -1,16 +1,16 @@
 {
-  "version": "v.08.10.2026.r23.20:25",
-  "deployer": "GrokBot",
+  "version": "v.08.10.2026.r24.21:01",
+  "deployer": "MorfeoMacMini",
   "machine": "MacMini",
-  "signature": "GrokBot · MacMini",
+  "signature": "MorfeoMacMini · MacMini",
   "deployedAt": "2026-10-08T18:25:34Z",
   "git": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "gitShort": "39f5131",
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "Piezas hechas a mano en Hiperreal: la Lotería 4 y la Mesa DJ 17 estrenan barra reposapiés de latón. La Lotería suma un terminal con pantalla y boleto, y la Mesa DJ potenciómetros y faders.",
-    "El Revistero 6 sujeta sus revistas con varillas de latón. El Gestor de turnos 18 suma un dispensador de tiques con botón rojo y una brida atornillada al pie.",
-    "Estantería 2 en Hiperreal: las etiquetas frontales de los paquetes vuelven a verse; el pipeline ya no mueve las etiquetas impresas."
+    "Las personas vuelven a caminar: todos los Xpacios abren con /gente ON (personal, clientes, viandantes y personajes especiales).",
+    "Las partidas guardadas sin elección explícita vuelven a ON; /gente off, /personal y /clientes siguen funcionando igual y quedan marcados en la partida.",
+    "Ayuda, tutorial, manual y MCP explican el nuevo arranque en castellano e inglés."
   ]
 }
