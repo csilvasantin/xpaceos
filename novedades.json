@@ -1,5 +1,11 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.08.10.2026.r13.17:06": [
+    "Hiperreal llega al conjunto Starbucks: barra, caja, vitrina, mesa, silla, botellero e iPad con madera de veta real, piedra, acero, bollería y vidrio físicos",
+    "El gemelo en Best coloca Hiperreal con /inventario añadir y en la escena Starbucks (si falla, Matrix y después Best); el TPV sigue en vivo",
+    "GLB web ligeros de 0,3 a 2,7 MB (el botellero baja de 5 MB a 1 MB) y un GLB HD por pieza para Unreal",
+    "Comparativas antes/después en Cycles y pipeline Hiperreal reutilizable para las próximas tandas"
+  ],
   "v.08.10.2026.r12.15:42": [
     "Estantería Starbucks 47: nuevo acabado Hiperreal con texturas PBR reales de 2K a 4K, esmalte cerámico con reflejos, huellas sutiles y tazas redondas",
     "Hiperreal se ilumina con un HDRI de cafetería y sombras de contacto; Todos compara ya los cinco acabados",

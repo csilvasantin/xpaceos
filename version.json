@@ -1,17 +1,17 @@
 {
-  "version": "v.08.10.2026.r12.15:42",
+  "version": "v.08.10.2026.r13.17:06",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T13:42:48Z",
-  "git": "d441dbe12b69b16350177801bd2ce40a84bcf58f",
-  "gitShort": "d441dbe",
-  "gitFull": "d441dbe12b69b16350177801bd2ce40a84bcf58f",
+  "deployedAt": "2026-10-08T15:06:38Z",
+  "git": "4e794e8002f75a80379b197a9c5ea7ae783e1d5e",
+  "gitShort": "4e794e8",
+  "gitFull": "4e794e8002f75a80379b197a9c5ea7ae783e1d5e",
   "dirty": false,
   "novedades": [
-    "Estantería Starbucks 47: nuevo acabado Hiperreal con texturas PBR reales de 2K a 4K, esmalte cerámico con reflejos, huellas sutiles y tazas redondas",
-    "Hiperreal se ilumina con un HDRI de cafetería y sombras de contacto; Todos compara ya los cinco acabados",
-    "Dos versiones del mismo modelo: GLB web de 4,6 MB (Matrix pesaba 20,8 MB) y GLB HD de 26,5 MB para Unreal con Nanite",
-    "Render antes/después en Cycles y guía para escanear tazas reales con el móvil (fase 2)"
+    "Hiperreal llega al conjunto Starbucks: barra, caja, vitrina, mesa, silla, botellero e iPad con madera de veta real, piedra, acero, bollería y vidrio físicos",
+    "El gemelo en Best coloca Hiperreal con /inventario añadir y en la escena Starbucks (si falla, Matrix y después Best); el TPV sigue en vivo",
+    "GLB web ligeros de 0,3 a 2,7 MB (el botellero baja de 5 MB a 1 MB) y un GLB HD por pieza para Unreal",
+    "Comparativas antes/después en Cycles y pipeline Hiperreal reutilizable para las próximas tandas"
   ]
 }

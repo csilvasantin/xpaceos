@@ -1,12 +1,13 @@
 import * as T from '../admira-xp/scripts/premium-three.mjs';
-import {cloneFurniture} from '../admira-xp/scripts/furniture-asset.mjs?v=hiperreal47-20261008-1';
-import {pixelFinish,preciseTextureSampling} from './finish-rendering.mjs?v=hiperreal47-20261008-1';
-import {createMatrixStudio,createHiperrealStudio} from './matrix-rendering.mjs?v=hiperreal47-20261008-1';
+import {cloneFurniture} from '../admira-xp/scripts/furniture-asset.mjs?v=hiperreal-tanda1-20261008-1';
+import {pixelFinish,preciseTextureSampling} from './finish-rendering.mjs?v=hiperreal-tanda1-20261008-1';
+import {createMatrixStudio,createHiperrealStudio} from './matrix-rendering.mjs?v=hiperreal-tanda1-20261008-1';
+import {isPhotoreal} from './quality-model.mjs?v=hiperreal-tanda1-20261008-1';
 let renderers=new Map(),queue=Promise.resolve();
 export function preview(asset,tier,angle=0){const task=queue.then(()=>render(asset,tier,angle));queue=task.catch(()=>{});return task;}
 async function render(asset,tier,angle){
 
- const pixel=tier==='good',matrix=asset.number===47&&['matrix','hiperreal'].includes(tier),hiperreal=matrix&&tier==='hiperreal',key=matrix?'matrix':pixel?'pixel':'smooth';if(!renderers.has(key))renderers.set(key,new T.WebGLRenderer({alpha:true,antialias:!pixel,preserveDrawingBuffer:true}));const renderer=renderers.get(key);
+ const pixel=tier==='good',matrix=isPhotoreal(asset.number,tier),hiperreal=matrix&&tier==='hiperreal',key=matrix?'matrix':pixel?'pixel':'smooth';if(!renderers.has(key))renderers.set(key,new T.WebGLRenderer({alpha:true,antialias:!pixel,preserveDrawingBuffer:true}));const renderer=renderers.get(key);
  renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=pixel?T.NoToneMapping:T.ACESFilmicToneMapping;renderer.toneMappingExposure=tier==='best'?1.2:1.1;
  renderer.setClearColor(0x000000,0);const size=pixel?112:matrix?1024:tier==='best'?840:420;renderer.setSize(size,size,false);
  const object=await cloneFurniture(asset.number||1,tier),scene=new T.Scene();let studio,finishDispose;
