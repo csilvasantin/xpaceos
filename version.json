@@ -1,17 +1,17 @@
 {
-  "version": "v.08.10.2026.r16.18:27",
+  "version": "v.08.10.2026.r17.18:46",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T16:27:18Z",
-  "git": "3db9d4c6e2ed2fb61e7be34980eaaba600d2d2a6",
-  "gitShort": "3db9d4c",
-  "gitFull": "3db9d4c6e2ed2fb61e7be34980eaaba600d2d2a6",
+  "deployedAt": "2026-10-08T16:46:32Z",
+  "git": "bdaf279",
+  "gitShort": "bdaf279",
+  "gitFull": "bdaf279",
   "dirty": false,
   "novedades": [
-    "Hiperreal tanda 3: lotería, vending, revistero, puerta, alfombra, banner LED, mupi, aroma, mesa DJ y gestor de turnos",
-    "Piezas reales añadidas a mano: trampilla y zócalo en la vending, bisagras y placa en la puerta, soportes en el banner, rejilla en el aroma y tirador en el escritorio",
-    "Los letreros de la pantalla TFT y del mupi aparecen sobre la pantalla (antes quedaban bajo el suelo)",
-    "Comparativas en fondo neutro; GLB web de 0,1 a 2,4 MB y GLB HD para Unreal"
+    "Hiperreal tanda 4: primeras piezas Pixeria (scooter 19, moto verde 20, sofá Cazafantasmas 21, sofá Matrix 22, moto custom 23, televisor de piedra 24, sofá futurista 25, sofá dragón 26 y sofá bárbaro 27).",
+    "Nuevos acabados: tela con trama y brillo de terciopelo, cuero con grano, pintura lacada en carrocerías, cristal en parabrisas y faros, piedra en el televisor.",
+    "Piezas añadidas a mano: discos y pinzas de freno en las motos y antena de cuernos en el televisor.",
+    "Corregida la madera a rayas del lateral de la estantería 2 (y de la librería 51) en el visor web."
   ]
 }

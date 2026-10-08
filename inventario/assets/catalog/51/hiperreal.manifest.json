@@ -28,8 +28,8 @@
     "blender": "./hiperreal.blend"
   },
   "bytes": {
-    "web": 1515948,
-    "hd": 13041332,
+    "web": 1507352,
+    "hd": 13041528,
     "best": 2004376
   },
   "shared_textures": "../../hiperreal-tex/",
@@ -59,12 +59,15 @@
   "renders": "./hiperreal/preview/",
   "pipeline": "/admira-xp/tools/hiperreal/pipeline.py",
   "guide": "/admira-xp/docs/hiperreal-pipeline.md",
-  "twin_instance": "sb-backbar",
   "geometry_detail": {
     "bevel": 18,
     "band": 7,
     "panel": 2,
     "handle": 0,
     "kick": 0
-  }
+  },
+  "added_parts": [],
+  "placed_on_front": [],
+  "object_classes": {},
+  "twin_instance": "sb-backbar"
 }

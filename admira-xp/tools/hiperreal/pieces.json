@@ -1,5 +1,5 @@
 {
- "_doc": "Hiperreal pipeline config. defaults apply to every piece; pieces.<n> overrides. material_classes maps a material base name (sin sufijo .00N) or hex to a class. Clases: wood, wood_dark, wood_stained, stone, metal, metal_dark, powder, glass, led, ceramic, paper, cardboard, plastic, pastry, rubber, screen, gloss_black, keep.",
+ "_doc": "Hiperreal pipeline config. defaults apply to every piece; pieces.<n> overrides. material_classes maps a material base name (sin sufijo .00N) or hex to a class. Clases: wood, wood_dark, wood_stained, stone, metal, metal_dark, powder, glass, led, ceramic, paper, cardboard, plastic, pastry, rubber, screen, gloss_black, fabric, leather, carpaint, keep. object_classes splits a shared material per object name.",
  "defaults": {
   "source": "best",
   "tile_m": {
@@ -14,7 +14,10 @@
    "ceramic": 0.5,
    "paper": 0.35,
    "cardboard": 0.6,
-   "plastic": 0.5
+   "plastic": 0.5,
+   "fabric": 0.12,
+   "leather": 0.35,
+   "carpaint": 0.5
   },
   "jitter": {
    "pastry": {
@@ -543,6 +546,321 @@
   },
   "18": {
    "name": "Gestor Turnos"
+  },
+  "19": {
+   "name": "Scooter retro",
+   "material_classes": {
+    "chrome": "metal",
+    "dark": "metal_dark",
+    "black": "rubber",
+    "red": "plastic",
+    "blue": "carpaint",
+    "white": "carpaint",
+    "grey": "glass"
+   },
+   "object_classes": {
+    "Saddle": "leather",
+    "Headlight": "glass"
+   },
+   "add_parts": [
+    {
+     "name": "disco de freno",
+     "at": [
+      0.336,
+      -0.8,
+      0.1715
+     ],
+     "size": [
+      0.15,
+      0.15,
+      0.006
+     ],
+     "rot": [
+      0,
+      90,
+      0
+     ],
+     "cyl": true,
+     "cls": "metal",
+     "hex": "#a9adb2",
+     "rough": 0.28
+    },
+    {
+     "name": "pinza de freno",
+     "at": [
+      0.343,
+      -0.75,
+      0.23
+     ],
+     "size": [
+      0.016,
+      0.045,
+      0.05
+     ],
+     "cls": "carpaint",
+     "hex": "#b3261e"
+    }
+   ]
+  },
+  "20": {
+   "name": "Moto deportiva verde",
+   "material_classes": {
+    "chrome": "metal",
+    "dark": "metal_dark",
+    "black": "rubber",
+    "red": "plastic",
+    "green": "carpaint",
+    "white": "glass"
+   },
+   "object_classes": {
+    "Saddle": "leather",
+    "Windshield": "glass"
+   },
+   "add_parts": [
+    {
+     "name": "disco de freno",
+     "at": [
+      0.336,
+      -0.8,
+      0.1715
+     ],
+     "size": [
+      0.15,
+      0.15,
+      0.006
+     ],
+     "rot": [
+      0,
+      90,
+      0
+     ],
+     "cyl": true,
+     "cls": "metal",
+     "hex": "#a9adb2",
+     "rough": 0.28
+    },
+    {
+     "name": "pinza de freno",
+     "at": [
+      0.343,
+      -0.75,
+      0.23
+     ],
+     "size": [
+      0.016,
+      0.045,
+      0.05
+     ],
+     "cls": "carpaint",
+     "hex": "#b3261e"
+    },
+    {
+     "name": "disco de freno",
+     "at": [
+      0.336,
+      -0.17,
+      0.1715
+     ],
+     "size": [
+      0.15,
+      0.15,
+      0.006
+     ],
+     "rot": [
+      0,
+      90,
+      0
+     ],
+     "cyl": true,
+     "cls": "metal",
+     "hex": "#a9adb2",
+     "rough": 0.28
+    },
+    {
+     "name": "pinza de freno",
+     "at": [
+      0.343,
+      -0.12000000000000001,
+      0.23
+     ],
+     "size": [
+      0.016,
+      0.045,
+      0.05
+     ],
+     "cls": "carpaint",
+     "hex": "#b3261e"
+    }
+   ]
+  },
+  "23": {
+   "name": "Moto custom",
+   "material_classes": {
+    "chrome": "metal",
+    "dark": "metal_dark",
+    "black": "rubber",
+    "red": "plastic",
+    "white": "glass",
+    "brown": "leather"
+   },
+   "object_classes": {
+    "Saddle": "leather",
+    "Fuel tank": "carpaint"
+   },
+   "add_parts": [
+    {
+     "name": "disco de freno",
+     "at": [
+      0.336,
+      -0.8,
+      0.1715
+     ],
+     "size": [
+      0.15,
+      0.15,
+      0.006
+     ],
+     "rot": [
+      0,
+      90,
+      0
+     ],
+     "cyl": true,
+     "cls": "metal",
+     "hex": "#a9adb2",
+     "rough": 0.28
+    },
+    {
+     "name": "pinza de freno",
+     "at": [
+      0.343,
+      -0.75,
+      0.23
+     ],
+     "size": [
+      0.016,
+      0.045,
+      0.05
+     ],
+     "cls": "carpaint",
+     "hex": "#b3261e"
+    }
+   ]
+  },
+  "21": {
+   "name": "Sofá Cazafantasmas",
+   "material_classes": {
+    "grey": "fabric",
+    "red": "fabric",
+    "white": "fabric",
+    "dark": "powder"
+   }
+  },
+  "22": {
+   "name": "Sofá modular verde Matrix",
+   "material_classes": {
+    "black": "leather",
+    "lime": "leather",
+    "dark": "powder"
+   }
+  },
+  "25": {
+   "name": "Sofá futurista rojo",
+   "material_classes": {
+    "red": "leather",
+    "chrome": "metal",
+    "blue": "led",
+    "dark": "powder"
+   }
+  },
+  "26": {
+   "name": "Sofá dragón",
+   "material_classes": {
+    "green": "leather",
+    "gold": "metal",
+    "dark": "powder"
+   }
+  },
+  "27": {
+   "name": "Sofá bárbaro",
+   "material_classes": {
+    "brown": "leather",
+    "sand": "fabric",
+    "dark": "metal_dark",
+    "wood": "wood_dark"
+   }
+  },
+  "24": {
+   "name": "Televisor de piedra",
+   "material_classes": {
+    "sand": "stone",
+    "brown": "stone",
+    "grey": "screen",
+    "dark": "gloss_black",
+    "wood": "wood"
+   },
+   "add_parts": [
+    {
+     "name": "base antena",
+     "at": [
+      0.5,
+      -0.27,
+      1.179
+     ],
+     "size": [
+      0.07,
+      0.07,
+      0.03
+     ],
+     "cyl": true,
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    },
+    {
+     "name": "antena izq",
+     "at": [
+      0.4125,
+      -0.27,
+      1.316
+     ],
+     "size": [
+      0.008,
+      0.008,
+      0.35
+     ],
+     "rot": [
+      0,
+      -30,
+      0
+     ],
+     "cyl": true,
+     "cls": "metal",
+     "hex": "#b8bcc0",
+     "rough": 0.3
+    },
+    {
+     "name": "antena der",
+     "at": [
+      0.5875,
+      -0.27,
+      1.316
+     ],
+     "size": [
+      0.008,
+      0.008,
+      0.35
+     ],
+     "rot": [
+      0,
+      30,
+      0
+     ],
+     "cyl": true,
+     "cls": "metal",
+     "hex": "#b8bcc0",
+     "rough": 0.3
+    }
+   ]
   }
  }
 }
