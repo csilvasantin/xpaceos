@@ -1,16 +1,16 @@
 {
-  "version": "v.08.10.2026.r2.00:29",
-  "deployer": "GrokBot",
+  "version": "v.08.10.2026.r3.07:32",
+  "deployer": "OraculoMacMini",
   "machine": "MacMini",
-  "signature": "GrokBot · MacMini",
+  "signature": "OraculoMacMini · MacMini",
   "deployedAt": "2026-10-07T22:29:27Z",
   "git": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
   "gitShort": "f42de26",
   "gitFull": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
   "dirty": false,
   "novedades": [
-    "Tótem segmentado: /totem segmentado on — la cámara de este equipo cuenta personas, género, edad e individuo/grupo y el quiosco Starbucks elige la carta",
-    "Solo recuentos anónimos, nunca imágenes ni huellas faciales; aviso «Cámara en uso»; reglas y audiencia en admira.tv/audiencia",
-    "Ayuda ES/EN y atajo en la lista de comandos de la cola"
+    "TPV: 13 botellas de agua del modelo ITIL, seleccionables y arrastrables a caja",
+    "La primera botella deja 12 y activa la oferta del 10 % en las seis pantallas y el iPad",
+    "La cantidad, los huecos de la pila y la oferta se conservan en la pestaña; ayuda ES/EN actualizada"
   ]
 }
