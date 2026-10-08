@@ -1,17 +1,17 @@
 {
-  "version": "v.08.10.2026.r17.18:46",
+  "version": "v.08.10.2026.r18.19:00",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T16:46:32Z",
-  "git": "bdaf279",
-  "gitShort": "bdaf279",
-  "gitFull": "bdaf279",
+  "deployedAt": "2026-10-08T17:00:26Z",
+  "git": "8ac3ac6",
+  "gitShort": "8ac3ac6",
+  "gitFull": "8ac3ac6",
   "dirty": false,
   "novedades": [
-    "Hiperreal tanda 4: primeras piezas Pixeria (scooter 19, moto verde 20, sofá Cazafantasmas 21, sofá Matrix 22, moto custom 23, televisor de piedra 24, sofá futurista 25, sofá dragón 26 y sofá bárbaro 27).",
-    "Nuevos acabados: tela con trama y brillo de terciopelo, cuero con grano, pintura lacada en carrocerías, cristal en parabrisas y faros, piedra en el televisor.",
-    "Piezas añadidas a mano: discos y pinzas de freno en las motos y antena de cuernos en el televisor.",
-    "Corregida la madera a rayas del lateral de la estantería 2 (y de la librería 51) en el visor web."
+    "Hiperreal tanda 5: Pixeria 28–35 (cactus, coche Cazafantasmas, pinball espacial, sofá murciélago, cuadro familia ogro, mesa sándwich, sofá familia amarilla y sofá amarillo).",
+    "Pinball con cristal sobre el tablero, lanzador y botones de flipper añadidos a mano; coche con carrocería lacada y cristales tintados.",
+    "Las correas de hierro del sofá bárbaro 27 ya no se ven azuladas.",
+    "xpaceos.pages.dev vuelve a publicarse: los archivos de más de 25 MiB se sirven con redirección."
   ]
 }

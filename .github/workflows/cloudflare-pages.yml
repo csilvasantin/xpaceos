@@ -39,6 +39,18 @@ jobs:
           mkdir -p _site
           git archive HEAD | tar -x -C _site
           rm -rf _site/.github _site/tests
+          # Cloudflare Pages solo admite archivos de hasta 25 MiB (08-10-2026: el .blend y el HD de la
+          # pieza 47 Hiperreal dejaron xpaceos.pages.dev parado en r11). Igual que en admira-store: se
+          # quitan del paquete y _redirects los manda con un 302 a la copia fija de este mismo commit en GitHub.
+          : > _site/_redirects.grandes
+          while IFS= read -r -d '' big; do
+            rel="${big#_site}"
+            rm -f "$big"
+            printf '%s https://raw.githubusercontent.com/%s/%s%s 302\n' "${rel// /%20}" "$GITHUB_REPOSITORY" "$GITHUB_SHA" "${rel// /%20}" >> _site/_redirects.grandes
+            echo "más de 25 MiB → redirección: $rel"
+          done < <(find _site -type f -size +25M -print0)
+          if [ -s _site/_redirects.grandes ]; then cat _site/_redirects.grandes >> _site/_redirects; fi
+          rm -f _site/_redirects.grandes
           # Novedades del sello (06-10-2026): novedades.json[sello] o .default → version.json.novedades[]
           novedades='[]'
           if [ -f novedades.json ]; then
