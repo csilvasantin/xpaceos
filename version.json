@@ -1,16 +1,16 @@
 {
-  "version": "v.08.10.2026.r22.19:53",
+  "version": "v.08.10.2026.r23.20:25",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T17:53:45Z",
-  "git": "80444f4319f97d457efe55276b8456105a50e33c",
-  "gitShort": "80444f4",
-  "gitFull": "80444f4319f97d457efe55276b8456105a50e33c",
+  "deployedAt": "2026-10-08T18:25:34Z",
+  "git": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
+  "gitShort": "39f5131",
+  "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "Mostrador (pieza 1) con acabado Hiperreal: terrazo, roble, laca petróleo y latón con materiales reales; en el gemelo Best se carga solo (si falla, Best).",
-    "Los faros de las motos 19, 20 y 23 y las botellas ámbar de la estantería 2 vuelven a verse en el visor web: el cristal pequeño pasa a laca brillante (el HD para Unreal conserva el cristal).",
-    "El pipeline Hiperreal aplica esa regla del cristal por defecto en el LOD web y trae capturas del visor publicado (visor_shot.py)."
+    "Piezas hechas a mano en Hiperreal: la Lotería 4 y la Mesa DJ 17 estrenan barra reposapiés de latón. La Lotería suma un terminal con pantalla y boleto, y la Mesa DJ potenciómetros y faders.",
+    "El Revistero 6 sujeta sus revistas con varillas de latón. El Gestor de turnos 18 suma un dispensador de tiques con botón rojo y una brida atornillada al pie.",
+    "Estantería 2 en Hiperreal: las etiquetas frontales de los paquetes vuelven a verse; el pipeline ya no mueve las etiquetas impresas."
   ]
 }
