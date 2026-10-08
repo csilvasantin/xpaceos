@@ -392,6 +392,11 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
       colors.set(key,m);return m;
     };
     for(const fixture of globalThis.XpaceStarbucks.build(snapshot.layout.filter(i=>i.source!=='PixerIA'&&i.hidden!==true&&i.presentationExcluded!==true),{quality:assetQuality,moving:snapshot.moving})){
+      // The photographed merchandise cabinet uses its registered Blender model.
+      // furniture() retains the procedural fallback, placement and late-load guard.
+      if(fixture.item?.id==='sb-mugs'&&loadFurniture){
+        const cabinet=furniture(fixture.item);cabinet.name='starbucks:'+fixture.id;continue;
+      }
       const root=group(world);root.name='starbucks:'+fixture.id;
       if(fixture.item){
         const item=fixture.item;root.userData={item,layoutId:fixture.id,selectable:true};

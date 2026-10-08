@@ -8,6 +8,7 @@ export function furnitureURL(number,tier='best',extension='glb'){
  if(number===1)return counterURL(tier,extension);
  const url=new URL(`../../inventario/assets/catalog/${String(number).padStart(2,'0')}/${tier}.${extension}`,import.meta.url);
  if(number===2&&tier==='best')url.searchParams.set('v','shelves-parts-20261002-3');
+ if(number===47&&tier==='best')url.searchParams.set('v','coffee47-photo-20261008-1');
  return url.href;
 }
 export async function cloneFurniture(number,tier='best'){
