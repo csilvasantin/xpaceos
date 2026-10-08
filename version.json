@@ -1,16 +1,15 @@
 {
-  "version": "v.08.10.2026.r10.09:49",
+  "version": "v.08.10.2026.r11.10:05",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T07:49:09Z",
+  "deployedAt": "2026-10-08T08:05:24Z",
   "git": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
   "gitShort": "f42de26",
   "gitFull": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
   "dirty": false,
   "novedades": [
-    "Modo experto con el 360°: desaparece el rectángulo oscuro arriba al centro (el panel Opciones de categoría ya no lo provoca y sigue desplazándose con rueda, dedo o teclado)",
-    "Al detener el recorrido con el botón de la tarjeta, la línea de cierre sale en el idioma restaurado («■ Recorrido detenido · 7/16 · gemelo restaurado»)",
-    "Demo 14: el aviso de la locución se queda al menos 4,5 s y hasta que avanza la demo"
+    "Demo 14: el aviso de la locución se centra sobre el 360° y, si toca la tarjeta del recorrido, se aparta a su lado libre o por encima",
+    "El botón Detener de la tarjeta responde al primer toque, también entre pasos"
   ]
 }
