@@ -6,7 +6,8 @@ export const POS_BASKET_KEY='xpaceos.pos-basket.v1:'+POS_LOC+':'+POS_ID;
 export const POS_PRODUCTS=Object.freeze({
  muffin:Object.freeze({id:'muffin',title:'Muffin',image:new URL('../assets/pos/muffin-reference.png',import.meta.url).href}),
  water:Object.freeze({id:'water',title:'Agua · Solán de Cabras',titleEn:'Water · Solán de Cabras',image:new URL('../assets/pos/water-bottle.png',import.meta.url).href}),
- coffee:Object.freeze({id:'coffee',title:'Café',titleEn:'Coffee'})
+ coffee:Object.freeze({id:'coffee',title:'Café',titleEn:'Coffee'}),
+ mug:Object.freeze({id:'mug',title:'Taza Starbucks',titleEn:'Starbucks mug',image:new URL('../assets/pos/mug-reference.png',import.meta.url).href})
 });
 export function restoreBasket(value){
  if(!value||value.version!==1||!Array.isArray(value.lines))return {version:1,lines:[]};

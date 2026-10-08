@@ -1,7 +1,7 @@
-.matrix-pos-muffin,.matrix-pos-register{position:absolute;left:0;top:0;margin:0;padding:0;border:0;transform-origin:0 0;background:transparent;z-index:6;touch-action:none;backface-visibility:hidden}
-.matrix-pos-muffin{width:80px;height:70px;cursor:grab}.matrix-pos-register{width:200px;height:180px;cursor:pointer}
-.matrix-pos-muffin[hidden],.matrix-pos-register[hidden],.matrix-pos-basket[hidden]{display:none}
-.matrix-pos-muffin:hover,.matrix-pos-muffin:focus-visible,.matrix-pos-muffin.media-picked{outline:2px solid #b5f2d8;outline-offset:-2px;border-radius:8px;background:#b5f2d80a}
+.matrix-pos-muffin,.matrix-pos-mug,.matrix-pos-register{position:absolute;left:0;top:0;margin:0;padding:0;border:0;transform-origin:0 0;background:transparent;z-index:6;touch-action:none;backface-visibility:hidden}
+.matrix-pos-muffin{width:80px;height:70px;cursor:grab}.matrix-pos-mug{width:90px;height:64px;cursor:grab}.matrix-pos-register{width:200px;height:180px;cursor:pointer}
+.matrix-pos-muffin[hidden],.matrix-pos-mug[hidden],.matrix-pos-register[hidden],.matrix-pos-basket[hidden]{display:none}
+.matrix-pos-muffin:hover,.matrix-pos-muffin:focus-visible,.matrix-pos-muffin.media-picked,.matrix-pos-mug:hover,.matrix-pos-mug:focus-visible,.matrix-pos-mug.media-picked,.matrix-pos-mug.is-held{outline:2px solid #b5f2d8;outline-offset:-2px;border-radius:8px;background:#b5f2d80a}
 .matrix-pos-register.is-pos-drop-target,.matrix-pos-register:focus-visible{outline:4px solid #b5f2d8;outline-offset:-4px;border-radius:8px;background:#b5f2d815}
 .matrix-pos-basket{position:absolute;bottom:16px;left:16px;z-index:9;width:min(310px,calc(100% - 32px));max-height:46%;overflow:auto;padding:14px;box-sizing:border-box;border:1px solid #739b8b;border-radius:12px;background:#102920f5;color:#edf7ee;font:14px/1.5 system-ui;box-shadow:0 12px 38px #0007}
 .matrix-pos-basket header{display:flex;align-items:center;justify-content:space-between;gap:8px}.matrix-pos-basket h2{margin:0;font-size:18px}.matrix-pos-scope{margin:0 0 10px;color:#b0c7bb;font-size:11px}

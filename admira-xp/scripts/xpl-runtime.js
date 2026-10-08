@@ -30,6 +30,7 @@
     {id:'muffinPicked',type:'bool',scope:'retail',es:'cojo un muffin',en:'I pick up a muffin',icon:'🧁'},
     {id:'muffinDelivered',type:'bool',scope:'retail',es:'llevo un muffin a la caja',en:'I take a muffin to the register',icon:'🧁'},
     {id:'waterDelivered',type:'bool',scope:'retail',es:'dejo una botella de agua en la caja',en:'I leave a water bottle at the register',icon:'💧'},
+    {id:'mugPicked',type:'bool',scope:'retail',es:'cojo una taza',en:'I pick up a mug',icon:'☕'},
     // — clima —
     { id: 'rain',         type: 'bool', es: 'llueve',                 en: 'it rains',            icon: '🌧️' },
     { id: 'temperature',  type: 'num',  es: 'la temperatura',         en: 'temperature',         icon: '🌡️', min: -5, max: 42, unit: '°' },

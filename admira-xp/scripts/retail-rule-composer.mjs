@@ -1,4 +1,4 @@
-import {retailRulebook,defaultRetailRule,RETAIL_RULES_KEY,RETAIL_REACTIONS,RETAIL_SCREEN_IDS,reactionForAction,filterRetailMedia,RETAIL_EVENTS,RETAIL_EVENT_LABELS,WATER_OFFER_SCREENS,RETAIL_RULE_REACTIONS} from './retail-rules.mjs?v=agua-voz-1';
+import {retailRulebook,defaultRetailRule,RETAIL_RULES_KEY,RETAIL_REACTIONS,RETAIL_SCREEN_IDS,reactionForAction,filterRetailMedia,RETAIL_EVENTS,RETAIL_EVENT_LABELS,WATER_OFFER_SCREENS,RETAIL_RULE_REACTIONS} from './retail-rules.mjs?v=neo-prep-1';
 import {WATER_THANKS,createVoiceSpeaker} from './retail-voice.mjs?v=agua-voz-1';
 export function mountRetailRuleComposer(host){
  const doc=host.ownerDocument,win=doc.defaultView,book=retailRulebook(),t=(es,en)=>doc.documentElement.lang==='en'?en:es;
@@ -10,8 +10,8 @@ export function mountRetailRuleComposer(host){
  const expanded=new Map();let editingFilter=false;
  // Reacción nueva con sus valores por defecto (locución de texto y oferta del agua no usan catálogo).
  const freshAction=(kind,old={})=>{const a=RETAIL_RULE_REACTIONS.find(a=>a.kind===kind);if(kind==='tts')return {id:'sayText',value:WATER_THANKS.es,text:{...WATER_THANKS},voice:'auto'};if(kind==='offer')return {id:'showWaterOffer',value:'water-offer',screens:old.screens&&old.id==='showWaterOffer'?old.screens:[...WATER_OFFER_SCREENS]};return {id:a.action,filter:a.filter,value:'',...(['image','video'].includes(a.kind)?{screens:old.screens||['starbucks-tpv-01']}:{})};};
- // En el agua sólo se cablean la locución de texto y la oferta (cada entrega vuelve a sonar).
- const reactionsFor=fact=>RETAIL_RULE_REACTIONS.filter(a=>fact==='waterDelivered'?['tts','offer'].includes(a.kind):!a.only);
+ // En el agua: locución de texto, oferta, imagen y vídeo de Pixeria (cada entrega vuelve a sonar y a pintar).
+ const reactionsFor=fact=>RETAIL_RULE_REACTIONS.filter(a=>fact==='waterDelivered'?['tts','offer','image','video'].includes(a.kind):!a.only);
  const screenName=id=>id.includes('wall')?t('Pantalla ','Screen ')+Number(id.slice(-2)):id.includes('ipad')?'iPad':'TPV / POS';
  const quiet=el=>{for(const ev of ['keydown','keyup','keypress'])el.addEventListener(ev,e=>e.stopPropagation());return el;};
  function customBlock(r,action,index){
