@@ -5184,5 +5184,50 @@
     "phase2_scanning": "https://www.xpaceos.com/admira-xp/docs/escaneo-productos-reales.md",
     "es": "Quinto acabado de la estantería 47: PBR CC0 2K–4K, imperfecciones, tazas redondas, HDRI de cafetería y sombras de contacto; GLB web 4,6 MB y HD 26,5 MB para Unreal Nanite.",
     "en": "Fifth finish of shelf 47: 2K–4K CC0 PBR, imperfections, round mugs, café HDRI and contact shadows; 4.6 MB web GLB and 26.5 MB HD for Unreal Nanite."
+  },
+  "hiperreal_tanda1": {
+    "status": "implemented",
+    "batch": 1,
+    "inventory_numbers": [
+      44,
+      45,
+      46,
+      48,
+      49,
+      50,
+      52
+    ],
+    "viewer": "https://www.xpaceos.com/inventario/?asset=46&quality=hiperreal#mostrador",
+    "glb_web": {
+      "44": "https://www.xpaceos.com/inventario/assets/catalog/44/hiperreal.glb",
+      "45": "https://www.xpaceos.com/inventario/assets/catalog/45/hiperreal.glb",
+      "46": "https://www.xpaceos.com/inventario/assets/catalog/46/hiperreal.glb",
+      "48": "https://www.xpaceos.com/inventario/assets/catalog/48/hiperreal.glb",
+      "49": "https://www.xpaceos.com/inventario/assets/catalog/49/hiperreal.glb",
+      "50": "https://www.xpaceos.com/inventario/assets/catalog/50/hiperreal.glb",
+      "52": "https://www.xpaceos.com/inventario/assets/catalog/52/hiperreal.glb"
+    },
+    "glb_hd_unreal": {
+      "44": "https://www.xpaceos.com/inventario/assets/catalog/44/hiperreal/hiperreal-hd.glb",
+      "45": "https://www.xpaceos.com/inventario/assets/catalog/45/hiperreal/hiperreal-hd.glb",
+      "46": "https://www.xpaceos.com/inventario/assets/catalog/46/hiperreal/hiperreal-hd.glb",
+      "48": "https://www.xpaceos.com/inventario/assets/catalog/48/hiperreal/hiperreal-hd.glb",
+      "49": "https://www.xpaceos.com/inventario/assets/catalog/49/hiperreal/hiperreal-hd.glb",
+      "50": "https://www.xpaceos.com/inventario/assets/catalog/50/hiperreal/hiperreal-hd.glb",
+      "52": "https://www.xpaceos.com/inventario/assets/catalog/52/hiperreal/hiperreal-hd.glb"
+    },
+    "render_compare": {
+      "44": "https://www.xpaceos.com/inventario/assets/catalog/44/hiperreal/preview/hiperreal-44-comparativa.jpg",
+      "45": "https://www.xpaceos.com/inventario/assets/catalog/45/hiperreal/preview/hiperreal-45-comparativa.jpg",
+      "46": "https://www.xpaceos.com/inventario/assets/catalog/46/hiperreal/preview/hiperreal-46-comparativa.jpg",
+      "48": "https://www.xpaceos.com/inventario/assets/catalog/48/hiperreal/preview/hiperreal-48-comparativa.jpg",
+      "49": "https://www.xpaceos.com/inventario/assets/catalog/49/hiperreal/preview/hiperreal-49-comparativa.jpg",
+      "50": "https://www.xpaceos.com/inventario/assets/catalog/50/hiperreal/preview/hiperreal-50-comparativa.jpg",
+      "52": "https://www.xpaceos.com/inventario/assets/catalog/52/hiperreal/preview/hiperreal-52-comparativa.jpg"
+    },
+    "twin": "Perfil Best: /inventario añadir <n> y la escena Starbucks usan Hiperreal → Matrix → Best; barra 44, caja 45 y vitrina 46 desde el catálogo con TPV en vivo.",
+    "pipeline": "https://www.xpaceos.com/admira-xp/docs/hiperreal-pipeline.md",
+    "es": "Hiperreal llega al conjunto Starbucks (tanda 1): barra de preparación 44, mostrador de caja 45, vitrina 46, mesa redonda 48, silla 49, botellero Solán de Cabras 50 e iPad horizontal 52, además de la estantería 47. Cada pieza tiene madera con veta real teñida a su color, piedra, acero, bollería y vidrio físicos, cantos biselados y huellas sutiles; GLB web de menos de 3 MB y GLB HD para Unreal. En el gemelo, con el perfil Best, /inventario añadir y la escena Starbucks colocan Hiperreal (si falla, Matrix y después Best); la barra, la caja y la vitrina vienen del catálogo y el TPV sigue en vivo.",
+    "en": "Hiperreal reaches the Starbucks set (batch 1): prep bar 44, checkout counter 45, display case 46, round table 48, chair 49, Solán de Cabras bottle rack 50 and landscape iPad 52, plus shelf 47. Each piece has real wood grain tinted to its colour, physical stone, steel, pastries and glass, bevelled edges and subtle fingerprints; web GLBs under 3 MB and HD GLBs for Unreal. In the twin, with the Best profile, /inventario añadir and the Starbucks scene place Hiperreal (falling back to Matrix, then Best); the bar, checkout and display case come from the catalog and the POS screen stays live."
   }
 }

@@ -9,11 +9,13 @@ import {preciseTextureSampling} from './finish-rendering.mjs';
 import {createMatrixEnvironmentRoom,configureMatrixRenderer} from './matrix-rendering.mjs';
 import {stageCamera} from './stage-camera.mjs';
 
-test('Matrix and Hiperreal are independent finishes only for model 47; other model URLs reject them',()=>{
+test('Matrix is exclusive to model 47; Hiperreal only exists for published batches; other model URLs reject them',()=>{
+ const hiperreal=new Set([44,45,46,47,48,49,50,52]);
  for(let number=1;number<=52;number++){
-  assert.deepEqual(comparisonProfiles(number,'all'),number===47?['good','better','best','matrix','hiperreal']:['good','better','best']);
+  assert.deepEqual(comparisonProfiles(number,'all'),['good','better','best',...(number===47?['matrix']:[]),...(hiperreal.has(number)?['hiperreal']:[])]);
   assert.equal(selectedQuality(number,'matrix'),number===47?'matrix':'best');
-  if(number!==47){assert.throws(()=>furnitureURL(number,'matrix'),/perfil no válido/);assert.throws(()=>furnitureURL(number,'hiperreal'),/perfil no válido/);}
+  if(number!==47)assert.throws(()=>furnitureURL(number,'matrix'),/perfil no válido/);
+  if(!hiperreal.has(number))assert.throws(()=>furnitureURL(number,'hiperreal'),/perfil no válido/);
  }
  for(const extension of ['glb','blend']){const url=new URL(furnitureURL(47,'matrix',extension));assert.match(url.pathname,new RegExp('/47/matrix\\.'+extension+'$'));assert.equal(url.searchParams.get('v'),'coffee47-matrix-20261008-1');}
  const profiles=qualityProfiles(47);profiles.pop();assert.equal(qualityProfiles(47).length,5);
