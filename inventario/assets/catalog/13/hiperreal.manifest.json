@@ -20,8 +20,8 @@
     "blender": "./hiperreal.blend"
   },
   "bytes": {
-    "web": 216380,
-    "hd": 1079100,
+    "web": 216392,
+    "hd": 1079112,
     "best": 174724
   },
   "shared_textures": "../../hiperreal-tex/",
@@ -54,5 +54,10 @@
     "panel": 0,
     "handle": 0,
     "kick": 0
-  }
+  },
+  "added_parts": [],
+  "placed_on_front": [
+    "Sign ADMIRA",
+    "Sign UN ESPACIO CON VIDA"
+  ]
 }

@@ -25,8 +25,8 @@
     "blender": "./hiperreal.blend"
   },
   "bytes": {
-    "web": 1196384,
-    "hd": 10885752,
+    "web": 1215808,
+    "hd": 10910964,
     "best": 182784
   },
   "shared_textures": "../../hiperreal-tex/",
@@ -58,10 +58,16 @@
   "guide": "/admira-xp/docs/hiperreal-pipeline.md",
   "twin_instance": "sb-backbar",
   "geometry_detail": {
-    "bevel": 0,
+    "bevel": 3,
     "band": 0,
     "panel": 0,
     "handle": 0,
     "kick": 0
-  }
+  },
+  "added_parts": [
+    "tirador cajón",
+    "tirador soporte izq",
+    "tirador soporte der"
+  ],
+  "placed_on_front": []
 }
