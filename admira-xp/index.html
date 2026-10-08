@@ -759,7 +759,7 @@
 <script src="../inventario/store.js?v=inventory-cli-3"></script>
 <!-- Shell común (FLT-101337): con la barra en línea solo deja su API (CLI, /marca) y la
      marca blanca; sin ?marca= ni marca recordada no carga nada más ni habla con admiranext.com. -->
-<script defer src="/assets/xpace-shell.js?v=xtore-ux-2" data-shell="inline"></script>
+<script defer src="/assets/xpace-shell.js?v=20261007-native-demo-control-2" data-shell="inline"></script>
 <script type="module" src="scripts/store-demo-avatar.mjs?v=local-autopilot-1"></script>
 </head>
 <body>
@@ -20688,7 +20688,6 @@ async function askMetahuman(text){
 // Usa el endpoint nuevo POST /metahuman/ask {loc, question} → {answer, audioBase64, mime}.
 // A diferencia del Grok-proxy (solo texto), ESTE además devuelve y reproduce la VOZ.
 const AVATAR3D_CFG=(typeof RUNTIME_CONFIG!=='undefined'&&RUNTIME_CONFIG.avatar3d&&typeof RUNTIME_CONFIG.avatar3d==='object')?RUNTIME_CONFIG.avatar3d:{};
-// Identidad del avatar = calidad del gemelo (Good 8 bits→avatar/Admirito, Better 16→human/Luna, Best 32 y Matrix 64→metahuman/Neo).
 function avatarIdentityFromQuality(){
   var q='';
   try{ q=String(avatar3dVisualLevel&&avatar3dVisualLevel()||''); }catch(e){}
@@ -20707,7 +20706,8 @@ const AVATAR3D={
   totemFixed:!!(typeof AVATAR3D_CFG.totemUrl==='string'&&AVATAR3D_CFG.totemUrl),
 };
 // Tótem por nivel (06-10-2026): con la calidad Good el tótem y la pared larga muestran a
-// Admirito, la nube animada (nube.html, 2D ligera); Better sigue con Alex (best.html); Best/Matrix con Neo en pared MetaHuman. Una totemUrl fijada en la configuración manda siempre.
+// Admirito, la nube animada (nube.html, 2D ligera); Better/Best/Matrix siguen con Luna
+// (best.html). Una totemUrl fijada en la configuración manda siempre.
 const AVATAR3D_TOTEM_GOOD='https://digitalavatar.ai/nube.html?kiosk=1';
 // Good/Better/Best elegido en Experto → Avatar3D o con /avatar good|better|best (7-oct-2026): manda sobre la calidad.
 const AVATAR3D_TOTEM_BY_TIER={good:AVATAR3D_TOTEM_GOOD,better:'https://digitalavatar.ai/best.html?kiosk=1',best:'https://digitalavatar.ai/metahuman.html?dock=1'};
@@ -21260,7 +21260,6 @@ function avatar3dContextQS(url){
   try{ const v=avatar3dVisualLevel(); if(v) tier=v; }catch(_){}
   try{ const c=avatar3dTierChoice(); if(c) tier=c; }catch(_){}
   if(!tier) tier='better';
-  // avatar= identidad solo si no hay modelo RPM (ese también usa &avatar=).
   const av=(!avatar3dModel&&{good:'admirito',better:'luna',best:'neo'}[tier])||'';
   return (loc?'loc='+encodeURIComponent(loc)+'&':'')+'sector='+encodeURIComponent(avatar3dSector())+(brand?'&brand='+encodeURIComponent(brand):'')+'&tier='+tier+(av?'&avatar='+av:'');
 }
@@ -31427,14 +31426,13 @@ window.xtAPI = (function(){
       {title:typeof lang!=='undefined'&&lang==='en'?'Real operations':'Operativa real',items:['/devolucion','/pedido']},
       {title:typeof lang!=='undefined'&&lang==='en'?'AdmiraNext integration':'Integración AdmiraNext',items:['/socios export']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Scene avatar · totem (Good Admirito / Better Luna / Best Neo · one at a time)':'Avatar de la escena · tótem (Good Admirito / Better Luna / Best Neo · uno a la vez)',items:['/avatar good','/avatar good on','/avatar good off','/avatar better','/avatar better on','/avatar better off','/avatar best','/avatar best on','/avatar best off','/totem on','/totem off','/totem kiosko']},
-      {title:typeof lang!=='undefined'&&lang==='en'?'Kiosk queue · counter (Starbucks · the key stays on this device)':'Cola del quiosco · barra (Starbucks · la clave se queda en este dispositivo)',items:['/totem reset','/totem clave <clave>','/totem clave','/totem clave off','/totem audio on|off','/totem segmentado on|off','/totem pedidos','/totem menu']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Digital assistant (local)':'Asistente digital (local)',items:['/resumen dia on','/resumen dia off','/summary day on','/summary day off','/avatar digital on','/avatar digital off','/avatar digital good','/avatar digital better','/avatar digital best','/avatarDigital on','/avatarDigital off','/avatarON','/avatarOFF','/avatar','/avatar reset']},
       {title:typeof lang!=='undefined'&&lang==='en'?'AI and content':'IA y contenido',items:['/grok pregunta','/draw dibujo','/metahuman pregunta','/avatar3d on|off','/avatar3d ds on|off','/avatar3d audio on|off','/avatar3d models','/avatar3d preset <nombre> <url RPM>','/avatar3d model <nombre|id>','/avatar3d pregunta','/log','/log thief','/log customer','/import','/import list','/import remove 1','/importTube https://youtu.be/...']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Quick settings':'Ajustes rápidos',items:['/money 12000','/sat 90','/fame 80','/set week 12','/set year 2','/set revenue 5000','/set storeLevel 2','/set customers 30']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Music and layout':'Musica y layout',items:['/music on','/music off','/music next','/music previous','/music 3','/song 1','/song bad bunny','/next','/prev','/seoul2026','/seul','/seultrap','/seultecno','/equipo inicio ana 3 4','/equipo zona dj 12 2 2','/catalogo','/catalogo pared','/importar catalogo','/importar 1','/importar lista','/importar quitar 1','/mobiliario','/mobiliario inicio','/layout save','/layout factory','/layout xpacio','/layout xpacio load']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Distribute · furniture editor · Better 16 bits':'Distribuir / Distribute · editor de muebles · Better 16 bits',items:['/cli distribuir','/cli distribute','/distribuir off']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Local inventory · permanent numbers':'Inventario local · números permanentes',items:['/inventario','/inventario idIoT','eliminar el 1','/inventario deshacer']},
-      {title:typeof lang!=='undefined'&&lang==='en'?'Guided demos · local twin':'Demos guiadas · gemelo local',items:['/demo help','/demo ayuda','/demo all','/demo todas','/demo all --enviar','/demo all es|en','/demo all ESP|ENG','/demo <id|n> [es|en]','/demo pausa','/demo reanudar','/demo next','/demo stop','/demo','/demo tpv','/demo off','/demo estado']},
+      {title:typeof lang!=='undefined'&&lang==='en'?'Guided demos · local twin':'Demos guiadas · gemelo local',items:['/demo help','/demo ayuda','/demo all','/demo todas','/demo all --enviar','/demo all es|en','/demo all ESP|ENG','/demo <id|n> [es|en]','/demo pausa','/demo reanudar','/demo next','/demo stop','/demo','/demo tpv','/demo taza','/demo taza cerrar','/demo kiosko','/demo kiosko cerrar','/demo off','/demo estado']},
       {title:'Vista local (CLI experto / __xtExec) · Good 8-bit / Better 16-bit / Best 32-bit / Matrix Starbucks Alsea',items:['good','better','best','matrix','/layout','/layout off','/sincro','/sincrototal','/sincro off','/sync','/synctotal','/sync off','/mudanza','/modo estado']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Classic rendering style':'Estilo del render clásico',items:['/render 8bit','/render 16bit','/render habbo','/render real']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Navigation map':'Mapa de navegacion',items:['/xpacio','/mapa','/map','/red','/sd list','/streamdeck','/help','/debug']},
@@ -31976,6 +31974,25 @@ window.xtAPI = (function(){
 
   async function executeLocalVisualCommand(rawText){
     const text=String(rawText||'').trim();
+    if(/^\/?demo\s+(?:kiosko|quiosco)(?:\s|$)/i.test(text)){
+      try{const {runKioskoDemo}=await import('../assets/kiosko-demo.mjs?v=2');return {ok:true,local:true,message:await runKioskoDemo(text.replace(/^\/?demo\s+\S+\s*/i,''),typeof lang==='undefined'?'es':lang)};}
+      catch(error){return {ok:false,local:true,message:error.message};}
+    }
+    // The twin owns its CLI; handle the mug before the generic guided-demo router.
+    if(/^\/?demo\s+taza(?:\s|$)/i.test(text)){
+      try{
+        const {runTazaDemo}=await import('../assets/taza-demo.mjs?v=twin-20261007');
+        const args=text.replace(/^\/?demo\s+/i,'');
+        const message=runTazaDemo(args,typeof lang==='undefined'?'es':lang);
+        if(/^taza$/i.test(args)&&window.XpaceStarbucks?.active()){
+          const response=await fetch('https://ainimation.studio/taza/api/store-binding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({storeId:'starbucks-queue',screen:''})});
+          const result=await response.json();
+          if(!response.ok||!result.ok)throw Error('No se pudo asociar la taza al gestor de colas');
+          return {ok:true,local:true,message:message+' · Starbucks: gestor de colas seleccionado. PlayerTaza debe permanecer abierto para seguir los pedidos.'};
+        }
+        return {ok:true,local:true,message};
+      }catch(error){return {ok:false,local:true,message:'PlayerTaza: '+error.message};}
+    }
     const languageResult=window.XpaceShell?.language(text,next=>setLanguage(next));
     if(languageResult)return languageResult;
     const summaryResult=window.XpaceDaySummary?.handle(text);if(summaryResult)return summaryResult;
@@ -36260,9 +36277,9 @@ window.xtAPI = (function(){
 <script src="/assets/day-summary.js?v=xtore-ux-3"></script>
 <script src="/assets/expert-toggle.js?v=xtore-ux-2"></script>
 <script src="scripts/expert-category-detail.js?v=avatar-tiers-1"></script>
-<script src="scripts/totem-kiosko.js?v=segmentado-1"></script>
+<script src="scripts/totem-kiosko.js?v=starbucks-defaults-1"></script>
 <script src="scripts/avatar-tiers.js?v=avatar-tiers-1"></script>
-<script src="scripts/ipad-cola.js?v=colas-ventanas-2"></script>
+<script src="scripts/ipad-cola.js?v=starbucks-defaults-1"></script>
 <link rel="stylesheet" href="scripts/side-console.css?v=options-language-1">
 <script type="module" src="scripts/project-selector.mjs?v=topbar-20261005-1"></script>
 <link rel="stylesheet" href="../inventario/workspace.css?v=inventory-lang-20261004-1">
@@ -36483,7 +36500,7 @@ const installShelfProducts=()=>mountShelfProductsRuntime({acquireSurface:id=>dsE
 installShelfProducts();
 window.addEventListener('pageshow',()=>{if(!window.__shelfProductsRuntime)installShelfProducts();});
 </script>
-<script type="module" src="scripts/xtanco-premium-ui.mjs?v=water-finish-3"></script>
+<script type="module" src="scripts/xtanco-premium-ui.mjs?v=starbucks-defaults-1"></script>
 <script type="module" src="scripts/expert-composer.mjs?v=person-voice-1"></script>
 <link rel="stylesheet" href="scripts/side-panel-resize.css?v=20261006-alsea-repair-1">
 <script type="module" src="scripts/side-panel-resize.mjs?v=20261006-alsea-repair-1"></script>

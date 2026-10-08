@@ -3,11 +3,6 @@
  * /totem url <https://…>    → cualquier interactivo HTTPS en el tótem (recibe toques: es un iframe)
  * /totem off                → retira el pin (vuelve el tótem a su estado anterior)
  * /totem luna · /totem admiratv [espacio] → atajos a los modos de siempre (/avatar3d on · /admiratv)
- * /totem segmentado on|off → quiosco SEGMENTADO (8-oct-2026): la webcam del equipo que emula el tótem cuenta personas,
- *                             género, edad e individuo/grupo y el quiosco elige la carta (reglas en admira.tv/audiencia).
- *                             Solo recuentos anónimos; nunca imágenes. Se recuerda en xpace:totem-seg.
- * /totem clave <clave> · /totem clave off · /totem clave → clave de barra de la cola en ESTE dispositivo
- *                             (localStorage xpace:cola-barra; nunca en el repo ni en la URL). ↺ Reset la manda.
  * Los pedidos llegan por postMessage {source:'ainimation-xperiencia', event:'order', order} y se
  * pintan en el panel «Pedidos · TPV». DEMO SIMULADA: sin TPV real ni dinero real. */
 (function(){
@@ -23,28 +18,23 @@
     let u=DEFAULT_URL;
     try{ if(!(window.XpaceStarbucks&&window.XpaceStarbucks.active())&&!window.XpaceStarbucksDemo) u=KIOSK_BASE+'?store=xpacio&marca=starbucks'; }catch(_){}
     let f=''; try{ if(size) f=formatoDe(size.w,size.h); else { const t=document.getElementById('totemAvatar'); const r=t&&t.getBoundingClientRect(); f=r&&r.width?formatoDe(r.width,r.height):'&formato=vertical&w=1080&h=1920'; } }catch(_){}
-    return u+'&lang='+l+'&host=gemelo'+(segOn()?'&seg=1':'')+f;
+    return u+'&lang='+l+'&host=gemelo'+f;
   }
-  // Quiosco segmentado (8-oct-2026, Carlos): cámara del equipo que emula el tótem → carta por audiencia.
-  const SEG_KEY='xpace:totem-seg';
-  function segOn(){ try{ const q=new URLSearchParams(location.search).get('seg'); if(q==='1') return true; if(q==='0') return false; return localStorage.getItem(SEG_KEY)==='on'; }catch(_){ return false; } }
-  function setSeg(on){ try{ if(on) localStorage.setItem(SEG_KEY,'on'); else localStorage.removeItem(SEG_KEY); }catch(_){}
-    // re-pin para que el iframe del tótem (y el modal) carguen la URL con o sin &seg=1
-    // encenderlo pone el quiosco en el tótem si no estaba (salvo una URL propia, que se respeta)
-    if(!storedUrl()&&(stored()||on)) setTotem(true,''); try{ if(modal&&modal.classList.contains('on')) touch(true); }catch(_){} return on; }
   // ── Interruptor Tótem (7-oct-2026, Carlos): ON = el player del tótem enseña el interactivo
   // (Starbucks → quiosco de pedido de Paseo de Gracia); OFF = el avatar digital de siempre.
   // Se recuerda en este navegador como los demás interruptores.
   const MODE_KEY='xpace:totem-interactivo', URL_KEY='xpace:totem-url';
   // Starbucks: same defaults whatever the entry route (selector, Street View/admira.biz, direct link).
-  function isSbux(){ try{ return new URLSearchParams(location.search).get('loc')==='alsea-sbux-021'; }catch(_){ return false; } }
+  function isSbux(){ try{ const q=new URLSearchParams(location.search); return q.get('loc')==='alsea-sbux-021'||q.get('project')==='starbucks'||q.get('circuit')==='alsea_starbucks'||!!window.XpaceStarbucks?.active?.(); }catch(_){ return false; } }
   (function normalizeSbux(){ try{ if(!isSbux()) return; const u=new URL(location.href); let ch=false;
     if(!u.searchParams.get('project')){ u.searchParams.set('project','starbucks'); ch=true; }
     if(!u.searchParams.get('circuit')){ u.searchParams.set('circuit','alsea_starbucks'); ch=true; }
     if(ch) history.replaceState(history.state,'',u.toString()); }catch(_){} })();
-  function stored(){ try{ const v=localStorage.getItem(MODE_KEY); if(v==='on') return true; if(v==='off') return false; return isSbux(); }catch(_){ return isSbux(); } }
+  // Cada entrada Starbucks empieza en quiosco; el avatar elegido se conserva para activarlo manualmente.
+  let starbucksMode=null;
+  function stored(){ if(isSbux()) return starbucksMode!==false; try{ const v=localStorage.getItem(MODE_KEY); if(v==='on') return true; if(v==='off') return false; return isSbux(); }catch(_){ return isSbux(); } }
   function storedUrl(){ try{ return localStorage.getItem(URL_KEY)||''; }catch(_){ return ''; } }
-  function remember(on,url){ try{ localStorage.setItem(MODE_KEY,on?'on':'off'); if(url) localStorage.setItem(URL_KEY,url); else if(!on) localStorage.removeItem(URL_KEY); }catch(_){} }
+  function remember(on,url){ if(isSbux()) starbucksMode=!!on; try{ localStorage.setItem(MODE_KEY,on?'on':'off'); if(url) localStorage.setItem(URL_KEY,url); else if(!on) localStorage.removeItem(URL_KEY); }catch(_){} }
   function announce(){ try{ window.dispatchEvent(new CustomEvent('xpace:totem-mode',{detail:{on:stored(),url:storedUrl()}})); }catch(_){} }
   const inMatrix=()=>!!window.XpaceStarbucksDemo;
   function setTotem(on,url){
@@ -71,14 +61,14 @@
     panel(false); try{ touch(false); }catch(_){} return true;
   }
   function kioskOn(){ const p=(typeof DS_PIN==='object'&&DS_PIN)?DS_PIN['metahuman']:null; return !!(p&&p.kiosk); }
-  function toast(msg,color){ try{ if(typeof showEv==='function') showEv(msg,color||'#00a862'); }catch(_){} }
+  function toast(msg){ try{ if(typeof showEv==='function') showEv(msg,'#00a862'); }catch(_){} }
   function totemCommand(arg){
     const raw=String(arg||'').trim(), a=raw.toLowerCase();
     const parts=raw.split(/\s+/), head=(parts[0]||'').toLowerCase();
     if(!a||a==='kiosko'||a==='quiosco'||a==='kiosk'||a==='on'||a==='interactivo'){
       setTotem(true,'');
       if(inMatrix()||kioskOn()){ toast(en()?'🛒 Kiosk ON · totem':'🛒 Quiosco ON · tótem');
-        return {ok:true,message:(en()?'🛒 Ordering kiosk on the totem (simulated demo). Touch it to order. /totem off to remove.':'🛒 Quiosco de pedido en el tótem (demo simulada). Tócalo para pedir. /totem off para quitarlo.')+'\n'+kioskUrl()+'\n'+barraEstado()}; }
+        return {ok:true,message:(en()?'🛒 Ordering kiosk on the totem (simulated demo). Touch it to order. /totem off to remove.':'🛒 Quiosco de pedido en el tótem (demo simulada). Tócalo para pedir. /totem off para quitarlo.')+'\n'+kioskUrl()}; }
       return {ok:false,message:en()?'No totem in this Xpace.':'No hay tótem en este Xpacio.'};
     }
     if(head==='url'){
@@ -91,19 +81,10 @@
     if(a==='luna'||a==='avatar'){ remember(false); unpin(); announce(); try{ if(typeof setAvatar3dTotem==='function'&&setAvatar3dTotem(true)){ try{emitTotemNow(true);}catch(_){} return {ok:true,message:'🧑‍💻 Luna / Avatar 3D en el tótem.'}; } }catch(_){} return {ok:false,message:'Avatar3D no disponible.'}; }
     if(head==='admiratv'||head==='tv'){ remember(false); unpin(); announce(); try{ return setAdmiraTvCommand(parts.slice(1).join(' ')||'on'); }catch(_){ return {ok:false,message:'admira.tv no disponible.'}; } }
     if(a==='pedidos'||a==='orders'){ panel(true); return {ok:true,message:orders.length+(en()?' orders':' pedidos')}; }
-    if(a==='reset'||a==='reiniciar'||a==='cero'){ colaReset(); const c=barraClave();
-      return {ok:true,message:(en()?'↺ Queue reset: closing the open orders; Admirito goes back to his demo.':'↺ Cola a cero: se cierran los pedidos abiertos; Admirito vuelve a su demo.')+'\n'+(c?barraEstado():(en()?'If the counter is closed you will see the warning in «Orders · POS»: /totem clave <key>.':'Si la barra está cerrada verás el aviso en «Pedidos · TPV»: /totem clave <clave>.'))}; }
-    if(head==='segmentado'||head==='segmento'||head==='seg'||head==='segmented'||head==='camara'||head==='cámara'){
-      const v=(parts[1]||'').toLowerCase();
-      if(!v||v==='estado'||v==='status') return {ok:true,message:(segOn()?(en()?'📷 Segmented kiosk ON':'📷 Quiosco segmentado ON'):(en()?'Segmented kiosk OFF':'Quiosco segmentado OFF'))+(en()?' · /totem segmentado on|off · rules and audience: https://admira.tv/audiencia/':' · /totem segmentado on|off · reglas y audiencia: https://admira.tv/audiencia/')};
-      const on=/^(on|si|sí|1|activar)$/.test(v)?true:/^(off|no|0|apagar)$/.test(v)?false:!segOn();
-      setSeg(on); toast(on?(en()?'📷 Segmented kiosk ON':'📷 Quiosco segmentado ON'):(en()?'Segmented kiosk OFF':'Quiosco segmentado OFF'));
-      return {ok:true,message:on?(en()?'📷 Segmented kiosk: the camera of this computer counts people, gender, age and individual/group and the kiosk picks the menu. Anonymous counts only, never images. The browser will ask for camera permission. Audience and rules: https://admira.tv/audiencia/':'📷 Quiosco segmentado: la cámara de este equipo cuenta personas, género, edad e individuo/grupo y el quiosco elige la carta. Solo recuentos anónimos, nunca imágenes. El navegador pedirá permiso de cámara. Audiencia y reglas: https://admira.tv/audiencia/')+'\n'+kioskUrl():(en()?'Segmented kiosk OFF · general menu, camera off.':'Quiosco segmentado OFF · carta general, cámara apagada.')};
-    }
-    if(head==='clave'||head==='key'||head==='barra'){ return claveCommand(raw.slice(parts[0].length).trim()); }
+    if(a==='reset'||a==='reiniciar'||a==='cero'){ colaReset(); return {ok:true,message:en()?'↺ Queue reset: open orders closed; Admirito goes back to his demo.':'↺ Cola a cero: pedidos abiertos cerrados; Admirito vuelve a su demo.'}; }
     if(head==='audio'||head==='voz'||head==='avisos'){ const v=(parts[1]||'toggle').toLowerCase(), on=/^(on|si|sí|1|activar|unmute)$/.test(v)?true:/^(off|no|0|parar|mute|silencio)$/.test(v)?false:!colaAudioOn(); setColaAudio(on); return {ok:true,message:on?(en()?'🔊 Queue announcements ON':'🔊 Avisos de la cola activados'):(en()?'🔇 Queue announcements OFF':'🔇 Avisos de la cola parados')}; }
     if(a==='menu'||a==='menú'||a==='atajos'){ try{ atajosWin&&atajosWin.open(); }catch(_){} tocado=true; return {ok:true,message:en()?'Queue shortcuts shown.':'Atajos de colas a la vista.'}; }
-    return {ok:false,message:'/totem on|off · /totem kiosko · /totem url <https> · /totem luna · /totem admiratv · /totem pedidos · /totem reset · /totem clave <clave>|off · /totem audio on|off · /totem segmentado on|off · /totem menu\n'+barraEstado()};
+    return {ok:false,message:'/totem on|off · /totem kiosko · /totem url <https> · /totem luna · /totem admiratv · /totem pedidos · /totem reset · /totem audio on|off · /totem menu'};
   }
   // ── panel «Pedidos · TPV» ─────────────────────────────────────────────
   let box=null, btn=null, modal=null, tbtn=null, atajos=null, atajosWin=null, boxWin=null;
@@ -113,76 +94,18 @@
   const AUDIO_KEY='xpace:cola-audio';
   function colaAudioOn(){ try{ return window.localStorage.getItem(AUDIO_KEY)!=='off'; }catch(_){ return true; } }
   function setColaAudio(on){ on=!!on; try{ if(on) window.localStorage.removeItem(AUDIO_KEY); else window.localStorage.setItem(AUDIO_KEY,'off'); }catch(_){}
-    if(!on){ try{ if(vozAudio) vozAudio.pause(); }catch(_){} try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(_){} colaPend.length=0; }
+    if(!on){ try{ if(vozAudio) vozAudio.pause(); }catch(_){} try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(_){} colaPend.length=0;colaGeneration++; }
     render(); toast(on?(en()?'🔊 Queue announcements ON':'🔊 Avisos de la cola activados'):(en()?'🔇 Queue announcements OFF':'🔇 Avisos de la cola parados'));
     try{ window.dispatchEvent(new CustomEvent('xpace:cola-audio',{detail:{on:on}})); }catch(_){} return on; }
-  // ── Barra cerrada (Carlos, 7-oct-2026) ──────────────────────────────────────────────────────────────
-  // El relé de la cola exige la clave de barra para ESCRIBIR: POST /cola/avanzar sin la cabecera x-cola-clave → 401.
-  // Las lecturas (/cola/estado, cada 3 s) siguen siendo públicas, solo con el nombre de pila, y no la llevan.
-  // La clave vive SOLO en este dispositivo (localStorage xpace:cola-barra, por origen): nunca en el repo ni en la
-  // URL de forma permanente. /totem clave <clave> la guarda, /totem clave off la borra, /totem clave dice si hay
-  // (••••1234, sin enseñarla). También se guarda desde el panel «Pedidos · TPV» (campo de contraseña) o abriendo
-  // el gemelo UNA vez con #cola-barra=<clave>: se guarda y el fragmento desaparece de la URL al instante.
-  const BARRA_KEY='xpace:cola-barra', BARRA_HDR='x-cola-clave', HIST_KEY='xpaceos_expert_history_v1';
-  const CLAVE_OFF=/^(off|no|borrar|quitar|olvidar|clear|delete|remove|forget)$/i;
-  const CLAVE_RX=/^(\s*\/?t[oó]tem\s+(?:clave|key|barra)\s+)(?!(?:off|no|borrar|quitar|olvidar|clear|delete|remove|forget|estado|status|\?)\s*$)\S.*$/i;
-  let colaAviso='', claveForm=false;
-  function barraClave(){ try{ return String(window.localStorage.getItem(BARRA_KEY)||'').trim(); }catch(_){ return ''; } }
-  function barraMascara(c){ c=c==null?barraClave():String(c); return c?'••••'+(c.length>=8?c.slice(-4):''):''; }
-  function barraEstado(){ const c=barraClave();
-    return en()?(c?'🔑 counter key: saved '+barraMascara(c):'🔒 counter key: not saved (/totem clave <key>)'):(c?'🔑 clave de barra: guardada '+barraMascara(c):'🔒 clave de barra: no guardada (/totem clave <clave>)'); }
-  // Las escrituras del gemelo a la cola llevan la clave de barra si hay una guardada.
-  function colaCabeceras(){ const h={'content-type':'application/json'}; const c=barraClave(); if(c) h[BARRA_HDR]=c; return h; }
-  function setBarraClave(v){ v=String(v==null?'':v).trim().slice(0,256); let ok=true;
-    try{ if(v) window.localStorage.setItem(BARRA_KEY,v); else window.localStorage.removeItem(BARRA_KEY); }catch(_){ ok=false; }
-    if(ok){ colaAviso=''; claveForm=false; } limpiaRastros(); render();
-    try{ window.dispatchEvent(new CustomEvent('xpace:cola-barra',{detail:{guardada:!!barraClave()}})); }catch(_){} return ok; }
-  // La orden tecleada no debe dejar la clave a la vista: se tapa en el historial del CLI (↑/↓) y en el log de sesión.
-  function tapaClave(t,con){ const s=String(t==null?'':t); return CLAVE_RX.test(s)?s.replace(CLAVE_RX,(m,p)=>p.trim()+(con===false?'':' ••••')):s; }
-  function limpiaRastros(){
-    try{ const ls=window.localStorage, raw=ls.getItem(HIST_KEY); if(raw&&/t[oó]tem\s+(?:clave|key|barra)\s+\S/i.test(raw)){ const h=JSON.parse(raw); if(Array.isArray(h)&&h.some(x=>typeof x==='string'&&CLAVE_RX.test(x))) ls.setItem(HIST_KEY,JSON.stringify(h.map(x=>typeof x==='string'?tapaClave(x,false):x))); } }catch(_){}
-    try{ const L=window.AdmiraXP_SessionLog; if(L&&Array.isArray(L.commands)) L.commands.forEach((x,i)=>{ if(typeof x==='string'&&CLAVE_RX.test(x)) L.commands[i]=tapaClave(x); });
-      if(L&&typeof L.logCommand==='function'&&!L.__colaBarra){ const f=L.logCommand; L.logCommand=function(c){ return f.call(this,tapaClave(c)); }; L.__colaBarra=true; } }catch(_){} }
-  window.addEventListener('pagehide',limpiaRastros);
-  function avisoTexto(m){
-    if(m==='sin-clave') return en()?'🔒 The counter is closed: save the key with /totem clave <key> (or below) and press ↺ Reset again.':'🔒 La barra está cerrada: guarda la clave con /totem clave <clave> (o aquí abajo) y vuelve a pulsar ↺ Reset.';
-    if(m==='rechazada') return en()?'🔒 The counter is closed and rejects the saved key (401): save the right one with /totem clave <key>.':'🔒 La barra está cerrada y no acepta la clave guardada (401): guarda la buena con /totem clave <clave>.';
-    if(m==='rele') return en()?'⚠ The queue relay did not answer: the reset was not done. Try again in a moment.':'⚠ El relé de la cola no responde: el Reset no se ha hecho. Prueba otra vez en un momento.';
-    return ''; }
-  function claveCommand(v){ v=String(v||'').trim();
-    if(!v||/^(estado|status|\?)$/i.test(v)){ claveForm=true; panel(true); return {ok:true,message:barraEstado()+(en()?' · /totem clave <key> saves it on this device · /totem clave off deletes it':' · /totem clave <clave> la guarda en este dispositivo · /totem clave off la borra')}; }
-    if(CLAVE_OFF.test(v)){ const ok=setBarraClave(''); return {ok:ok,message:ok?(en()?'🔓 Counter key deleted from this device. ↺ Reset will warn that the counter is closed.':'🔓 Clave de barra borrada de este dispositivo. ↺ Reset avisará de que la barra está cerrada.'):(en()?'Could not delete the key (storage not available).':'No se pudo borrar la clave (almacenamiento no disponible).')}; }
-    if(/^[•*·.\s]+$/.test(v)) return {ok:false,message:en()?'That is the mask, not the key. Usage: /totem clave <key>':'Eso es la máscara, no la clave. Uso: /totem clave <clave>'};
-    const ok=setBarraClave(v);
-    return {ok:ok,message:ok?(en()?'🔑 Counter key saved on this device ('+barraMascara()+'). ↺ Reset can close orders again.':'🔑 Clave de barra guardada en este dispositivo ('+barraMascara()+'). ↺ Reset ya puede cerrar pedidos.'):(en()?'Could not save the key (storage not available in this browser).':'No se pudo guardar la clave (este navegador no deja guardar).')}; }
-  // Aprovisionar una sola vez: #cola-barra=<clave> (o =off). Se guarda y se quita del fragmento sin recargar.
-  function barraDesdeFragmento(){ try{ const loc=window.location||{}, h=String(loc.hash||''); if(!/(^#|&)cola-barra=/.test(h)) return false;
-      let clave=''; const resto=h.replace(/^#/,'').split('&').filter(p=>{ if(/^cola-barra=/.test(p)){ const v=p.slice(p.indexOf('=')+1); try{ clave=decodeURIComponent(v.replace(/\+/g,' ')); }catch(_){ clave=v; } return false; } return true; });
-      const limpia=String(loc.pathname||'')+String(loc.search||'')+(resto.length?'#'+resto.join('&'):'');
-      let fuera=false; try{ window.history.replaceState(window.history.state,'',limpia); fuera=true; }catch(_){}
-      if(!fuera){ try{ loc.hash=resto.join('&'); }catch(_){} }
-      clave=clave.trim(); if(!clave) return false;
-      const r=claveCommand(CLAVE_OFF.test(clave)?'off':clave); toast(r.message,r.ok?'#00a862':'#c0392b'); return r.ok; }catch(_){ return false; } }
-  barraDesdeFragmento(); window.addEventListener('hashchange',barraDesdeFragmento);
-  function colaAvisar(motivo,st,n){ colaAviso=motivo; panel(true); toast(avisoTexto(motivo),'#c0392b');
-    try{ window.dispatchEvent(new CustomEvent('xpace:cola-reset',{detail:{store:st,cerrados:n||0,aviso:motivo}})); }catch(_){} return n||0; }
   // Reset de la demo: cierra (recogido) todos los pedidos abiertos de la cola del quiosco y vacía la lista
   // local; con la cola a cero el iPad vuelve solo a Admirito haciendo su demo. La numeración no vuelve a A001
-  // (eso exige la clave de servicio del relé, que no vive en el navegador). Con la barra cerrada hace falta la
-  // clave de barra (x-cola-clave); sin ella o con 401 avisa en «Pedidos · TPV» en vez de fallar en silencio.
-  async function colaReset(){ const st=colaStore()||'starbucks-paseo-de-gracia'; let n=0,rechazos=0,fallo=false; const clave=barraClave();
-    try{ const r0=await fetch(COLA_RELAY+'/cola/estado?store='+encodeURIComponent(st),{cache:'no-store'}); if(r0&&r0.ok===false) throw new Error('estado '+r0.status);
-      const d=await r0.json();
+  // (eso exige la clave de servicio del relé, que no vive en el navegador).
+  async function colaReset(){ const st=colaStore()||'starbucks-paseo-de-gracia'; let n=0;
+    try{ const d=await (await fetch(COLA_RELAY+'/cola/estado?store='+encodeURIComponent(st),{cache:'no-store'})).json();
       const todos=[].concat(d.recibido||[],d.preparando||[],d.listo||[]);
-      // El relé anuncia acceso.barra='cerrada': sin clave guardada no se escribe nada (sería un 401 seguro).
-      if(!clave&&d&&d.acceso&&d.acceso.barra==='cerrada') return colaAvisar('sin-clave',st,0);
-      const hdr=colaCabeceras();
-      await Promise.all(todos.map(p=>fetch(COLA_RELAY+'/cola/avanzar?store='+encodeURIComponent(st),{method:'POST',headers:hdr,body:JSON.stringify({id:p.id,numero:p.numero,a:'recogido'})}).then(r=>{ if(r.ok) n++; else if(r.status===401||r.status===403) rechazos++; else fallo=true; }).catch(()=>{ fallo=true; })));
-    }catch(_){ fallo=true; }
-    if(rechazos) return colaAvisar(clave?'rechazada':'sin-clave',st,n);
-    if(fallo&&!n) return colaAvisar('rele',st,0);
-    colaAviso='';
-    orders.length=0; colaPend.length=0; try{ window.speechSynthesis&&window.speechSynthesis.cancel(); if(vozAudio) vozAudio.pause(); }catch(_){}
+      await Promise.all(todos.map(p=>fetch(COLA_RELAY+'/cola/avanzar?store='+encodeURIComponent(st),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:p.id,numero:p.numero,a:'recogido'})}).then(r=>{ if(r.ok) n++; }).catch(()=>{})));
+    }catch(_){}
+    orders.length=0; colaPend.length=0;colaGeneration++; try{ window.speechSynthesis&&window.speechSynthesis.cancel(); if(vozAudio) vozAudio.pause(); }catch(_){}
     render(); toast(en()?'↺ Queue reset · '+n+' orders closed':'↺ Cola a cero · '+n+' pedidos cerrados');
     try{ window.dispatchEvent(new CustomEvent('xpace:cola-reset',{detail:{store:st,cerrados:n}})); }catch(_){} return n; }
   // Presentación Alsea (Carlos, 7-oct-2026): los botones flotantes del tótem («🛒 Kiosk/Quiosco» y «👆 Tocar el tótem»)
@@ -196,23 +119,19 @@
   function ensure(){
     if(box) return;
     const css=document.createElement('style');
-    css.textContent='#kioskOrders{position:fixed;right:14px;bottom:86px;width:300px;max-height:46vh;overflow:auto;background:#0f1f1a;color:#f2f5f3;border:2px solid #00a862;border-radius:14px;font:13px/1.35 Inter,system-ui,sans-serif;z-index:9000;box-shadow:0 10px 30px rgba(0,0,0,.4);display:none}#kioskOrders.on{display:block}#kioskOrders h4{margin:0;padding:10px 12px;background:#00704a;font-size:14px;display:flex;justify-content:space-between;align-items:center}#kioskOrders h4 small{font-weight:600;opacity:.85}#kioskOrders h4{gap:6px;cursor:move}#kioskOrders h4 .kt{flex:1}#kioskOrders h4 button{font:700 11px Inter,system-ui,sans-serif;border:0;border-radius:99px;padding:3px 8px;cursor:pointer;background:#ffffff26;color:#fff}#kioskOrders h4 button:hover{background:#ffffff44}#kioskOrders h4 .xp-floating-close{background:transparent;font-size:16px;padding:0 4px}#colaAtajos{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:9400;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:0 8px 8px;background:#0f1f1af2;border:1px solid #00a862;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);font:13px Inter,system-ui,sans-serif;color:#f2f5f3}#colaAtajos.vacio,#colaAtajos[hidden]{display:none}#colaAtajos .xp-floating-header{flex:1 0 100%}#colaAtajos>button:not(.xp-floating-close){position:static;transform:none;box-shadow:none}#kioskOrders .o{padding:9px 12px;border-bottom:1px solid #2f4a40}#kioskOrders .o b{font-size:20px;color:#d4b072}#kioskOrders .o i{font-style:normal;float:right;font-size:11px;padding:2px 7px;border-radius:99px;background:#2e5248}#kioskOrders .o i.paid{background:#2f7d4f}#kioskOrders .empty{padding:12px;opacity:.7}#kioskOrders .kw{padding:9px 12px;background:#4a1d1a;border-bottom:1px solid #c0392b;color:#ffe3df;font-weight:600}#kioskOrders .kw[hidden]{display:none}#kioskOrders .kw form{display:flex;gap:6px;margin-top:7px}#kioskOrders .kw input{flex:1;min-width:0;font:13px Inter,system-ui,sans-serif;padding:5px 8px;border-radius:8px;border:1px solid #c0392b;background:#1d0d0c;color:#fff}#kioskOrders .kw button{font:700 12px Inter,system-ui,sans-serif;border:0;border-radius:99px;padding:5px 10px;cursor:pointer;background:#00a862;color:#fff}#kioskOrders .kw.okc{background:#123327;border-bottom-color:#00a862;color:#dff5ea}#kioskModal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;display:none;align-items:center;justify-content:center}#kioskModal.on{display:flex}#kioskModal .wrap{position:relative;height:92vh;aspect-ratio:9/16}#kioskModal iframe{width:100%;height:100%;border:0;border-radius:18px;background:#000;box-shadow:0 20px 60px rgba(0,0,0,.5)}#kioskModal .x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;font:700 20px system-ui;cursor:pointer}#kioskTouch{position:fixed;right:150px;bottom:40px;z-index:9000;background:#d4b072;color:#1e1a12;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;display:none}#kioskBtn{display:none;position:fixed;right:14px;bottom:40px;z-index:9000;background:#00704a;color:#fff;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35)}';
+    css.textContent='#kioskOrders{position:fixed;right:14px;bottom:86px;width:300px;max-height:46vh;overflow:auto;background:#0f1f1a;color:#f2f5f3;border:2px solid #00a862;border-radius:14px;font:13px/1.35 Inter,system-ui,sans-serif;z-index:9000;box-shadow:0 10px 30px rgba(0,0,0,.4);display:none}#kioskOrders.on{display:block}#kioskOrders h4{margin:0;padding:10px 12px;background:#00704a;font-size:14px;display:flex;justify-content:space-between;align-items:center}#kioskOrders h4 small{font-weight:600;opacity:.85}#kioskOrders h4{gap:6px;cursor:move}#kioskOrders h4 .kt{flex:1}#kioskOrders h4 button{font:700 11px Inter,system-ui,sans-serif;border:0;border-radius:99px;padding:3px 8px;cursor:pointer;background:#ffffff26;color:#fff}#kioskOrders h4 button:hover{background:#ffffff44}#kioskOrders h4 .xp-floating-close{background:transparent;font-size:16px;padding:0 4px}#colaAtajos{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:9400;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:0 8px 8px;background:#0f1f1af2;border:1px solid #00a862;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);font:13px Inter,system-ui,sans-serif;color:#f2f5f3}#colaAtajos.vacio,#colaAtajos[hidden]{display:none}#colaAtajos .xp-floating-header{flex:1 0 100%}#colaAtajos>button:not(.xp-floating-close){position:static;transform:none;box-shadow:none}#kioskOrders .o{padding:9px 12px;border-bottom:1px solid #2f4a40}#kioskOrders .o b{font-size:20px;color:#d4b072}#kioskOrders .o i{font-style:normal;float:right;font-size:11px;padding:2px 7px;border-radius:99px;background:#2e5248}#kioskOrders .o i.paid{background:#2f7d4f}#kioskOrders .empty{padding:12px;opacity:.7}#kioskModal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;display:none;align-items:center;justify-content:center}#kioskModal.on{display:flex}#kioskModal .wrap{position:relative;height:92vh;aspect-ratio:9/16}#kioskModal iframe{width:100%;height:100%;border:0;border-radius:18px;background:#000;box-shadow:0 20px 60px rgba(0,0,0,.5)}#kioskModal .x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;font:700 20px system-ui;cursor:pointer}#kioskTouch{position:fixed;right:150px;bottom:40px;z-index:9000;background:#d4b072;color:#1e1a12;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;display:none}#kioskBtn{display:none;position:fixed;right:14px;bottom:40px;z-index:9000;background:#00704a;color:#fff;border:0;border-radius:99px;padding:8px 14px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35)}';
     document.head.appendChild(css);
     box=document.createElement('div'); box.id='kioskOrders'; document.body.appendChild(box);
-    box.innerHTML='<h4><span class="kt"></span><small>DEMO</small><button class="kr" type="button"></button><button class="ka" type="button"></button></h4><div class="kw" role="alert" hidden><span class="kwt"></span><form class="kc"><input class="kci" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="kcb" type="submit"></button></form></div><div class="kb" aria-live="polite"></div>';
+    box.innerHTML='<h4><span class="kt"></span><small>DEMO</small><button class="kr" type="button"></button><button class="ka" type="button"></button></h4><div class="kb" aria-live="polite"></div>';
     box.querySelector('.kr').addEventListener('click',e=>{ e.stopPropagation(); colaReset(); });
     box.querySelector('.ka').addEventListener('click',e=>{ e.stopPropagation(); setColaAudio(!colaAudioOn()); });
-    // Clave de barra desde el propio panel: campo de contraseña (no queda en el CLI ni en la URL).
-    const kc=box.querySelector('.kc'); if(kc) kc.addEventListener('submit',e=>{ try{ e.preventDefault(); e.stopPropagation(); }catch(_){}
-      const i=box.querySelector('.kci'), v=String(i&&i.value||'').trim(); if(i) i.value=''; if(!v) return;
-      const r=claveCommand(v); toast(r.message,r.ok?'#00a862':'#c0392b'); });
     // Barra de atajos («Abrir gestor de colas», «Quiosco», «Tocar el tótem»): una ventana como las demás.
     atajos=document.createElement('div'); atajos.id='colaAtajos'; atajos.className='vacio'; document.body.appendChild(atajos);
     window.XpaceColaAtajos={host:atajos};
     btn=document.createElement('button'); btn.id='kioskBtn'; btn.type='button';
     btn.addEventListener('click',()=>{ const r=kioskOn()?totemCommand('off'):totemCommand('kiosko'); if(r&&!r.ok) toast(r.message); });
     atajos.appendChild(btn);
-    modal=document.createElement('div'); modal.id='kioskModal'; modal.innerHTML='<div class="wrap"><iframe title="Quiosco · tótem" allow="autoplay; fullscreen; camera"></iframe><button class="x" type="button" aria-label="Cerrar">✕</button></div>';
+    modal=document.createElement('div'); modal.id='kioskModal'; modal.innerHTML='<div class="wrap"><iframe title="Quiosco · tótem" allow="autoplay; fullscreen"></iframe><button class="x" type="button" aria-label="Cerrar">✕</button></div>';
     modal.addEventListener('click',e=>{ if(e.target===modal||e.target.classList.contains('x')) touch(false); });
     document.body.appendChild(modal);
     tbtn=document.createElement('button'); tbtn.id='kioskTouch'; tbtn.type='button'; tbtn.addEventListener('click',()=>touch(true)); atajos.appendChild(tbtn);
@@ -229,10 +148,7 @@
     btn.textContent=kioskOn()?(en()?'🛒 Kiosk · off':'🛒 Quiosco · quitar'):(en()?'🛒 Kiosk':'🛒 Quiosco');
     box.querySelector('.kt').textContent=en()?'Orders · POS':'Pedidos · TPV';
     const kr=box.querySelector('.kr'),ka=box.querySelector('.ka'),audio=colaAudioOn();
-    kr.textContent='↺ Reset'; kr.title=(en()?'Reset the kiosk queue to zero (Admirito goes back to his demo)':'Dejar a cero la cola del quiosco (Admirito vuelve a su demo)')+' · '+barraEstado();
-    const kw=box.querySelector('.kw'); if(kw){ const txt=colaAviso?avisoTexto(colaAviso):(claveForm?barraEstado():''); kw.hidden=!txt; kw.classList.toggle('okc',!colaAviso&&!!barraClave());
-      const kwt=kw.querySelector('.kwt'); if(kwt) kwt.textContent=txt; const kci=kw.querySelector('.kci'); if(kci) kci.placeholder=en()?'Counter key':'Clave de barra';
-      const kcb=kw.querySelector('.kcb'); if(kcb) kcb.textContent=en()?'Save':'Guardar'; }
+    kr.textContent='↺ Reset'; kr.title=en()?'Reset the kiosk queue to zero (Admirito goes back to his demo)':'Dejar a cero la cola del quiosco (Admirito vuelve a su demo)';
     ka.textContent=audio?'🔊':'🔇'; ka.title=audio?(en()?'Stop the queue announcements':'Parar los avisos de la cola'):(en()?'Turn the queue announcements on':'Activar los avisos de la cola'); ka.setAttribute('aria-pressed',String(audio));
     if(atajos) atajos.classList.toggle('vacio',![].some.call(atajos.querySelectorAll('#kioskBtn,#kioskTouch,#ipadColaChip'),b=>b.id==='ipadColaChip'?b.classList.contains('on'):b.style.display==='block'));
     box.querySelector('.kb').innerHTML=(orders.length?orders.slice().reverse().map(o=>{
@@ -255,7 +171,7 @@
   // Contrato: {source:'admingo'|'ainimation-xperiencia', type:'say', id, text, lang} SOLO desde ainimation.studio.
   // Respuesta: {type:'say-ack', id, spoken, via}. Sin ack en 500 ms el quiosco usa la voz de su navegador.
   const SAY_ORIGIN=/^https:\/\/(www\.)?ainimation\.studio$/;
-  function totemSpeak(text,langTag){
+  function totemSpeak(text,langTag,{queue=false}={}){
     const t=String(text||'').replace(/\s+/g,' ').trim().slice(0,400); if(!t) return {spoken:false,via:'none'};
     try{ if(typeof showEv==='function') showEv('🗣 '+t.slice(0,90),'#00a862'); }catch(_){}
     let muted=false; try{ muted=(typeof homeMusicMuted!=='undefined')&&homeMusicMuted; }catch(_){}
@@ -264,26 +180,28 @@
     if(!colaAudioOn()) return {spoken:false,via:'cola-audio-off'};
     // 1) la cara viva (MetaHuman en pared/panel): la misma ruta que las respuestas del avatar
     let face=false; try{ face=!!(window.MH_FACE_ENABLED||((typeof metahumanWallOn==='function')&&metahumanWallOn())); }catch(_){}
-    if(face&&typeof mhSayToFace==='function'){ try{ mhSayToFace(t); return {spoken:true,via:'metahuman'}; }catch(_){} }
+    if(!queue&&face&&typeof mhSayToFace==='function'){ try{ mhSayToFace(t); return {spoken:true,via:'metahuman'}; }catch(_){} }
     if(muted) return {spoken:false,via:'muted'};
     // 2) voz de Admirito (Carlos, 7-oct-2026): ElevenLabs en castellano vía el proxy mcp-ainimation /voz
     //    (caché por frase, la clave nunca llega aquí). Si falla o tarda >6 s → voz del navegador es-ES.
-    if(!/^en/i.test(String(langTag||''))&&elOn()){ elSpeak(t,()=>browserSpeak(t,langTag)); return {spoken:true,via:'elevenlabs'}; }
+    if(!/^en/i.test(String(langTag||''))&&elOn()){ const done=elSpeak(t,()=>browserSpeak(t,langTag)); return {spoken:true,via:'elevenlabs',done}; }
     return browserSpeak(t,langTag);
   }
   // Voz por defecto: Santiago (nuzVc5hpXBWZjFEe4izg), la fija el worker /voz.
   const VOZ_URL='https://mcp-ainimation.admira.store/voz'; let vozAudio=null; window.__admiritoVoz=window.__admiritoVoz||[];
-  window.addEventListener('xpace:master-mute',e=>{ if(e&&e.detail&&e.detail.muted){ try{ if(vozAudio) vozAudio.pause(); }catch(_){} try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(_){} } });
+  window.addEventListener('xpace:master-mute',e=>{ if(e&&e.detail&&e.detail.muted){ colaGeneration++;colaPend.length=0; try{ if(vozAudio) vozAudio.pause(); }catch(_){} try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(_){} } });
   function elOn(){ try{ const q=new URLSearchParams(location.search); if(q.get('voz_el')==='0') return false; return localStorage.getItem('xpace:voz-admirito')!=='navegador'; }catch(_){ return true; } }
   function elSpeak(t,fallback){
-    let done=false; const fin=(ok,why)=>{ if(done) return; done=true; window.__admiritoVoz.push({texto:t,via:ok?'elevenlabs':'respaldo',why:why||'',at:Date.now()}); if(!ok) fallback(); };
-    try{ if(vozAudio) vozAudio.pause(); try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(_){}
-      let id=''; try{ id=new URLSearchParams(location.search).get('vozid')||''; }catch(_){}
-      const a=vozAudio=new Audio(VOZ_URL+'?texto='+encodeURIComponent(t.slice(0,240))+(id?'&voz='+encodeURIComponent(id):''));
-      const tm=setTimeout(()=>{ try{ a.pause(); }catch(_){} fin(false,'timeout'); },6000);
-      a.onplaying=()=>{ clearTimeout(tm); window.__admiritoVoz.push({texto:t,via:'elevenlabs-sonando',at:Date.now()}); }; a.onended=()=>fin(true); a.onerror=()=>{ clearTimeout(tm); fin(false,'error'); };
-      a.play().catch(e=>{ clearTimeout(tm); fin(false,'play:'+(e&&e.name)); });
-    }catch(_){ fin(false,'excepcion'); }
+    return new Promise(resolve=>{
+      let done=false,tm;const fin=(ok,why)=>{if(done)return;done=true;clearTimeout(tm);window.__admiritoVoz.push({texto:t,via:ok?'elevenlabs':'respaldo',why:why||'',at:Date.now()});if(ok)resolve();else Promise.resolve(fallback()?.done).then(resolve);};
+      try{if(vozAudio)vozAudio.pause();try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(_){}
+        let id='';try{id=new URLSearchParams(location.search).get('vozid')||'';}catch(_){}
+        const a=vozAudio=new Audio(VOZ_URL+'?texto='+encodeURIComponent(t.slice(0,240))+(id?'&voz='+encodeURIComponent(id):''));
+        tm=setTimeout(()=>{a.pause();fin(false,'timeout');},6000);
+        a.onplaying=()=>{clearTimeout(tm);window.__admiritoVoz.push({texto:t,via:'elevenlabs-sonando',at:Date.now()});tm=setTimeout(()=>{a.pause();if(!done){done=true;resolve();}},20000);};
+        a.onended=()=>fin(true);a.onerror=()=>fin(false,'error');a.play().catch(e=>fin(false,'play:'+(e&&e.name)));
+      }catch(_){fin(false,'excepcion');}
+    });
   }
   function browserSpeak(t,langTag){
     // voz del gemelo: castellano de España (es-ES), como la megafonía local
@@ -292,43 +210,45 @@
       const l=/^en/i.test(String(langTag||''))?'en-GB':'es-ES';
       const u=new window.SpeechSynthesisUtterance(t); u.lang=l; u.rate=0.98; u.pitch=1.3; u.volume=1;
       const vs=ss.getVoices()||[]; const v=vs.find(x=>x.lang===l)||vs.find(x=>(x.lang||'').replace('_','-')===l); if(v) u.voice=v;
-      try{ ss.cancel(); }catch(_){} ss.speak(u); return {spoken:true,via:'speech-'+l};
+      let finish;const done=new Promise(resolve=>{finish=resolve;});const tm=setTimeout(()=>{try{ss.cancel();}catch(_){}finish();},20000);u.onend=u.onerror=()=>{clearTimeout(tm);finish();};
+      try{ ss.cancel(); }catch(_){} ss.speak(u); return {spoken:true,via:'speech-'+l,done};
     }catch(_){ return {spoken:false,via:'none'}; }
   }
   window.addEventListener('message',e=>{
     const d=e.data; if(!d||d.type!=='say'||(d.source!=='admingo'&&d.source!=='ainimation-xperiencia')) return;
     if(!SAY_ORIGIN.test(e.origin)) return;
-    const r=totemSpeak(d.text,d.lang);
+    // La cola del gemelo es el único emisor del aviso listo, incluso con el iPad abierto.
+    const owned=!!colaStore()&&/(?:pedido Starbucks est[áa] preparado|Starbucks order is ready)/i.test(String(d.text||''));
+    const r=owned?{spoken:true,via:'queue-owner'}:totemSpeak(d.text,d.lang);
     (window.__totemSaid=window.__totemSaid||[]).push({text:String(d.text||''),lang:d.lang||'es-ES',via:r.via,at:Date.now()});
     try{ e.source&&e.source.postMessage({source:'xpaceos-totem',type:'say-ack',id:d.id,spoken:r.spoken,via:r.via},e.origin); }catch(_){}
   });
   // ── Cola de pedidos → Admirito del gemelo (7-oct-2026, Carlos) ──
   // Con Starbucks en escena (o ?cola=<store>) lee /cola/estado del relé de ainimation cada 3 s y, cuando un
-  // pedido pasa a «listo», el avatar lo dice UNA vez: «NOMBRE, tu pedido Starbucks está preparado»
-  // (sin nombre: «Pedido A015, …»). Habla con totemSpeak (cara MetaHuman si está viva; si no, voz es-ES).
+  // pedido pasa a «listo», se anuncia una vez en castellano y después una vez en inglés: «NOMBRE, tu pedido Starbucks está preparado»
+  // (sin nombre: «Pedido A015, …»). Un único emisor espera el final real de cada voz antes de la siguiente.
   // Los listos que ya había al abrir no se anuncian. Demo: pago SIMULADO. Rastro: window.__gemeloColaAvisos.
   const COLA_RELAY='https://mcp-ainimation.admira.store';
-  const colaVistos=new Set(),colaPend=[];let colaPrimera=true,colaHablando=false,colaStoreActual='';
+  const colaVistos=new Set(),colaPend=[];let colaPrimera=true,colaHablando=false,colaStoreActual='',colaGeneration=0;
   window.__gemeloColaAvisos=window.__gemeloColaAvisos||[];
   function colaStore(){ try{ const q=new URLSearchParams(location.search).get('cola'); if(q) return q.replace(/[^a-z0-9-]/g,'').slice(0,80); }catch(_){}
-    try{ if(window.XpaceStarbucks&&window.XpaceStarbucks.active()) return 'starbucks-paseo-de-gracia'; }catch(_){} return ''; }
-  function colaTexto(p){ const n=String(p.nombre||'').replace(/[^\p{L} '\-]/gu,'').trim().slice(0,24);
-    return n?(en()?n+', your Starbucks order is ready':n+', tu pedido Starbucks está preparado'):(en()?'Order '+p.numero+', your Starbucks order is ready':'Pedido '+p.numero+', tu pedido Starbucks está preparado'); }
-  function colaSiguiente(){ if(colaHablando||!colaPend.length) return; colaHablando=true; const p=colaPend.shift(),t=colaTexto(p);
-    const r=totemSpeak(t,en()?'en-GB':'es-ES'); toast('☕ '+t);
-    window.__gemeloColaAvisos.push({numero:p.numero,nombre:p.nombre||null,text:t,via:r.via,at:Date.now()});
-    setTimeout(()=>{ colaHablando=false; colaSiguiente(); },6000); }
+    if(isSbux())return 'starbucks-paseo-de-gracia';return ''; }
+  function colaTexto(p,language=en()?'en':'es'){const n=String(p.nombre||'').replace(/[^\p{L} '\-]/gu,'').trim().slice(0,24),english=language==='en';
+    return n?(english?n+', your Starbucks order is ready':n+', tu pedido Starbucks está preparado'):(english?'Order '+p.numero+', your Starbucks order is ready':'Pedido '+p.numero+', tu pedido Starbucks está preparado');}
+  async function colaSiguiente(){if(colaHablando||!colaPend.length)return;colaHablando=true;const generation=colaGeneration;
+    try{while(colaPend.length&&generation===colaGeneration){const p=colaPend.shift();for(const language of ['es','en']){if(generation!==colaGeneration||!colaAudioOn()||window.dsMasterMute)break;const t=colaTexto(p,language),langTag=language==='en'?'en-GB':'es-ES';
+      const r=totemSpeak(t,langTag,{queue:true});toast('☕ '+t);window.__gemeloColaAvisos.push({id:p.id||p.numero,numero:p.numero,nombre:p.nombre||null,text:t,lang:langTag,via:r.via,at:Date.now()});await r.done;
+    }}}finally{colaHablando=false;if(colaPend.length)void colaSiguiente();}}
   async function colaTic(){ const st=colaStore(); if(!st){ colaStoreActual=''; return; }
-    if(st!==colaStoreActual){ colaStoreActual=st; colaVistos.clear(); colaPrimera=true; }
+    if(st!==colaStoreActual){ colaStoreActual=st; colaGeneration++;colaPend.length=0;colaVistos.clear(); colaPrimera=true; }
     try{ const d=await (await fetch(COLA_RELAY+'/cola/estado?store='+encodeURIComponent(st),{cache:'no-store'})).json();
-      (d.listo||[]).forEach(p=>{ if(!colaVistos.has(p.numero)){ colaVistos.add(p.numero); if(!colaPrimera) colaPend.push(p); } });
+      (d.listo||[]).forEach(p=>{ const key=p.id||p.numero;if(!colaVistos.has(key)){ colaVistos.add(key); if(!colaPrimera) colaPend.push(p); } });
       colaPrimera=false; colaSiguiente(); }catch(_){} }
   setInterval(colaTic,3000);
-  function boot(){ ensure(); limpiaRastros(); setInterval(()=>{ try{ limpiaRastros(); if(!tocado&&esTotem(document.activeElement)) tocado=true; /* clic dentro del iframe del tótem = foco */ btn.style.display=(tocado&&(kioskOn()||(window.XpaceStarbucks&&window.XpaceStarbucks.active())||new URLSearchParams(location.search).has('kiosko')))?'block':'none'; render(); const t=document.getElementById('totemAvatar'); if(t){ t.style.zIndex=kioskOn()?'60':'6'; } }catch(_){} },1500);
+  function boot(){ ensure(); setInterval(()=>{ try{ if(!tocado&&esTotem(document.activeElement)) tocado=true; /* clic dentro del iframe del tótem = foco */ btn.style.display=(tocado&&(kioskOn()||(window.XpaceStarbucks&&window.XpaceStarbucks.active())||new URLSearchParams(location.search).has('kiosko')))?'block':'none'; render(); const t=document.getElementById('totemAvatar'); if(t){ t.style.zIndex=kioskOn()?'60':'6'; } }catch(_){} },1500);
     try{ const q=new URLSearchParams(location.search); if(q.has('kiosko')) setTimeout(()=>totemCommand('kiosko'),2500); else if(stored()) setTimeout(()=>{ if(stored()) setTotem(true,storedUrl()); },2500); /* si en esos 2,5 s se apagó (Tótem OFF o /avatar <nivel> on), no se vuelve a encender */ }catch(_){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   window.totemKioskCommand=function(a){ tocado=true; return totemCommand(a); }; // /totem tecleado = interacción
-  window.XpaceTotem={on:stored,url:()=>storedUrl()||kioskUrl(),kioskUrl:kioskUrl,set:setTotem,formato:formatoDe,key:MODE_KEY,segmentado:{on:segOn,set:setSeg,key:SEG_KEY}};
-  window.XpaceTotemKiosk={touched:()=>tocado,reset:colaReset,audio:colaAudioOn,setAudio:setColaAudio,
-    clave:{guardada:()=>!!barraClave(),mascara:()=>barraMascara(),estado:barraEstado,guardar:v=>claveCommand(v),borrar:()=>claveCommand('off'),cabeceras:()=>Object.keys(colaCabeceras())},aviso:()=>colaAviso,cola:()=>window.__gemeloColaAvisos.slice(),colaTexto:colaTexto,say:totemSpeak,touch:touch,on:()=>totemCommand('kiosko'),off:()=>totemCommand('off'),orders:()=>orders.slice(),url:kioskUrl};
+  window.XpaceTotem={on:stored,url:()=>storedUrl()||kioskUrl(),kioskUrl:kioskUrl,set:setTotem,formato:formatoDe,key:MODE_KEY};
+  window.XpaceTotemKiosk={touched:()=>tocado,reset:colaReset,audio:colaAudioOn,setAudio:setColaAudio,cola:()=>window.__gemeloColaAvisos.slice(),colaTexto:colaTexto,say:totemSpeak,touch:touch,on:()=>totemCommand('kiosko'),off:()=>totemCommand('off'),orders:()=>orders.slice(),url:kioskUrl};
 })();
