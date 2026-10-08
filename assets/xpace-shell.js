@@ -504,7 +504,19 @@
   // descarga. Sin data-brain: GitHub Pages no ejecuta /avatar-ask, así que las
   // preguntas van al relevo central https://www.admiranext.com/api/avatar-ask.
   // Si el cargador no llega, queda el módulo antiguo /assets/avatar-digital.js.
-  const AVATAR_LOADER = 'https://www.admiranext.com/assets/avatar.js?v=20261007-pill-1';
+  // También se usa antes del retorno de la barra inline del gemelo: esa rama
+  // no llega a suiteExperto(). El cargador nuevo arranca el recorrido solicitado.
+  function nativeStoreLaunch() {
+    try {
+      const location = root.location;
+      return root.self === root.top && location.protocol === 'https:' &&
+        /^(?:www\.)?(?:admira\.store|xpaceos\.com)$/.test(location.hostname) &&
+        new URLSearchParams(location.search).getAll('ax_demo').length === 1 &&
+        new URLSearchParams(location.search).get('ax_demo') === 'store';
+    } catch (_) { return false; }
+  }
+  const AVATAR_LOADER = 'https://www.admiranext.com/assets/avatar.js?v=' +
+    (nativeStoreLaunch() ? '20261007-native-demo-control-1' : '20261007-pill-1');
   function avatarKey() {
     try { return 'da-avatar:' + ((root.location && root.location.host) || ''); } catch (_) { return 'da-avatar:'; }
   }
@@ -784,6 +796,7 @@
   function wireCli() {
     const form = doc.getElementById('xsCliForm');
     const input = doc.getElementById('xsCli');
+    doc.addEventListener('submit',e=>{if(e.target===form && /^\/demo\s+(?:taza|kiosko|quiosco)(?:\s|$)/i.test(input.value.trim()))input.value=input.value.trim().slice(1);},true);
     let history = [];
     try { history = JSON.parse(local.getItem(HISTORY_KEY) || '[]').filter(x => typeof x === 'string').slice(-50); } catch (_) {}
     let cursor = history.length, draft = '';
@@ -826,12 +839,15 @@
   function suiteExperto() {
     if (root.top !== root.self || /(^|[?&])embed=/.test(location.search)) return;
     const V = '20261005-experto-idioma-1', BASE = 'https://www.admiranext.com/suite/experto';
+    const host = location.hostname.replace(/^www\./, '');
+    const nativeDemo = /^(admira\.store|xpaceos\.com)$/.test(host) && new URLSearchParams(location.search).get('ax_demo') === 'store';
+    if (doc.querySelector('script[src^="' + BASE + '.js"]')) return;
     const css = doc.createElement('link');
     css.rel = 'stylesheet'; css.href = BASE + '.css?v=' + V;
     doc.head.appendChild(css);
     const js = doc.createElement('script');
-    js.src = BASE + '.js?v=' + V; js.defer = true;
-    const host = location.hostname.replace(/^www\./, '');
+    js.src = BASE + '.js?v=' + (nativeDemo ? '20261007-native-demo-control-1' : V); js.defer = true;
+    if (nativeDemo) js.setAttribute('data-admira-demo-engine', '');
     const attrs = {
       panel: '#xsExpert', body: '.expert-workspace', form: '#xsCliForm', input: '#xsCli', log: '#xsLog', hint: '.xs-hint',
       extras: '.expert-category-panel,.expert-controls-pane,.expert-view-pane', extrasLabel: 'vista',
@@ -913,6 +929,7 @@
         root.addEventListener('pagehide',()=>resize.dispose(),{once:true});
       }
     }).catch(error=>console.warn('xpace-shell resize',error));
+    registerVerb({id:'demo',es:'/demo taza: cámara; /demo kiosko: pedido, pago simulado, cola y taza.',en:'/demo taza: camera; /demo kiosko: order, simulated payment, queue and mug.',run:async args=>/^kiosko(?:\s|$)|^quiosco(?:\s|$)/i.test(args)?(await import('/assets/kiosko-demo.mjs?v=2')).runKioskoDemo(args.replace(/^\S+\s*/,''),lang()):(await import('/assets/taza-demo.mjs?v=1')).runTazaDemo(args,lang())});
     wireCli();
     suiteExperto();
     registerVerb({
@@ -961,7 +978,7 @@
       toggle: name => setPanel(name, !state[name]), state: () => Object.assign({}, state),
       run, print: log, registerVerb, handoff,
     });
-    import(new URL('./expert-workspace.mjs?v=xtore-ux-2',script.src).href).then(({mountExpertWorkspace})=>{
+    import(new URL('./expert-workspace.mjs?v=taza-20261007',script.src).href).then(({mountExpertWorkspace})=>{
       shared.expertWorkspace=mountExpertWorkspace({panel:parts.expert,shell:shared,config:cfg});
       doc.dispatchEvent(new CustomEvent('xpace:expert-ready'));
     }).catch(error=>console.warn('xpace-shell expert',error));

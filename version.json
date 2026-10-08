@@ -1,17 +1,16 @@
 {
-  "version": "v.08.10.2026.r13.17:06",
+  "version": "v.08.10.2026.r14.17:46",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T15:06:38Z",
-  "git": "4e794e8002f75a80379b197a9c5ea7ae783e1d5e",
-  "gitShort": "4e794e8",
-  "gitFull": "4e794e8002f75a80379b197a9c5ea7ae783e1d5e",
+  "deployedAt": "2026-10-08T15:46:51Z",
+  "git": "9a65346757c210b168643e30fd08a39897429ffb",
+  "gitShort": "9a65346",
+  "gitFull": "9a65346757c210b168643e30fd08a39897429ffb",
   "dirty": false,
   "novedades": [
-    "Hiperreal llega al conjunto Starbucks: barra, caja, vitrina, mesa, silla, botellero e iPad con madera de veta real, piedra, acero, bollería y vidrio físicos",
-    "El gemelo en Best coloca Hiperreal con /inventario añadir y en la escena Starbucks (si falla, Matrix y después Best); el TPV sigue en vivo",
-    "GLB web ligeros de 0,3 a 2,7 MB (el botellero baja de 5 MB a 1 MB) y un GLB HD por pieza para Unreal",
-    "Comparativas antes/después en Cycles y pipeline Hiperreal reutilizable para las próximas tandas"
+    "En el Starbucks, la vista Better vuelve a ser la de antes: los muebles añadidos y el botellero solo aparecen en Best",
+    "Las demos de la tienda (/demo taza, /demo kiosko y el arranque ?ax_demo=store) se publican también en XpaceOS",
+    "El espejo nocturno de admira.store vuelve a funcionar sin copias a mano y sin borrar lo propio de la tienda"
   ]
 }
