@@ -1,15 +1,17 @@
 {
-  "version": "v.08.10.2026.r19.19:07",
+  "version": "v.08.10.2026.r20.19:20",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T17:07:43Z",
-  "git": "d80d241",
-  "gitShort": "d80d241",
-  "gitFull": "d80d241",
+  "deployedAt": "2026-10-08T17:20:57Z",
+  "git": "7001599",
+  "gitShort": "7001599",
+  "gitFull": "7001599",
   "dirty": false,
   "novedades": [
-    "Pinball espacial 30: quitado el cristal del tablero, que el visor web pintaba como una losa gris; se quedan el lanzador y los botones de flipper.",
-    "Hiperreal tanda 5 (Pixeria 28–35) y xpaceos.pages.dev siguen publicados."
+    "Hiperreal tanda 6: Pixeria 36–43 (mesa casco espacial, mesa ogro, sillón gorila, sofá verde, chanclas, máquina arcade, caballo y silla de madera).",
+    "Con esta tanda todo el catálogo, de la pieza 2 a la 52, tiene acabado Hiperreal.",
+    "Casco lacado con visera brillante, tela y cuero en sillón y sofá, suela de goma, arcade con pantalla brillante y madera con veta real; sin cristales opacos.",
+    "admira.store: los archivos de más de 25 MiB se excluyen y redirigen solos a XpaceOS al publicar."
   ]
 }
