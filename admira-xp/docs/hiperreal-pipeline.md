@@ -79,3 +79,12 @@ Overrides nuevos en `pieces.json` para piezas de formas redondeadas o triangulad
 - `material_classes` → `powder` en la alfombra 11 para el relieve fino del tejido.
 
 Pendiente: la pieza 1 (Mostrador) usa `assets/mostrador/counter-interpreted-*.glb` y `counterURL`, fuera del catálogo; necesita soporte propio en `counter-asset.mjs` antes de tener Hiperreal. Las piezas 4, 6, 17, 18 y 11 mejoran solo por materiales.
+
+## Tanda 4 · primeras Pixeria (19–27)
+
+- Nuevas clases de material: `fabric` (trama tejida en normal + sheen de terciopelo, sin laca), `leather` (grano y laca suave) y `carpaint` (laca 1.0 / rugosidad 0.03). Mosaico en `tile_m`: tela 0,12 m, cuero 0,35 m.
+- `object_classes` en `pieces.json`: separa un material compartido por nombre de objeto (p. ej. el `black` del sillín pasa a cuero mientras los neumáticos siguen siendo goma).
+- `add_parts` admite `rot` (grados) para discos de freno y antenas inclinadas.
+- Texturas de autor: si un material ya trae su propia imagen de color base, el pipeline ya no le reescribe las UV con proyección de caja (era la causa de la madera a rayas en la estantería 2 y la librería 51 en el visor web).
+- `install.py TANDA "n …"` copia LOD web, HD y .blend al catálogo y escribe `hiperreal.manifest.json`.
+- Caché por pieza: `HIPERREAL_REVISION` en `inventario/quality-model.mjs` sube la revisión de una pieza ya publicada cuando se reconstruye.

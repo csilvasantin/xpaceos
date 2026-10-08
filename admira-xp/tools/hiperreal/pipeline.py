@@ -84,14 +84,15 @@ def hex_of(m):
     if re.fullmatch(r'#[0-9a-f]{6}',n): return n
     c=bsdf(m).inputs['Base Color'].default_value
     return '#'+''.join('%02x'%round(255*(max(0,x)**(1/2.2))) for x in c[:3])
-NORMAL_K={'wood':.9,'wood_dark':.9,'wood_stained':.7,'stone':.45,'pastry':.8,'powder':.25,'paper':.25,'cardboard':.5}
+NORMAL_K={'fabric':.7,'leather':.5,'wood':.9,'wood_dark':.9,'wood_stained':.7,'stone':.45,'pastry':.8,'powder':.25,'paper':.25,'cardboard':.5}
 def upgrade(m,cls):
     p=bsdf(m)
     if not p or cls=='keep':
         if p and base_name(m.name) in PC.get('coat',{}): coat(m,*PC['coat'][base_name(m.name)])
         return
     keep_tex=has_tex(m,'Base Color'); hx=hex_of(m)
-    if cls in ('wood','wood_dark','wood_stained','stone','pastry','powder') or cls in ('metal','metal_dark','ceramic','plastic','paper','cardboard'):
+    if keep_tex: m['hiperreal_source_tex']=True  # authored texture: keep its own UVs (piece 2 stripes)
+    if cls in ('wood','wood_dark','wood_stained','stone','pastry','powder') or cls in ('metal','metal_dark','ceramic','plastic','paper','cardboard','fabric','leather','carpaint'):
         t=texlib(cls,hx)
         if 'basecolor' in t and not keep_tex: set_base(m,t['basecolor'])
         if 'orm' in t and not has_tex(m,'Roughness'): set_orm(m,t['orm'],ao=cls in ('wood','wood_dark','wood_stained','stone'))
@@ -108,9 +109,10 @@ def upgrade(m,cls):
     elif cls=='led':
         c=p.inputs['Base Color'].default_value; p.inputs['Emission Color'].default_value=c; p.inputs['Emission Strength'].default_value=4
     elif cls=='rubber': p.inputs['Roughness'].default_value=.86; p.inputs['Metallic'].default_value=0
+    elif cls=='fabric': p.inputs['Sheen Weight'].default_value=.6; p.inputs['Sheen Roughness'].default_value=.45; p.inputs['Sheen Tint'].default_value=(*p.inputs['Base Color'].default_value[:3],1)
     elif cls=='screen': p.inputs['Roughness'].default_value=.06; coat(m,1,.02)
     elif cls=='gloss_black': p.inputs['Roughness'].default_value=.1; p.inputs['Metallic'].default_value=0; coat(m,.8,.04)
-    coats={'wood':(.2,.3),'wood_dark':(.22,.28),'wood_stained':(.3,.22),'stone':(.35,.14),'metal':(.06,.3),'metal_dark':(.25,.12),'ceramic':(.7,.03),'plastic':(.2,.1),'pastry':(.12,.35),'powder':(.05,.4)}
+    coats={'wood':(.2,.3),'wood_dark':(.22,.28),'wood_stained':(.3,.22),'stone':(.35,.14),'metal':(.06,.3),'metal_dark':(.25,.12),'ceramic':(.7,.03),'plastic':(.2,.1),'pastry':(.12,.35),'powder':(.05,.4),'leather':(.15,.4),'carpaint':(1,.03)}
     if cls in coats: coat(m,*coats[cls])
     if base_name(m.name) in PC.get('coat',{}): coat(m,*PC['coat'][base_name(m.name)])
     m['quality']='hiperreal'; m['hiperreal_class']=cls
@@ -301,6 +303,20 @@ def build():
                     for md in list(o.modifiers):
                         try: bpy.ops.object.modifier_apply(modifier=md.name)
                         except Exception as e: print('modifier',o.name,md.name,e)
+    # 1b. object_classes: per-object material split (e.g. a saddle sharing "black" with the tyres becomes leather)
+    oc=PC.get('object_classes',{})
+    if oc:
+        mc=PC.setdefault('material_classes',{}); made={}
+        for o in meshes():
+            cls=oc.get(base_name(o.name))
+            if not cls: continue
+            for s in o.material_slots:
+                if not s.material: continue
+                key=(s.material.name,cls)
+                if key not in made:
+                    nm=s.material.copy(); nm.name=base_name(s.material.name)+' · '+cls; made[key]=nm; mc[base_name(nm.name)]=cls
+                s.material=made[key]
+        log['object_classes']=len(made)
     # 2. materials
     for m in list(B.materials):
         users=sum(1 for o in meshes() for s in o.material_slots if s.material==m)
@@ -314,6 +330,7 @@ def build():
     tiles=PC['tile_m']
     def tile_for(mat):
         if not mat: return None
+        if mat.get('hiperreal_source_tex'): return None
         c=mat.get('hiperreal_class'); return tiles.get(c) if c else None
     if not PC.get('keep_uvs'):
         seen=set()
