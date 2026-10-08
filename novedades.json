@@ -1,5 +1,10 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.08.10.2026.r14.17:46": [
+    "En el Starbucks, la vista Better vuelve a ser la de antes: los muebles añadidos y el botellero solo aparecen en Best",
+    "Las demos de la tienda (/demo taza, /demo kiosko y el arranque ?ax_demo=store) se publican también en XpaceOS",
+    "El espejo nocturno de admira.store vuelve a funcionar sin copias a mano y sin borrar lo propio de la tienda"
+  ],
   "v.08.10.2026.r13.17:06": [
     "Hiperreal llega al conjunto Starbucks: barra, caja, vitrina, mesa, silla, botellero e iPad con madera de veta real, piedra, acero, bollería y vidrio físicos",
     "El gemelo en Best coloca Hiperreal con /inventario añadir y en la escena Starbucks (si falla, Matrix y después Best); el TPV sigue en vivo",
