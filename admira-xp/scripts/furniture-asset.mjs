@@ -1,14 +1,16 @@
 import {GLTFLoader} from './vendor/GLTFLoader.mjs';
 import {cloneCounter,counterURL} from './counter-asset.mjs';
 import {assetForInstance} from '../../inventario/model.mjs?v=ipad-20261005-1';
+import {supportsQuality} from '../../inventario/quality-model.mjs?v=matrix47-20261008-1';
 const cache=new Map();let registryPromise;
 export const inventoryIdFor=assetForInstance;
 export function furnitureURL(number,tier='best',extension='glb'){
- if(!Number.isSafeInteger(number)||number<1||number>52||!['good','better','best'].includes(tier)||!['glb','blend'].includes(extension))throw Error('Pieza o perfil no válido');
+ if(!Number.isSafeInteger(number)||number<1||number>52||!supportsQuality(number,tier)||!['glb','blend'].includes(extension))throw Error('Pieza o perfil no válido');
  if(number===1)return counterURL(tier,extension);
  const url=new URL(`../../inventario/assets/catalog/${String(number).padStart(2,'0')}/${tier}.${extension}`,import.meta.url);
  if(number===2&&tier==='best')url.searchParams.set('v','shelves-parts-20261002-3');
  if(number===47&&tier==='best')url.searchParams.set('v','coffee47-photo-20261008-1');
+ if(number===47&&tier==='matrix')url.searchParams.set('v','coffee47-matrix-20261008-1');
  return url.href;
 }
 export async function cloneFurniture(number,tier='best'){
