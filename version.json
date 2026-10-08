@@ -1,16 +1,16 @@
 {
-  "version": "v.08.10.2026.r8.08:24",
-  "deployer": "OraculoMacMini",
+  "version": "v.08.10.2026.r9.08:58",
+  "deployer": "GrokBot",
   "machine": "MacMini",
-  "signature": "OraculoMacMini · MacMini",
-  "deployedAt": "2026-10-08T07:59:56.765664+02:00",
+  "signature": "GrokBot · MacMini",
+  "deployedAt": "2026-10-08T06:58:26Z",
   "git": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
   "gitShort": "f42de26",
   "gitFull": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
   "dirty": false,
   "novedades": [
-    "/convertir 2da3d: foto original y modelo ITIL interactivo de 13 botellas",
-    "Vídeo desde imagen Stock: 10 segundos, formato elegible y barra de etapas reales",
-    "Oferta de agua vertical en seis pantallas; iPad horizontal; regla de agua conservada"
+    "/demo all en: la ventana de los ensayos 1–5 sale en inglés (título, fases, campos y valores) y con el mismo estilo de cristal que la tarjeta, debajo de ella",
+    "Tarjeta del recorrido: la línea del comando va en el idioma del recorrido, corta y en dos líneas como mucho",
+    "Locución del agua: se ve al sonar (aviso con el texto, pulso en el altavoz de avisos y línea «🔊 Locución: «…»» en el CLI)"
   ]
 }
