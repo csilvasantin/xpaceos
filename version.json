@@ -1,16 +1,16 @@
 {
-  "version": "v.08.10.2026.r24.21:01",
-  "deployer": "MorfeoMacMini",
+  "version": "v.08.10.2026.r25.22:40",
+  "deployer": "GrokBot",
   "machine": "MacMini",
-  "signature": "MorfeoMacMini · MacMini",
+  "signature": "GrokBot · MacMini",
   "deployedAt": "2026-10-08T18:25:34Z",
   "git": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "gitShort": "39f5131",
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "Las personas vuelven a caminar: todos los Xpacios abren con /gente ON (personal, clientes, viandantes y personajes especiales).",
-    "Las partidas guardadas sin elección explícita vuelven a ON; /gente off, /personal y /clientes siguen funcionando igual y quedan marcados en la partida.",
-    "Ayuda, tutorial, manual y MCP explican el nuevo arranque en castellano e inglés."
+    "Los enlaces de la portada (Prueba el gemelo y Supervisar un espacio) abren el gemelo en Hiperreal.",
+    "visual=hiperreal entra en Best, que carga el acabado Hiperreal de los muebles y, si falta, Best.",
+    "La ayuda deja de decir que Prueba el gemelo abre Better."
   ]
 }
