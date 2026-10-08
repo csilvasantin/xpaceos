@@ -1,17 +1,16 @@
 {
-  "version": "v.08.10.2026.r20.19:20",
+  "version": "v.08.10.2026.r21.19:31",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T17:20:57Z",
-  "git": "7001599",
-  "gitShort": "7001599",
-  "gitFull": "7001599",
+  "deployedAt": "2026-10-08T17:31:03Z",
+  "git": "34b2fd5",
+  "gitShort": "34b2fd5",
+  "gitFull": "34b2fd5",
   "dirty": false,
   "novedades": [
-    "Hiperreal tanda 6: Pixeria 36–43 (mesa casco espacial, mesa ogro, sillón gorila, sofá verde, chanclas, máquina arcade, caballo y silla de madera).",
-    "Con esta tanda todo el catálogo, de la pieza 2 a la 52, tiene acabado Hiperreal.",
-    "Casco lacado con visera brillante, tela y cuero en sillón y sofá, suela de goma, arcade con pantalla brillante y madera con veta real; sin cristales opacos.",
-    "admira.store: los archivos de más de 25 MiB se excluyen y redirigen solos a XpaceOS al publicar."
+    "Coche Cazafantasmas 29: la sirena del techo y los faros pasan de cristal a plástico brillante; la sirena vuelve a verse roja en el visor web.",
+    "Hiperreal tanda 6 (Pixeria 36–43): todo el catálogo, de la 2 a la 52, ya tiene Hiperreal.",
+    "admira.store publica sola los archivos de más de 25 MiB con redirección a XpaceOS."
   ]
 }
