@@ -1,5 +1,5 @@
 {
-  "version": "v.08.10.2026.r25.22:40",
+  "version": "v.08.10.2026.r26.22:45",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
@@ -9,8 +9,8 @@
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "Los enlaces de la portada (Prueba el gemelo y Supervisar un espacio) abren el gemelo en Hiperreal.",
-    "visual=hiperreal entra en Best, que carga el acabado Hiperreal de los muebles y, si falta, Best.",
-    "La ayuda deja de decir que Prueba el gemelo abre Better."
+    "SneakerStore queda publicado en XpaceOS (contrato, gemelo y ayuda) para que admira.store pueda espejarlo.",
+    "La portada sigue abriendo el gemelo en Hiperreal.",
+    "/demo global: proyecto, Xpacio, playlist Pixeria y gemelo en una guía reutilizable."
   ]
 }
