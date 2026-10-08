@@ -1,17 +1,15 @@
 {
-  "version": "v.08.10.2026.r18.19:00",
+  "version": "v.08.10.2026.r19.19:07",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T17:00:26Z",
-  "git": "8ac3ac6",
-  "gitShort": "8ac3ac6",
-  "gitFull": "8ac3ac6",
+  "deployedAt": "2026-10-08T17:07:43Z",
+  "git": "d80d241",
+  "gitShort": "d80d241",
+  "gitFull": "d80d241",
   "dirty": false,
   "novedades": [
-    "Hiperreal tanda 5: Pixeria 28–35 (cactus, coche Cazafantasmas, pinball espacial, sofá murciélago, cuadro familia ogro, mesa sándwich, sofá familia amarilla y sofá amarillo).",
-    "Pinball con cristal sobre el tablero, lanzador y botones de flipper añadidos a mano; coche con carrocería lacada y cristales tintados.",
-    "Las correas de hierro del sofá bárbaro 27 ya no se ven azuladas.",
-    "xpaceos.pages.dev vuelve a publicarse: los archivos de más de 25 MiB se sirven con redirección."
+    "Pinball espacial 30: quitado el cristal del tablero, que el visor web pintaba como una losa gris; se quedan el lanzador y los botones de flipper.",
+    "Hiperreal tanda 5 (Pixeria 28–35) y xpaceos.pages.dev siguen publicados."
   ]
 }
