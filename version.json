@@ -1,16 +1,16 @@
 {
-  "version": "v.08.10.2026.r21.19:31",
+  "version": "v.08.10.2026.r22.19:53",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T17:31:03Z",
-  "git": "34b2fd5",
-  "gitShort": "34b2fd5",
-  "gitFull": "34b2fd5",
+  "deployedAt": "2026-10-08T17:53:45Z",
+  "git": "80444f4319f97d457efe55276b8456105a50e33c",
+  "gitShort": "80444f4",
+  "gitFull": "80444f4319f97d457efe55276b8456105a50e33c",
   "dirty": false,
   "novedades": [
-    "Coche Cazafantasmas 29: la sirena del techo y los faros pasan de cristal a plástico brillante; la sirena vuelve a verse roja en el visor web.",
-    "Hiperreal tanda 6 (Pixeria 36–43): todo el catálogo, de la 2 a la 52, ya tiene Hiperreal.",
-    "admira.store publica sola los archivos de más de 25 MiB con redirección a XpaceOS."
+    "Mostrador (pieza 1) con acabado Hiperreal: terrazo, roble, laca petróleo y latón con materiales reales; en el gemelo Best se carga solo (si falla, Best).",
+    "Los faros de las motos 19, 20 y 23 y las botellas ámbar de la estantería 2 vuelven a verse en el visor web: el cristal pequeño pasa a laca brillante (el HD para Unreal conserva el cristal).",
+    "El pipeline Hiperreal aplica esa regla del cristal por defecto en el LOD web y trae capturas del visor publicado (visor_shot.py)."
   ]
 }
