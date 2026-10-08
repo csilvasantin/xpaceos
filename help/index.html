@@ -63,7 +63,7 @@
 <header data-shell-replace><div class="bar">
   <a class="logo" href="/">XPACEOS · <span data-i18n="help">AYUDA</span></a>
   <nav data-shell-nav>
-    <a href="/admira-xp/?autostart=xtanco&amp;visual=better" data-i18n="nav.try">Prueba el gemelo</a>
+    <a href="/admira-xp/?autostart=xtanco&amp;from=portada&amp;visual=hiperreal" data-i18n="nav.try">Prueba el gemelo</a>
     <a href="/scan/" data-i18n="nav.scan">Escanear</a>
     <a href="/help/cli/" data-i18n="nav.cli">Comandos CLI</a>
     <a href="/help/funcionalidades/" data-i18n="nav.functions">Funciones</a>
@@ -128,7 +128,7 @@
         <li data-i18n="s1.a.2">Busca por nombre, dirección o marca, o filtra por marca y tipo de superficie.</li>
         <li data-i18n="s1.a.3">Toca una tarjeta: su Gemelo Digital se carga ahí mismo con las pantallas y superficies reales de ese punto.</li>
         <li data-i18n="s1.a.4">«Abrir a pantalla completa» para operarlo con todo el espacio.</li>
-      </ol><a class="cta" href="/admira-xp/?autostart=xtanco&amp;visual=better" data-i18n="s1.cta">Prueba el gemelo →</a></div>
+      </ol><a class="cta" href="/admira-xp/?autostart=xtanco&amp;from=portada&amp;visual=hiperreal" data-i18n="s1.cta">Prueba el gemelo →</a></div>
       <div class="card"><h3 data-i18n="s1.b.h">Enlaces directos</h3>
         <p data-i18n-html="s1.b.1">Gemelo de un punto concreto: <code>/admira-xp/?loc=&lt;id&gt;</code> (p. ej. <a href="/admira-xp/?loc=mango-001" target="_blank" rel="noopener">?loc=mango-001</a>).</p>
         <p data-i18n-html="s1.b.2" style="margin-top:8px">Portada con ese gemelo ya cargado: <code>/?twin=&lt;id&gt;</code>.</p>
@@ -136,7 +136,7 @@
         <div class="tip" data-i18n="s1.tip">El gemelo de referencia es el Xtanco (estanco). Los demás espacios usan el mismo motor con su configuración real: nombre, pantallas y superficies del catálogo.</div>
       </div>
       <div class="card"><h3 data-i18n="s1.3d.h">Avanzado → Better · 16 bits</h3>
-        <p data-i18n-html="s1.3d.1"><a href="/admira-xp/?autostart=xtanco&amp;visual=better">Try the twin abre Better</a>: interior detallado, personajes articulados y luz de día, atardecer o noche. Es una representación estilizada del layout actual, no un escaneo fotogramétrico.</p>
+        <p data-i18n-html="s1.3d.1"><a href="/admira-xp/?autostart=xtanco&amp;from=portada&amp;visual=hiperreal">Prueba el gemelo abre Hiperreal</a>: el interior 3D con los muebles en acabado Hiperreal. Si una pieza no lo tiene, se usa Best.</p>
         <p data-i18n-html="s1.3d.2" style="margin-top:8px">Usa <b>Comparar con Good</b> para ver Better con una cámara alineada con la proyección del clásico. El detalle de los modelos sigue siendo distinto. <b>Explorar 3D</b> permite girar y acercar la cámara de forma independiente: arrastra, usa scroll o pellizca y toca un objeto para ver su ficha. Seleccionar no ejecuta operaciones de la tienda.</p>
         <p data-i18n-html="s1.3d.parity" style="margin-top:8px">Better aún no recupera todos los controles de Good. Consulta el <a href="/help/funcionalidades/">catálogo numerado de funciones</a>: <b>01.- Cartelería Digital</b>, <b>02.- Hilo Musical</b>… Cada ficha distingue controles, representación y conexiones pendientes, con IDs estables compartidos por ayuda y documentación MCP.</p>
         <p data-i18n-html="s1.3d.3" style="margin-top:8px">Abre <b>Avanzado (▤)</b> y elige <b>Good · 8 bits</b>, <b>Better · 16 bits</b> o <b>Best · 32 bits</b>; el selector también está disponible dentro de las vistas. La consola acepta <code>/modo good</code>, <code>/modo better</code> y <code>/modo best</code>. <b>Volver al gemelo</b> o Escape regresan a Good sin reiniciar la sesión. El cambio de vista es local: no envía órdenes a Telegram ni cambia pantallas físicas.</p>
@@ -361,7 +361,7 @@ const I18N={en:{
  's1.b.3':'Inside the twin there is a CLI with the whole vocabulary (speed, clock, stock, screens, AI, music…): <a href="/help/cli/">command reference</a>.',
  's1.tip':'The reference twin is the Xtanco (tobacco shop). Every other space uses the same engine with its real configuration: name, screens and surfaces from the catalog.',
  's1.3d.h':'Advanced → Better · 16-bit',
- 's1.3d.1':'<a href="/admira-xp/?autostart=xtanco&amp;visual=better">Try the twin opens Better</a>: a detailed interior, articulated characters, and day, sunset or night lighting. This is a stylized representation of the current layout, not a photogrammetric scan.',
+ 's1.3d.1':'<a href="/admira-xp/?autostart=xtanco&amp;from=portada&amp;visual=hiperreal">Try the twin opens Hiperreal</a>: the 3D interior with Hiperreal furniture. A piece without that finish falls back to Best.',
  's1.3d.2':'Use <b>Compare with Good</b> to view Better with a camera aligned to the classic projection. Model detail still differs. <b>Explore 3D</b> lets you orbit and zoom independently: drag, scroll or pinch, and tap an object to inspect its label. Selection does not execute store operations.',
  's1.3d.parity':'Better does not yet expose all Good controls. See the <a href="/help/funcionalidades/">numbered functional catalog</a>: <b>01.- Digital Signage</b>, <b>02.- Background Music</b>… Each entry distinguishes controls, presentation and pending connections, with stable IDs shared by Help and MCP documentation.',
  's1.3d.3':'Open <b>Advanced (▤)</b> and choose <b>Good · 8-bit</b>, <b>Better · 16-bit</b> or <b>Best · 32-bit</b>; the selector is also available inside the views. The console accepts <code>/modo good</code>, <code>/modo better</code> and <code>/modo best</code>. <b>Back to twin</b> or Escape return to Good without restarting the session. View changes are local: they do not send Telegram commands or change physical screens.',
