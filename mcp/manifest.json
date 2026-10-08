@@ -990,7 +990,7 @@
   "inventory_breakdown": {
     "status": "implemented",
     "scope": "catalogue_components_read_only",
-    "assets": 50,
+    "assets": 52,
     "action": {
       "es": "Desglose",
       "en": "Breakdown",
@@ -999,7 +999,7 @@
     "url": "https://www.xpaceos.com/inventario/?asset=2&quality=best&view=breakdown#catalog",
     "dataset": "https://www.xpaceos.com/inventario/components.json",
     "schema_version": 1,
-    "revision": "components-20261002-1",
+    "revision": "components-20261008-coffee47-1",
     "model_profile": "best",
     "quantity_basis": "model",
     "quantity_unknown": null,
@@ -2797,5 +2797,31 @@
       "en-GB"
     ],
     "scope": "local digital twin; one announcer per page"
+  },
+  "starbucks_coffee_display": {
+    "status": "implemented",
+    "inventory_id": "native:starbucksShelves",
+    "inventory_number": 47,
+    "instance_id": "sb-mugs",
+    "itil_code": "PDG103-EST-01",
+    "levels": 5,
+    "visual_references": 26,
+    "visual_instance_count": 115,
+    "viewer": "https://www.xpaceos.com/inventario/assets/catalog/47/collection/preview/",
+    "parts": "https://www.xpaceos.com/inventario/assets/catalog/47/best.parts.json",
+    "collection_manifest": "https://www.xpaceos.com/inventario/assets/catalog/47/collection/inventory.json",
+    "profile": "best",
+    "quantity_basis": "visual_model_not_stock",
+    "product_ci_registration": false,
+    "new_remote_tools": false,
+    "commands": [
+      "/inventario añadir 47",
+      "/inventario eliminar 47",
+      "/inventario deshacer"
+    ],
+    "docs": "https://www.xpaceos.com/admira-xp/docs/starbucks-coffee-display.md",
+    "tutorial": "https://www.xpaceos.com/help/#starbucks-coffee-display",
+    "es": "La estantería Starbucks 47 conserva native:starbucksShelves, la instancia sb-mugs y el CI PDG103-EST-01. Best muestra el mueble de cinco niveles interpretado desde la foto de Carlos. Despiece y productos abre una colección 3D con vasos, termos, tazas y café independientes y 26 referencias visuales descargables. Cada objeto conserva su identidad de componente. Los productos son una composición visual: no son SKU comerciales ni fichas CI nuevas y las cantidades no acreditan stock. El maestro patrimonial sigue en Yokup.",
+    "en": "Starbucks shelf 47 retains native:starbucksShelves, instance sb-mugs and CI PDG103-EST-01. Best shows the five-level cabinet interpreted from Carlos’s photograph. Separated parts and products opens a 3D collection of independent cups, tumblers, mugs and coffee with 26 downloadable visual references. Each object keeps its component identity. Products form a visual composition: they are not commercial SKUs or new CI records, and quantities do not establish stock. Yokup remains the lifecycle master."
   }
 }
