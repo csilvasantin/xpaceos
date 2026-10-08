@@ -1,15 +1,17 @@
 {
-  "version": "v.08.10.2026.r11.10:05",
+  "version": "v.08.10.2026.r12.15:42",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
-  "deployedAt": "2026-10-08T08:05:24Z",
-  "git": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
-  "gitShort": "f42de26",
-  "gitFull": "f42de26730d3a3fb856d76ebb02060b9e94d2644",
+  "deployedAt": "2026-10-08T13:42:48Z",
+  "git": "d441dbe12b69b16350177801bd2ce40a84bcf58f",
+  "gitShort": "d441dbe",
+  "gitFull": "d441dbe12b69b16350177801bd2ce40a84bcf58f",
   "dirty": false,
   "novedades": [
-    "Demo 14: el aviso de la locución se centra sobre el 360° y, si toca la tarjeta del recorrido, se aparta a su lado libre o por encima",
-    "El botón Detener de la tarjeta responde al primer toque, también entre pasos"
+    "Estantería Starbucks 47: nuevo acabado Hiperreal con texturas PBR reales de 2K a 4K, esmalte cerámico con reflejos, huellas sutiles y tazas redondas",
+    "Hiperreal se ilumina con un HDRI de cafetería y sombras de contacto; Todos compara ya los cinco acabados",
+    "Dos versiones del mismo modelo: GLB web de 4,6 MB (Matrix pesaba 20,8 MB) y GLB HD de 26,5 MB para Unreal con Nanite",
+    "Render antes/después en Cycles y guía para escanear tazas reales con el móvil (fase 2)"
   ]
 }

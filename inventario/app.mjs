@@ -1,11 +1,11 @@
-import {coffeeCollectionURL,UNREAL_PROJECT_DOWNLOAD_URL} from './coffee-collection.mjs?v=matrix47-20261008-1';
-import {qualityProfiles,selectedQuality,comparisonProfiles,qualityLabel} from './quality-model.mjs?v=matrix47-20261008-1';
+import {coffeeCollectionURL,UNREAL_PROJECT_DOWNLOAD_URL} from './coffee-collection.mjs?v=hiperreal47-20261008-1';
+import {qualityProfiles,selectedQuality,comparisonProfiles,qualityLabel} from './quality-model.mjs?v=hiperreal47-20261008-1';
 import {inventoryContext,inventoryURL,twinURL,scopedAssets,scopedInstances} from './context.mjs?v=scope-20261004-1';
-import {preview} from './viewer.mjs?v=matrix47-20261008-1';
-import {mountCounterStage} from './counter-stage.mjs?v=matrix47-20261008-1';
-import {furnitureURL} from '../admira-xp/scripts/furniture-asset.mjs?v=matrix47-20261008-1';
+import {preview} from './viewer.mjs?v=hiperreal47-20261008-1';
+import {mountCounterStage} from './counter-stage.mjs?v=hiperreal47-20261008-1';
+import {furnitureURL} from '../admira-xp/scripts/furniture-asset.mjs?v=hiperreal47-20261008-1';
 import {stageCamera} from './stage-camera.mjs?v=shelf-products-1';
-import {pixelPreview} from './finish-rendering.mjs?v=matrix47-20261008-1';
+import {pixelPreview} from './finish-rendering.mjs?v=hiperreal47-20261008-1';
 import {referenceLabel,referencePhotoURL} from './starbucks/reference-model.mjs?v=ipad-20261005-1';
 import {loadComponents,componentsFor,componentLabel,breakdownURL} from './breakdown-model.mjs?v=components-20261008-coffee47-1';
 import {loadShelfParts} from '../admira-xp/scripts/shelf-parts.mjs?v=shelf-products-1';
@@ -13,18 +13,18 @@ import {mountShelfProductPanel} from './shelf-product-panel.mjs?v=shelf-products
 let disposePilot,stageQueue=Promise.resolve(),inspectionRevision=0,activeCamera,activeAssetNumber;
 function configureQualitySelector(asset,requested){
  const selector=document.querySelector('#model-quality'),profiles=qualityProfiles(asset.number),quality=selectedQuality(asset.number,requested);
- selector.replaceChildren(...profiles.map(tier=>{const option=el('option',qualityLabel(tier)+' · '+({good:tr('básico','basic'),better:tr('estándar','standard'),best:tr('detallado','detailed'),matrix:tr('realista','realistic')}[tier]));option.value=tier;return option;}));
- const all=el('option',profiles.length===4?tr('Todos · comparar los cuatro','All · compare all four'):tr('Todos · comparar los tres','All · compare all three'));all.value='all';selector.append(all);selector.value=quality;
+ selector.replaceChildren(...profiles.map(tier=>{const option=el('option',qualityLabel(tier)+' · '+({good:tr('básico','basic'),better:tr('estándar','standard'),best:tr('detallado','detailed'),matrix:tr('realista','realistic'),hiperreal:tr('fotorrealista','photoreal')}[tier]));option.value=tier;return option;}));
+ const all=el('option',profiles.length===5?tr('Todos · comparar los cinco','All · compare all five'):profiles.length===4?tr('Todos · comparar los cuatro','All · compare all four'):tr('Todos · comparar los tres','All · compare all three'));all.value='all';selector.append(all);selector.value=quality;
  const count=document.querySelector('#finish-count');if(count)count.textContent=profiles.length;
- const legend=document.querySelector('#finish-legend');if(legend)legend.textContent=profiles.map((tier,i)=>qualityLabel(tier)+' · '+(tier==='matrix'?tr('realismo','realism'):[8,16,32][i])).join(' / ');
- const headline=document.querySelector('#finish-headline');if(headline)headline.textContent=profiles.length===4?tr('Cuatro maneras de vivirlo.','Four ways to experience it.'):tr('Tres maneras de vivirlo.','Three ways to experience it.');
+ const legend=document.querySelector('#finish-legend');if(legend)legend.textContent=profiles.map((tier,i)=>qualityLabel(tier)+' · '+(tier==='matrix'?tr('realismo','realism'):tier==='hiperreal'?tr('fotorrealismo','photorealism'):[8,16,32][i])).join(' / ');
+ const headline=document.querySelector('#finish-headline');if(headline)headline.textContent=profiles.length===5?tr('Cinco maneras de vivirlo.','Five ways to experience it.'):profiles.length===4?tr('Cuatro maneras de vivirlo.','Four ways to experience it.'):tr('Tres maneras de vivirlo.','Three ways to experience it.');
  return quality;
 }
 function inspectAsset(asset,requestedQuality=document.querySelector('#model-quality').value){
  if(!asset||!assets.some(a=>a.id===asset.id))return;
  const qualitySelect=document.querySelector('#model-quality'),quality=configureQualitySelector(asset,requestedQuality),profiles=comparisonProfiles(asset.number,quality),revision=++inspectionRevision;
  const current=new URL(location.href);current.searchParams.set('asset',asset.number);current.searchParams.set('quality',quality);history.replaceState(null,'',current);
- document.querySelector('#quality-note').textContent=quality==='all'?profiles.map(qualityLabel).join(' · ')+tr(' · gira o amplía una vista para compararlas.',' · orbit or zoom one view to compare them.'):quality==='matrix'?tr('Matrix · materiales físicos, reflejos de estudio y sombras suaves.','Matrix · physical materials, studio reflections and soft shadows.'):quality==='good'?tr('Good · pixel art nítido · píxeles sin suavizado.','Good · crisp pixel art · no pixel smoothing.'):asset.number===2&&quality==='best'?'Best · etiquetas de alta definición, madera con veta y herrajes detallados.':tr('Perfil ','Profile ')+quality.toUpperCase()+tr(' · modelo 3D completo',' · complete 3D model');
+ document.querySelector('#quality-note').textContent=quality==='all'?profiles.map(qualityLabel).join(' · ')+tr(' · gira o amplía una vista para compararlas.',' · orbit or zoom one view to compare them.'):quality==='hiperreal'?tr('Hiperreal · texturas PBR reales 2K–4K, imperfecciones, luz de cafetería (HDRI) y sombras de contacto.','Hiperreal · real 2K–4K PBR textures, imperfections, café lighting (HDRI) and contact shadows.'):quality==='matrix'?tr('Matrix · materiales físicos, reflejos de estudio y sombras suaves.','Matrix · physical materials, studio reflections and soft shadows.'):quality==='good'?tr('Good · pixel art nítido · píxeles sin suavizado.','Good · crisp pixel art · no pixel smoothing.'):asset.number===2&&quality==='best'?'Best · etiquetas de alta definición, madera con veta y herrajes detallados.':tr('Perfil ','Profile ')+quality.toUpperCase()+tr(' · modelo 3D completo',' · complete 3D model');
  const select=document.querySelector('#model-select');select.value=String(asset.number);
  stageQueue=stageQueue.catch(()=>{}).then(async()=>{if(revision!==inspectionRevision)return;select.disabled=true;qualitySelect.disabled=true;disposePilot?.();disposePilot=null;
   if(activeAssetNumber!==asset.number){activeAssetNumber=asset.number;activeCamera=stageCamera(asset.number===50?1.12:1);}const host=document.querySelector('#model-stages'),compare=quality==='all',disposers=[],camera=activeCamera;host.classList.toggle('compare-stages',compare);host.style.setProperty('--profile-count',profiles.length);host.replaceChildren();
@@ -32,8 +32,13 @@ function inspectAsset(asset,requestedQuality=document.querySelector('#model-qual
   const singleDownloads=document.querySelector('#single-downloads');singleDownloads.hidden=compare;if(!compare){document.querySelector('[data-blend]').href=furnitureURL(asset.number,quality,'blend');document.querySelector('[data-glb]').href=furnitureURL(asset.number,quality);}
   const profileDownloads=document.querySelector('#profile-downloads');profileDownloads.hidden=!compare;profileDownloads.replaceChildren();
   document.querySelector('#shelf-products')?.remove();const productsHost=document.createElement('div');productsHost.id='shelf-products';productsHost.className='shelf-products';host.after(productsHost);
-  if(asset.number===47)for(const profile of quality==='all'?['best','matrix']:[quality==='matrix'?'matrix':'best']){const collection=el('a',tr('Despiece y productos ','Separated parts and products ')+qualityLabel(profile)+' ↗');collection.href=coffeeCollectionURL(location.href,{quality:profile}).href;collection.dataset.coffeeCollection=profile;productsHost.append(collection);}
-  if(asset.number===47&&['matrix','all'].includes(quality)){
+  if(asset.number===47)for(const profile of quality==='all'?['best','matrix']:[['matrix','hiperreal'].includes(quality)?'matrix':'best']){const collection=el('a',tr('Despiece y productos ','Separated parts and products ')+qualityLabel(profile)+' ↗');collection.href=coffeeCollectionURL(location.href,{quality:profile}).href;collection.dataset.coffeeCollection=profile;productsHost.append(collection);}
+  if(asset.number===47&&['hiperreal','all'].includes(quality)){
+   const base=new URL('/inventario/assets/catalog/47/hiperreal/',location.origin),cycles=el('a',tr('Render hiperreal antes/después ↗','Hiperreal before/after render ↗')),hd=el('a',tr('Hiperreal HD para Unreal (GLB) ↓','Hiperreal HD for Unreal (GLB) ↓'));
+   cycles.href=new URL('preview/hiperreal-47-comparativa.jpg',base).href;cycles.target='_blank';cycles.rel='noopener';cycles.dataset.hiperrealRender='';
+   hd.href=new URL('hiperreal-hd.glb',base).href;hd.download='';hd.dataset.hiperrealHd='';productsHost.append(cycles,hd);
+  }
+  if(asset.number===47&&['matrix','hiperreal','all'].includes(quality)){
    const collection=coffeeCollectionURL(location.href,{quality:'matrix'}),render=el('a',tr('Ver render de Unreal ↗','View Unreal render ↗')),project=el('a',tr('Proyecto Unreal ↓','Unreal project ↓'));
    render.href=new URL('unreal-studio.png',collection).href;render.target='_blank';render.rel='noopener';render.dataset.unrealRender='';
    project.href=UNREAL_PROJECT_DOWNLOAD_URL;project.download='';project.dataset.unrealProject='';productsHost.append(render,project);
@@ -98,7 +103,7 @@ function photoFor(asset){
 function layout(){return activeLayout().map(item=>({...item,inventoryAssetId:ownership.get(item.id)||item.inventoryAssetId}));}
 function imageFor(asset,tier,rotation=0){const key=asset.id+':'+tier+':'+rotation;if(!cache.has(key))cache.set(key,preview(asset,tier,rotation).catch(e=>{cache.delete(key);throw e;}));return cache.get(key);}
 function versions(asset,rotation=0){const fragment=document.createDocumentFragment();for(const [i,tier]of qualityProfiles(asset.number).entries()){
- const figure=el('figure',undefined,'version '+tier),stage=el('div',undefined,'stage'),status=el('span','Preparando vista…','loading'),caption=el('figcaption');caption.append(el('b',qualityLabel(tier)),el('span',tier==='matrix'?tr('realismo','realism'):[8,16,32][i]+' bits'));stage.append(status);figure.append(stage,caption);fragment.append(figure);
+ const figure=el('figure',undefined,'version '+tier),stage=el('div',undefined,'stage'),status=el('span','Preparando vista…','loading'),caption=el('figcaption');caption.append(el('b',qualityLabel(tier)),el('span',tier==='matrix'?tr('realismo','realism'):tier==='hiperreal'?tr('fotorrealismo','photorealism'):[8,16,32][i]+' bits'));stage.append(status);figure.append(stage,caption);fragment.append(figure);
  imageFor(asset,tier,rotation).then(src=>{if(!stage.isConnected)return;const alt=asset.name+' · '+tier+' · Blender 3D';if(tier==='good'){pixelPreviews.set(stage,pixelPreview(stage,src,alt,()=>status.remove(),()=>{status.textContent='Imagen no disponible';}));return;}const img=el('img');img.alt=alt;img.onload=()=>status.remove();img.onerror=()=>{status.textContent='Imagen no disponible';img.remove();};img.src=src;stage.append(img);}).catch(()=>{status.textContent=tier==='matrix'?tr('Matrix no disponible','Matrix unavailable'):tr('Vista no disponible','View unavailable');status.classList.add('error');});
  }return fragment;}
 const observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){observer.unobserve(e.target);const a=assets.find(a=>a.id===e.target.dataset.id);if(a)e.target.replaceChildren(versions(a));}},{rootMargin:'180px'});

@@ -5169,5 +5169,20 @@
       }
     },
     "matrix_collection_manifest": "https://www.xpaceos.com/inventario/assets/catalog/47/collection-matrix/inventory.json"
+  },
+  "starbucks_coffee_display_hiperreal": {
+    "status": "implemented",
+    "inventory_id": "native:starbucksShelves",
+    "inventory_number": 47,
+    "tier": "hiperreal",
+    "viewer": "https://www.xpaceos.com/inventario/?asset=47&quality=hiperreal#mostrador",
+    "compare_all": "https://www.xpaceos.com/inventario/?asset=47&quality=all#mostrador",
+    "glb_web": "https://www.xpaceos.com/inventario/assets/catalog/47/hiperreal.glb",
+    "glb_hd_unreal": "https://www.xpaceos.com/inventario/assets/catalog/47/hiperreal/hiperreal-hd.glb",
+    "blend": "https://www.xpaceos.com/inventario/assets/catalog/47/hiperreal.blend",
+    "render_compare": "https://www.xpaceos.com/inventario/assets/catalog/47/hiperreal/preview/hiperreal-47-comparativa.jpg",
+    "phase2_scanning": "https://www.xpaceos.com/admira-xp/docs/escaneo-productos-reales.md",
+    "es": "Quinto acabado de la estantería 47: PBR CC0 2K–4K, imperfecciones, tazas redondas, HDRI de cafetería y sombras de contacto; GLB web 4,6 MB y HD 26,5 MB para Unreal Nanite.",
+    "en": "Fifth finish of shelf 47: 2K–4K CC0 PBR, imperfections, round mugs, café HDRI and contact shadows; 4.6 MB web GLB and 26.5 MB HD for Unreal Nanite."
   }
 }
