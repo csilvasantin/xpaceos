@@ -68,3 +68,14 @@ Piezas: 2 Estantería, 3 Botellero, 7 Escritorio, 9 Planta, 10 Lámpara, 13 Pant
 **Fondo de las comparativas**: microcemento cálido liso y pared pintada mate con rodapié; sin texturas de hormigón ni yeso. El polvo de las superficies superiores baja a la mitad.
 
 **Límites honestos**: las piezas nativas 3, 7, 9, 10, 13 y 15 están hechas con cajas ya redondeadas o mallas trianguladas, así que el detalle geométrico automático no les añade nada; mejoran solo por materiales. El escritorio 7 no recibió tirador (su cajonera no es una caja simple). Donde más se nota el detalle es en la librería 51 (biseles, cantos y panel trasero) y en la estantería 2 (paneles laterales y zócalo).
+
+## Tanda 3 · resto de nativas (08-10-2026)
+
+Piezas: 4 Lotería, 5 Vending, 6 Revistero, 8 Puerta, 11 Alfombra, 12 LED Banner, 14 Mupi Metahuman, 16 Aroma, 17 Mesa DJ, 18 Gestor de turnos.
+
+Overrides nuevos en `pieces.json` para piezas de formas redondeadas o trianguladas (donde `detail()` no actúa):
+- `add_parts`: piezas reales con nombre `Hiperreal …` en coordenadas de mundo (caja o cilindro, clase de material y color). Usado en 5 (trampilla, tirador, zócalo), 7 (tirador del cajón), 8 (bisagras, placa de patada), 12 (soportes, cable) y 16 (rejilla). Pasan después por el bisel automático.
+- `place_on_front`: coloca objetos con nombre (letreros 3D) sobre el frente de la pieza: `[dx, dz, escala, plano]`. Arregla los letreros de 13 y 14, que en Best estaban 2,4 m bajo el suelo.
+- `material_classes` → `powder` en la alfombra 11 para el relieve fino del tejido.
+
+Pendiente: la pieza 1 (Mostrador) usa `assets/mostrador/counter-interpreted-*.glb` y `counterURL`, fuera del catálogo; necesita soporte propio en `counter-asset.mjs` antes de tener Hiperreal. Las piezas 4, 6, 17, 18 y 11 mejoran solo por materiales.

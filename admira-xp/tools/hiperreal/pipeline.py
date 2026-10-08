@@ -244,6 +244,42 @@ def detail(log):
         k.rotation_euler.z=math.atan2(side.y,side.x); k.scale=(w,.012,kp.get('h',.07))
         k.data.materials.append(mat_for('Zócalo aluminio oscuro','metal_dark','#3a3c3f',.35)); st['kick']=1
     log['detail']=st; print('DETAIL',st,flush=True)
+
+def place_on_front(log):
+    """Per-piece override: put named objects (e.g. 3D text signs) flat on the front face of the piece."""
+    spec=PC.get('place_on_front')
+    if not spec: return
+    names=set(spec); body=[o for o in meshes() if o.name not in names]
+    mn,mx=bounds(body); c=(mn+mx)/2; fv=FRONTS[PC.get('front','-Y')]
+    for name,vals in spec.items():
+        dx,dz,k=vals[:3]; plane=vals[3] if len(vals)>3 else None
+        o=B.objects.get(name)
+        if not o: continue
+        bpy.context.view_layer.update(); mw=o.matrix_world.copy(); sc0=mw.to_scale(); o.parent=None; o.matrix_world=mw
+        side=Vector((-fv.y,fv.x,0)); half=abs((mx-mn).dot(fv))/2
+        loc=c+fv*(half+.004)+side*dx+Vector((0,0,dz))
+        if plane is not None:
+            if abs(fv.y)>.5: loc.y=plane
+            else: loc.x=plane
+        o.location=loc; o.rotation_euler=(math.pi/2,0,math.atan2(fv.y,fv.x)+math.pi/2); o.scale=(sc0.x*k,sc0.y*k,sc0.z*k)
+    log['placed_on_front']=sorted(spec)
+
+def add_parts(log):
+    """Per-piece override: cheap hand-tuned real parts (handles, hinges, kick plates, vents, brackets).
+    Each part: {name, at:[x,y,z] world metres (centre), size:[sx,sy,sz], cls, hex, cyl:bool}. Names start with 'Hiperreal '."""
+    parts=PC.get('add_parts') or []
+    root=next((o for o in B.objects if o.parent is None and o.type=='EMPTY'),None)
+    for i,sp in enumerate(parts):
+        if sp.get('cyl'): bpy.ops.mesh.primitive_cylinder_add(vertices=24,radius=.5,depth=1)
+        else: bpy.ops.mesh.primitive_cube_add(size=1)
+        o=bpy.context.object; o.name='Hiperreal '+sp.get('name','pieza %d'%i); o.location=sp['at']; o.scale=sp['size']
+        if sp.get('rot'): o.rotation_euler=[math.radians(a) for a in sp['rot']]
+        if sp.get('cyl'):
+            for f in o.data.polygons: f.use_smooth=True
+        o.data.materials.append(mat_for('Hiperreal · '+sp.get('cls','metal')+' '+sp.get('hex','#b8bcc0'),sp.get('cls','metal'),sp.get('hex','#b8bcc0'),sp.get('rough')))
+        if root:
+            bpy.context.view_layer.update(); mw=o.matrix_world.copy(); o.parent=root; o.matrix_world=mw
+    if parts: log['added_parts']=[p.get('name') for p in parts]
 def build():
     log={'piece':N,'materials':{},'jittered':0,'objects':len(meshes())}
     # 0. uniform product scale (pilot 47 problem): products under a non-uniformly scaled parent
@@ -270,6 +306,8 @@ def build():
         users=sum(1 for o in meshes() for s in o.material_slots if s.material==m)
         if not users or not bsdf(m): continue
         cls=classify(m); upgrade(m,cls); log['materials'][m.name]=cls
+    place_on_front(log)
+    add_parts(log)
     # 2b. real geometry detail (bevels, banding, panel seams, handles, kick plate)
     detail(log)
     # 3. physical-scale UVs for tiling classes

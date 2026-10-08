@@ -5268,5 +5268,59 @@
     "backdrop": "fondo de cafetería neutro y limpio",
     "twin": "Best: Hiperreal → Best",
     "docs": "https://www.xpaceos.com/admira-xp/docs/hiperreal-pipeline.md"
+  },
+  "hiperreal_tanda3": {
+    "status": "implemented",
+    "batch": 3,
+    "inventory_numbers": [
+      4,
+      5,
+      6,
+      8,
+      11,
+      12,
+      14,
+      16,
+      17,
+      18
+    ],
+    "viewer": "https://www.xpaceos.com/inventario/?asset=5&quality=hiperreal#mostrador",
+    "glb_web": {
+      "4": "https://www.xpaceos.com/inventario/assets/catalog/04/hiperreal.glb",
+      "5": "https://www.xpaceos.com/inventario/assets/catalog/05/hiperreal.glb",
+      "6": "https://www.xpaceos.com/inventario/assets/catalog/06/hiperreal.glb",
+      "8": "https://www.xpaceos.com/inventario/assets/catalog/08/hiperreal.glb",
+      "11": "https://www.xpaceos.com/inventario/assets/catalog/11/hiperreal.glb",
+      "12": "https://www.xpaceos.com/inventario/assets/catalog/12/hiperreal.glb",
+      "14": "https://www.xpaceos.com/inventario/assets/catalog/14/hiperreal.glb",
+      "16": "https://www.xpaceos.com/inventario/assets/catalog/16/hiperreal.glb",
+      "17": "https://www.xpaceos.com/inventario/assets/catalog/17/hiperreal.glb",
+      "18": "https://www.xpaceos.com/inventario/assets/catalog/18/hiperreal.glb"
+    },
+    "glb_hd_unreal": {
+      "4": "https://www.xpaceos.com/inventario/assets/catalog/04/hiperreal/hiperreal-hd.glb",
+      "5": "https://www.xpaceos.com/inventario/assets/catalog/05/hiperreal/hiperreal-hd.glb",
+      "6": "https://www.xpaceos.com/inventario/assets/catalog/06/hiperreal/hiperreal-hd.glb",
+      "8": "https://www.xpaceos.com/inventario/assets/catalog/08/hiperreal/hiperreal-hd.glb",
+      "11": "https://www.xpaceos.com/inventario/assets/catalog/11/hiperreal/hiperreal-hd.glb",
+      "12": "https://www.xpaceos.com/inventario/assets/catalog/12/hiperreal/hiperreal-hd.glb",
+      "14": "https://www.xpaceos.com/inventario/assets/catalog/14/hiperreal/hiperreal-hd.glb",
+      "16": "https://www.xpaceos.com/inventario/assets/catalog/16/hiperreal/hiperreal-hd.glb",
+      "17": "https://www.xpaceos.com/inventario/assets/catalog/17/hiperreal/hiperreal-hd.glb",
+      "18": "https://www.xpaceos.com/inventario/assets/catalog/18/hiperreal/hiperreal-hd.glb"
+    },
+    "hand_tuned_parts": {
+      "5": "trampilla, tirador, zócalo",
+      "7": "tirador del cajón",
+      "8": "bisagras, placa de patada",
+      "12": "soportes, cable",
+      "16": "rejilla"
+    },
+    "signs_on_screen": [
+      13,
+      14
+    ],
+    "twin": "Best: Hiperreal → Best",
+    "pending": "pieza 1 Mostrador (assets/mostrador, fuera del catálogo)"
   }
 }

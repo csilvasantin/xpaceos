@@ -177,7 +177,55 @@
    "name": "Escritorio",
    "detail": {
     "handles": true
-   }
+   },
+   "add_parts": [
+    {
+     "name": "tirador cajón",
+     "at": [
+      1.55,
+      -0.962,
+      0.765
+     ],
+     "size": [
+      0.16,
+      0.014,
+      0.014
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0",
+     "rough": 0.3
+    },
+    {
+     "name": "tirador soporte izq",
+     "at": [
+      1.49,
+      -0.948,
+      0.765
+     ],
+     "size": [
+      0.012,
+      0.03,
+      0.012
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0"
+    },
+    {
+     "name": "tirador soporte der",
+     "at": [
+      1.61,
+      -0.948,
+      0.765
+     ],
+     "size": [
+      0.012,
+      0.03,
+      0.012
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0"
+    }
+   ]
   },
   "9": {
    "name": "Planta"
@@ -186,13 +234,315 @@
    "name": "Lámpara"
   },
   "13": {
-   "name": "Pantalla TFT"
+   "name": "Pantalla TFT",
+   "place_on_front": {
+    "Sign ADMIRA": [
+     0,
+     0.05,
+     0.75,
+     -0.076
+    ],
+    "Sign UN ESPACIO CON VIDA": [
+     0,
+     -0.17,
+     0.75,
+     -0.076
+    ]
+   }
   },
   "15": {
    "name": "Tablet Satisf."
   },
   "51": {
    "name": "Librería"
+  },
+  "4": {
+   "name": "Lotería"
+  },
+  "5": {
+   "name": "Vending",
+   "add_parts": [
+    {
+     "name": "trampilla de recogida",
+     "at": [
+      0.42,
+      -1.068,
+      0.24
+     ],
+     "size": [
+      0.52,
+      0.016,
+      0.16
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30",
+     "rough": 0.35
+    },
+    {
+     "name": "tirador trampilla",
+     "at": [
+      0.42,
+      -1.08,
+      0.31
+     ],
+     "size": [
+      0.3,
+      0.012,
+      0.012
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0"
+    },
+    {
+     "name": "zócalo",
+     "at": [
+      0.5,
+      -1.0,
+      0.05
+     ],
+     "size": [
+      0.98,
+      0.012,
+      0.09
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    }
+   ]
+  },
+  "6": {
+   "name": "Revistero"
+  },
+  "8": {
+   "name": "Puerta",
+   "add_parts": [
+    {
+     "name": "bisagra alta",
+     "at": [
+      0.075,
+      -0.055,
+      2.05
+     ],
+     "size": [
+      0.022,
+      0.022,
+      0.11
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0",
+     "cyl": true
+    },
+    {
+     "name": "bisagra media",
+     "at": [
+      0.075,
+      -0.055,
+      1.2
+     ],
+     "size": [
+      0.022,
+      0.022,
+      0.11
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0",
+     "cyl": true
+    },
+    {
+     "name": "bisagra baja",
+     "at": [
+      0.075,
+      -0.055,
+      0.35
+     ],
+     "size": [
+      0.022,
+      0.022,
+      0.11
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0",
+     "cyl": true
+    },
+    {
+     "name": "placa de patada",
+     "at": [
+      0.5,
+      -0.053,
+      0.15
+     ],
+     "size": [
+      0.82,
+      0.004,
+      0.18
+     ],
+     "cls": "metal",
+     "hex": "#b8bcc0",
+     "rough": 0.25
+    }
+   ]
+  },
+  "11": {
+   "name": "Alfombra",
+   "material_classes": {
+    "Native finish": "powder",
+    "Native finish.001": "powder",
+    "Native finish.002": "powder"
+   }
+  },
+  "12": {
+   "name": "LED Banner",
+   "add_parts": [
+    {
+     "name": "soporte izq",
+     "at": [
+      0.6,
+      0.07,
+      0
+     ],
+     "size": [
+      0.06,
+      0.07,
+      0.08
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    },
+    {
+     "name": "soporte der",
+     "at": [
+      4.9,
+      0.07,
+      0
+     ],
+     "size": [
+      0.06,
+      0.07,
+      0.08
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    },
+    {
+     "name": "cable",
+     "at": [
+      5.48,
+      0.02,
+      -0.4
+     ],
+     "size": [
+      0.008,
+      0.008,
+      0.6
+     ],
+     "cls": "rubber",
+     "hex": "#1a1a1a",
+     "cyl": true
+    }
+   ]
+  },
+  "14": {
+   "name": "Mupi Metahuman",
+   "place_on_front": {
+    "Sign ADMIRA": [
+     0,
+     0.35,
+     1.0,
+     -0.578
+    ],
+    "Sign UN ESPACIO CON VIDA": [
+     0,
+     0.17,
+     1.0,
+     -0.578
+    ]
+   }
+  },
+  "16": {
+   "name": "Aroma",
+   "add_parts": [
+    {
+     "name": "rejilla 0",
+     "at": [
+      0.38,
+      -0.268,
+      -0.2
+     ],
+     "size": [
+      0.34,
+      0.004,
+      0.008
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    },
+    {
+     "name": "rejilla 1",
+     "at": [
+      0.38,
+      -0.268,
+      -0.23
+     ],
+     "size": [
+      0.34,
+      0.004,
+      0.008
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    },
+    {
+     "name": "rejilla 2",
+     "at": [
+      0.38,
+      -0.268,
+      -0.26
+     ],
+     "size": [
+      0.34,
+      0.004,
+      0.008
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    },
+    {
+     "name": "rejilla 3",
+     "at": [
+      0.38,
+      -0.268,
+      -0.29000000000000004
+     ],
+     "size": [
+      0.34,
+      0.004,
+      0.008
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    },
+    {
+     "name": "rejilla 4",
+     "at": [
+      0.38,
+      -0.268,
+      -0.32
+     ],
+     "size": [
+      0.34,
+      0.004,
+      0.008
+     ],
+     "cls": "metal_dark",
+     "hex": "#2b2d30"
+    }
+   ]
+  },
+  "17": {
+   "name": "Mesa DJ · Audio"
+  },
+  "18": {
+   "name": "Gestor Turnos"
   }
  }
 }

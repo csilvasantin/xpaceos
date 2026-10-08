@@ -1,4 +1,4 @@
-import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=hiperreal-tanda2-20261008-1';
+import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=hiperreal-tanda3-20261008-1';
 import {createBestPeopleLayer} from './best-live-people.mjs?v=actor-collision-20261004-1';
 import {mountMatrixFurniture} from './matrix-furniture.mjs?v=pixeria-screens-3';
 import {projectMatrixFloor} from './matrix-floor.mjs?v=matrix-furniture-1';
