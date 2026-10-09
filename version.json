@@ -1,5 +1,5 @@
 {
-  "version": "v.09.10.2026.r3.22:45",
+  "version": "v.09.10.2026.r4.22:52",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
@@ -9,7 +9,7 @@
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "/demo pantallas y /demo screens ya funcionan desde el CLI Experto de cualquier página (antes los capturaba el catálogo común de demos).",
-    "Pantallas virtuales por 4 esquinas: Foto real en SneakerStore, /calibrar · /calibrate y antes | después (sello r2)."
+    "/demo pantallas y /demo screens llegan al antes | después también en xpaceos.com, donde el Experto común de AdmiraNeXT reclamaba los /demo desconocidos.",
+    "Pantallas virtuales por 4 esquinas: Foto real en SneakerStore, /calibrar · /calibrate y antes | después."
   ]
 }
