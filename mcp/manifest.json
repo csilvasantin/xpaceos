@@ -1,7 +1,7 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.09.10.2026.r1.05:34",
+  "version": "v.09.10.2026.r2.22:30",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
@@ -2900,5 +2900,37 @@
     "virtual_screen": "sneakers-store-santa-rosa-19-screen",
     "camera": "manual IEU Puerta Cam; 2-point camera crop; optional iPad/screen corners",
     "physical_control": false
+  },
+  "virtual_screen_corners": {
+    "id": "pantallas-esquinas",
+    "docs": "https://www.xpaceos.com/help/#pantallas-esquinas",
+    "scope": "SneakerStore · Foto real (xpacios/sneakerstore/?vista=foto) y calibrador admira-xp/calibrador-pantallas.html",
+    "es": "Las pantallas virtuales de la foto real de un Xpacio se colocan por sus 4 esquinas, no por un rectángulo rotado. En SneakerStore (Sneakers Store · Santa Rosa 19) pulsa Foto real (o Opciones → Foto real, o ?vista=foto): las 3 TVs de la pared reproducen la playlist del Xpacio, deformadas en perspectiva con matrix3d (homografía de 4 puntos, la misma quadTransform que usa la panorámica 360 de Starbucks). /calibrar en Experto (o en el CLI del gemelo) abre el calibrador del Xpacio activo en español; /calibrate lo abre en inglés. Arrastra cada esquina con la lupa ×4, afina con flechas (1 px · Alt 0,25 px) y Tab, y comprueba con la rejilla /calibrar. Guardar deja las esquinas en el gemelo de este navegador y la Foto real se recoloca al momento, también si está abierta en otra pestaña; Exportar .json genera el fichero para publicarlas para todos en xpacios/sneakerstore/pantallas.json. /demo pantallas (/demo screens) abre la Foto real en antes | después: la cortina barre la TV grande y enseña el rectángulo rotado del método anterior (borde ámbar) contra el marco real (discontinua verde). Los gemelos antiguos que solo traen rect {x, y, w, h, rot} siguen pintándose: se convierten a 4 esquinas al vuelo. No hay backend de esquinas: la calibración compartida vive en el JSON del gemelo en el repositorio; la de cada navegador, en localStorage.",
+    "en": "Virtual screens on an Xpace's real photo are placed by their 4 corners, not by a rotated rectangle. In SneakerStore (Sneakers Store · Santa Rosa 19) press Real photo (or Options → Real photo, or ?vista=foto): the 3 wall TVs play the Xpace playlist, warped in perspective with matrix3d (4-point homography, the same quadTransform used by the Starbucks 360 panorama). /calibrate in Expert (or in the twin CLI) opens the calibrator for the active Xpace in English; /calibrar opens it in Spanish. Drag each corner with the ×4 loupe, fine-tune with the arrows (1 px · Alt 0.25 px) and Tab, and check with the /calibrar grid. Save stores the corners in this browser's twin and Real photo repositions at once, even in another tab; Export .json produces the file that publishes them for everyone in xpacios/sneakerstore/pantallas.json. /demo screens (/demo pantallas) opens Real photo in before | after: the curtain sweeps across the big TV and shows the previous rotated rectangle (amber border) against the real bezel (green dashes). Older twins that only carry rect {x, y, w, h, rot} keep rendering: they are converted to 4 corners on the fly. There is no corner backend: the shared calibration lives in the twin JSON in the repository; each browser's lives in localStorage.",
+    "commands": [
+      "/calibrar",
+      "/calibrate",
+      "/demo pantallas",
+      "/demo screens"
+    ],
+    "data": {
+      "twin": "https://www.xpaceos.com/xpacios/sneakerstore/pantallas.json",
+      "schema": "{xpacio, foto:{url,ancho,alto}, k1, pantallas:[{id, nombre, esquinas:[[x,y]×4 0..1 SI·SD·ID·II], k1, esquinasFoto?, rect?:{x,y,w,h,rot}}]}",
+      "storage_keys": [
+        "admira.calibrador.v1:<xpacio>"
+      ]
+    },
+    "urls": {
+      "player": "https://www.xpaceos.com/xpacios/sneakerstore/?vista=foto",
+      "demo": "https://www.xpaceos.com/xpacios/sneakerstore/?vista=foto&modo=demo",
+      "calibrator": "https://www.xpaceos.com/admira-xp/calibrador-pantallas.html?xpacio=sneakers-store-santa-rosa-19"
+    },
+    "implementation": [
+      "admira-xp/scripts/pantallas-esquinas.mjs",
+      "admira-xp/scripts/xpacio-foto-player.mjs",
+      "admira-xp/scripts/matrix-mapping.mjs#quadTransform"
+    ],
+    "mcp_control": "Sin herramienta MCP nueva: /calibrar y /demo pantallas por /twin/cmd o Telegram devuelven el enlace. No backend tool; remote commands answer with the link.",
+    "pending": "Persistencia compartida en un backend (hoy: JSON del repositorio + localStorage)."
   }
 }

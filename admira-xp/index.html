@@ -760,7 +760,7 @@
 <script src="../inventario/store.js?v=inventory-cli-3"></script>
 <!-- Shell común (FLT-101337): con la barra en línea solo deja su API (CLI, /marca) y la
      marca blanca; sin ?marca= ni marca recordada no carga nada más ni habla con admiranext.com. -->
-<script defer src="/assets/xpace-shell.js?v=20261007-native-demo-control-2" data-shell="inline"></script>
+<script defer src="/assets/xpace-shell.js?v=20261009-esquinas-1" data-shell="inline"></script>
 <script type="module" src="scripts/store-demo-avatar.mjs?v=local-autopilot-1"></script>
 </head>
 <body>
@@ -31461,6 +31461,7 @@ window.xtAPI = (function(){
       {title:typeof lang!=='undefined'&&lang==='en'?'Classic rendering style':'Estilo del render clásico',items:['/render 8bit','/render 16bit','/render habbo','/render real']},
       {title:typeof lang!=='undefined'&&lang==='en'?'Navigation map':'Mapa de navegacion',items:['/xpacio','/mapa','/map','/red','/sd list','/streamdeck','/help','/debug']},
       {title:'Marca blanca · White label (admiranext.com/marcablanca)',items:['/marca','/marca starbucks','/marca off','/marca starbucks.es','/brand lumbre']},
+      {title:'Pantallas virtuales · Virtual screens (4 esquinas)',items:['/calibrar','/calibrate','/demo pantallas','/demo screens']},
     ];
   }
 
@@ -32097,6 +32098,7 @@ window.xtAPI = (function(){
 
     try{
       if(cmd==='start'||cmd==='help') return commandHelp();
+      if(['calibrar','calibrate'].includes(cmd)||(cmd==='demo'&&/^(pantallas|screens)$/i.test(arg))) return pantallasVirtualesCommand(text,false).message;
       // /crear incidencia · /cerrar incidencia [INC-…] (/create incident · /close incident): demo guiada en Matrix ·
       // Starbucks con ticket real en Yokup, ficha de admira.app e informe PDF a Carlos (scripts/incident-demo.mjs).
       if(['crear','create','cerrar','close'].includes(cmd)&&/^(incidencia|incident)(\s|$)/i.test(arg)){
@@ -33300,6 +33302,18 @@ window.xtAPI = (function(){
     return message;
   };
 
+  // /calibrar (es) · /calibrate (en): el alias fija el idioma del calibrador. /demo pantallas · /demo screens.
+  function pantallasVirtualesCommand(text,local){
+    const clean=String(text||'').trim(),xp='sneakers-store-santa-rosa-19',base='https://www.xpaceos.com';
+    const en=/^\/?calibrate/i.test(clean)||(!/^\/?calibrar/i.test(clean)&&(/screens/i.test(clean)||(typeof lang!=='undefined'&&lang==='en')));
+    const demo=/^\/?demo/i.test(clean);
+    const url=demo?'/xpacios/sneakerstore/?vista=foto&modo=demo&lang='+(en?'en':'es'):'/admira-xp/calibrador-pantallas.html?xpacio='+xp+'&idioma='+(en?'en':'es');
+    if(local){const w=window.open(url,'_blank');if(w)w.opener=null;}
+    const msg=demo?(en?'Virtual screens · before | after on the Sneakers Store real photo: ':'Pantallas virtuales · antes | después sobre la foto real de Sneakers Store: ')
+      :(en?'4-corner calibrator · Sneakers Store · Save stores the corners in the twin: ':'Calibrador de 4 esquinas · Sneakers Store · Guardar deja las esquinas en el gemelo: ');
+    return {ok:true,message:msg+base+url,url:base+url};
+  }
+
   async function sendComposerText(text){
     // Sólo se vacía el CLI si aún contiene el comando enviado: los comandos largos (/crear incidencia ~30 s)
     // ya no borran lo que el usuario haya empezado a escribir mientras tanto.
@@ -33325,6 +33339,14 @@ window.xtAPI = (function(){
     }
     // The visual command belongs to this browser, never to a remote bot.
     // Intercept before command/session logging and the normal Telegram echo.
+    // Pantallas virtuales por 4 esquinas (docs/calibrador-pantallas.md): /calibrar · /calibrate abre el calibrador
+    // del Xpacio con foto (Sneakers Store · Santa Rosa 19) y /demo pantallas · /demo screens el antes | después.
+    // Son de este navegador: nunca van a Telegram.
+    if(/^\/?(?:calibrar|calibrate)(?:@\w+)?(?:\s|$)/i.test(clean)||/^\/?demo\s+(?:pantallas|screens)\s*$/i.test(clean)){
+      hideHelpPanel();appendTelegramLog('out','Experto',clean);
+      const r=pantallasVirtualesCommand(clean,true);appendTelegramLog('bot','XpaceOS',r.message);showLastResponse(r.message,'ok','local-visual');
+      if(composer&&composer.value.trim()===clean)composer.value='';renderQuickActionButtons();return;
+    }
     // /marca viste este navegador (marca blanca, FLT-101337): nunca va a Telegram.
     if(/^\/?(?:marca|brand|marcablanca)(?:@\w+)?(?:\s|$)/i.test(clean)&&window.XpaceShell&&typeof window.XpaceShell.marca==='function'){
       hideHelpPanel();

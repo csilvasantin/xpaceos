@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Calibrador de pantallas virtuales · AdmiraNeXT</title>
+<link rel="icon" href="favicon.svg">
+<!--
+  Calibrador de pantallas virtuales (4 esquinas + homografía) · XpaceOS / Admira XP
+  Prototipo autónomo: no toca el player en producción. Doc: admira-xp/docs/calibrador-pantallas.md
+  · Cada pantalla se define por sus 4 esquinas reales (sup-izq, sup-der, inf-der, inf-izq).
+  · El contenido se deforma con una homografía real (CSS matrix3d), no con un rectángulo rotado.
+  · /calibrar pinta una rejilla con borde rojo · /demo compara antes (rectángulo) y después.
+  · JSON: {xpacio, imagen:{ancho,alto}, k1, pantallas:[{id, nombre, esquinas:[[x,y]×4 en 0..1], k1}]}
+-->
+<style>
+:root{
+  --bg:#04080a; --panel:rgba(7,13,16,.96); --panel-2:#0b151a; --line:rgba(140,165,172,.22);
+  --line-2:rgba(140,165,172,.38); --ink:#e9f2f3; --muted:#8fa3a8; --dim:#5d7076;
+  --accent:#33FF99; --accent-ink:#04130b; /* verde AdmiraNeXT · contraste 14,4:1 con el texto oscuro */
+  --cyan:#68dce9; /* cian: SOLO dentro de la barra Experto (.cli) */ --ok:#3ee08f; --warn:#ffb547; --red:#ff3348;
+  --font:Inter,"SF Pro Text",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --top:56px; --bottom:262px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:13px/1.45 var(--font);-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+/* ── Barra superior ─────────────────────────────────────────────── */
+.top{position:fixed;inset:0 0 auto 0;height:var(--top);display:flex;align-items:center;gap:18px;padding:0 18px;
+  background:var(--panel);border-bottom:1px solid var(--line);border-top:2px solid var(--accent);z-index:30}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .mark{width:28px;height:28px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:15px;letter-spacing:-.02em}
+.brand .mark img{width:100%;height:100%;object-fit:contain;background:#fff}
+.brand b{font-size:14px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.brand span{color:var(--muted);white-space:nowrap}
+.chip{border:1px solid var(--line-2);padding:3px 9px;color:var(--muted);font:11px/1.4 var(--mono);white-space:nowrap}
+.seg{display:flex;border:1px solid var(--line-2);margin-left:auto}
+.seg button{background:none;border:0;padding:8px 14px;cursor:pointer;color:var(--muted);display:flex;gap:8px;align-items:center;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button kbd{font:10px var(--mono);color:var(--dim);border:1px solid var(--line);padding:0 4px}
+.seg button:hover{color:var(--ink);background:rgba(255,255,255,.03)}
+.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.seg button.on kbd{color:var(--accent-ink);border-color:rgba(0,0,0,.25)}
+.btn{background:var(--panel-2);border:1px solid var(--line-2);padding:7px 12px;cursor:pointer;white-space:nowrap;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.ghost{background:none}
+.btn:disabled{opacity:.45;cursor:default}
+/* ── Escena ─────────────────────────────────────────────────────── */
+#vista{position:fixed;left:0;right:0;top:var(--top);bottom:var(--bottom);overflow:hidden;
+  background:radial-gradient(ellipse at 50% 40%,#0c1418 0%,#030607 70%)}
+#escena{position:absolute;left:0;top:0;transform-origin:0 0;box-shadow:0 0 0 1px var(--line),0 30px 80px rgba(0,0,0,.6)}
+#fondo{position:absolute;left:0;top:0;display:block}
+.capa{position:absolute;left:0;top:0;pointer-events:none;overflow:hidden}
+.lienzo{position:absolute;left:0;top:0}
+.contenido{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;backface-visibility:hidden}
+body.arrastrando .contenido.sel{opacity:.55}
+#svg{position:absolute;left:0;top:0;overflow:visible}
+#svg .quad{fill:transparent;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:6 5;vector-effect:non-scaling-stroke;cursor:move;pointer-events:all}
+#svg .quad.sel{stroke-dasharray:none;stroke-width:1.5}
+#svg .quad.mal{stroke:var(--red)}
+#svg .h{fill:rgba(4,8,10,.55);stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke;cursor:grab;pointer-events:all}
+#svg .h.selq{stroke:var(--accent)}
+#svg .h.on{fill:var(--accent);stroke:#fff}
+#svg .badge rect{fill:var(--accent)} #svg .badge text{fill:var(--accent-ink);font:700 12px var(--font)}
+#svg .badge.off rect{fill:rgba(4,8,10,.8);stroke:var(--accent);vector-effect:non-scaling-stroke} #svg .badge.off text{fill:var(--accent)}
+body.modo-demo #svg, body.modo-calibrar #svg .badge{display:none}
+body.modo-calibrar #svg .quad{stroke:transparent}
+/* ── Anuncio de ejemplo «FREE SHIFT» (1600×900) ─────────────────── */
+.ad{position:absolute;inset:0;background:#25235f;color:#fff;font-family:"Montserrat","Poppins",var(--font)}
+.ad::before{content:"";position:absolute;inset:-30%;background:repeating-radial-gradient(ellipse at 58% 62%,transparent 0 58px,rgba(150,150,255,.13) 60px 62px,transparent 64px 118px)}
+.ad .k{position:absolute;left:96px;top:82px;font-size:22px;font-weight:700;letter-spacing:.12em;color:#7f86ff}
+.ad .t{position:absolute;left:90px;top:205px;font-size:216px;line-height:.86;font-weight:900;letter-spacing:-.02em;font-style:italic}
+.ad .t i{display:block;font-style:inherit;color:#5d5cf7}
+.ad .f{position:absolute;left:96px;top:640px;font-size:46px;font-weight:800;letter-spacing:.01em}
+.ad .c{position:absolute;left:98px;top:716px;font-size:22px;font-weight:700;letter-spacing:.08em;color:#ff4fa8}
+.ad .p{position:absolute;right:92px;top:120px;width:690px;height:540px;background:#111 center/cover;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.ad .s{position:absolute;right:92px;bottom:70px;font-size:20px;letter-spacing:.2em;color:#9aa0ff;font-weight:700}
+/* ── Carta de ajuste / rejilla /calibrar ────────────────────────── */
+.rej{position:absolute;inset:0;background:
+  linear-gradient(rgba(255,255,255,.88),rgba(255,255,255,.88)) 50% 0/4px 100% no-repeat,
+  linear-gradient(rgba(255,255,255,.88),rgba(255,255,255,.88)) 0 50%/100% 4px no-repeat,
+  repeating-linear-gradient(90deg,rgba(255,255,255,.62) 0 3px,transparent 3px 100px),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.62) 0 3px,transparent 3px 100px),
+  rgba(10,22,40,.42);box-shadow:inset 0 0 0 16px var(--red)}
+.rej svg{position:absolute;inset:0;width:100%;height:100%}
+.rej b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:800 120px/1 var(--font);color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.6)}
+/* ── Demo antes / después ───────────────────────────────────────── */
+body.vista-anim #escena{transition:transform .75s cubic-bezier(.2,.7,.2,1)}
+#antes{display:none}
+#antes .contenido::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 12px var(--warn)}
+#guias{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+#guias polygon{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-dasharray:7 5;vector-effect:non-scaling-stroke}
+#demoBar{position:absolute;right:14px;bottom:14px;display:none;gap:6px;z-index:7}
+body.modo-demo #demoBar{display:flex}
+#demoBar .btn{background:rgba(4,8,10,.9)}
+body.modo-demo #antes{display:block}
+#original{position:absolute;left:0;top:0;display:none}
+body.modo-demo.antes-original #original{display:block}
+body.modo-demo.antes-original #antes .contenido{display:none}
+#divisor{position:absolute;top:0;bottom:0;width:0;display:none;z-index:6}
+body.modo-demo #divisor{display:block}
+#divisor::before{content:"";position:absolute;top:0;bottom:0;left:-1px;width:2px;background:#fff;box-shadow:0 0 12px rgba(0,0,0,.6)}
+#divisor .tir{position:absolute;top:50%;left:-22px;width:44px;height:44px;margin-top:-22px;background:#fff;color:#04080a;display:grid;place-items:center;cursor:ew-resize;font:700 16px var(--font);pointer-events:all;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.etq{position:absolute;top:14px;padding:7px 12px;background:rgba(4,8,10,.86);border:1px solid var(--line-2);font-size:12px;display:none;z-index:7;pointer-events:none}
+.etq b{display:block;font-size:13px;letter-spacing:.06em}
+.etq span{color:var(--muted)}
+.etq.izq{left:14px;border-left:3px solid var(--warn)} .etq.der{right:14px;border-right:3px solid var(--ok);text-align:right}
+body.modo-demo .etq{display:block}
+.banda{position:absolute;left:14px;top:14px;padding:7px 14px;background:rgba(4,8,10,.88);border:1px solid var(--line-2);border-left:3px solid var(--red);font-size:12px;display:none;z-index:7;white-space:nowrap}
+body.modo-calibrar .banda.cal{display:block}
+/* ── Lupa ×4 ─────────────────────────────────────────────────────── */
+#lupa{position:fixed;width:220px;height:220px;display:none;z-index:40;pointer-events:none;border:2px solid var(--accent);background:#000;box-shadow:0 18px 50px rgba(0,0,0,.65)}
+#lupa canvas{display:block;width:100%;height:100%}
+#lupa .lx{position:absolute;left:0;right:0;bottom:0;padding:3px 8px;background:rgba(4,8,10,.85);font:11px var(--mono);color:var(--ink);display:flex;justify-content:space-between}
+/* ── Franja inferior (Experto) ──────────────────────────────────── */
+.franja{position:fixed;left:0;right:0;bottom:0;height:var(--bottom);background:var(--panel);border-top:1px solid var(--line);z-index:30;display:flex;flex-direction:column}
+.cols{flex:1;display:grid;grid-template-columns:1.05fr 1.1fr 1.15fr 1fr;min-height:0}
+.col{padding:12px 18px;border-right:1px solid var(--line);min-width:0;overflow:auto}
+.col:last-child{border-right:0}
+.col h3{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.col h3 em{font-style:normal;letter-spacing:0;text-transform:none;font-weight:500;color:var(--dim)}
+.lista{display:flex;flex-direction:column;gap:5px}
+.pant{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;padding:6px 10px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;text-align:left}
+.pant:hover{border-color:var(--line-2)}
+.pant.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.pant .n{width:26px;height:26px;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent);font-weight:700}
+.pant.on .n{background:var(--accent);color:var(--accent-ink)}
+.pant small{display:block;color:var(--muted);font:11px var(--mono)}
+.pant .st{font-size:11px;color:var(--ok)} .pant .st.mal{color:var(--red)}
+.esq{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.esq button{padding:6px 0;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:12px;color:var(--muted)}
+.esq button.on{border-color:var(--accent);color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+.xy{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:6px 8px;align-items:center;margin-bottom:10px}
+.xy label{color:var(--muted);font-size:12px}
+.xy input{width:100%;background:#03080a;border:1px solid var(--line-2);padding:5px 8px;font:12px var(--mono)}
+.xy input:focus{outline:none;border-color:var(--accent)}
+.nudge{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.nudge .btn{padding:5px 10px;min-width:34px}
+.nudge select{background:#03080a;border:1px solid var(--line-2);padding:5px 6px}
+.fila{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.fila label{min-width:92px;color:var(--muted);font-size:12px}
+.fila input[type=range]{flex:1;accent-color:var(--accent)}
+.fila output{font:12px var(--mono);min-width:52px;text-align:right}
+.fila select{flex:1;background:#03080a;border:1px solid var(--line-2);padding:5px 8px}
+.acciones{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.nota{color:var(--dim);font-size:11.5px;margin-top:8px}
+.cli{height:38px;display:flex;align-items:center;gap:12px;padding:0 18px;border-top:1px solid var(--line);background:#03070a}
+.cli .p{color:var(--cyan);font:600 13px var(--mono)}
+.cli input{caret-color:var(--cyan);flex:1 1 420px;min-width:260px;background:none;border:0;outline:none;font:13px var(--mono)}
+.cli .ayuda{margin-left:auto;flex:0 1 auto;color:var(--dim);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli .ayuda kbd{font:10.5px var(--mono);color:var(--cyan);border:1px solid var(--line);padding:0 4px;margin:0 2px}
+#toast{position:fixed;left:50%;top:calc(var(--top) + 14px);transform:translateX(-50%);padding:9px 16px;background:rgba(4,8,10,.95);border:1px solid var(--line-2);border-left:3px solid var(--accent);z-index:50;opacity:0;transition:opacity .2s;pointer-events:none;max-width:70vw}
+#toast.on{opacity:1}
+#ayudaDlg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:60}
+#ayudaDlg.on{display:grid}
+#ayudaDlg .box{width:min(640px,92vw);background:var(--panel);border:1px solid var(--line-2);border-top:2px solid var(--accent);padding:22px 26px}
+#ayudaDlg h2{margin:0 0 12px;font-size:16px}
+#ayudaDlg table{width:100%;border-collapse:collapse}
+#ayudaDlg td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+#ayudaDlg td:first-child{width:42%;font:12px var(--mono);color:var(--accent)}
+input[type=file]{display:none}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;color:inherit} [hidden]{display:none!important}
+</style>
+</head>
+<body class="modo-editar">
+<header class="top">
+  <div class="brand"><div class="mark" id="marcaLogo">A</div><b id="marcaNombre">AdmiraNeXT</b><span data-t="titulo">Calibrador de pantallas virtuales</span></div>
+  <span class="chip" id="chipXpacio">xpacio · sneakers-store-santa-rosa-19</span>
+  <a class="btn ghost" id="btnGemelo" hidden target="_self" data-t="bGemelo">Ver en el gemelo ↗</a>
+  <nav class="seg" id="modos">
+    <button data-modo="editar" class="on"><span data-t="mEditar">Ajustar esquinas</span><kbd>E</kbd></button>
+    <button data-modo="calibrar"><span>/calibrar</span><kbd>C</kbd></button>
+    <button data-modo="demo"><span data-t="mDemo">/demo antes · después</span><kbd>D</kbd></button>
+  </nav>
+  <button class="btn ghost" id="btnAyuda" title="Atajos">?</button>
+</header>
+
+<main id="vista">
+  <div id="escena">
+    <canvas id="fondo"></canvas>
+    <img id="original" alt="">
+    <div class="capa" id="antes"><div class="lienzo"></div><svg id="guias"></svg></div>
+    <div class="capa" id="despues"><div class="lienzo"></div></div>
+    <svg id="svg"></svg>
+    <div id="divisor"><div class="tir">⇔</div></div>
+  </div>
+  <div class="etq izq"><b data-t="antesT">ANTES</b><span data-t="antesS">Rectángulo rotado · método actual · discontinua = marco real</span></div>
+  <div class="etq der"><b data-t="despuesT">DESPUÉS</b><span data-t="despuesS">4 esquinas reales · homografía</span></div>
+  <div id="demoBar"><button class="btn" id="btnZoom" data-t="bZoomFuera">Vista completa</button><button class="btn" id="btnBarrido" data-t="bBarrido">Repetir barrido</button></div>
+  <div class="banda cal" data-t="bandaCal">Rejilla de calibración: el borde rojo debe tocar el marco por los cuatro lados</div>
+</main>
+
+<div id="lupa"><canvas width="440" height="440"></canvas><div class="lx"><span id="lupaQ">×4</span><span id="lupaXY"></span></div></div>
+
+<section class="franja">
+  <div class="cols">
+    <div class="col">
+      <h3><span data-t="hPant">Pantallas</span><em data-t="hPantN">Tab recorre esquinas</em></h3>
+      <div class="lista" id="lista"></div>
+    </div>
+    <div class="col">
+      <h3><span data-t="hEsq">Esquina seleccionada</span><em id="esqNorm"></em></h3>
+      <div class="esq" id="esqBtns"></div>
+      <div class="xy"><label>X</label><input id="inX" type="number" step="0.25"><label>Y</label><input id="inY" type="number" step="0.25"></div>
+      <div class="nudge">
+        <button class="btn" data-n="-1,0">←</button><button class="btn" data-n="0,-1">↑</button><button class="btn" data-n="0,1">↓</button><button class="btn" data-n="1,0">→</button>
+        <select id="paso"><option value="1">1 px</option><option value="0.25">0,25 px</option><option value="10">10 px</option></select>
+        <span class="nota" data-t="notaNudge" style="margin:0">Flechas 1 px · Alt 0,25 · Mayús 10</span>
+      </div>
+    </div>
+    <div class="col">
+      <h3><span data-t="hAjuste">Lente y ajuste</span></h3>
+      <div class="fila"><label data-t="lLente">Lente (k1)</label><input id="k1" type="range" min="-0.30" max="0.30" step="0.005" value="0"><output id="k1o">0,000</output></div>
+      <div class="fila"><label data-t="lContenido">Contenido</label><select id="contenido"><option value="ad" data-t="oAd">Anuncio «FREE SHIFT»</option><option value="rej" data-t="oRej">Carta de ajuste</option></select></div>
+      <div class="fila"><label data-t="lOpac">Opacidad</label><input id="opac" type="range" min="0.2" max="1" step="0.05" value="1"><output id="opaco">100 %</output></div>
+      <div class="acciones"><button class="btn primary" id="btnSnap" data-t="bSnap">Ajustar al marco</button><button class="btn" id="btnDeshacer" data-t="bDeshacer">Deshacer</button></div>
+      <div class="nota" id="notaSnap" data-t="notaSnap">Detecta bordes cerca de las esquinas actuales (OpenCV.js) y encaja el cuadrilátero.</div>
+    </div>
+    <div class="col">
+      <h3><span data-t="hDatos">Calibración</span><em id="guardado"></em></h3>
+      <div class="acciones">
+        <button class="btn primary" id="btnGuardar" data-t="bGuardar">Guardar</button>
+        <button class="btn" id="btnCopiar" data-t="bCopiar">Copiar JSON</button>
+        <button class="btn" id="btnExportar" data-t="bExportar">Exportar .json</button>
+        <button class="btn" id="btnImportar" data-t="bImportar">Importar .json</button>
+        <button class="btn" id="btnFoto" data-t="bFoto">Cambiar foto</button>
+        <button class="btn ghost" id="btnReset" data-t="bReset">Restablecer</button>
+      </div>
+      <label class="nota" style="display:flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" id="chkOriginal"> <span data-t="lOriginal">En /demo, «antes» = captura original del player</span></label>
+      <input type="file" id="fileJson" accept="application/json,.json"><input type="file" id="fileFoto" accept="image/*">
+    </div>
+  </div>
+  <div class="cli"><span class="p">›</span><input id="cli" placeholder="/calibrar · /demo · /marca starbucks · /idioma en · /ayuda" spellcheck="false" autocomplete="off">
+    <span class="ayuda" data-t="ayudaCli"><kbd>Tab</kbd> esquina/pantalla <kbd>←↑↓→</kbd> 1 px <kbd>Alt</kbd> 0,25 px <kbd>C</kbd> calibrar <kbd>D</kbd> demo <kbd>Ctrl Z</kbd> deshacer <kbd>/</kbd> comando</span></div>
+</section>
+
+<div id="toast"></div>
+<div id="ayudaDlg"><div class="box">
+  <h2 data-t="ayudaT">Atajos y comandos</h2>
+  <table id="ayudaTabla"></table>
+  <div style="text-align:right;margin-top:14px"><button class="btn primary" id="ayudaCerrar" data-t="cerrar">Entendido</button></div>
+</div></div>
+
+<script type="module">
+// Una sola homografía en XpaceOS: quadTransform (scripts/matrix-mapping.mjs) vía scripts/pantallas-esquinas.mjs,
+// la misma que usa el player del gemelo (xpacios/sneakerstore · Foto real).
+import * as PE from './scripts/pantallas-esquinas.mjs?v=20261009-esquinas-1';
+(async () => {
+'use strict';
+const qp = new URLSearchParams(location.search);
+const XPACIO = PE.resolverXpacio(qp.get('xpacio')) || PE.XPACIO_SNEAKERS;
+let GEMELO = null; try { GEMELO = await PE.cargarGemelo(XPACIO, { local: false }); } catch (e) { console.warn('calibrador: datos del gemelo', e); }
+/* ═════════ Datos de partida ═════════ */
+const CW = 1600, CH = 900;                       // tamaño lógico del contenido (16:9)
+const FOTO = GEMELO?.foto?.url || 'assets/calibrador/free-shift-pared.jpg';   // placa limpia (sin overlays horneados)
+const FOTO_ORIGINAL = 'assets/calibrador/free-shift-pared-original.jpg'; // captura tal cual del player
+const ZAPA = 'assets/calibrador/free-shift-zapatilla.jpg';
+const STORE = 'admira.calibrador.v1:';
+// Calibración inicial sobre la foto de referencia (3226×1168 px, k1 = 0): esquinas marcadas a mano y
+// refinadas al subpíxel ajustando una recta al salto panel→marco de cada borde (15 muestras por lado).
+// Si el gemelo trae sus pantallas (xpacios/<id>/pantallas.json), esas son la «fábrica»; si no, esta copia.
+const FABRICA = GEMELO ? { xpacio: GEMELO.xpacio, imagen: { ancho: GEMELO.foto.ancho, alto: GEMELO.foto.alto }, k1: GEMELO.k1 || 0,
+  pantallas: GEMELO.pantallas.map(p => ({ id: p.id, nombre: p.nombre, esquinas: p.esquinas })) } : { xpacio: XPACIO, imagen: { ancho: 3226, alto: 1168 }, k1: 0, pantallas: [
+  { id: 'tv-izquierda', nombre: 'TV izquierda', esquinas: px([[135.5, 897.4], [447.7, 829.6], [375.2, 1064.6], [58.4, 1126.5]]) },
+  { id: 'tv-centro',    nombre: 'TV centro',    esquinas: px([[799.8, 727.4], [1243.6, 604.4], [1222.9, 884.7], [735.8, 988.0]]) },
+  { id: 'tv-derecha',   nombre: 'TV derecha',   esquinas: px([[2072.4, 385.7], [2852.5, 172.4], [3060.0, 519.0], [2160.3, 709.6]]) },
+]};
+function px(a) { return a.map(([x, y]) => [x / 3226, y / 1168]); }
+
+/* ═════════ i18n (/idioma) ═════════ */
+const T = { en: {
+  titulo:'Virtual screen calibrator', mEditar:'Adjust corners', mDemo:'/demo before · after', antesT:'BEFORE',
+  despuesT:'AFTER', antesS:'Rotated rectangle · current method · dashed = real bezel', bZoomFuera:'Full view', bZoomDentro:'Zoom on screen ', bBarrido:'Replay sweep', ancho:'px wide', despuesS:'4 real corners · homography', bandaCal:'Calibration grid: the red border must touch the bezel on all four sides',
+  hPant:'Screens', hPantN:'Tab cycles corners', hEsq:'Selected corner', notaNudge:'Arrows 1 px · Alt 0.25 · Shift 10', hAjuste:'Lens & fit',
+  lLente:'Lens (k1)', lContenido:'Content', oAd:'«FREE SHIFT» ad', oRej:'Test card', lOpac:'Opacity', bSnap:'Snap to bezel', bDeshacer:'Undo',
+  notaSnap:'Detects edges near the current corners (OpenCV.js) and snaps the quadrilateral.', hDatos:'Calibration', bGuardar:'Save', bCopiar:'Copy JSON',
+  bExportar:'Export .json', bGemelo:'View in the twin ↗', bImportar:'Import .json', bFoto:'Change photo', bReset:'Reset', lOriginal:'In /demo, «before» = original player capture',
+  ayudaCli:'<kbd>Tab</kbd> corner/screen <kbd>←↑↓→</kbd> 1 px <kbd>Alt</kbd> 0.25 px <kbd>C</kbd> calibrate <kbd>D</kbd> demo <kbd>Ctrl Z</kbd> undo <kbd>/</kbd> command',
+  ayudaT:'Shortcuts & commands', cerrar:'Got it', esq:['Top left','Top right','Bottom right','Bottom left'], esqC:['TL','TR','BR','BL'],
+  ok:'fits', mal:'invalid', guardadoA:'saved', guardado:'Calibration saved in this browser', copiado:'JSON copied to clipboard', importado:'Calibration imported',
+  reset:'Factory calibration restored', snapCargando:'Loading OpenCV.js…', snapNo:'No clear bezel found nearby: fine-tune by hand with the loupe.',
+  snapOk:'Snapped to the detected bezel', snapErr:'Snap unavailable (OpenCV.js did not load or the photo is cross-origin).', deshecho:'Undone',
+  nada:'Nothing to undo', marcaOff:'White label off', marcaOk:'White label: ', marcaNo:'Brand not found: ', idioma:'Language: English', cmdNo:'Unknown command: ',
+  foto:'Photo loaded: recalibrate the corners', lenteNo:'Lens correction needs WebGL', },
+};
+const ES_ESQ = ['Superior izquierda','Superior derecha','Inferior derecha','Inferior izquierda'], ES_ESQC = ['SI','SD','ID','II'];
+const ES = { ancho:'px de ancho', bZoomDentro:'Zoom a la pantalla ', ok:'encaja', mal:'no válida', guardadoA:'guardado', guardado:'Calibración guardada en este navegador', copiado:'JSON copiado al portapapeles',
+  importado:'Calibración importada', reset:'Calibración de fábrica restaurada', snapCargando:'Cargando OpenCV.js…',
+  snapNo:'No he encontrado un marco nítido cerca: afina a mano con la lupa.', snapOk:'Encajado al marco detectado',
+  snapErr:'Ajuste automático no disponible (OpenCV.js no cargó o la foto es de otro origen).', deshecho:'Deshecho', nada:'Nada que deshacer',
+  marcaOff:'Marca blanca desactivada', marcaOk:'Marca blanca: ', marcaNo:'No encuentro la marca: ', idioma:'Idioma: español', cmdNo:'Comando desconocido: ',
+  foto:'Foto cargada: recalibra las esquinas', lenteNo:'La corrección de lente necesita WebGL', esq:ES_ESQ, esqC:ES_ESQC };
+let lang = 'es';
+const ORIG = {}; document.querySelectorAll('[data-t]').forEach(el => ORIG[el.dataset.t] = el.innerHTML);
+const t = k => (lang === 'en' && T.en[k] !== undefined) ? T.en[k] : (ES[k] !== undefined ? ES[k] : ORIG[k]);
+function aplicarIdioma(l) {
+  lang = l === 'en' ? 'en' : 'es'; document.documentElement.lang = lang;
+  document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = t(el.dataset.t); });
+  try { localStorage.setItem('admira.idioma', lang); } catch (e) {}
+  pintarAyuda(); pintarPanel();
+  if (typeof modo !== 'undefined' && modo === 'demo') { const b = document.getElementById('btnZoom'); if (b && !demoZoom) b.textContent = t('bZoomDentro') + (pantallaMayor() + 1); }
+}
+
+/* ═════════ Estado ═════════ */
+const $ = s => document.querySelector(s);
+let S = cargar() || clon(FABRICA);
+let W = S.imagen.ancho, H = S.imagen.alto;
+let sel = { p: 0, c: 0 }, modo = 'editar', contenido = 'ad', opac = 1, split = 0.5;
+const hist = [];
+function clon(o) { return JSON.parse(JSON.stringify(o)); }
+function cargar() {
+  // free-shift-demo = clave del prototipo (antes de vivir en el gemelo Sneakers Store): se migra sola.
+  const claves = [STORE + FABRICA.xpacio].concat(FABRICA.xpacio === PE.XPACIO_SNEAKERS ? [STORE + 'free-shift-demo'] : []);
+  for (const k of claves) { try { const j = JSON.parse(localStorage.getItem(k) || 'null'); if (valido(j)) { j.xpacio = FABRICA.xpacio; return j; } } catch (e) {} }
+  return null;
+}
+function valido(j) { return j && Array.isArray(j.pantallas) && j.pantallas.length && j.pantallas.every(p => Array.isArray(p.esquinas) && p.esquinas.length === 4); }
+function pt(p, c) { const e = S.pantallas[p].esquinas[c]; return [e[0] * W, e[1] * H]; }
+function setPt(p, c, x, y) { S.pantallas[p].esquinas[c] = [clamp(x / W, -0.2, 1.2), clamp(y / H, -0.2, 1.2)]; }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function snapshot() { hist.push(JSON.stringify(S)); if (hist.length > 80) hist.shift(); }
+let tGuardar = 0;
+function cambiado() { render(); clearTimeout(tGuardar); tGuardar = setTimeout(() => guardar(true), 400); }
+function exportable() {
+  const o = { xpacio: S.xpacio, imagen: { ancho: W, alto: H }, k1: +S.k1.toFixed(4), pantallas: S.pantallas.map(p => ({
+    id: p.id, nombre: p.nombre, esquinas: p.esquinas.map(e => [+e[0].toFixed(6), +e[1].toFixed(6)]), k1: +S.k1.toFixed(4) })) };
+  if (S.k1) o.pantallas.forEach((p, i) => p.esquinasFoto = S.pantallas[i].esquinas.map(e => { const r = aFoto(e[0], e[1], S.k1); return [+r[0].toFixed(6), +r[1].toFixed(6)]; }));
+  return o;
+}
+function guardar(silencio) {
+  // Misma clave que lee el player del gemelo (PE.leerLocal): guardar aquí recoloca sus pantallas al momento.
+  try { S.guardadoEn = new Date().toISOString(); localStorage.setItem(STORE + S.xpacio, JSON.stringify(S)); } catch (e) {}
+  const d = new Date(); $('#guardado').textContent = t('guardadoA') + ' ' + d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  if (!silencio) toast(t('guardado'));
+}
+
+/* ═════════ Homografía y rectángulo rotado: implementación única en scripts/pantallas-esquinas.mjs ═════════ */
+const convexo = PE.esConvexo;
+// Método actual (antes): rectángulo rotado = centro, ancho/alto medios y ángulo del borde superior.
+const rectRotado = i => PE.transformRect(S.pantallas[i].esquinas, W, H, CW, CH);
+
+/* ═════════ Lente: barril k1 (fondo corregido, esquinas coherentes) ═════════ */
+// Coordenadas centradas y normalizadas por la semidiagonal. Foto = u·(1 + k1·|u|²).
+const aFoto = (x, y, k1) => PE.aFoto(x, y, k1, W, H), deFoto = (x, y, k1) => PE.deFoto(x, y, k1, W, H);
+function cambiarK1(nuevo) {
+  const viejo = S.k1 || 0; if (nuevo === viejo) return;
+  S.pantallas.forEach(p => p.esquinas = p.esquinas.map(e => { const f = aFoto(e[0], e[1], viejo); return deFoto(f[0], f[1], nuevo); }));
+  S.k1 = nuevo; pintarFondo(); cambiado();
+}
+
+/* ═════════ Fondo: WebGL (con lente) o 2D de reserva ═════════ */
+const cv = $('#fondo'); let gl = null, prog, tex, img = new Image(), usarGL = true;
+function initGL() {
+  try { gl = cv.getContext('webgl', { preserveDrawingBuffer: true, premultipliedAlpha: false }); } catch (e) { gl = null; }
+  if (!gl) return false;
+  const vs = 'attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}';
+  const fs = 'precision highp float;varying vec2 uv;uniform sampler2D t;uniform float k1;uniform vec2 sz;void main(){float R=length(sz)*.5;vec2 u=(uv-.5)*sz/R;vec2 s=u*(1.+k1*dot(u,u));vec2 q=s*R/sz+.5;if(q.x<0.||q.y<0.||q.x>1.||q.y>1.){gl_FragColor=vec4(.02,.03,.035,1.);}else{gl_FragColor=texture2D(t,q);}}';
+  const sh = (ty, src) => { const s = gl.createShader(ty); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+  prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
+  gl.useProgram(prog);
+  const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  [[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  return true;
+}
+function pintarFondo() {
+  if (!img.naturalWidth) return;
+  if (usarGL && gl) {
+    try {
+      gl.viewport(0, 0, W, H); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.uniform1f(gl.getUniformLocation(prog, 'k1'), S.k1 || 0); gl.uniform2f(gl.getUniformLocation(prog, 'sz'), W, H);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); return;
+    } catch (e) { usarGL = false; reemplazarCanvas(); }
+  }
+  const c = cv.getContext('2d'); c.drawImage(img, 0, 0, W, H);
+}
+let fondoCv = cv;
+function reemplazarCanvas() { const n = document.createElement('canvas'); n.id = 'fondo'; n.width = W; n.height = H; cv.replaceWith(n); fondoCv = n; $('#k1').disabled = true; toast(t('lenteNo')); }
+function cargarFoto(src, cb) {
+  img = new Image(); img.crossOrigin = 'anonymous';
+  img.onload = () => { W = img.naturalWidth; H = img.naturalHeight; S.imagen = { ancho: W, alto: H };
+    const c = $('#fondo'); c.width = W; c.height = H; fondoCv = c; if (usarGL && !gl) usarGL = initGL(); if (!usarGL) $('#k1').disabled = true;
+    pintarFondo(); ajustarVista(); render(); cb && cb(); };
+  img.src = src;
+}
+
+/* ═════════ Vista: encajar la foto en el área central ═════════ */
+let esc = 1, ox = 0, oy = 0, zoomRect = null;
+function ajustarVista() {
+  const v = $('#vista').getBoundingClientRect(), m = 18;
+  const r = zoomRect || { x: 0, y: 0, w: W, h: H };
+  esc = Math.min((v.width - 2 * m) / r.w, (v.height - 2 * m) / r.h);
+  ox = (v.width - r.w * esc) / 2 - r.x * esc; oy = (v.height - r.h * esc) / 2 - r.y * esc;
+  if (zoomRect) { // con zoom, la foto siempre cubre la vista (sin franjas vacías)
+    if (W * esc >= v.width - 2 * m) ox = clamp(ox, v.width - m - W * esc, m);
+    if (H * esc >= v.height - 2 * m) oy = clamp(oy, v.height - m - H * esc, m);
+  }
+  const e = $('#escena'); e.style.width = W + 'px'; e.style.height = H + 'px'; e.style.transform = `translate(${ox}px,${oy}px) scale(${esc})`;
+  // Las capas necesitan caja W×H: el recorte antes|después se hace con su ancho y overflow:hidden.
+  ['#antes', '#despues'].forEach(s => { $(s).style.height = H + 'px'; $(s + ' .lienzo').style.width = W + 'px'; $(s + ' .lienzo').style.height = H + 'px'; });
+  ['#svg', '#original', '#guias'].forEach(s => { $(s).setAttribute('width', W); $(s).setAttribute('height', H); $(s).style.width = W + 'px'; $(s).style.height = H + 'px'; });
+  $('#svg').setAttribute('viewBox', `0 0 ${W} ${H}`); $('#guias').setAttribute('viewBox', `0 0 ${W} ${H}`);
+  render();
+}
+function aImagen(cx, cy) { const v = $('#vista').getBoundingClientRect(); return [(cx - v.left - ox) / esc, (cy - v.top - oy) / esc]; }
+function aPantalla(x, y) { const v = $('#vista').getBoundingClientRect(); return [v.left + ox + x * esc, v.top + oy + y * esc]; }
+
+/* ═════════ Contenido ═════════ */
+function htmlContenido(i) {
+  if (contenido === 'rej' || modo === 'calibrar') return `<div class="rej"><svg viewBox="0 0 1600 900" preserveAspectRatio="none"><path d="M0 0L1600 900M1600 0L0 900" stroke="rgba(255,255,255,.5)" stroke-width="3"/><circle cx="800" cy="450" r="160" fill="none" stroke="#fff" stroke-width="4"/></svg><b>${i + 1}</b></div>`;
+  return `<div class="ad"><div class="k">SNEAKER STORE · SANTA ROSA 19</div><div class="t">FREE<i>SHIFT</i></div><div class="f">FIND YOUR FLOW</div><div class="c">COME IN. FIND YOUR PAIR.</div><div class="p" style="background-image:url('${ZAPA}')"></div><div class="s">NEW DROP</div></div>`;
+}
+let firma = '';
+function montarContenidos() {
+  const f = [S.pantallas.length, contenido, modo === 'calibrar'].join('|'); if (f === firma) return; firma = f;
+  ['#antes', '#despues'].forEach(s => { $(s + ' .lienzo').innerHTML = S.pantallas.map((p, i) => `<div class="contenido" data-i="${i}">${htmlContenido(i)}</div>`).join(''); });
+}
+
+/* ═════════ Render ═════════ */
+function render() {
+  montarContenidos();
+  const qs = S.pantallas.map((p, i) => [0, 1, 2, 3].map(c => pt(i, c)));
+  document.querySelectorAll('#despues .contenido').forEach((el, i) => {
+    el.style.transform = PE.matriz3d(S.pantallas[i].esquinas, W, H, CW, CH) || 'scale(0)';
+    el.classList.toggle('sel', i === sel.p); el.style.opacity = modo === 'calibrar' ? 1 : opac;
+  });
+  document.querySelectorAll('#antes .contenido').forEach((el, i) => { el.style.transform = rectRotado(i); el.style.opacity = opac; });
+  // Demo: recorte antes | después
+  // Recorte antes|después con cajas overflow:hidden (clip-path aplana mal los hijos con matrix3d en algunos GPU).
+  const xs = split * W, demo = modo === 'demo';
+  $('#antes').style.width = (demo ? xs : W) + 'px';
+  $('#despues').style.left = (demo ? xs : 0) + 'px'; $('#despues').style.width = (demo ? W - xs : W) + 'px';
+  $('#despues .lienzo').style.left = (demo ? -xs : 0) + 'px';
+  $('#original').style.clipPath = `inset(0 ${W - xs}px 0 0)`;
+  // En «antes», el marco real en verde discontinuo: el desajuste del rectángulo se ve de un vistazo.
+  $('#guias').innerHTML = demo ? qs.map(q => `<polygon points="${q.map(p => p.join(',')).join(' ')}"/>`).join('') : '';
+  const dv = $('#divisor'); dv.style.left = xs + 'px'; dv.querySelector('.tir').style.transform = `scale(${1 / esc})`;
+  // SVG: cuadriláteros, tiradores y etiquetas
+  const r = 7 / esc, rs = 9 / esc;
+  let s = '';
+  qs.forEach((q, i) => {
+    const ok = convexo(q);
+    s += `<polygon class="quad${i === sel.p ? ' sel' : ''}${ok ? '' : ' mal'}" data-p="${i}" points="${q.map(p => p.join(',')).join(' ')}"/>`;
+    const bx = q[0][0], by = q[0][1] - 26 / esc;
+    s += `<g class="badge${i === sel.p ? '' : ' off'}" transform="translate(${bx},${by}) scale(${1 / esc})"><rect x="0" y="0" width="22" height="20"/><text x="11" y="14.5" text-anchor="middle">${i + 1}</text></g>`;
+  });
+  qs.forEach((q, i) => q.forEach((p, c) => {
+    const on = i === sel.p && c === sel.c;
+    s += `<circle class="h${i === sel.p ? ' selq' : ''}${on ? ' on' : ''}" data-p="${i}" data-c="${c}" cx="${p[0]}" cy="${p[1]}" r="${on ? rs : r}"/>`;
+  }));
+  $('#svg').innerHTML = s;
+  pintarPanel();
+}
+function pintarPanel() {
+  if (!S) return;
+  const E = t('esq'), EC = t('esqC');
+  $('#lista').innerHTML = S.pantallas.map((p, i) => {
+    const q = [0, 1, 2, 3].map(c => pt(i, c)), ok = convexo(q), w = Math.round(Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]));
+    return `<button class="pant${i === sel.p ? ' on' : ''}" data-p="${i}"><span class="n">${i + 1}</span><span>${p.nombre || p.id}<small>${p.id} · ${w} ${t('ancho')}</small></span><span class="st${ok ? '' : ' mal'}">${ok ? '● ' + t('ok') : '● ' + t('mal')}</span></button>`;
+  }).join('');
+  $('#esqBtns').innerHTML = EC.map((n, c) => `<button class="${c === sel.c ? 'on' : ''}" data-c="${c}" title="${E[c]}">${n}</button>`).join('');
+  const [x, y] = pt(sel.p, sel.c);
+  if (document.activeElement !== $('#inX')) $('#inX').value = x.toFixed(2);
+  if (document.activeElement !== $('#inY')) $('#inY').value = y.toFixed(2);
+  const e = S.pantallas[sel.p].esquinas[sel.c];
+  $('#esqNorm').textContent = `${E[sel.c]} · ${e[0].toFixed(4)}, ${e[1].toFixed(4)}`;
+  $('#k1').value = S.k1 || 0; $('#k1o').textContent = (S.k1 || 0).toFixed(3).replace('.', lang === 'es' ? ',' : '.');
+}
+
+/* ═════════ Lupa ×4 ═════════ */
+const lupa = $('#lupa'), lc = lupa.querySelector('canvas'), lx = lc.getContext('2d'); let tLupa = 0;
+function pintarLupa(cxp, cyp, mostrarFijo) {
+  const [x, y] = pt(sel.p, sel.c), Z = 4 * esc, L = 220, src = L / Z;     // ×4 sobre lo que se ve en pantalla
+  lx.setTransform(2, 0, 0, 2, 0, 0); lx.imageSmoothingEnabled = false; lx.fillStyle = '#000'; lx.fillRect(0, 0, L, L);
+  try { lx.drawImage(fondoCv, x - src / 2, y - src / 2, src, src, 0, 0, L, L); } catch (e) {}
+  const m = (px, py) => [(px - x) * Z + L / 2, (py - y) * Z + L / 2];
+  const q = [0, 1, 2, 3].map(c => m(...pt(sel.p, c)));
+  lx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent'); lx.lineWidth = 1.25;
+  lx.beginPath(); q.forEach((p, i) => i ? lx.lineTo(...p) : lx.moveTo(...p)); lx.closePath(); lx.stroke();
+  lx.strokeStyle = 'rgba(255,255,255,.95)'; lx.lineWidth = 1;
+  lx.beginPath(); lx.moveTo(L / 2, 0); lx.lineTo(L / 2, L / 2 - 8); lx.moveTo(L / 2, L / 2 + 8); lx.lineTo(L / 2, L); lx.moveTo(0, L / 2); lx.lineTo(L / 2 - 8, L / 2); lx.moveTo(L / 2 + 8, L / 2); lx.lineTo(L, L / 2); lx.stroke();
+  lx.strokeStyle = '#ff3348'; lx.strokeRect(L / 2 - 3, L / 2 - 3, 6, 6);
+  $('#lupaXY').textContent = `${x.toFixed(2)}, ${y.toFixed(2)} px`;
+  // Colocación: arriba-izquierda del puntero, sin salirse de la ventana
+  let lxp = cxp - L - 36, lyp = cyp - L - 36;
+  if (lxp < 8) lxp = cxp + 36; if (lyp < 8) lyp = cyp + 36;
+  lupa.style.left = Math.min(lxp, innerWidth - L - 8) + 'px'; lupa.style.top = Math.min(lyp, innerHeight - L - 8) + 'px'; lupa.style.display = 'block';
+  clearTimeout(tLupa); if (mostrarFijo) tLupa = setTimeout(() => lupa.style.display = 'none', 1400);
+}
+function lupaEnEsquina() { const [x, y] = pt(sel.p, sel.c); const [cx, cy] = aPantalla(x, y); pintarLupa(cx, cy, true); }
+
+/* ═════════ Interacción: arrastre ═════════ */
+let drag = null;
+$('#svg').addEventListener('pointerdown', ev => {
+  const el = ev.target; if (ev.button !== 0) return;
+  const [ix, iy] = aImagen(ev.clientX, ev.clientY);
+  if (el.classList.contains('h')) {
+    sel = { p: +el.dataset.p, c: +el.dataset.c }; const [x, y] = pt(sel.p, sel.c);
+    drag = { tipo: 'esq', dx: x - ix, dy: y - iy };
+  } else if (el.classList.contains('quad')) {
+    sel.p = +el.dataset.p; drag = { tipo: 'quad', x0: ix, y0: iy, orig: S.pantallas[sel.p].esquinas.map(e => e.slice()) };
+  } else return;
+  snapshot(); ev.preventDefault(); $('#svg').setPointerCapture(ev.pointerId); document.body.classList.add('arrastrando');
+  render(); if (drag.tipo === 'esq') pintarLupa(ev.clientX, ev.clientY);
+});
+$('#svg').addEventListener('pointermove', ev => {
+  if (!drag) return; const [ix, iy] = aImagen(ev.clientX, ev.clientY);
+  if (drag.tipo === 'esq') { setPt(sel.p, sel.c, ix + drag.dx, iy + drag.dy); render(); pintarLupa(ev.clientX, ev.clientY); }
+  else { const dx = (ix - drag.x0) / W, dy = (iy - drag.y0) / H; S.pantallas[sel.p].esquinas = drag.orig.map(e => [e[0] + dx, e[1] + dy]); render(); }
+});
+const soltar = () => { if (!drag) return; drag = null; document.body.classList.remove('arrastrando'); lupa.style.display = 'none'; cambiado(); };
+$('#svg').addEventListener('pointerup', soltar); $('#svg').addEventListener('pointercancel', soltar);
+// Divisor antes/después
+let dragDiv = false;
+$('#divisor .tir').addEventListener('pointerdown', ev => { dragDiv = true; ev.target.setPointerCapture(ev.pointerId); ev.preventDefault(); });
+$('#divisor .tir').addEventListener('pointermove', ev => { if (!dragDiv) return; split = clamp(aImagen(ev.clientX, ev.clientY)[0] / W, 0.02, 0.98); render(); });
+$('#divisor .tir').addEventListener('pointerup', () => dragDiv = false);
+
+/* ═════════ Teclado ═════════ */
+function nudge(dx, dy) { snapshot(); const [x, y] = pt(sel.p, sel.c); setPt(sel.p, sel.c, x + dx, y + dy); cambiado(); lupaEnEsquina(); }
+function siguiente(dir) {
+  let i = sel.p * 4 + sel.c + dir, n = S.pantallas.length * 4; i = (i + n) % n; sel = { p: Math.floor(i / 4), c: i % 4 }; render(); lupaEnEsquina();
+}
+document.addEventListener('keydown', ev => {
+  const enInput = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) && document.activeElement.type !== 'range' && document.activeElement.type !== 'checkbox';
+  if (ev.key === 'Escape') { $('#ayudaDlg').classList.remove('on'); if (enInput) document.activeElement.blur(); if (modo !== 'editar') setModo('editar'); return; }
+  if (enInput) return;
+  if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); deshacer(); return; }
+  if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') { ev.preventDefault(); guardar(); return; }
+  if (ev.ctrlKey || ev.metaKey) return;
+  const paso = ev.altKey ? 0.25 : ev.shiftKey ? 10 : 1;
+  const flechas = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+  if (flechas[ev.key]) { ev.preventDefault(); nudge(flechas[ev.key][0] * paso, flechas[ev.key][1] * paso); return; }
+  if (ev.key === 'Tab') { ev.preventDefault(); siguiente(ev.shiftKey ? -1 : 1); return; }
+  const k = ev.key.toLowerCase();
+  if (k === 'c') setModo(modo === 'calibrar' ? 'editar' : 'calibrar');
+  else if (k === 'd') setModo(modo === 'demo' ? 'editar' : 'demo');
+  else if (k === 'e') setModo('editar');
+  else if (k === 'a') snap();
+  else if (k === '?') $('#ayudaDlg').classList.add('on');
+  else if (k === '/') { ev.preventDefault(); $('#cli').focus(); $('#cli').value = '/'; }
+  else if (/^[1-9]$/.test(k) && +k <= S.pantallas.length) { sel.p = +k - 1; render(); }
+});
+
+/* ═════════ Modos ═════════ */
+function setModo(m) {
+  modo = m; document.body.className = document.body.className.replace(/\bmodo-\w+/g, '').trim() + ' modo-' + m;
+  document.querySelectorAll('#modos button').forEach(b => b.classList.toggle('on', b.dataset.modo === m));
+  firma = ''; cancelAnimationFrame(animId);
+  document.body.classList.add('vista-anim'); clearTimeout(tVista); tVista = setTimeout(() => document.body.classList.remove('vista-anim'), 900);
+  if (m === 'demo') entrarDemo(); else if (zoomRect) { zoomRect = null; ajustarVista(); } else render();
+}
+/* ═════════ /demo: zoom a la pantalla más grande + barrido de cortina ═════════ */
+let animId = 0, demoZoom = true, tVista = 0;
+function pantallaMayor() { let best = 0, bw = 0; S.pantallas.forEach((p, i) => { const q = [0, 1, 2, 3].map(c => pt(i, c)), w = Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]); if (w > bw) { bw = w; best = i; } }); return best; }
+function cajaPantalla(i, pad) { const q = [0, 1, 2, 3].map(c => pt(i, c)), xs = q.map(p => p[0]), ys = q.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), px = (x1 - x0) * pad, py = (y1 - y0) * pad;
+  return { x: x0 - px, y: y0 - py, w: x1 - x0 + 2 * px, h: y1 - y0 + 2 * py, x0, x1 }; }
+function entrarDemo(sinAnim) {
+  const i = pantallaMayor(), c = cajaPantalla(i, 0.07);
+  zoomRect = demoZoom ? { x: c.x, y: c.y, w: c.w, h: c.h } : null; ajustarVista();
+  $('#btnZoom').textContent = demoZoom ? t('bZoomFuera') : t('bZoomDentro') + (i + 1);
+  barrido(c, sinAnim);
+}
+function barrido(c, sinAnim) {
+  cancelAnimationFrame(animId);
+  const ini = (c.x1 + (c.x1 - c.x0) * 0.08) / W, med = (c.x0 + c.x1) / 2 / W, fin = (c.x0 - (c.x1 - c.x0) * 0.08) / W;
+  if (sinAnim || matchMedia('(prefers-reduced-motion: reduce)').matches) { split = med; document.body.dataset.barrido = 'fin'; return render(); }
+  const D0 = 650, D = 2600, t0 = performance.now(), ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  document.body.dataset.barrido = 'en-curso'; split = ini; render();
+  const paso = now => {
+    const e = now - t0 - D0; if (e < 0) { animId = requestAnimationFrame(paso); return; }
+    const k = Math.min(1, e / D);                 // 0–0,6: de derecha a izquierda · 0,6–1: vuelve al centro
+    split = k < .6 ? ini + (fin - ini) * ease(k / .6) : fin + (med - fin) * ease((k - .6) / .4);
+    render(); if (k < 1) animId = requestAnimationFrame(paso); else document.body.dataset.barrido = 'fin';
+  };
+  animId = requestAnimationFrame(paso);
+}
+$('#btnZoom').onclick = () => { demoZoom = !demoZoom; document.body.classList.add('vista-anim'); clearTimeout(tVista); tVista = setTimeout(() => document.body.classList.remove('vista-anim'), 900); entrarDemo(true); };
+$('#btnBarrido').onclick = () => entrarDemo();
+document.querySelectorAll('#modos button').forEach(b => b.onclick = () => setModo(b.dataset.modo));
+
+/* ═════════ Panel ═════════ */
+$('#lista').onclick = e => { const b = e.target.closest('.pant'); if (b) { sel.p = +b.dataset.p; render(); } };
+$('#esqBtns').onclick = e => { const b = e.target.closest('button'); if (b) { sel.c = +b.dataset.c; render(); lupaEnEsquina(); } };
+document.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { const [dx, dy] = b.dataset.n.split(',').map(Number), p = +$('#paso').value; nudge(dx * p, dy * p); });
+['#inX', '#inY'].forEach(s => $(s).onchange = () => { snapshot(); setPt(sel.p, sel.c, +$('#inX').value, +$('#inY').value); cambiado(); });
+$('#k1').oninput = e => cambiarK1(+e.target.value);
+$('#k1').onpointerdown = () => snapshot();
+$('#contenido').onchange = e => { contenido = e.target.value; firma = ''; render(); };
+$('#opac').oninput = e => { opac = +e.target.value; $('#opaco').textContent = Math.round(opac * 100) + ' %'; render(); };
+$('#btnDeshacer').onclick = deshacer;
+function deshacer() { const h = hist.pop(); if (!h) return toast(t('nada')); S = JSON.parse(h); pintarFondo(); cambiado(); toast(t('deshecho')); }
+$('#btnGuardar').onclick = () => guardar();
+$('#btnCopiar').onclick = () => { const s = JSON.stringify(exportable(), null, 2); (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => toast(t('copiado'))).catch(() => { prompt('JSON', s); }); };
+$('#btnExportar').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(exportable(), null, 2)], { type: 'application/json' })); a.download = `calibracion-${S.xpacio}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
+$('#btnImportar').onclick = () => $('#fileJson').click();
+$('#fileJson').onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(txt => importar(JSON.parse(txt))).catch(err => toast(String(err))); e.target.value = ''; };
+function importar(j) {
+  if (!valido(j)) throw new Error('JSON sin pantallas[].esquinas[4]');
+  snapshot(); S = { xpacio: j.xpacio || S.xpacio, imagen: j.imagen || S.imagen, k1: +(j.k1 ?? j.pantallas[0].k1 ?? 0), pantallas: j.pantallas.map((p, i) => ({ id: p.id || 'pantalla-' + (i + 1), nombre: p.nombre || p.id, esquinas: p.esquinas.map(e => [+e[0], +e[1]]) })) };
+  sel = { p: 0, c: 0 }; $('#chipXpacio').textContent = 'xpacio · ' + S.xpacio; firma = ''; pintarFondo(); cambiado(); toast(t('importado'));
+}
+$('#btnReset').onclick = () => { snapshot(); S = clon(FABRICA); W = S.imagen.ancho; H = S.imagen.alto; firma = ''; cargarFoto(FOTO, () => { cambiado(); toast(t('reset')); }); };
+$('#btnFoto').onclick = () => $('#fileFoto').click();
+$('#fileFoto').onchange = e => { const f = e.target.files[0]; if (!f) return; const u = URL.createObjectURL(f); $('#original').src = u; cargarFoto(u, () => toast(t('foto'))); e.target.value = ''; };
+$('#chkOriginal').onchange = e => document.body.classList.toggle('antes-original', e.target.checked);
+
+/* ═════════ Ajustar al marco (OpenCV.js) ═════════ */
+let cvListo = null;
+const CV_URLS = ['https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.10.0-release.1/dist/opencv.js', 'https://docs.opencv.org/4.x/opencv.js'];
+function cargarCV() {
+  if (cvListo) return cvListo;
+  cvListo = new Promise((ok, ko) => {
+    // El módulo de OpenCV.js es «thenable»: se quita .then antes de resolver para que la promesa no lo adopte en bucle.
+    const fin = m => { try { delete m.then; } catch (e) {} window.cv = m; ok(m); };
+    if (window.cv && window.cv.Mat) return fin(window.cv);
+    const probar = i => {
+      if (i >= CV_URLS.length) { cvListo = null; return ko(new Error('opencv')); }
+      const s = document.createElement('script'); s.src = CV_URLS[i]; s.async = true;
+      s.onload = () => { const c = window.cv; if (c instanceof Promise) return c.then(fin);
+        const iv = setInterval(() => { const m = window.cv; if (m && m.Mat) { clearInterval(iv); fin(m); } }, 100); };
+      s.onerror = () => probar(i + 1); document.head.appendChild(s);
+    };
+    probar(0);
+    setTimeout(() => { cvListo = null; ko(new Error('timeout')); }, 45000);
+  });
+  return cvListo;
+}
+async function snap() {
+  const btn = $('#btnSnap'); btn.disabled = true; toast(t('snapCargando'));
+  try {
+    const c = await cargarCV(), i = sel.p, q = [0, 1, 2, 3].map(k => pt(i, k));
+    const diag = Math.hypot(q[2][0] - q[0][0], q[2][1] - q[0][1]), pad = diag * 0.12;
+    const x0 = Math.max(0, Math.floor(Math.min(...q.map(p => p[0])) - pad)), y0 = Math.max(0, Math.floor(Math.min(...q.map(p => p[1])) - pad));
+    const x1 = Math.min(W, Math.ceil(Math.max(...q.map(p => p[0])) + pad)), y1 = Math.min(H, Math.ceil(Math.max(...q.map(p => p[1])) + pad));
+    const tmp = document.createElement('canvas'); tmp.width = x1 - x0; tmp.height = y1 - y0;
+    tmp.getContext('2d').drawImage(fondoCv, x0, y0, tmp.width, tmp.height, 0, 0, tmp.width, tmp.height);
+    const data = tmp.getContext('2d').getImageData(0, 0, tmp.width, tmp.height);
+    const src = c.matFromImageData(data), gris = new c.Mat(), bordes = new c.Mat(), conts = new c.MatVector(), jer = new c.Mat();
+    c.cvtColor(src, gris, c.COLOR_RGBA2GRAY); c.GaussianBlur(gris, gris, new c.Size(5, 5), 0);
+    const area0 = Math.abs(areaQ(q)); let mejor = null;
+    for (const [lo, hi] of [[30, 90], [50, 150], [80, 200]]) {
+      c.Canny(gris, bordes, lo, hi); const k = c.getStructuringElement(c.MORPH_RECT, new c.Size(3, 3)); c.dilate(bordes, bordes, k); k.delete();
+      c.findContours(bordes, conts, jer, c.RETR_LIST, c.CHAIN_APPROX_SIMPLE);
+      for (let n = 0; n < conts.size(); n++) {
+        const ct = conts.get(n), hull = new c.Mat(), ap = new c.Mat();
+        c.convexHull(ct, hull); c.approxPolyDP(hull, ap, 0.02 * c.arcLength(hull, true), true);
+        if (ap.rows === 4) {
+          const P = []; for (let r = 0; r < 4; r++) P.push([ap.data32S[r * 2] + x0, ap.data32S[r * 2 + 1] + y0]);
+          const ord = emparejar(q, P), ratio = Math.abs(areaQ(ord)) / area0;
+          if (ord && ratio > 0.75 && ratio < 1.3 && convexo(ord)) {
+            const mx = Math.max(...ord.map((p, j) => Math.hypot(p[0] - q[j][0], p[1] - q[j][1])));
+            if (mx < diag * 0.08 && (!mejor || mx < mejor.mx)) mejor = { ord, mx };
+          }
+        }
+        hull.delete(); ap.delete(); ct.delete();
+      }
+    }
+    [src, gris, bordes, conts, jer].forEach(m => m.delete());
+    if (!mejor) toast(t('snapNo'));
+    else { snapshot(); mejor.ord.forEach((p, j) => setPt(i, j, p[0], p[1])); cambiado(); toast(t('snapOk') + ` (Δ máx ${mejor.mx.toFixed(1)} px)`); }
+  } catch (e) { toast(t('snapErr')); }
+  btn.disabled = false;
+}
+function areaQ(q) { let a = 0; for (let i = 0; i < 4; i++) { const p = q[i], n = q[(i + 1) % 4]; a += p[0] * n[1] - n[0] * p[1]; } return a / 2; }
+function emparejar(q, P) { // reordena P para que cada punto corresponda a la esquina actual más cercana (respetando el ciclo)
+  let best = null, bs = Infinity;
+  for (const dir of [1, -1]) for (let o = 0; o < 4; o++) {
+    const R = [0, 1, 2, 3].map(j => P[(o + dir * j + 8) % 4]), s = R.reduce((a, p, j) => a + Math.hypot(p[0] - q[j][0], p[1] - q[j][1]), 0);
+    if (s < bs) { bs = s; best = R; }
+  }
+  return best;
+}
+
+/* ═════════ Línea de comandos Experto: /calibrar /demo /marca /idioma /ayuda ═════════ */
+$('#cli').addEventListener('keydown', ev => {
+  if (ev.key !== 'Enter') return; const v = ev.target.value.trim(); ev.target.value = ''; ev.target.blur(); if (v) comando(v);
+});
+function comando(v) {
+  const [cmd, ...arg] = v.replace(/^\//, '').split(/\s+/), a = (arg.join(' ') || '').toLowerCase();
+  switch (cmd.toLowerCase()) {
+    case 'calibrar': case 'calibrate': return setModo(modo === 'calibrar' ? 'editar' : 'calibrar');
+    case 'demo': return setModo(modo === 'demo' ? 'editar' : 'demo');
+    case 'editar': case 'ajustar': return setModo('editar');
+    case 'marca': case 'brand': return marca(a);
+    case 'idioma': case 'lang': case 'language': aplicarIdioma(a.startsWith('en') ? 'en' : 'es'); return toast(t('idioma'));
+    case 'ayuda': case 'help': return $('#ayudaDlg').classList.add('on');
+    case 'guardar': case 'save': return guardar();
+    case 'exportar': case 'export': return $('#btnExportar').click();
+    case 'ajustar-marco': case 'snap': return snap();
+    default: toast(t('cmdNo') + v);
+  }
+}
+const MB = 'https://www.admiranext.com/marcablanca/';
+async function marca(id) {
+  const raiz = document.documentElement.style;
+  if (!id || ['off', 'admira', 'ninguna', 'none', 'reset'].includes(id)) {
+    ['--accent', '--accent-ink'].forEach(k => raiz.removeProperty(k)); $('#marcaNombre').textContent = 'AdmiraNeXT'; $('#marcaLogo').innerHTML = 'A';
+    try { sessionStorage.removeItem('mb:marca'); } catch (e) {} return id && toast(t('marcaOff'));
+  }
+  try {
+    const r = await fetch(MB + 'api/marcas/' + encodeURIComponent(id), { signal: AbortSignal.timeout(8000) }); if (!r.ok) throw 0;
+    const m = await r.json(), c = (m.colores && (m.colores.oscuro || m.colores.claro)) || {};
+    if (c.primario) raiz.setProperty('--accent', c.primario); if (c.primarioTexto) raiz.setProperty('--accent-ink', c.primarioTexto);
+    $('#marcaNombre').textContent = m.nombreCorto || m.nombre || id;
+    $('#marcaLogo').innerHTML = m.logo && m.logo.svg ? `<img alt="" src="${new URL(m.logo.svg, MB).href}">` : (m.nombre || id)[0].toUpperCase();
+    try { sessionStorage.setItem('mb:marca', id); } catch (e) {}
+    toast(t('marcaOk') + (m.nombre || id)); render();
+  } catch (e) { toast(t('marcaNo') + id); }
+}
+
+/* ═════════ Ayuda ═════════ */
+function pintarAyuda() {
+  const en = lang === 'en';
+  const filas = en ? [['Drag a corner', 'Moves it, with a ×4 loupe following the pointer'], ['Drag inside a screen', 'Moves the whole screen'], ['← ↑ ↓ →', 'Nudge 1 px · Alt 0.25 px · Shift 10 px'], ['Tab / Shift+Tab', 'Next / previous corner (and screen)'], ['1 · 2 · 3', 'Select screen'], ['C · /calibrar', 'Grid with red border to check the fit'], ['D · /demo', 'Before (rotated rectangle) vs after (4 corners)'], ['A · Snap to bezel', 'Edge + quadrilateral detection (OpenCV.js)'], ['Ctrl Z · Ctrl S', 'Undo · Save'], ['/marca <id> · /marca off', 'White label from the AdmiraNeXT catalogue'], ['/idioma es|en', 'Interface language']]
+    : [['Arrastrar una esquina', 'La mueve, con lupa ×4 siguiendo al puntero'], ['Arrastrar dentro de una pantalla', 'Mueve la pantalla entera'], ['← ↑ ↓ →', 'Mueve 1 px · Alt 0,25 px · Mayús 10 px'], ['Tab / Mayús+Tab', 'Esquina siguiente / anterior (y pantalla)'], ['1 · 2 · 3', 'Elige pantalla'], ['C · /calibrar', 'Rejilla con borde rojo para comprobar el encaje'], ['D · /demo', 'Antes (rectángulo rotado) frente a después (4 esquinas)'], ['A · Ajustar al marco', 'Detección de bordes y cuadrilátero (OpenCV.js)'], ['Ctrl Z · Ctrl S', 'Deshacer · Guardar'], ['/marca <id> · /marca off', 'Marca blanca del catálogo AdmiraNeXT'], ['/idioma es|en', 'Idioma de la interfaz']];
+  $('#ayudaTabla').innerHTML = filas.map(f => `<tr><td>${f[0]}</td><td>${f[1]}</td></tr>`).join('');
+}
+$('#btnAyuda').onclick = () => $('#ayudaDlg').classList.add('on');
+$('#ayudaCerrar').onclick = () => $('#ayudaDlg').classList.remove('on');
+let tToast = 0;
+function toast(m) { const e = $('#toast'); e.textContent = m; e.classList.add('on'); clearTimeout(tToast); tToast = setTimeout(() => e.classList.remove('on'), 2600); }
+
+/* ═════════ Arranque ═════════ */
+addEventListener('resize', ajustarVista);
+{ const g = PE.XPACIOS_FOTO[S.xpacio]; const a = $('#btnGemelo'); if (g && a) { a.href = g.gemelo + '?vista=foto' + (lang === 'en' ? '&lang=en' : ''); a.hidden = false; } }
+$('#original').src = FOTO_ORIGINAL;
+$('#chipXpacio').textContent = 'xpacio · ' + S.xpacio;
+let idiomaIni = qp.get('idioma') || qp.get('lang'); try { idiomaIni = idiomaIni || localStorage.getItem('admira.idioma'); } catch (e) {}
+aplicarIdioma(idiomaIni || 'es');
+const marcaIni = qp.get('marca') || (() => { try { return sessionStorage.getItem('mb:marca'); } catch (e) { return null; } })();
+if (marcaIni) marca(marcaIni);
+if (qp.has('fabrica')) S = clon(FABRICA);
+cargarFoto(FOTO, () => {
+  if (qp.get('zoom') === '0') demoZoom = false;
+  const m = qp.get('modo'); if (m) { if (m === 'demo' && qp.has('sinanim')) { modo = 'demo'; setModoSinAnim(); } else setModo(m); }
+  if (qp.has('split')) { cancelAnimationFrame(animId); split = +qp.get('split'); render(); }
+  if (qp.get('contenido') === 'rej') { contenido = 'rej'; $('#contenido').value = 'rej'; firma = ''; render(); }
+  if (qp.has('original')) { $('#chkOriginal').checked = true; document.body.classList.add('antes-original'); }
+  document.body.dataset.listo = '1';
+});
+function setModoSinAnim() { document.body.className = document.body.className.replace(/\bmodo-\w+/g, '').trim() + ' modo-demo'; document.querySelectorAll('#modos button').forEach(b => b.classList.toggle('on', b.dataset.modo === 'demo')); firma = ''; entrarDemo(true); }
+window.calibrador = { get estado() { return exportable(); }, setModo, importar, snap, comando, nudge, sel: (p, c) => { sel = { p, c }; render(); }, lupaEnEsquina, aPantalla, pt };
+})();
+</script>
+</body>
+</html>

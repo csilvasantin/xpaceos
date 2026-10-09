@@ -1,0 +1,91 @@
+{
+  "$como": "Pantallas virtuales del gemelo sobre la foto real de la tienda. esquinas = SI·SD·ID·II normalizadas 0..1 sobre la foto (con k1 = 0, la original). Se editan con /calibrar (admira-xp/calibrador-pantallas.html) y se exportan aquí. Pantallas antiguas pueden traer rect:{x,y,w,h,rot} y se convierten al vuelo. Doc: admira-xp/docs/calibrador-pantallas.md",
+  "version": 1,
+  "xpacio": "sneakers-store-santa-rosa-19",
+  "nombre": "Sneakers Store · Santa Rosa 19",
+  "foto": {
+    "url": "/admira-xp/assets/calibrador/free-shift-pared.jpg",
+    "ancho": 3226,
+    "alto": 1168,
+    "descripcion": "Pared de chapa con 3 TVs de pared (foto de referencia de Carlos, 9-oct-2026)"
+  },
+  "contenido": {
+    "playlist": "https://mcp.admira.store/playlists/playlist-be8a1e99-1cce-4818-a796-da3372216d1e",
+    "respaldo": {
+      "url": "/admira-xp/assets/calibrador/free-shift-anuncio.jpg",
+      "tipo": "imagen"
+    }
+  },
+  "k1": 0,
+  "pantallas": [
+    {
+      "id": "tv-izquierda",
+      "nombre": "TV izquierda",
+      "esquinas": [
+        [
+          0.042002,
+          0.768322
+        ],
+        [
+          0.138779,
+          0.710274
+        ],
+        [
+          0.116305,
+          0.911473
+        ],
+        [
+          0.018103,
+          0.964469
+        ]
+      ],
+      "k1": 0
+    },
+    {
+      "id": "tv-centro",
+      "nombre": "TV centro",
+      "esquinas": [
+        [
+          0.247923,
+          0.622774
+        ],
+        [
+          0.385493,
+          0.517466
+        ],
+        [
+          0.379076,
+          0.757449
+        ],
+        [
+          0.228084,
+          0.84589
+        ]
+      ],
+      "k1": 0
+    },
+    {
+      "id": "tv-derecha",
+      "nombre": "TV derecha",
+      "esquinas": [
+        [
+          0.642405,
+          0.330223
+        ],
+        [
+          0.884222,
+          0.147603
+        ],
+        [
+          0.948543,
+          0.444349
+        ],
+        [
+          0.669653,
+          0.607534
+        ]
+      ],
+      "k1": 0
+    }
+  ]
+}
