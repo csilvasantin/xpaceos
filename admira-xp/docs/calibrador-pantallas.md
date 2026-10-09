@@ -17,8 +17,12 @@ herramientas de precisión.
 - Tiradores de esquina arrastrables con **lupa ×4**; arrastrar dentro de una pantalla la mueve entera.
 - Flechas: 1 px · Alt+flechas: 0,25 px · Mayús+flechas: 10 px · Tab / Mayús+Tab: esquina y pantalla · 1-3: pantalla.
 - **/calibrar** (tecla C): rejilla con borde rojo, diagonales y círculo central en cada pantalla.
-- **/demo** (tecla D): antes (rectángulo rotado) | después (4 esquinas) con divisor arrastrable; opción de usar la
-  captura original como «antes».
+- **/demo** (tecla D): entra con zoom a la pantalla más grande y una cortina animada que la barre (antes =
+  rectángulo rotado con contorno ámbar y el marco real en verde discontinuo | después = 4 esquinas). Botones
+  «Vista completa» / «Zoom a la pantalla N» y «Repetir barrido»; divisor arrastrable; opción de usar la captura
+  original como «antes». `?sinanim` salta la animación y `?zoom=0` abre la vista completa.
+- Look: acento verde AdmiraNeXT `#33FF99` con texto oscuro `#04130b` (contraste 14,4:1); el cian `#68dce9`
+  queda reservado a la barra Experto (línea de comandos).
 - **Lente k1** (barril/cojín) aplicada al fondo en WebGL; las esquinas se reproyectan para seguir en el mismo punto
   de la foto.
 - **Ajustar al marco** (tecla A): OpenCV.js (CDN) → Canny + contornos + `approxPolyDP` cerca de las esquinas
