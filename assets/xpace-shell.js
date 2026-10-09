@@ -765,6 +765,15 @@
     return true;
   }
 
+  // Pantallas virtuales por 4 esquinas (admira-xp/docs/calibrador-pantallas.md). /calibrar abre el calibrador
+  // del Xpacio activo (el que publica window.XpaceFotoReal; si la página no tiene foto, Sneakers Store) y
+  // guarda sus esquinas en ese gemelo. /calibrate es el alias en inglés y abre el calibrador en inglés.
+  const fotoXpacio = () => (root.XpaceFotoReal && root.XpaceFotoReal.xpacio) || 'sneakers-store-santa-rosa-19';
+  const calibrarURL = idioma => '/admira-xp/calibrador-pantallas.html?xpacio=' + encodeURIComponent(fotoXpacio()) + '&idioma=' + idioma;
+  function pantallasDemo() {
+    if (root.XpaceFotoReal && root.XpaceFotoReal.abrir) { root.XpaceFotoReal.abrir('demo'); return lang() === 'en' ? 'Virtual screens · before | after on the real photo' : 'Pantallas virtuales · antes | después sobre la foto real'; }
+    root.location.assign('/xpacios/sneakerstore/?vista=foto&modo=demo&lang=' + lang()); return 'Sneakers Store · /demo pantallas';
+  }
   async function run(text) {
     const p = parseCommand(text);
     if (!p) return;
@@ -782,6 +791,8 @@
         handoff(p.args); return;
       }
       if (MARCA_VERB.test(verb)) { await shared.marca(p.args, log); return; }
+      // /demo pantallas va antes que los verbos de página: el cargador común de demos registra su propio /demo.
+      if (verb === 'demo' && /^(?:pantallas|screens)(?:\s|$)/i.test(p.args)) { log(pantallasDemo()); return; }
       if (pageVerbs.has(verb)) {
         const out = await pageVerbs.get(verb).run(p.args, {log, lang: lang(), shell: root.XpaceShell}, lang());
         if (out != null && out !== '') log(typeof out === 'string' ? out : JSON.stringify(out));
@@ -931,15 +942,6 @@
         root.addEventListener('pagehide',()=>resize.dispose(),{once:true});
       }
     }).catch(error=>console.warn('xpace-shell resize',error));
-    // Pantallas virtuales por 4 esquinas (admira-xp/docs/calibrador-pantallas.md). /calibrar abre el calibrador
-    // del Xpacio activo (el que publica window.XpaceFotoReal; si la página no tiene foto, Sneakers Store) y
-    // guarda sus esquinas en ese gemelo. /calibrate es el alias en inglés y abre el calibrador en inglés.
-    const fotoXpacio = () => (root.XpaceFotoReal && root.XpaceFotoReal.xpacio) || 'sneakers-store-santa-rosa-19';
-    const calibrarURL = idioma => '/admira-xp/calibrador-pantallas.html?xpacio=' + encodeURIComponent(fotoXpacio()) + '&idioma=' + idioma;
-    function pantallasDemo() {
-      if (root.XpaceFotoReal && root.XpaceFotoReal.abrir) { root.XpaceFotoReal.abrir('demo'); return lang() === 'en' ? 'Virtual screens · before | after on the real photo' : 'Pantallas virtuales · antes | después sobre la foto real'; }
-      location.assign('/xpacios/sneakerstore/?vista=foto&modo=demo&lang=' + lang()); return 'Sneakers Store · /demo pantallas';
-    }
     for (const [id, idioma] of [['calibrar', 'es'], ['calibrate', 'en']]) registerVerb({id, es: 'Calibrar las pantallas virtuales del Xpacio por sus 4 esquinas', en: 'Calibrate the Xpace virtual screens by their 4 corners', run: () => {
       const url = calibrarURL(idioma), w = root.open(url, '_blank');
       if (w) w.opener = null; else location.assign(url);
