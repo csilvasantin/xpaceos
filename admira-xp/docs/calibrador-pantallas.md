@@ -64,3 +64,30 @@ is warped with a true homography (CSS `matrix3d`). Drag handles with a ×4 loupe
 `/calibrar` grid with red border, `/demo` before/after split, optional barrel lens k1 (WebGL), OpenCV.js snap to
 bezel, localStorage + JSON import/export, `/marca` white label and `/idioma`. JSON contract above; integration steps
 listed in Spanish.
+
+## Integración en el player (9-oct-2026 · v.09.10.2026.r2.22:30)
+
+**Modelo de datos del gemelo** — `xpacios/sneakerstore/pantallas.json` (Xpacio `sneakers-store-santa-rosa-19`):
+
+```json
+{ "version": 1, "xpacio": "sneakers-store-santa-rosa-19",
+  "foto": { "url": "/admira-xp/assets/calibrador/free-shift-pared.jpg", "ancho": 3226, "alto": 1168 },
+  "contenido": { "playlist": "https://mcp.admira.store/playlists/playlist-be8a…", "respaldo": { "url": "…/free-shift-anuncio.jpg", "tipo": "imagen" } },
+  "k1": 0,
+  "pantallas": [ { "id": "tv-derecha", "nombre": "TV derecha", "esquinas": [[x,y],[x,y],[x,y],[x,y]], "k1": 0 } ] }
+```
+
+- `esquinas`: SI·SD·ID·II normalizadas 0..1 sobre la foto (con `k1` = 0, la original).
+- `esquinasFoto`: las mismas esquinas en la foto sin corregir, solo si `k1` ≠ 0 (el player pinta la foto original).
+- **Compatibilidad**: una pantalla antigua con `rect: {x, y, w, h, rot}` (x, y = esquina superior izquierda sin rotar; rot en grados alrededor del centro; 0..1 o píxeles) sigue pintándose: `normalizarGemelo` la convierte a 4 esquinas al vuelo (`origen: 'rect'`).
+- El registro de gemelos con foto calibrable está en `XPACIOS_FOTO` (`admira-xp/scripts/pantallas-esquinas.mjs`).
+
+**Una sola implementación** — `admira-xp/scripts/pantallas-esquinas.mjs` envuelve `quadTransform` de `matrix-mapping.mjs` (la homografía de la panorámica 360 de Starbucks). La usan el calibrador (`<script type="module">`) y el player; el calibrador ya no tiene homografía propia. Pruebas: `node --test admira-xp/scripts/pantallas-esquinas.test.mjs`.
+
+**Player «Foto real»** — `admira-xp/scripts/xpacio-foto-player.mjs`, montado en SneakerStore (botón *Foto real*, Opciones → *Foto real*, `?vista=foto`). Cada pantalla es un nodo de 1600×900 con `transform-origin: 0 0` y `matrix3d` desde sus 4 esquinas; reproduce la playlist del Xpacio (si no carga, el anuncio de respaldo). Si el calibrador guarda en otra pestaña, el player recoloca al momento (evento `storage`).
+
+**/calibrar · /calibrate** — en Experto de Admira XP y en el CLI del shell común (`assets/xpace-shell.js`): abre el calibrador del Xpacio activo (`window.XpaceFotoReal.xpacio`; si la página no tiene foto, Sneakers Store). `/calibrar` lo abre en español y `/calibrate` en inglés. Por Telegram, MCP o `/twin/cmd` devuelve el enlace.
+
+**Persistencia** — no existe backend de esquinas para gemelos con foto (el único estado vivo con backend es Matrix Starbucks en mcp.admira.store, que usa yaw/pitch y su propio recalibrado). Por eso: *Guardar* → `localStorage['admira.calibrador.v1:<xpacio>']`, que el player del mismo navegador lee y superpone; *Exportar .json* → fichero con el mismo esquema para publicar la calibración para todos en `xpacios/<id>/pantallas.json` (PR). La clave del prototipo `free-shift-demo` se migra sola. Pendiente: endpoint compartido en xpaceos-mcp.
+
+**/demo pantallas · /demo screens** — abre la Foto real en antes | después: zoom a la TV grande y barrido de la cortina; a la izquierda el rectángulo rotado (borde ámbar) con el marco real en discontinua verde, a la derecha las 4 esquinas. URL directa: `/xpacios/sneakerstore/?vista=foto&modo=demo`.

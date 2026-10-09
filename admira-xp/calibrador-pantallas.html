@@ -162,12 +162,14 @@ body.modo-calibrar .banda.cal{display:block}
 #ayudaDlg td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
 #ayudaDlg td:first-child{width:42%;font:12px var(--mono);color:var(--accent)}
 input[type=file]{display:none}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;color:inherit} [hidden]{display:none!important}
 </style>
 </head>
 <body class="modo-editar">
 <header class="top">
   <div class="brand"><div class="mark" id="marcaLogo">A</div><b id="marcaNombre">AdmiraNeXT</b><span data-t="titulo">Calibrador de pantallas virtuales</span></div>
-  <span class="chip" id="chipXpacio">xpacio · free-shift-demo</span>
+  <span class="chip" id="chipXpacio">xpacio · sneakers-store-santa-rosa-19</span>
+  <a class="btn ghost" id="btnGemelo" hidden target="_self" data-t="bGemelo">Ver en el gemelo ↗</a>
   <nav class="seg" id="modos">
     <button data-modo="editar" class="on"><span data-t="mEditar">Ajustar esquinas</span><kbd>E</kbd></button>
     <button data-modo="calibrar"><span>/calibrar</span><kbd>C</kbd></button>
@@ -242,18 +244,26 @@ input[type=file]{display:none}
   <div style="text-align:right;margin-top:14px"><button class="btn primary" id="ayudaCerrar" data-t="cerrar">Entendido</button></div>
 </div></div>
 
-<script>
-(() => {
+<script type="module">
+// Una sola homografía en XpaceOS: quadTransform (scripts/matrix-mapping.mjs) vía scripts/pantallas-esquinas.mjs,
+// la misma que usa el player del gemelo (xpacios/sneakerstore · Foto real).
+import * as PE from './scripts/pantallas-esquinas.mjs?v=20261009-esquinas-1';
+(async () => {
 'use strict';
+const qp = new URLSearchParams(location.search);
+const XPACIO = PE.resolverXpacio(qp.get('xpacio')) || PE.XPACIO_SNEAKERS;
+let GEMELO = null; try { GEMELO = await PE.cargarGemelo(XPACIO, { local: false }); } catch (e) { console.warn('calibrador: datos del gemelo', e); }
 /* ═════════ Datos de partida ═════════ */
 const CW = 1600, CH = 900;                       // tamaño lógico del contenido (16:9)
-const FOTO = 'assets/calibrador/free-shift-pared.jpg';           // placa limpia (sin overlays horneados)
+const FOTO = GEMELO?.foto?.url || 'assets/calibrador/free-shift-pared.jpg';   // placa limpia (sin overlays horneados)
 const FOTO_ORIGINAL = 'assets/calibrador/free-shift-pared-original.jpg'; // captura tal cual del player
 const ZAPA = 'assets/calibrador/free-shift-zapatilla.jpg';
 const STORE = 'admira.calibrador.v1:';
 // Calibración inicial sobre la foto de referencia (3226×1168 px, k1 = 0): esquinas marcadas a mano y
 // refinadas al subpíxel ajustando una recta al salto panel→marco de cada borde (15 muestras por lado).
-const FABRICA = { xpacio: 'free-shift-demo', imagen: { ancho: 3226, alto: 1168 }, k1: 0, pantallas: [
+// Si el gemelo trae sus pantallas (xpacios/<id>/pantallas.json), esas son la «fábrica»; si no, esta copia.
+const FABRICA = GEMELO ? { xpacio: GEMELO.xpacio, imagen: { ancho: GEMELO.foto.ancho, alto: GEMELO.foto.alto }, k1: GEMELO.k1 || 0,
+  pantallas: GEMELO.pantallas.map(p => ({ id: p.id, nombre: p.nombre, esquinas: p.esquinas })) } : { xpacio: XPACIO, imagen: { ancho: 3226, alto: 1168 }, k1: 0, pantallas: [
   { id: 'tv-izquierda', nombre: 'TV izquierda', esquinas: px([[135.5, 897.4], [447.7, 829.6], [375.2, 1064.6], [58.4, 1126.5]]) },
   { id: 'tv-centro',    nombre: 'TV centro',    esquinas: px([[799.8, 727.4], [1243.6, 604.4], [1222.9, 884.7], [735.8, 988.0]]) },
   { id: 'tv-derecha',   nombre: 'TV derecha',   esquinas: px([[2072.4, 385.7], [2852.5, 172.4], [3060.0, 519.0], [2160.3, 709.6]]) },
@@ -267,7 +277,7 @@ const T = { en: {
   hPant:'Screens', hPantN:'Tab cycles corners', hEsq:'Selected corner', notaNudge:'Arrows 1 px · Alt 0.25 · Shift 10', hAjuste:'Lens & fit',
   lLente:'Lens (k1)', lContenido:'Content', oAd:'«FREE SHIFT» ad', oRej:'Test card', lOpac:'Opacity', bSnap:'Snap to bezel', bDeshacer:'Undo',
   notaSnap:'Detects edges near the current corners (OpenCV.js) and snaps the quadrilateral.', hDatos:'Calibration', bGuardar:'Save', bCopiar:'Copy JSON',
-  bExportar:'Export .json', bImportar:'Import .json', bFoto:'Change photo', bReset:'Reset', lOriginal:'In /demo, «before» = original player capture',
+  bExportar:'Export .json', bGemelo:'View in the twin ↗', bImportar:'Import .json', bFoto:'Change photo', bReset:'Reset', lOriginal:'In /demo, «before» = original player capture',
   ayudaCli:'<kbd>Tab</kbd> corner/screen <kbd>←↑↓→</kbd> 1 px <kbd>Alt</kbd> 0.25 px <kbd>C</kbd> calibrate <kbd>D</kbd> demo <kbd>Ctrl Z</kbd> undo <kbd>/</kbd> command',
   ayudaT:'Shortcuts & commands', cerrar:'Got it', esq:['Top left','Top right','Bottom right','Bottom left'], esqC:['TL','TR','BR','BL'],
   ok:'fits', mal:'invalid', guardadoA:'saved', guardado:'Calibration saved in this browser', copiado:'JSON copied to clipboard', importado:'Calibration imported',
@@ -301,7 +311,12 @@ let W = S.imagen.ancho, H = S.imagen.alto;
 let sel = { p: 0, c: 0 }, modo = 'editar', contenido = 'ad', opac = 1, split = 0.5;
 const hist = [];
 function clon(o) { return JSON.parse(JSON.stringify(o)); }
-function cargar() { try { const j = JSON.parse(localStorage.getItem(STORE + FABRICA.xpacio) || 'null'); return valido(j) ? j : null; } catch (e) { return null; } }
+function cargar() {
+  // free-shift-demo = clave del prototipo (antes de vivir en el gemelo Sneakers Store): se migra sola.
+  const claves = [STORE + FABRICA.xpacio].concat(FABRICA.xpacio === PE.XPACIO_SNEAKERS ? [STORE + 'free-shift-demo'] : []);
+  for (const k of claves) { try { const j = JSON.parse(localStorage.getItem(k) || 'null'); if (valido(j)) { j.xpacio = FABRICA.xpacio; return j; } } catch (e) {} }
+  return null;
+}
 function valido(j) { return j && Array.isArray(j.pantallas) && j.pantallas.length && j.pantallas.every(p => Array.isArray(p.esquinas) && p.esquinas.length === 4); }
 function pt(p, c) { const e = S.pantallas[p].esquinas[c]; return [e[0] * W, e[1] * H]; }
 function setPt(p, c, x, y) { S.pantallas[p].esquinas[c] = [clamp(x / W, -0.2, 1.2), clamp(y / H, -0.2, 1.2)]; }
@@ -316,48 +331,20 @@ function exportable() {
   return o;
 }
 function guardar(silencio) {
-  try { localStorage.setItem(STORE + S.xpacio, JSON.stringify(S)); } catch (e) {}
+  // Misma clave que lee el player del gemelo (PE.leerLocal): guardar aquí recoloca sus pantallas al momento.
+  try { S.guardadoEn = new Date().toISOString(); localStorage.setItem(STORE + S.xpacio, JSON.stringify(S)); } catch (e) {}
   const d = new Date(); $('#guardado').textContent = t('guardadoA') + ' ' + d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   if (!silencio) toast(t('guardado'));
 }
 
-/* ═════════ Homografía: rect (0,0)-(w,h) → 4 puntos ═════════ */
-function homografia(dst, w, h) {
-  const src = [[0, 0], [w, 0], [w, h], [0, h]], A = [], b = [];
-  for (let i = 0; i < 4; i++) {
-    const [x, y] = src[i], [u, v] = dst[i];
-    A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); b.push(u);
-    A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); b.push(v);
-  }
-  const n = 8;                                     // Gauss con pivote parcial
-  for (let i = 0; i < n; i++) {
-    let m = i; for (let r = i + 1; r < n; r++) if (Math.abs(A[r][i]) > Math.abs(A[m][i])) m = r;
-    [A[i], A[m]] = [A[m], A[i]]; [b[i], b[m]] = [b[m], b[i]];
-    const d = A[i][i]; if (Math.abs(d) < 1e-12) return null;
-    for (let r = 0; r < n; r++) if (r !== i) { const f = A[r][i] / d; for (let c = i; c < n; c++) A[r][c] -= f * A[i][c]; b[r] -= f * b[i]; }
-  }
-  return b.map((v, i) => v / A[i][i]).concat(1);
-}
-function matrix3d(H) { const [a, b, c, d, e, f, g, h] = H; return `matrix3d(${a},${d},0,${g},${b},${e},0,${h},0,0,1,0,${c},${f},0,1)`; }
-function convexo(q) {
-  let s = 0; for (let i = 0; i < 4; i++) { const [a, b, c] = [q[i], q[(i + 1) % 4], q[(i + 2) % 4]];
-    const z = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]); if (z === 0) return false; if (!s) s = Math.sign(z); else if (Math.sign(z) !== s) return false; }
-  return true;
-}
+/* ═════════ Homografía y rectángulo rotado: implementación única en scripts/pantallas-esquinas.mjs ═════════ */
+const convexo = PE.esConvexo;
 // Método actual (antes): rectángulo rotado = centro, ancho/alto medios y ángulo del borde superior.
-function rectRotado(q) {
-  const d = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
-  const cx = (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, cy = (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4;
-  const w = (d(q[0], q[1]) + d(q[3], q[2])) / 2, h = (d(q[0], q[3]) + d(q[1], q[2])) / 2, a = Math.atan2(q[1][1] - q[0][1], q[1][0] - q[0][0]);
-  return `translate(${cx}px,${cy}px) rotate(${a}rad) scale(${w / CW},${h / CH}) translate(${-CW / 2}px,${-CH / 2}px)`;
-}
+const rectRotado = i => PE.transformRect(S.pantallas[i].esquinas, W, H, CW, CH);
 
 /* ═════════ Lente: barril k1 (fondo corregido, esquinas coherentes) ═════════ */
 // Coordenadas centradas y normalizadas por la semidiagonal. Foto = u·(1 + k1·|u|²).
-function norm(x, y) { const R = Math.hypot(W, H) / 2; return [(x * W - W / 2) / R, (y * H - H / 2) / R]; }
-function denorm(u, v) { const R = Math.hypot(W, H) / 2; return [(u * R + W / 2) / W, (v * R + H / 2) / H]; }
-function aFoto(x, y, k1) { const [u, v] = norm(x, y), f = 1 + k1 * (u * u + v * v); return denorm(u * f, v * f); }
-function deFoto(x, y, k1) { const [ru, rv] = norm(x, y); let u = ru, v = rv; for (let i = 0; i < 30; i++) { const f = 1 + k1 * (u * u + v * v); u = ru / f; v = rv / f; } return denorm(u, v); }
+const aFoto = (x, y, k1) => PE.aFoto(x, y, k1, W, H), deFoto = (x, y, k1) => PE.deFoto(x, y, k1, W, H);
 function cambiarK1(nuevo) {
   const viejo = S.k1 || 0; if (nuevo === viejo) return;
   S.pantallas.forEach(p => p.esquinas = p.esquinas.map(e => { const f = aFoto(e[0], e[1], viejo); return deFoto(f[0], f[1], nuevo); }));
@@ -439,10 +426,10 @@ function render() {
   montarContenidos();
   const qs = S.pantallas.map((p, i) => [0, 1, 2, 3].map(c => pt(i, c)));
   document.querySelectorAll('#despues .contenido').forEach((el, i) => {
-    const Hm = homografia(qs[i], CW, CH); el.style.transform = Hm ? matrix3d(Hm) : 'scale(0)';
+    el.style.transform = PE.matriz3d(S.pantallas[i].esquinas, W, H, CW, CH) || 'scale(0)';
     el.classList.toggle('sel', i === sel.p); el.style.opacity = modo === 'calibrar' ? 1 : opac;
   });
-  document.querySelectorAll('#antes .contenido').forEach((el, i) => { el.style.transform = rectRotado(qs[i]); el.style.opacity = opac; });
+  document.querySelectorAll('#antes .contenido').forEach((el, i) => { el.style.transform = rectRotado(i); el.style.opacity = opac; });
   // Demo: recorte antes | después
   // Recorte antes|después con cajas overflow:hidden (clip-path aplana mal los hijos con matrix3d en algunos GPU).
   const xs = split * W, demo = modo === 'demo';
@@ -741,8 +728,8 @@ let tToast = 0;
 function toast(m) { const e = $('#toast'); e.textContent = m; e.classList.add('on'); clearTimeout(tToast); tToast = setTimeout(() => e.classList.remove('on'), 2600); }
 
 /* ═════════ Arranque ═════════ */
-const qp = new URLSearchParams(location.search);
 addEventListener('resize', ajustarVista);
+{ const g = PE.XPACIOS_FOTO[S.xpacio]; const a = $('#btnGemelo'); if (g && a) { a.href = g.gemelo + '?vista=foto' + (lang === 'en' ? '&lang=en' : ''); a.hidden = false; } }
 $('#original').src = FOTO_ORIGINAL;
 $('#chipXpacio').textContent = 'xpacio · ' + S.xpacio;
 let idiomaIni = qp.get('idioma') || qp.get('lang'); try { idiomaIni = idiomaIni || localStorage.getItem('admira.idioma'); } catch (e) {}

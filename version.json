@@ -1,5 +1,5 @@
 {
-  "version": "v.09.10.2026.r1.05:34",
+  "version": "v.09.10.2026.r2.22:30",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
@@ -9,8 +9,8 @@
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "Neo prepara sus clips: muffin 3D hiperrealista (web 0,9 MB y HD para Unreal) en el inventario del TPV Starbucks.",
-    "Nuevo IF «Cojo una taza»: la taza verde de la estantería se coge y va a la caja; /demo coger taza hace el gesto y /demo taza sigue abriendo la cámara.",
-    "La regla del agua admite imagen y vídeo de Pixeria en cada botella, con el vídeo sin audio bajo la locución."
+    "Pantallas virtuales por 4 esquinas: en SneakerStore, Foto real pinta las 3 TVs de la tienda con la playlist en perspectiva real (matrix3d), sin desbordar el marco.",
+    "/calibrar (/calibrate en inglés) abre el calibrador del Xpacio; Guardar recoloca las pantallas del gemelo al momento.",
+    "/demo pantallas enseña el antes (rectángulo rotado) y el después (4 esquinas) con un barrido sobre la TV grande."
   ]
 }

@@ -1,5 +1,10 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.09.10.2026.r2.22:30": [
+    "Pantallas virtuales por 4 esquinas: en SneakerStore, Foto real pinta las 3 TVs de la tienda con la playlist en perspectiva real (matrix3d), sin desbordar el marco.",
+    "/calibrar (/calibrate en inglés) abre el calibrador del Xpacio; Guardar recoloca las pantallas del gemelo al momento.",
+    "/demo pantallas enseña el antes (rectángulo rotado) y el después (4 esquinas) con un barrido sobre la TV grande."
+  ],
   "v.09.10.2026.r1.05:34": [
     "Neo prepara sus clips: muffin 3D hiperrealista (web 0,9 MB y HD para Unreal) en el inventario del TPV Starbucks.",
     "Nuevo IF «Cojo una taza»: la taza verde de la estantería se coge y va a la caja; /demo coger taza hace el gesto y /demo taza sigue abriendo la cámara.",

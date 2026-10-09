@@ -26,6 +26,7 @@ export const SHELL_EXCEPTIONS = {
   'xpacios/xtanco-barcelona/index.html': 'Pantalla completa: Xpacio heredado de Pixeria, tras su verja; escena a toda pantalla.',
   'xpacios/xtanco-valencia/index.html': 'Pantalla completa: Xpacio heredado de Pixeria, tras su verja; escena a toda pantalla.',
   'xpacios/crear/index.html': 'Pantalla completa: generador de Xpacios heredado de Pixeria, tras su verja.',
+  'admira-xp/calibrador-pantallas.html': 'Pantalla completa: calibrador de 4 esquinas con foto a toda pantalla, su propia barra Experto (/calibrar, /demo, /marca, /idioma) y lupa; se abre desde /calibrar.',
   'xpacios/crear/phone.html': 'Pantalla completa: captura desde el móvil para el generador (abre con QR).',
   'xperiencias/batcueva/index.html': 'Pantalla completa: Xperiencia inmersiva La Batcueva.',
   'xperiencias/sheldon/index.html': 'Pantalla completa: Xperiencia inmersiva Sheldon.',

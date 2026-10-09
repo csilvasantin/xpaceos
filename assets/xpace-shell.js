@@ -44,7 +44,7 @@
   // Verbos que viven en el gemelo (su /help: helpSections() de admira-xp/index.html). Fuera
   // del gemelo se guardan en sessionStorage, se abre el gemelo y se ejecutan allí al cargar.
   const TWIN_VERBS = [
-    'reset', 'demo', 'resumen', 'summary', 'day',
+    'reset', 'demo', 'calibrar', 'calibrate', 'resumen', 'summary', 'day',
     'gente', 'people', 'personal', 'staff', 'clientes', 'customers', 'status', 'stock', 'turno',
     'hire', 'train', 'restock', 'nuevomiembro', 'echarmiembro', 'report', 'velocidad', 'dvr',
     'envivo', 'calendario', 'resetaudiencia', 'ad', 'upgrade', 'aforo', 'visit', 'save',
@@ -931,7 +931,21 @@
         root.addEventListener('pagehide',()=>resize.dispose(),{once:true});
       }
     }).catch(error=>console.warn('xpace-shell resize',error));
-    registerVerb({id:'demo',es:'/demo taza: cámara; /demo kiosko: pedido, pago simulado, cola y taza.',en:'/demo taza: camera; /demo kiosko: order, simulated payment, queue and mug.',run:async args=>/^global(?:\s|$)/i.test(args)?(location.assign('https://www.admira.biz/demo/?lang='+lang()),'Demo global · Sneakers Store'):/^kiosko(?:\s|$)|^quiosco(?:\s|$)/i.test(args)?(await import('/assets/kiosko-demo.mjs?v=2')).runKioskoDemo(args.replace(/^\S+\s*/,''),lang()):(await import('/assets/taza-demo.mjs?v=1')).runTazaDemo(args,lang())});
+    // Pantallas virtuales por 4 esquinas (admira-xp/docs/calibrador-pantallas.md). /calibrar abre el calibrador
+    // del Xpacio activo (el que publica window.XpaceFotoReal; si la página no tiene foto, Sneakers Store) y
+    // guarda sus esquinas en ese gemelo. /calibrate es el alias en inglés y abre el calibrador en inglés.
+    const fotoXpacio = () => (root.XpaceFotoReal && root.XpaceFotoReal.xpacio) || 'sneakers-store-santa-rosa-19';
+    const calibrarURL = idioma => '/admira-xp/calibrador-pantallas.html?xpacio=' + encodeURIComponent(fotoXpacio()) + '&idioma=' + idioma;
+    function pantallasDemo() {
+      if (root.XpaceFotoReal && root.XpaceFotoReal.abrir) { root.XpaceFotoReal.abrir('demo'); return lang() === 'en' ? 'Virtual screens · before | after on the real photo' : 'Pantallas virtuales · antes | después sobre la foto real'; }
+      location.assign('/xpacios/sneakerstore/?vista=foto&modo=demo&lang=' + lang()); return 'Sneakers Store · /demo pantallas';
+    }
+    for (const [id, idioma] of [['calibrar', 'es'], ['calibrate', 'en']]) registerVerb({id, es: 'Calibrar las pantallas virtuales del Xpacio por sus 4 esquinas', en: 'Calibrate the Xpace virtual screens by their 4 corners', run: () => {
+      const url = calibrarURL(idioma), w = root.open(url, '_blank');
+      if (w) w.opener = null; else location.assign(url);
+      return idioma === 'en' ? 'Calibrator open · ' + fotoXpacio() + ' · Save stores the corners in this twin' : 'Calibrador abierto · ' + fotoXpacio() + ' · Guardar deja las esquinas en este gemelo';
+    }});
+    registerVerb({id:'demo',es:'/demo taza: cámara; /demo kiosko: pedido, pago simulado, cola y taza; /demo pantallas: antes · después de las pantallas virtuales.',en:'/demo taza: camera; /demo kiosko: order, simulated payment, queue and mug; /demo screens: virtual screens before · after.',run:async args=>/^(?:pantallas|screens)(?:\s|$)/i.test(args)?pantallasDemo():/^global(?:\s|$)/i.test(args)?(location.assign('https://www.admira.biz/demo/?lang='+lang()),'Demo global · Sneakers Store'):/^kiosko(?:\s|$)|^quiosco(?:\s|$)/i.test(args)?(await import('/assets/kiosko-demo.mjs?v=2')).runKioskoDemo(args.replace(/^\S+\s*/,''),lang()):(await import('/assets/taza-demo.mjs?v=1')).runTazaDemo(args,lang())});
     wireCli();
     suiteExperto();
     registerVerb({
