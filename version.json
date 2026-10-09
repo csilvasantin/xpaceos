@@ -1,5 +1,5 @@
 {
-  "version": "v.09.10.2026.r2.22:30",
+  "version": "v.09.10.2026.r3.22:45",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
@@ -9,8 +9,7 @@
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "Pantallas virtuales por 4 esquinas: en SneakerStore, Foto real pinta las 3 TVs de la tienda con la playlist en perspectiva real (matrix3d), sin desbordar el marco.",
-    "/calibrar (/calibrate en inglés) abre el calibrador del Xpacio; Guardar recoloca las pantallas del gemelo al momento.",
-    "/demo pantallas enseña el antes (rectángulo rotado) y el después (4 esquinas) con un barrido sobre la TV grande."
+    "/demo pantallas y /demo screens ya funcionan desde el CLI Experto de cualquier página (antes los capturaba el catálogo común de demos).",
+    "Pantallas virtuales por 4 esquinas: Foto real en SneakerStore, /calibrar · /calibrate y antes | después (sello r2)."
   ]
 }
