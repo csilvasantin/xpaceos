@@ -1,5 +1,9 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.09.10.2026.r4.22:52": [
+    "/demo pantallas y /demo screens llegan al antes | después también en xpaceos.com, donde el Experto común de AdmiraNeXT reclamaba los /demo desconocidos.",
+    "Pantallas virtuales por 4 esquinas: Foto real en SneakerStore, /calibrar · /calibrate y antes | después."
+  ],
   "v.09.10.2026.r3.22:45": [
     "/demo pantallas y /demo screens ya funcionan desde el CLI Experto de cualquier página (antes los capturaba el catálogo común de demos).",
     "Pantallas virtuales por 4 esquinas: Foto real en SneakerStore, /calibrar · /calibrate y antes | después (sello r2)."

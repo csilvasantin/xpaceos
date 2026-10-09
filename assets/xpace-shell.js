@@ -809,7 +809,7 @@
   function wireCli() {
     const form = doc.getElementById('xsCliForm');
     const input = doc.getElementById('xsCli');
-    doc.addEventListener('submit',e=>{if(e.target===form && /^\/demo\s+(?:taza|kiosko|quiosco)(?:\s|$)/i.test(input.value.trim()))input.value=input.value.trim().slice(1);},true);
+    doc.addEventListener('submit',e=>{if(e.target===form && /^\/demo\s+(?:taza|kiosko|quiosco|pantallas|screens)(?:\s|$)/i.test(input.value.trim()))input.value=input.value.trim().slice(1);},true);
     let history = [];
     try { history = JSON.parse(local.getItem(HISTORY_KEY) || '[]').filter(x => typeof x === 'string').slice(-50); } catch (_) {}
     let cursor = history.length, draft = '';
