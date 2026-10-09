@@ -1,5 +1,5 @@
 {
-  "version": "v.08.10.2026.r26.22:45",
+  "version": "v.09.10.2026.r1.05:34",
   "deployer": "GrokBot",
   "machine": "MacMini",
   "signature": "GrokBot · MacMini",
@@ -9,8 +9,8 @@
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
-    "SneakerStore queda publicado en XpaceOS (contrato, gemelo y ayuda) para que admira.store pueda espejarlo.",
-    "La portada sigue abriendo el gemelo en Hiperreal.",
-    "/demo global: proyecto, Xpacio, playlist Pixeria y gemelo en una guía reutilizable."
+    "Neo prepara sus clips: muffin 3D hiperrealista (web 0,9 MB y HD para Unreal) en el inventario del TPV Starbucks.",
+    "Nuevo IF «Cojo una taza»: la taza verde de la estantería se coge y va a la caja; /demo coger taza hace el gesto y /demo taza sigue abriendo la cámara.",
+    "La regla del agua admite imagen y vídeo de Pixeria en cada botella, con el vídeo sin audio bajo la locución."
   ]
 }

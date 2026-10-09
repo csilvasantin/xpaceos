@@ -1,12 +1,16 @@
-import './xpl-runtime.js?v=agua-voz-1';
+import './xpl-runtime.js?v=neo-prep-1';
 import {POS_DEMO_SONG,createPOSDemoSound} from './pos-demo-sound.mjs?v=xtore-ux-3';
 import {WATER_THANKS,VOICE_MODES,createVoiceSpeaker} from './retail-voice.mjs?v=agua-voz-1';
 export const RETAIL_RULES_KEY='xpaceos.xpl.retail.v1:alsea-sbux-021:starbucks-tpv-01';
 export const RETAIL_STOCK_URL='https://api.admira.store/stock/list?type=music&limit=200';
 export const RETAIL_CATALOG_URL='https://www.admira.store/admira-xp/media-catalog';
 // waterDelivered (8-oct-2026): dejar una botella de agua en la caja. Cada entrega vuelve a disparar sus DO.
-export const RETAIL_EVENTS=Object.freeze(['muffinPicked','muffinDelivered','waterDelivered']);
-export const RETAIL_EVENT_LABELS=Object.freeze({muffinPicked:{es:'Cojo un muffin',en:'I pick up a muffin'},muffinDelivered:{es:'Llevo un muffin a la caja',en:'I take a muffin to the register'},waterDelivered:{es:'Dejo una botella de agua en la caja',en:'I leave a water bottle at the register'}});
+// mugPicked (8-oct-2026): coger la taza Starbucks de la estantería del Matrix (o /demo coger taza). Prepara los clips de Neo.
+export const RETAIL_EVENTS=Object.freeze(['muffinPicked','muffinDelivered','waterDelivered','mugPicked']);
+export const RETAIL_EVENT_LABELS=Object.freeze({muffinPicked:{es:'Cojo un muffin',en:'I pick up a muffin'},muffinDelivered:{es:'Llevo un muffin a la caja',en:'I take a muffin to the register'},waterDelivered:{es:'Dejo una botella de agua en la caja',en:'I leave a water bottle at the register'},mugPicked:{es:'Cojo una taza',en:'I pick up a mug'}});
+// Eventos que se repiten en cada gesto (cada botella vuelve a reaccionar) y reacciones que admiten.
+export const RETAIL_REPEAT_EVENTS=Object.freeze(['waterDelivered']);
+export const RETAIL_REPEAT_KINDS=Object.freeze(['tts','image','video']);
 export const RETAIL_REACTIONS=Object.freeze([
  {kind:'music',action:'playSong',filter:'#musica',es:'Música',en:'Music'},
  {kind:'locucion',action:'playVoice',filter:'#locucion',es:'Locución',en:'Voiceover'},
@@ -47,7 +51,7 @@ export function createRetailRulebook({storage=globalThis.localStorage,XPL=global
  const state=()=>({rules:structuredClone(rules),media:structuredClone(songs),songs:structuredClone(songs.filter(a=>a.kind==='music')),loading,error});
  function save(next){if(!Array.isArray(next)||next.some(r=>!validRetailRule(r)))throw Error('rule');const copy=structuredClone(next);storage.setItem(RETAIL_RULES_KEY,JSON.stringify({version:3,seeded:['water'],rules:copy,media:songs}));rules=copy;onChange(state());}
  async function refresh(){if(inflight)return inflight;loading=true;error='';onChange(state());inflight=(async()=>{try{const res=await fetcher(RETAIL_CATALOG_URL,{cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(65000)});if(!res.ok)throw Error('stock');const d=await res.json();const items=(d.items||[]).map(mediaAsset).filter(Boolean);songs=[...new Map([...songs,...items].map(s=>[s.kind+':'+s.id,s])).values()];loaded=true;try{storage.setItem(RETAIL_RULES_KEY,JSON.stringify({version:3,seeded:['water'],rules,media:songs}));}catch{error='storage';}}catch{error='stock';}finally{loading=false;inflight=null;onChange(state());}return state();})();return inflight;}
- function selectActions(event,snapshot=rules){if(!RETAIL_EVENTS.includes(event))return [];const facts={muffinPicked:false,muffinDelivered:false,waterDelivered:false,[event]:true};const matches=snapshot.filter(r=>r.enabled!==false&&validRetailRule(r)&&XPL.evalCondition(r.when,{fact:id=>facts[id]}));matches.sort((a,b)=>(a.priority||0)-(b.priority||0));const rule=matches.at(-1);if(!rule)return [];return rule.do.flatMap(action=>{if(action.id==='sayText')return [{id:'say:'+rule.id,kind:'tts',title:'🔊 '+(action.text?.es||action.value||WATER_THANKS.es),url:'',action:structuredClone(action),screens:[]}];if(action.id==='showWaterOffer')return [{id:'water-offer',kind:'offer',title:'Oferta agua / Water offer',url:'',screens:action.screens||[...WATER_OFFER_SCREENS]}];const asset=songs.find(s=>s.id===action.value&&s.kind===reactionForAction(action).kind);return asset?[{...asset,screens:action.screens||['starbucks-tpv-01']}]:[];});}
+ function selectActions(event,snapshot=rules){if(!RETAIL_EVENTS.includes(event))return [];const facts=Object.fromEntries(RETAIL_EVENTS.map(id=>[id,id===event]));const matches=snapshot.filter(r=>r.enabled!==false&&validRetailRule(r)&&XPL.evalCondition(r.when,{fact:id=>facts[id]}));matches.sort((a,b)=>(a.priority||0)-(b.priority||0));const rule=matches.at(-1);if(!rule)return [];return rule.do.flatMap(action=>{if(action.id==='sayText')return [{id:'say:'+rule.id,kind:'tts',title:'🔊 '+(action.text?.es||action.value||WATER_THANKS.es),url:'',action:structuredClone(action),screens:[]}];if(action.id==='showWaterOffer')return [{id:'water-offer',kind:'offer',title:'Oferta agua / Water offer',url:'',screens:action.screens||[...WATER_OFFER_SCREENS]}];const asset=songs.find(s=>s.id===action.value&&s.kind===reactionForAction(action).kind);return asset?[{...asset,screens:action.screens||['starbucks-tpv-01']}]:[];});}
  const select=(event,snapshot=rules)=>selectActions(event,snapshot)[0]||null;
  return {state,save,refresh,ensure:()=>loaded?Promise.resolve(state()):refresh(),select,selectActions};
 }
@@ -55,35 +59,45 @@ let shared;
 export function retailRulebook(){return shared||(shared=createRetailRulebook({onChange:()=>globalThis.dispatchEvent(new CustomEvent('xpace:retail-rules'))}));}
 // Snapshot and prime all actions inside the original gesture. One event, N DOs.
 export function createRetailRulePlayer({book,audio,audioFactory, music,visual,visualFactory,speakerFactory=action=>createVoiceSpeaker(action),onState=()=>{}}){
- let plans=new Map(),fired=new Set(),active=[],error='',generation=0,repeat=[];
+ let plans=new Map(),fired=new Set(),active=[],error='',generation=0,repeat=[],repeatPlan=new Map(),audioUsed=false;
+ const dropActive=entry=>{if(repeat.includes(entry))active=active.filter(e=>e!==entry);};
  const state=()=>({playing:active.some(x=>x.playing),title:[...new Set(active.map(x=>x.asset.title))].join(' + '),kind:active[0]?.asset.kind||'',error,actions:active.map(x=>({title:x.asset.title,kind:x.asset.kind,screens:x.asset.screens,playing:x.playing}))});
  const publish=()=>onState(state());
- function stop(){generation++;for(const entries of [...plans.values(),repeat])for(const e of entries){e.dispose();e.playing=false;}plans.clear();active=[];repeat=[];error='';publish();}
- function prepare(){stop();fired.clear();const snapshot=book.state().rules;let audioUsed=false;for(const event of RETAIL_EVENTS){
-   if(event==='waterDelivered')continue; // se planifica en cada entrega (fire)
-   const assets=book.selectActions?book.selectActions(event,snapshot):[book.select(event,snapshot)].filter(Boolean),hasAudio=assets.some(a=>['music','locucion','tts'].includes(a.kind));let videoAudioUsed=false;
-   const entries=[];
-   for(let index=0;index<assets.length;index++){
-    const asset=assets[index];
-    const destinations=['image','video'].includes(asset.kind)?asset.screens.filter(id=>!assets.slice(index+1).some(a=>['image','video'].includes(a.kind)&&a.screens.includes(id))):[null];
-    for(const destination of destinations){const entry={asset:{...asset,screens:destination?[destination]:[]},playing:false};
-     const end=value=>{entry.playing=false;if(value?.error)error='media';publish();};
-     if(asset.kind==='offer')continue; // la pinta la experiencia TPV (waterOfferScreens)
-     if(asset.kind==='tts'){const sp=speakerFactory?.(asset.action);if(!sp)continue;entry.play=async()=>{entry.playing=true;publish();try{await sp.play();}finally{end();}};entry.dispose=()=>sp.stop();entries.push(entry);continue;}
-     if(['music','locucion'].includes(asset.kind)){
-      const node=audioUsed?audioFactory?.():audio;audioUsed=true;if(!node)continue;
-      const adapter=createPOSDemoSound({audio:node,music,onEnded:end});adapter.prepare(asset);entry.play=()=>adapter.play();entry.dispose=()=>{adapter.dispose();if(node!==audio)node.remove?.();};
-     }else{
-      const muted=hasAudio||videoAudioUsed;if(asset.kind==='video')videoAudioUsed=true;
-      const adapter=visualFactory?visualFactory(destination,{muted}):visual;if(!adapter)continue;
-      const unsubscribe=adapter.subscribe?.(end);adapter.prepare(asset);entry.play=()=>adapter.play();entry.dispose=()=>{unsubscribe?.();adapter.dispose?.();adapter.stop?.();};
-     }entries.push(entry);
-    }
-   }plans.set(event,entries);
+ function stop(){generation++;for(const entries of [...plans.values(),...repeatPlan.values(),repeat])for(const e of entries){e.dispose();e.playing=false;}plans.clear();repeatPlan.clear();active=[];repeat=[];error='';publish();}
+ // Una lista de reacciones → entradas listas para sonar/pintar (cebadas dentro del gesto).
+ // audioUsed recorre todo prepare(): el primer audio usa el <audio> principal y los demás uno propio.
+ function build(assets,onEnd=()=>{},hasAudio=assets.some(a=>['music','locucion','tts'].includes(a.kind))){let videoAudioUsed=false;const entries=[];
+  for(let index=0;index<assets.length;index++){
+   const asset=assets[index];
+   const destinations=['image','video'].includes(asset.kind)?asset.screens.filter(id=>!assets.slice(index+1).some(a=>['image','video'].includes(a.kind)&&a.screens.includes(id))):[null];
+   for(const destination of destinations){const entry={asset:{...asset,screens:destination?[destination]:[]},playing:false};
+    const end=value=>{entry.playing=false;if(value?.error)error='media';onEnd(entry);publish();};
+    if(asset.kind==='offer')continue; // la pinta la experiencia TPV (waterOfferScreens)
+    if(asset.kind==='tts'){const sp=speakerFactory?.(asset.action);if(!sp)continue;entry.sequential=true;entry.play=async()=>{entry.playing=true;publish();try{await sp.play();}finally{end();}};entry.dispose=()=>sp.stop();entries.push(entry);continue;}
+    if(['music','locucion'].includes(asset.kind)){
+     const node=audioUsed?audioFactory?.():audio;audioUsed=true;if(!node)continue;
+     const adapter=createPOSDemoSound({audio:node,music,onEnded:end});adapter.prepare(asset);entry.play=()=>adapter.play();entry.dispose=()=>{adapter.dispose();if(node!==audio)node.remove?.();};
+    }else{
+     const muted=hasAudio||videoAudioUsed;if(asset.kind==='video')videoAudioUsed=true;
+     const adapter=visualFactory?visualFactory(destination,{muted}):visual;if(!adapter)continue;
+     const unsubscribe=adapter.subscribe?.(end);adapter.prepare(asset);entry.play=()=>adapter.play();entry.dispose=()=>{unsubscribe?.();adapter.dispose?.();adapter.stop?.();};
+    }entries.push(entry);
+   }
+  }return entries;}
+ const repeatAssets=(event,snapshot)=>(book.selectActions?book.selectActions(event,snapshot):[]).filter(a=>RETAIL_REPEAT_KINDS.includes(a.kind));
+ function prepare(){stop();fired.clear();audioUsed=false;const snapshot=book.state().rules;for(const event of RETAIL_EVENTS){
+   // Agua: imagen/vídeo se ceban ya en el gesto; la locución se crea en cada entrega (fireRepeat).
+   if(RETAIL_REPEAT_EVENTS.includes(event)){const all=repeatAssets(event,snapshot);repeatPlan.set(event,build(all.filter(a=>a.kind!=='tts'),dropActive,all.some(a=>a.kind==='tts')));continue;}
+   plans.set(event,build(book.selectActions?book.selectActions(event,snapshot):[book.select(event,snapshot)].filter(Boolean)));
   }}
- // Agua: cada botella entregada vuelve a sonar; no sustituye la reacción del muffin que esté sonando.
- async function fireRepeat(event){for(const e of repeat)e.dispose();repeat=[];const assets=(book.selectActions?book.selectActions(event,book.state().rules):[]).filter(a=>a.kind==='tts');const entries=[];for(const asset of assets){const sp=speakerFactory?.(asset.action);if(!sp)continue;const entry={asset:{...asset},playing:false,dispose:()=>sp.stop()};entry.play=async()=>{entry.playing=true;publish();try{await sp.play();}finally{entry.playing=false;publish();}};entries.push(entry);}repeat=entries;active=[...active.filter(e=>!entries.includes(e)),...entries];for(const e of entries)await e.play().catch(()=>{error='media';});active=active.filter(e=>!entries.includes(e));publish();return state();}
- async function fire(event){if(event==='waterDelivered')return fireRepeat(event);if(fired.has(event))return state();fired.add(event);const entries=plans.get(event)||[];if(!entries.length)return state();const token=generation;
+ // Agua: cada botella entregada vuelve a sonar y a pintar su imagen/vídeo; no sustituye la reacción del muffin que esté sonando.
+ // Imagen y vídeo salen del plan cebado en el gesto (pointerdown); sin plan (p. ej. /demo 14) se crean en la misma llamada.
+ async function fireRepeat(event){for(const e of repeat){e.dispose();e.playing=false;}const snapshot=book.state().rules,primed=repeatPlan.get(event);repeatPlan.delete(event);
+  const all=repeatAssets(event,snapshot),visuals=primed||build(all.filter(a=>a.kind!=='tts'),dropActive,all.some(a=>a.kind==='tts')),voices=build(all.filter(a=>a.kind==='tts'),dropActive),entries=[...visuals,...voices];
+  repeat=entries;active=[...active.filter(e=>!entries.includes(e)),...entries];error='';const token=generation;
+  await Promise.all([...visuals.map(async e=>{try{await e.play();if(token===generation)e.playing=true;}catch{if(token===generation){e.playing=false;error='media';dropActive(e);}}}),(async()=>{for(const e of voices)await e.play().catch(()=>{error='media';});})()]);
+  if(token===generation){active=active.filter(e=>!entries.includes(e)||e.playing);publish();}return state();}
+ async function fire(event){if(RETAIL_REPEAT_EVENTS.includes(event))return fireRepeat(event);if(fired.has(event))return state();fired.add(event);const entries=plans.get(event)||[];if(!entries.length)return state();const token=generation;
   // A later delivery reaction replaces the pickup reaction without losing priming.
   for(const e of active)if(!entries.includes(e)){e.dispose();e.playing=false;}active=entries;error='';
   await Promise.all(entries.map(async e=>{try{await e.play();if(token===generation)e.playing=true;}catch{if(token===generation){e.playing=false;error='media';}}}));
