@@ -20,6 +20,16 @@
 (function (root) {
   'use strict';
 
+  // Native demos preserve the current project selector and existing adapter providers.
+  function nativeDemoContext() {
+    const selected = root.document?.querySelector('#projectSelector');
+    const params = new URL(root.location.href).searchParams;
+    return {project: selected?.value || params.get('project') || params.get('proyecto') || ''};
+  }
+  root.AdmiraIOSDemoContext = root.AdmiraIOSDemoContext || nativeDemoContext;
+  root.AdmiraAndroidDemoContext = root.AdmiraAndroidDemoContext || root.AdmiraIOSDemoContext;
+  // End native demo context.
+
   // Clave antigua del estado abierto/cerrado. Ya no se restaura: los paneles entran CERRADOS en
   // cada carga (Carlos, 3-oct-2026). Se borra al arrancar; el tamaño sí se recuerda
   // (xpaceos_shell_size_v1:<panel>).
@@ -599,7 +609,7 @@
     root.XpaceShell = Object.assign(shared, {inline: true});
     let enIframe = false;
     try { enIframe = root.self !== root.top; } catch (_) { enIframe = true; }
-    if (!enIframe) {cargarCargador();const engine=doc.createElement('script');engine.src='https://www.admiranext.com/suite/loader.js?v=20261012-unified-1';doc.head.appendChild(engine);}
+    if (!enIframe) {cargarCargador();const engine=doc.createElement('script');engine.src='/suite/loader.js?v=20261012-android-five-1';doc.head.appendChild(engine);}
     return;
   }
   if (root.XpaceShell) return;
@@ -836,7 +846,7 @@
   // Con la piel el panel queda abierto para el shell (sin inert): manda el estado de la piel.
   function suiteExperto() {
     if (root.top !== root.self || /(^|[?&])embed=/.test(location.search)) return;
-    const V = '20261012-unified-1', BASE = 'https://www.admiranext.com/suite/experto';
+    const V = '20261012-android-five-1', BASE = '/suite/experto';
     const host = location.hostname.replace(/^www\./, '');
     const nativeDemo = /^(admira\.store|xpaceos\.com)$/.test(host) && new URLSearchParams(location.search).get('ax_demo') === 'store';
     if (doc.querySelector('script[src^="' + BASE + '.js"]')) return;

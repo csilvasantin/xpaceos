@@ -1,12 +1,12 @@
 {
   "name": "XpaceOS",
   "description": "MCP de XpaceOS, el sistema operativo del comercio físico y nexo operativo de la Galaxia Admira: conecta creación, gemelos, pantallas, emisión, audiencia y trabajo mediante identificadores compartidos y servidores MCP federados.",
-  "version": "v.09.10.2026.r4.22:52",
+  "version": "v.12.10.2026.r2.16:19",
   "endpoint": "https://mcp.admira.store/mcp",
   "transport": "streamable-http",
   "server": {
     "name": "xpaceos-mcp",
-    "version": "2.12.84",
+    "version": "2.12.103",
     "health": "https://mcp.admira.store/",
     "tool_count": 35
   },
@@ -2932,5 +2932,41 @@
     ],
     "mcp_control": "Sin herramienta MCP nueva: /calibrar y /demo pantallas por /twin/cmd o Telegram devuelven el enlace. No backend tool; remote commands answer with the link.",
     "pending": "Persistencia compartida en un backend (hoy: JSON del repositorio + localStorage)."
+  },
+  "native_players": {
+    "commands": {
+      "both": "/demo android",
+      "fold": "/demo android Fold8",
+      "watch": "/demo android watch",
+      "selector": "optional playlist NAME_OR_ID or #tag"
+    },
+    "project": "current twin selector or explicit URL; missing project is an error",
+    "runtime": "installed Mac bridge + fleet-owned virtual devices",
+    "model": "Fold8 alias Pixel Fold Android16; no Samsung firmware",
+    "watch": "Wear OS4 silent visual demo; audio titles only; 8MiB per visual asset,24MiB cache",
+    "physical_players_changed": false,
+    "shared_audio_clock": false,
+    "new_mcp_execution_tool": false,
+    "guide": "https://www.xpaceos.com/admira-xp/docs/native-players.md",
+    "tutorial": {
+      "url": "https://api.yokup.com/media/fleet/dddb19c869cc0feb.mp4",
+      "sha256": "2ad8e76ef4d3bedcbf8e1a44ecd4fdb1cbd04d60deb464f4a9aac38d9e34f9b0",
+      "kind": "verified animation, not screen recording"
+    },
+    "verified_bridge_commands": [
+      "both",
+      "fold",
+      "watch"
+    ],
+    "sites": [
+      "admira.biz",
+      "pixeria.com",
+      "xpaceos.com",
+      "yokup.com",
+      "clearchannel.tv"
+    ],
+    "android_source": "cf5feb5b13445b41ed3552e2464885964c122f5b",
+    "bridge_source": "9420d2e233e2683581878a6ac3244294cdc882d1",
+    "resource": "xpaceos://native-players"
   }
 }

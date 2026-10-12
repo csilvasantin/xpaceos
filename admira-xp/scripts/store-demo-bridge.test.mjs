@@ -28,7 +28,7 @@ test('local content commands delegate exact normalized text and do not choose gl
     const answer=await runStoreDemo(parsed.text,{root:f.root});assert.equal(answer.ok,true);assert.equal(answer.local,true);assert.equal(answer.message,'Local result');
   }
   assert.equal(f.calls.length,12);assert.equal(f.native.length,12,'new rehearsals cancel the prior native journey');
-  assert.equal(STORE_DEMO_ENGINE_URL,'https://www.admiranext.com/suite/experto.js');
+  assert.equal(STORE_DEMO_ENGINE_URL,'/suite/experto.js');
   assert.equal(await loadStoreDemoEngine(f.root),f.root.AdmiraExperto);
 });
 
@@ -59,7 +59,7 @@ test('lazy bootstrap coalesces concurrent requests, uses a fresh canonical HTTPS
   const m=await import('./store-demo-bridge.mjs?bootstrap-success');const f=engineFixture(),scripts=[];
   const root={document:{createElement(){return {dataset:{},remove(){}};},head:{appendChild(script){scripts.push(script);queueMicrotask(()=>{root.AdmiraExperto=f.root.AdmiraExperto;script.onload();});}}}};
   const [a,b]=await Promise.all([m.loadStoreDemoEngine(root),m.loadStoreDemoEngine(root)]);assert.equal(a,b);assert.equal(scripts.length,1);
-  const script=scripts[0],url=new URL(script.src);assert.equal(url.origin,'https://www.admiranext.com');assert.equal(url.pathname,'/suite/experto.js');assert.match(url.searchParams.get('v'),/^store-local-autopilot-1-\d+$/);
+  const script=scripts[0],url=new URL(script.src,'https://www.xpaceos.com');assert.equal(url.origin,'https://www.xpaceos.com');assert.equal(url.pathname,'/suite/experto.js');assert.match(url.searchParams.get('v'),/^store-local-autopilot-1-\d+$/);
   assert.equal(script.dataset.pata,'admira.store');assert.equal(script.dataset.panel,'#store-demo-engine');assert.equal(script.dataset.toggle,'');assert.equal(script.dataset.dock,'off');
 });
 
