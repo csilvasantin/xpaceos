@@ -1,6 +1,6 @@
 // Only prepared local rehearsals. The native CLI keeps ownership of its log,
 // history, white label and physical controls; the shared engine owns /demo.
-export const STORE_DEMO_ENGINE_URL='https://www.admiranext.com/suite/experto.js';
+export const STORE_DEMO_ENGINE_URL='/suite/experto.js';
 let loading;
 function ready(root){return typeof root.AdmiraExperto?.demo==='function'&&typeof root.AdmiraExperto?.demoEstado==='function';}
 export function hasStoreRehearsal(root=globalThis){return !!root.AdmiraExperto?.demoEstado?.().activo;}

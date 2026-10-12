@@ -550,5 +550,10 @@
     "Starbucks arranca en kiosco y reproduce la playlist de sus seis pantallas",
     "Cesta conservada; la oferta del agua se activa al entregar y no tapa la playlist al recargar",
     "Pedido preparado: una locución en castellano y otra en inglés, sin duplicados"
+  ],
+  "v.12.10.2026.r2.16:19": [
+    "Demos Android: /demo android, /demo android Fold8 y /demo android watch con el proyecto seleccionado.",
+    "Help web/CLI y MCP documentan versiones, pruebas y tutorial de los cinco pilares.",
+    "Watch demo silencioso y aislado; Fold8 es perfil compatible, sin Samsung One UI."
   ]
 }
