@@ -561,7 +561,7 @@
     "Fundido entre piezas y ficha «En emisión» al pasar el ratón: pieza, playlist, posición y siguiente.",
     "Doble clic acerca la cámara a una pantalla; /emision y /emision luz en el CLI Experto."
   ],
-  "v.13.10.2026.r2.19:12": [
+  "v.13.10.2026.r2.19:27": [
     "Starbucks · Good, Better y Best: la pared, el TPV y el iPad reproducen las mismas playlists que Matrix.",
     "Siguen el estado vivo de MCP, las asignaciones y el reparto /sincro; /emision escena on|off lo apaga.",
     "Corregido: el TPV se quedaba en pausa en Matrix al recibir su playlist por MCP mientras cargaba."
