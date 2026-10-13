@@ -555,5 +555,10 @@
     "Demos Android: /demo android, /demo android Fold8 y /demo android watch con el proyecto seleccionado.",
     "Help web/CLI y MCP documentan versiones, pruebas y tutorial de los cinco pilares.",
     "Watch demo silencioso y aislado; Fold8 es perfil compatible, sin Samsung One UI."
+  ],
+  "v.13.10.2026.r1.18:22": [
+    "Matrix · Starbucks: cada pantalla arroja sobre la sala la luz de su contenido, en directo.",
+    "Fundido entre piezas y ficha «En emisión» al pasar el ratón: pieza, playlist, posición y siguiente.",
+    "Doble clic acerca la cámara a una pantalla; /emision y /emision luz en el CLI Experto."
   ]
 }
