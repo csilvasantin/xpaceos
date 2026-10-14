@@ -579,5 +579,10 @@
     "Emiten lo que Good tiene fijado, el contenido del Stock con su etiqueta XT-GRACIA-… o la parrilla de la casa; fichas «En emisión».",
     "Los muebles se levantan: arrastrar, girar con R y soltar; huella verde o roja, imán al hueco libre y Ctrl/⌘+Z.",
     "Los 43 muebles renderizados de nuevo en Blender, con sombra de suelo; el quiosco del tótem se ve en perspectiva."
+  ],
+  "v.14.10.2026.r3.20:06": [
+    "Experto abre al mínimo y se redimensiona con el tirador compartido.",
+    "/bugito flota en la página; full o avanzado abre el laboratorio.",
+    "Las URLs antiguas de Experto cargan el motor común, sin duplicar comandos."
   ]
 }

@@ -3136,5 +3136,17 @@
     "android_source": "cf5feb5b13445b41ed3552e2464885964c122f5b",
     "bridge_source": "9420d2e233e2683581878a6ac3244294cdc882d1",
     "resource": "xpaceos://native-players"
+  },
+  "expert_ui": {
+    "minimumHeight": 52,
+    "engine": "https://www.admiranext.com/suite/experto.js",
+    "guide": "https://www.xpaceos.com/admira-xp/docs/expert-minimum-bugito.md",
+    "commands": [
+      "/bugito",
+      "/bugito full",
+      "/bugito avanzado",
+      "/admirito"
+    ],
+    "newRemoteTools": false
   }
 }

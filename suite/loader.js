@@ -21,9 +21,9 @@
         G.addEventListener('keydown',function(e){if(e.target!==input||e.key!=='Enter'||e.shiftKey||e.isComposing)return;if(!String(input.value).trim().startsWith('/'))return;e.preventDefault();e.stopImmediatePropagation();form.requestSubmit();},true);
       }
       if(!panel.querySelector(p.form)||!panel.querySelector(p.log))continue;
-      var script=D.createElement('script');script.src='/suite/experto.js?v=20261012-android-five-1';script.id='admira-command-engine';
+      var script=D.createElement('script');script.src='https://www.admiranext.com/suite/experto.js?v=20261014-suite-validation-1';script.id='admira-command-engine';
       Object.keys(p).forEach(function(k){script.dataset[k]=p[k];});script.dataset.min='hide';script.dataset.toggle='none';
-      var css=D.createElement('link');css.rel='stylesheet';css.href='/suite/experto.css?v=20261012-android-five-1';D.head.appendChild(css);D.head.appendChild(script);
+      var css=D.createElement('link');css.rel='stylesheet';css.href='https://www.admiranext.com/suite/experto.css?v=20261014-suite-validation-1';D.head.appendChild(css);D.head.appendChild(script);
       if(observer)observer.disconnect();return true;
     }return false;
   }
