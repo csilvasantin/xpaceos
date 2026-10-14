@@ -632,7 +632,7 @@
     root.XpaceShell = Object.assign(shared, {inline: true});
     let enIframe = false;
     try { enIframe = root.self !== root.top; } catch (_) { enIframe = true; }
-    if (!enIframe) {cargarCargador();const engine=doc.createElement('script');engine.src='/suite/loader.js?v=20261012-android-five-1';doc.head.appendChild(engine);}
+    if (!enIframe) {cargarCargador();const engine=doc.createElement('script');engine.src='/suite/loader.js?v=20261014-suite-validation-1';doc.head.appendChild(engine);}
     return;
   }
   if (root.XpaceShell) return;
@@ -869,7 +869,7 @@
   // Con la piel el panel queda abierto para el shell (sin inert): manda el estado de la piel.
   function suiteExperto() {
     if (root.top !== root.self || /(^|[?&])embed=/.test(location.search)) return;
-    const V = '20261012-android-five-1', BASE = '/suite/experto';
+    const V = '20261014-suite-validation-1', BASE = 'https://www.admiranext.com/suite/experto';
     const host = location.hostname.replace(/^www\./, '');
     const nativeDemo = /^(admira\.store|xpaceos\.com)$/.test(host) && new URLSearchParams(location.search).get('ax_demo') === 'store';
     if (doc.querySelector('script[src^="' + BASE + '.js"]')) return;
