@@ -6,6 +6,9 @@
     "Recuperación de locuciones desde el servidor; segundo clic detiene",
     "El avatar conserva el contexto del local; ayuda y MCP en español e inglés"
   ],
+  "v.15.10.2026.r7.20:41": [
+    "Con la marca de un cliente la portada es estricta: el catálogo sólo enseña sus espacios (con Starbucks, 110 Starbucks; ni Xtanco ni genéricos) y el gemelo de referencia y los enlaces abren Starbucks Paseo de Gràcia. Los enlaces del menú no cambian."
+  ],
   "v.15.10.2026.r6.20:37": [
     "Portada: la pastilla ENG/ESP mide lo mismo que ☰ y ▤. Con ?marca=starbucks la portada ya filtra en la primera visita."
   ],
