@@ -1,5 +1,8 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.16.10.2026.r2.00:32": [
+    "Tinta electrónica en Diagonal e interfaz limpia por defecto en los gemelos de los locales (gemelo de admira.store)."
+  ],
   "v.16.10.2026.r1.00:18": [
     "Diagonal en Matrix: TPV con el hilo musical e iPad con la gestión de colas, como en Paseo de Gràcia (gemelo de admira.store)."
   ],
