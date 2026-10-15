@@ -6,6 +6,9 @@
     "Recuperación de locuciones desde el servidor; segundo clic detiene",
     "El avatar conserva el contexto del local; ayuda y MCP en español e inglés"
   ],
+  "v.15.10.2026.r4.20:08": [
+    "Proyecto y local con la marca de un cliente: el desplegable de locales ofrece los de esa marca aunque la escena abierta sea de otro proyecto (p. ej. un Xtanco con la marca Starbucks), y elegir uno abre ese local."
+  ],
   "v.15.10.2026.r3.20:04": [
     "Proyecto y local: con la marca de un cliente puesta a mano (?marca=starbucks, ?marca=altadis o /marca) sólo se ofrecen sus proyectos: Starbucks → Starbucks; Altadis → Altadis y Estancos.",
     "Como Admira, sin marca o con la marca que pone el propio proyecto al elegirlo se ofrecen todos; /marca off los vuelve a mostrar."
