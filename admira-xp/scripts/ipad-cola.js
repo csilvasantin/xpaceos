@@ -6,7 +6,10 @@
  * /ipad cola · /ipad off (vuelve a la playlist) · /ipad abrir. Demo: pedidos de ejemplo, pago SIMULADO. */
 (function(root){'use strict';const doc=root.document;if(!doc)return;
   const ID='starbucks-ipad-01',KEY='xpace:ipad-cola',RELAY='https://mcp-ainimation.admira.store';
-  const store=()=>{try{const q=new URLSearchParams(location.search).get('cola');if(q)return q.replace(/[^a-z0-9-]/g,'').slice(0,80);}catch(_){}return 'starbucks-paseo-de-gracia';};
+  // Cada local con su sala (Carlos, 16-oct-2026: «pide una cola propia para Diagonal»): el visor de centros la fija
+  // con XpaceIpadCola.sala('starbucks-diagonal-634'); si no, manda la URL y, por defecto, Paseo de Gràcia.
+  const SLUG=/^[a-z0-9-]{2,80}$/;let salaFija=null;
+  const store=()=>{if(salaFija)return salaFija;try{const q=new URLSearchParams(location.search).get('cola');if(q)return q.replace(/[^a-z0-9-]/g,'').slice(0,80);}catch(_){}return 'starbucks-paseo-de-gracia';};
   const pageUrl=()=>'https://www.ainimation.studio/cola/ipad.html?store='+store();
   // Gestor de colas oficial (Carlos, 7-oct-2026): al tocar el iPad se abre admira.tv/gestorColas (pantalla del iPad + control de barra).
   const GC='https://admira.tv/gestorColas',salaQ=()=>store()==='starbucks-paseo-de-gracia'?'':'&sala='+store();
@@ -19,8 +22,8 @@
   // aparece cuando ya se ha interactuado con el iPad (abierto una vez por toque, doble clic o /ipad abrir).
   let tocado=false;
   const active=()=>{try{return on&&(!!(root.XpaceStarbucks&&root.XpaceStarbucks.active())||!!doc.querySelector('.matrix-landscape-ipad'));}catch(_){return false;}};
-  async function tic(){if(!active())return;try{const d=await (await fetch(RELAY+'/cola/estado?store='+store(),{cache:'no-store'})).json();
-    const ls=(d.listo||[]).map(p=>p.numero);if(vistos){ls.forEach(n=>{if(!vistos.has(n))nuevos.set(n,Date.now());});}vistos=new Set(ls);data=d;}catch(_){}}
+  async function tic(){if(!active())return;const s=store();try{const d=await (await fetch(RELAY+'/cola/estado?store='+s,{cache:'no-store'})).json();
+    if(s!==store())return;const ls=(d.listo||[]).map(p=>p.numero);if(vistos){ls.forEach(n=>{if(!vistos.has(n))nuevos.set(n,Date.now());});}vistos=new Set(ls);data=d;}catch(_){}}
   setInterval(tic,3000);setTimeout(tic,800);
   // Modo demo (Carlos, 7-oct-2026): frases simpáticas en español de España invitando a pedir en el quiosco.
   const FRASES=['¡Hola! Soy Admirito, la nube más cafetera de Paseo de Gracia','¿Un café? Pídelo en el quiosco y te llamo por tu nombre','Hoy el Caffè Latte está de rechupete, ¡palabra de nube!','Toca el quiosco, elige y paga con el móvil: yo te aviso aquí','Si llueve, que sea de cookies','Pide en el quiosco y escribe tu nombre: me encanta decirlo alto','Un cortado, un latte, un té… ¡venga, pide!'];
@@ -117,5 +120,8 @@
   function command(a){a=String(a||'').trim().toLowerCase();if(!a||a==='cola'||a==='on'){on=true;try{root.localStorage.removeItem(KEY);}catch(_){}return {ok:true,message:'🧾 iPad del mostrador → gestor de colas (Admirito). Tócalo para abrirlo en grande.'};}
     if(a==='off'||a==='playlist'){on=false;setTimeout(matrixIpad,0);try{root.localStorage.setItem(KEY,'off');}catch(_){}return {ok:true,message:'📺 iPad del mostrador → su playlist de vídeo.'};}
     if(a==='abrir'||a==='open'){abrir(true);return {ok:true,message:colasUrl()};}return {ok:false,message:'/ipad cola · /ipad off · /ipad abrir'};}
-  root.XpaceIpadCola={id:ID,url:colasUrl,sceneUrl:pageUrl,controlUrl,on:()=>active(),open:()=>abrir(true),close:()=>abrir(false),touched:()=>tocado,untouch:()=>{tocado=false;},command,draw:drawCola,data:()=>data,demo:()=>{const d=data||{};return !['recibido','preparando','listo'].some(k=>Array.isArray(d[k])&&d[k].length);},frases:FRASES};
+  // Cambiar de sala olvida los pedidos de la anterior y lee la nueva al momento. Sin argumento, dice la actual.
+  function sala(v){if(v===undefined)return store();const antes=store();salaFija=v&&SLUG.test(String(v))?String(v):null;
+    if(store()!==antes){data=null;vistos=null;nuevos.clear();if(modal&&modal.classList.contains('on'))abrir(true);setTimeout(tic,0);}return store();}
+  root.XpaceIpadCola={id:ID,sala,url:colasUrl,sceneUrl:pageUrl,controlUrl,on:()=>active(),open:()=>abrir(true),close:()=>abrir(false),touched:()=>tocado,untouch:()=>{tocado=false;},command,draw:drawCola,data:()=>data,demo:()=>{const d=data||{};return !['recibido','preparando','listo'].some(k=>Array.isArray(d[k])&&d[k].length);},frases:FRASES};
 })(typeof window!=='undefined'?window:globalThis);
