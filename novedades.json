@@ -6,6 +6,9 @@
     "Recuperación de locuciones desde el servidor; segundo clic detiene",
     "El avatar conserva el contexto del local; ayuda y MCP en español e inglés"
   ],
+  "v.15.10.2026.r6.20:37": [
+    "Portada: la pastilla ENG/ESP mide lo mismo que ☰ y ▤. Con ?marca=starbucks la portada ya filtra en la primera visita."
+  ],
   "v.15.10.2026.r5.20:32": [
     "Portada sin modo Experto: en el sitio de ⌘, la pastilla de idioma del mismo tamaño — ENG pasa a inglés y ESP vuelve al castellano. El recorrido de demo nativo (?ax_demo=store) conserva su motor.",
     "Con la marca de un cliente puesta a mano la portada y las listas de Xpacios sólo enseñan lo suyo; con Starbucks, el gemelo de referencia abre Starbucks Paseo de Gràcia. Como Admira, todo."
