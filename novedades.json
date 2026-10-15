@@ -1,5 +1,8 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.15.10.2026.r15.23:58": [
+    "Matrix de Diagonal: las pantallas de la foto 360 emiten y las ventanas se mueven, se redimensionan y se cierran (gemelo de admira.store)."
+  ],
   "v.15.10.2026.r14.23:34": [
     "La fachada pulsable de la puerta brilla más (gemelo de admira.store)."
   ],
