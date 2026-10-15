@@ -6,6 +6,10 @@
     "Recuperación de locuciones desde el servidor; segundo clic detiene",
     "El avatar conserva el contexto del local; ayuda y MCP en español e inglés"
   ],
+  "v.15.10.2026.r3.20:04": [
+    "Proyecto y local: con la marca de un cliente puesta a mano (?marca=starbucks, ?marca=altadis o /marca) sólo se ofrecen sus proyectos: Starbucks → Starbucks; Altadis → Altadis y Estancos.",
+    "Como Admira, sin marca o con la marca que pone el propio proyecto al elegirlo se ofrecen todos; /marca off los vuelve a mostrar."
+  ],
   "v.15.10.2026.r2.19:51": [
     "Starbucks · centros: al elegir local en «Proyecto y local» del gemelo Matrix se abre ese centro: Paseo de Gràcia 103, Diagonal 634 o Gran de Gràcia 51 (laboratorio).",
     "Desde Paseo de Gràcia 103, enlace al gemelo Matrix completo; al cambiar de centro la dirección deja de arrastrar el local de origen."
