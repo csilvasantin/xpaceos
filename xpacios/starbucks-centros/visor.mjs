@@ -6,7 +6,8 @@ import { crearPanorama } from './panorama.mjs?v=sc-pano-6';
 import { montarCombos } from '/assets/xpace-combos.mjs?v=puerta-1';
 import { montarVentanas } from './ventanas.mjs?v=sc-vent-2';
 import { crearHiloTPV } from './hilo-tpv.mjs?v=sc-tpv-3';
-import { crearMandoTPV } from './mando-tpv.mjs?v=sc-mando-2';
+import { crearMandoTPV } from './mando-tpv.mjs?v=sc-mando-3';
+import { hacerMovible } from './movible.mjs?v=sc-movible-1';
 import { crearCajaTPV, mapaPantallas } from './caja-tpv.mjs?v=sc-caja-1';
 // xpaceos no tiene /admira-xp/api/context-playlist (es estático): el TPV toca la playlist publicada y el mando
 // enlaza el mismo visor en admira.store para editarla.
@@ -146,7 +147,9 @@ function abrirCesta() {
     ventanaCesta.querySelector('[data-cesta="vaciar"]').addEventListener('click', () => { piezas.caja.vaciar(); pintarCesta(); });
     ventanaCesta.querySelector('[data-cesta="detener"]').addEventListener('click', () => { piezas.caja.detener(); pintarCesta(); });
     document.body.append(ventanaCesta);
+    ventanaCesta.movil = hacerMovible(ventanaCesta.querySelector('.sc-mando-caja'), ventanaCesta.querySelector('header'), { clave: 'sc-cesta-v1' });
   }
+  ventanaCesta.movil.restaurar();
   ventanaCesta.querySelector('strong').textContent = '🛒 TPV · Cesta' + (centro ? ' · ' + centro.nombre : '');
   pintarCesta(); try { if (!ventanaCesta.open) ventanaCesta.showModal(); } catch { ventanaCesta.setAttribute('open', ''); }
   return piezas.caja;
