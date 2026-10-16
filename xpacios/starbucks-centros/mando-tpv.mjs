@@ -5,6 +5,7 @@
 // Foco (Carlos, 16-oct-2026: «pon un botón que sea foco y ponga el tpv centrado en el fondo en primer plano, como
 // hacemos con el kiosko… un botón pequeño a la izquierda de Hilo musical · con el nombre del centro»): ◎ lleva la
 // vista al TPV y aparta el mando a un lado para verlo; otra vez, vuelve donde estaba.
+import { hacerMovible } from './movible.mjs?v=sc-movible-1';
 export const EDITOR = 'https://www.admira.store';
 
 export function enlaceEdicion(loc = globalThis.location) {
@@ -12,7 +13,7 @@ export function enlaceEdicion(loc = globalThis.location) {
 }
 
 export function crearMandoTPV({ doc = document, musica, win = globalThis, alEnfocar = null } = {}) {
-  let modal = null, titulo = null, foco = null, enFoco = false, partes = null;
+  let modal = null, titulo = null, foco = null, enFoco = false, partes = null, movil = null;
   const hacer = (tag, cls, texto) => { const e = doc.createElement(tag); if (cls) e.className = cls; if (texto) e.textContent = texto; return e; };
   function ponerFoco(on) {
     enFoco = !!on && !!alEnfocar;
@@ -64,11 +65,13 @@ export function crearMandoTPV({ doc = document, musica, win = globalThis, alEnfo
     modal.addEventListener('click', e => { if (e.target === modal) cerrar(); });
     modal.addEventListener('cancel', e => { e.preventDefault(); cerrar(); });
     doc.body.append(modal);
+    // Se mueve por la cabecera y cambia de tamaño por la esquina, como las demás ventanas.
+    movil = hacerMovible(modal.querySelector('.sc-mando-caja'), modal.querySelector('header'), { clave: 'sc-mando-tpv-v1', win });
     musica.subscribe(pintar); win.setInterval(() => { if (modal.open) pintar(); }, 500);
   }
   function abrir(local = '') {
     montar();
-    titulo.textContent = '♪ Hilo musical' + (local ? ' · ' + local : ''); ponerFoco(false); pintar();
+    titulo.textContent = '♪ Hilo musical' + (local ? ' · ' + local : ''); ponerFoco(false); pintar(); movil.restaurar();
     try { if (!modal.open) modal.showModal(); } catch { modal.setAttribute('open', ''); }
     return true;
   }
