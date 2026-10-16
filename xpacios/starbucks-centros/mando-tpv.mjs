@@ -5,7 +5,7 @@
 // Foco (Carlos, 16-oct-2026: «pon un botón que sea foco y ponga el tpv centrado en el fondo en primer plano, como
 // hacemos con el kiosko… un botón pequeño a la izquierda de Hilo musical · con el nombre del centro»): ◎ lleva la
 // vista al TPV y aparta el mando a un lado para verlo; otra vez, vuelve donde estaba.
-import { hacerMovible } from './movible.mjs?v=sc-movible-1';
+import { hacerMovible } from './movible.mjs?v=sc-movible-2';
 export const EDITOR = 'https://www.admira.store';
 
 export function enlaceEdicion(loc = globalThis.location) {
