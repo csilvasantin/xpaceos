@@ -165,3 +165,35 @@ test('el quiosco de pedidos de la pared de Diagonal: el de Paseo de Gràcia con 
   assert.equal(pedidoDe(msg('https://www.ainimation.studio', { source: 'ainimation-xperiencia', event: 'ready' }), marco), null);
   assert.match(visor, /else if \(p\.tipo === 'kiosko'\) texturaPieza\(p\)\.userData\.fuente\.abrir\(\);/);
 });
+
+test('el hilo musical de cada local en xpaceos: su mando con foco y la edición en admira.store', async () => {
+  // xpaceos es estático (sin /admira-xp/api/context-playlist): el visor no usa el cliente de playlists.
+  assert.ok(!/context-playlist-client/.test(visor.replace(/^\/\/.*$/gm, '')), 'sin cliente de playlists');
+  assert.match(visor, /piezas\.tpv = piezas\.tpv \|\| crearHiloTPV\(\{ abreMando: true \}\);/);
+  assert.match(visor, /actualizarURL\(\{ centro: c\.id, project: local \? 'starbucks' : null, venue: local, loc: null \}\);/);
+  const { enlaceEdicion } = await import('./mando-tpv.mjs');
+  assert.equal(enlaceEdicion({ pathname: '/xpacios/starbucks-centros/', search: '?centro=d634&project=starbucks&venue=starbucks-diagonal-634' }), 'https://www.admira.store/xpacios/starbucks-centros/?centro=d634&project=starbucks&venue=starbucks-diagonal-634');
+  const mando = readFileSync(aqui('./mando-tpv.mjs'), 'utf8');
+  assert.ok(!mando.includes('/admira-xp/scripts/music-remote.mjs'), 'no importa el mando de admira.store');
+  for (const t of ['Anterior', 'Escuchar', 'Siguiente', 'Lanzar pista', 'Editar en admira.store ↗']) assert.ok(mando.includes(`'${t}'`), t);
+  assert.match(visor, /if \(p\.tipo === 'tpv'\) \{ piezas\.mando = piezas\.mando \|\| crearMandoTPV\(\{ musica: piezas\.tpv\.musica, alEnfocar: enfocarTPV \}\); piezas\.mando\.abrir\(/);
+});
+test('el foco del mando: ◎ a la izquierda de «Hilo musical · centro» lleva el TPV al centro del hueco libre, de cerca', () => {
+  const mando = readFileSync(aqui('./mando-tpv.mjs'), 'utf8'), pano = readFileSync(aqui('./panorama.mjs'), 'utf8');
+  assert.match(mando, /<header><button class="sc-mando-foco" type="button" aria-label="Foco: el TPV en el centro, de cerca" aria-pressed="false">◎<\/button><strong><\/strong>/, 'pequeño, a la izquierda del título');
+  assert.match(mando, /foco\.addEventListener\('click', \(\) => \{ const on = !enFoco; ponerFoco\(on\); alEnfocar\(on\); \}\);/);
+  assert.match(visor, /crearMandoTPV\(\{ musica: piezas\.tpv\.musica, alEnfocar: enfocarTPV \}\)/);
+  assert.match(visor, /return pano\.enfocar\(tpv\.id, \{ x, y \}\);/, 'en el centro del hueco que deja el mando');
+  assert.match(visor, /if \(!on\) \{ const v = vistaAntesDelFoco; vistaAntesDelFoco = null; return v \? pano\.irA\(v\) : null; \}/, 'otra vez: la vista de antes');
+  assert.match(pano, /function enfocar\(id, \{ alto = 0\.28, x = 0\.5, y = 0\.5, dur = 700 \} = \{\}\)/);
+  assert.match(pano, /render\(\) \{ avanzar\(\); mirar\(\); renderer\.render\(escena, camara\); \}/, 'el giro es suave');
+  assert.match(pano, /girar\(dx, dy, alto\) \{\n      anim = null;/, 'arrastrar corta el giro');
+  assert.match(readFileSync(aqui('./centros.css'), 'utf8'), /\.sc-mando\.sc-mando--foco\{background:transparent;justify-content:flex-end/, 'con foco, el mando se aparta');
+});
+
+test('el mostrador de Diagonal como el de Paseo de Gràcia: iPad horizontal encima de la vitrina y la música en el TPV de la cola', () => {
+  const pz = Object.fromEntries(centros.find(c => c.id === 'd634').panorama.piezas.map(p => [p.id, p]));
+  assert.equal(pz['D634-IPAD'].horizontal, true, 'horizontal, como el de Paseo de Gràcia');
+  assert.deepEqual(pz['D634-IPAD'].esquinas, [[3471, 2043], [3598, 2046], [3581, 2117], [3448, 2115]], 'el marco de encima de la vitrina');
+  assert.deepEqual(pz['D634-TPV'].esquinas, [[3171, 2095], [3231, 2098], [3196, 2222], [3123, 2217]], 'el TPV donde estaba la cola');
+});
