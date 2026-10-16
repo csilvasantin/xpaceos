@@ -19,7 +19,7 @@ export function crearHiloTPV({ doc = document, fetchImpl = (...a) => fetch(...a)
   const lienzo = doc.createElement('canvas'); lienzo.width = ANCHO; lienzo.height = ALTO;
   const ctx = lienzo.getContext('2d');
   const audio = new Audio(); audio.preload = 'none'; audio.crossOrigin = 'anonymous'; audio.volume = 0.5;
-  let pistas = [], i = 0, sonando = false, portada = null, portadaDe = '', error = '', propia = false;
+  let pistas = [], i = 0, sonando = false, portada = null, portadaDe = '', error = '', propia = false, callado = 0;
   const oyentes = new Set();
   async function cargar() {
     for (const url of origenes) {
@@ -42,7 +42,7 @@ export function crearHiloTPV({ doc = document, fetchImpl = (...a) => fetch(...a)
   function poner() { const t = actual(); if (!t) return; audio.src = t.url; prepararPortada(); }
   function estado() {
     const t = actual();
-    return { title: t ? t.title : '', url: t ? t.url : '', started: sonando, muted: false, suppressed: false, playing: sonando && !audio.paused, position: audio.currentTime || 0, propia, pistas: pistas.length };
+    return { title: t ? t.title : '', url: t ? t.url : '', started: sonando, muted: false, suppressed: callado > 0, playing: sonando && !audio.paused, position: audio.currentTime || 0, propia, pistas: pistas.length };
   }
   function emitir() { const e = estado(); for (const f of oyentes) { try { f(e); } catch { /* otro oyente */ } } }
   async function reproducir() { try { await audio.play(); sonando = true; } catch { sonando = false; } emitir(); return sonando; }
@@ -96,6 +96,11 @@ export function crearHiloTPV({ doc = document, fetchImpl = (...a) => fetch(...a)
     async jump(url) { const n = pistas.findIndex(t => t.url === url); if (n < 0) throw Error('Unknown track'); i = n; poner(); return reproducir().then(estado); },
     next() { if (!pistas.length) return false; i = (i + 1) % pistas.length; poner(); void reproducir(); return true; },
     toggle() { void alternar(); },
+    // Una reacción del IF·THEN·DO THAT con sonido calla el hilo mientras dura (como en Paseo de Gràcia).
+    suppress() {
+      callado++; audio.pause(); emitir(); let hecho = false;
+      return () => { if (hecho) return; hecho = true; callado = Math.max(0, callado - 1); if (!callado && sonando) audio.play().catch(() => { sonando = false; }); emitir(); };
+    },
   };
   return {
     lienzo, listo, pintar, musica,
