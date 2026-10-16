@@ -2,12 +2,15 @@
 // panorama) con las playlists reproduciéndose de verdad en sus pantallas, en 3D y en Matrix.
 // Matrix (Carlos, 15-oct-2026) es la foto 360 real del local (panorama.mjs) si el centro la tiene.
 import * as T from '../../admira-xp/scripts/premium-three.mjs';
-import { crearPanorama } from './panorama.mjs?v=sc-pano-4';
+import { crearPanorama } from './panorama.mjs?v=sc-pano-5';
 import { montarCombos } from '/assets/xpace-combos.mjs?v=puerta-1';
 import { montarVentanas } from './ventanas.mjs?v=sc-vent-2';
-import { crearHiloTPV } from './hilo-tpv.mjs?v=sc-tpv-1';
+import { crearHiloTPV } from './hilo-tpv.mjs?v=sc-tpv-2';
+import { crearMandoTPV } from './mando-tpv.mjs?v=sc-mando-2';
+// xpaceos no tiene /admira-xp/api/context-playlist (es estático): el TPV toca la playlist publicada y el mando
+// enlaza el mismo visor en admira.store para editarla.
 import { crearColaIPad } from './cola-ipad.mjs?v=sc-cola-3';
-import { crearKiosko } from './kiosko.mjs?v=sc-kiosko-1';
+import { crearKiosko } from './kiosko.mjs?v=sc-kiosko-2';
 import { centroDesdeURL } from './centros.mjs?v=sc-2';
 import { crearReproductor, validarPrograma, ajusteSinRecorte, marcasDe, cicloDe, programaDesdeMCP, piezaDe } from './reproductor.mjs?v=sc-1';
 
@@ -37,7 +40,7 @@ const piezaMostrador = id => ((centro && centro.panorama && centro.panorama.piez
 function texturaPieza(p) {
   let t = piezas.texturas.get(p.id);
   if (!t) {
-    if (p.tipo === 'tpv') piezas.tpv = piezas.tpv || crearHiloTPV();
+    if (p.tipo === 'tpv') piezas.tpv = piezas.tpv || crearHiloTPV({ abreMando: true });
     // Un iPad por local: cada uno con su orientación y su sala de admira.tv/gestorColas.
     if (p.tipo === 'ipad') piezas.ipad = crearColaIPad({ horizontal: !!p.horizontal, sala: p.cola || null });
     // El quiosco de pedidos: su pantalla de bienvenida no cambia; sus pedidos van a la cola del local.
@@ -69,8 +72,23 @@ function pintarPiezas(now) {
     pano.pintarPantalla(p.id, t);
   }
 }
+// Foco del mando: el TPV del centro que se ve, en el centro y de cerca; al quitarlo, la vista de antes.
+let vistaAntesDelFoco = null;
+function enfocarTPV(on) {
+  if (!enPanorama()) return null;
+  if (!on) { const v = vistaAntesDelFoco; vistaAntesDelFoco = null; return v ? pano.irA(v) : null; }
+  const tpv = ((centro && centro.panorama && centro.panorama.piezas) || []).find(x => x.tipo === 'tpv');
+  if (!tpv) return null;
+  vistaAntesDelFoco = vistaAntesDelFoco || { ...pano.vista };
+  // El centro del hueco que deja el mando apartado: a su izquierda en pantalla ancha, encima en el móvil.
+  const r = lienzo.getBoundingClientRect(), caja = piezas.mando && piezas.mando.nodo && piezas.mando.nodo.querySelector('.sc-mando-caja');
+  const c = caja ? caja.getBoundingClientRect() : null, abajo = c && c.top - r.top > r.height * 0.3 && c.left - r.left < r.width * 0.2;
+  const x = c && !abajo ? Math.max(0.15, (c.left - r.left) / 2 / r.width) : 0.5, y = abajo ? Math.max(0.2, (c.top - r.top) / 2 / r.height) : 0.5;
+  return pano.enfocar(tpv.id, { x, y });
+}
 async function tocarPieza(p) {
-  if (p.tipo === 'tpv') { const s = await piezas.tpv.alternar(); aviso(s ? `Hilo musical · suena «${piezas.tpv.titulo}»` : 'Hilo musical en silencio'); }
+  // Como en Paseo de Gràcia: el TPV abre su mando (escuchar, pasar canción y editar la playlist del local).
+  if (p.tipo === 'tpv') { piezas.mando = piezas.mando || crearMandoTPV({ musica: piezas.tpv.musica, alEnfocar: enfocarTPV }); piezas.mando.abrir(centro ? centro.nombre : ''); }
   else if (p.tipo === 'ipad') { if (!texturaPieza(p).userData.fuente.abrir()) aviso('El gestor de colas no está disponible ahora.'); }
   else if (p.tipo === 'kiosko') texturaPieza(p).userData.fuente.abrir();
   else if (p.tipo === 'eink') aviso(`${p.nombre} · ${p.titulo}`);
@@ -283,7 +301,7 @@ function aplicarModo() {
   // Matrix con foto 360: las vistas de cámara del 3D (Cliente, Pantallas, General) no aplican.
   document.documentElement.dataset.panorama = enPanorama() ? '1' : '0';
   // Fuera de la foto 360 (3D u otro centro) el hilo musical del TPV se calla.
-  if (!enPanorama() && piezas.tpv) piezas.tpv.silenciar();
+  if (!enPanorama() && piezas.tpv) { piezas.tpv.silenciar(); if (piezas.mando) piezas.mando.cerrar(); }
   if (enPanorama()) { pano.cargar(centro.panorama); lienzo.style.cursor = 'grab'; }
   document.querySelectorAll('button[data-modo]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modo === modo)));
   if (!raiz) return;
@@ -418,7 +436,11 @@ async function cargarCentro(id) {
   if (combos) combos.actualizar();
   if (c.enlace) { pintarCentros(); mostrarEnlace(c); actualizarURL({ centro: c.id, venue: null, loc: null }); return; }
   $('#enlace').hidden = true; $('#sc').classList.remove('con-enlace');
-  centro = c; pintarCentros(); actualizarURL({ centro: c.id, venue: null, loc: null });
+  // Proyecto y local en la dirección, como en el gemelo: de ahí sacan su ámbito la playlist del hilo musical y su
+  // editor (/admira-xp/api/context-playlist). Diagonal: starbucks-diagonal-634; Paseo de Gràcia: alsea-sbux-021.
+  const local = (c.locales || [])[0] || null;
+  centro = c; pintarCentros(); actualizarURL({ centro: c.id, project: local ? 'starbucks' : null, venue: local, loc: null });
+  window.dispatchEvent(new Event('xpaceos:project-change'));
   aviso('Cargando el modelo y las playlists…');
   geo = await json(c.geometria);
   programas = await Promise.all(c.programas.map(json));
@@ -524,7 +546,7 @@ document.addEventListener('keydown', e => {
 window.__starbucksCentros = {
   get centro() { return centro && centro.id; }, get modo() { return modo; },
   get panorama() { return enPanorama() ? { cargada: pano.cargada, vista: { ...pano.vista } } : null; },
-  get piezas() { return { tpv: piezas.tpv && { sonando: piezas.tpv.sonando, titulo: piezas.tpv.titulo, pistas: piezas.tpv.pistas }, ipad: piezas.ipad && { pedidos: piezas.ipad.pedidos, sala: globalThis.XpaceIpadCola && globalThis.XpaceIpadCola.sala(), gestor: !!globalThis.XpaceIpadCola }, kiosko: piezas.kiosko && { sala: piezas.kiosko.sala, url: piezas.kiosko.url(), abierto: piezas.kiosko.abierto } }; },
+  get piezas() { return { tpv: piezas.tpv && { sonando: piezas.tpv.sonando, titulo: piezas.tpv.titulo, pistas: piezas.tpv.pistas, propia: piezas.tpv.propia, mando: !!(piezas.mando && piezas.mando.abierto), foco: !!(piezas.mando && piezas.mando.enFoco), ambito: null }, ipad: piezas.ipad && { pedidos: piezas.ipad.pedidos, sala: globalThis.XpaceIpadCola && globalThis.XpaceIpadCola.sala(), gestor: !!globalThis.XpaceIpadCola }, kiosko: piezas.kiosko && { sala: piezas.kiosko.sala, url: piezas.kiosko.url(), abierto: piezas.kiosko.abierto } }; },
   tocarPieza: id => { const p = piezaMostrador(id); return p ? tocarPieza(p) : null; }, get programa() { return programaActivo && programaActivo.id; },
   estado: () => rep && rep.estado(),
   muestras: () => pantallasVisor.map(p => { const m = rep && rep.medioDe(p.id); return m && { pantalla: p.id, src: m.src, t: m.video.currentTime, listo: m.video.readyState, pausado: m.video.paused, ritmo: m.video.playbackRate, imagen: p.contenido.material.map === p.cargando ? 'cargando' : p.contenido.material.map instanceof T.VideoTexture ? (p.contenido.material.map.userData.src === m.src ? 'video' : 'video-anterior') : 'fallo', deriva: m.deriva, ajuste: p.ajuste && p.ajuste.modo, medio: p.ajuste && p.ajuste.medio }; }),
