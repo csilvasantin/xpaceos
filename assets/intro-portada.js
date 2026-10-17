@@ -4,6 +4,9 @@
      y se cierra sola al terminar o si el vídeo no arranca.
    - En el idioma de la portada: español o inglés («All in order», 17-oct-2026), con los mismos tiempos.
    - No sale con «reducir movimiento».
+   - Solo con el look por defecto: si la pestaña tiene una marca blanca activa (?marca=, ?project=, local
+     Starbucks o la marca recordada en sessionStorage 'mb:marca', como assets/marca-blanca.js), no sale.
+     ?marca=admira (u off, default…) es el modo por defecto. Igual en xpaceos.com y en admira.store.
    - ?intro=0 la quita; ?intro=1 la fuerza (para enseñarla).
    - 1080p en pantallas grandes, 720p en el resto.
    - Música: alterna «Tic-tac y campanas» y «Pulso» en cada intro (localStorage 'xpaceos_intro_musica').
@@ -23,18 +26,32 @@
   };
   const MUSIC_KEY = 'xpaceos_intro_musica';
   const MUSIC = {campanas: '/assets/video/intro-xpaceos-a-musica-campanas.m4a', pulso: '/assets/video/intro-xpaceos-a-musica-pulso.m4a'};
+  const BRAND_KEY = 'mb:marca';
+  const BRAND_OFF = ['off', 'admira', 'ninguna', 'ninguno', 'none', 'default', 'apagar', 'quitar', 'reset'];
   const has = lang => Object.prototype.hasOwnProperty.call(SOURCES, lang);
   const LABELS = {
     es: {skip: 'Saltar intro', soundOn: 'Activar sonido', soundOff: 'Silenciar', aria: 'Intro de XpaceOS: antes de abrir fallan las pantallas, la música, el aroma y el wifi, y XpaceOS los deja en orden.'},
     en: {skip: 'Skip intro', soundOn: 'Turn sound on', soundOff: 'Mute', aria: 'XpaceOS intro: before opening, screens, music, scent and wifi fail, and XpaceOS puts them back in order.'}
   };
 
-  // Decide si se enseña: ?intro=1 manda sobre todo; ?intro=0, ya vista, menos movimiento o un idioma sin vídeo la quitan.
+  // Marca blanca activa, con las mismas prioridades que assets/marca-blanca.js: ?marca= > proyecto > recordada.
+  function activeBrand(search, stored) {
+    const q = new URLSearchParams(search || '');
+    const off = v => BRAND_OFF.includes(v);
+    const m = q.get('marca');
+    if (m != null) { const v = m.trim().toLowerCase(); return !v || off(v) ? '' : v; }
+    if (q.get('project')) return q.get('project').trim().toLowerCase();
+    if (/^alsea-sbux-/.test(q.get('loc') || '')) return 'starbucks';
+    const s = String(stored || '').trim().toLowerCase();
+    return s && !off(s) ? s : '';
+  }
+  // Decide si se enseña: ?intro=1 manda sobre todo; ?intro=0, ya vista, menos movimiento, un idioma sin vídeo
+  // o una marca blanca activa (la intro es el look por defecto) la quitan.
   function shouldShow(o) {
     const intro = new URLSearchParams(o.search || '').get('intro');
     if (intro === '1') return true;
     if (intro === '0') return false;
-    return has(o.lang) && !o.reducedMotion && !o.seen;
+    return has(o.lang) && !o.reducedMotion && !o.seen && !o.brand;
   }
   // El vídeo del idioma (español si no hay otro); píxeles reales de ancho: desde 1600 va la de 1080p.
   function pickSource(width, dpr, lang) {
@@ -70,7 +87,10 @@
     try { seen = !!(session && session.getItem(SEEN_KEY)); } catch (_) {}
     const lang = win.XpaceLang ? win.XpaceLang.resolve({url: win.location.href, storage: storage(win, 'localStorage'), fallback: 'es'}) : 'es';
     const reducedMotion = !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    if (!shouldShow({search: win.location.search, lang, reducedMotion, seen})) return;
+    let stored = '';
+    try { stored = (session && session.getItem(BRAND_KEY)) || ''; } catch (_) {}
+    const brand = activeBrand(win.location.search, stored);
+    if (!shouldShow({search: win.location.search, lang, reducedMotion, seen, brand})) return;
     const t = LABELS[lang] || LABELS.es;
 
     const style = doc.createElement('style');
@@ -151,5 +171,5 @@
     if (doc.body) mount(); else doc.addEventListener('DOMContentLoaded', mount, {once: true});
   }
 
-  return {SEEN_KEY, SOURCES, MUSIC_KEY, MUSIC, shouldShow, pickSource, pickMusic, start};
+  return {SEEN_KEY, SOURCES, MUSIC_KEY, MUSIC, activeBrand, shouldShow, pickSource, pickMusic, start};
 });
