@@ -89,3 +89,18 @@ test('el sonido intenta arrancar, queda un botón en los dos idiomas y se para a
   assert.match(src, /p\.catch\(\(\) => \{ soundOn = false; paintSound\(\); \}\)/, 'si el navegador no deja sonar, se queda en silencio con el botón');
   assert.match(src, /if \(audio\) \{ try \{ audio\.pause\(\); \} catch \(_\) \{\} \}/, 'al cerrar se para la música');
 });
+
+test('solo con el look por defecto: con una marca blanca activa no sale', () => {
+  assert.equal(intro.activeBrand('', ''), '');
+  assert.equal(intro.activeBrand('?marca=starbucks', ''), 'starbucks');
+  assert.equal(intro.activeBrand('?marca=admira', 'starbucks'), '', '?marca=admira es el modo por defecto');
+  assert.equal(intro.activeBrand('?marca=off', 'altadis'), '');
+  assert.equal(intro.activeBrand('?project=starbucks', ''), 'starbucks');
+  assert.equal(intro.activeBrand('?loc=alsea-sbux-021', ''), 'starbucks');
+  assert.equal(intro.activeBrand('', 'altadis'), 'altadis', 'marca recordada en la pestaña');
+  assert.equal(intro.activeBrand('', 'default'), '');
+  const base = {search: '', lang: 'es', reducedMotion: false, seen: false};
+  assert.equal(intro.shouldShow({...base, brand: ''}), true);
+  assert.equal(intro.shouldShow({...base, brand: 'starbucks'}), false);
+  assert.equal(intro.shouldShow({...base, brand: 'starbucks', search: '?intro=1'}), true, '?intro=1 la fuerza igual');
+});
