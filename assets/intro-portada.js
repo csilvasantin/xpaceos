@@ -2,7 +2,8 @@
    Vídeo «Todo en orden» (15 s, sin sonido) a pantalla completa al entrar en la portada.
    - Sale una vez por sesión (sessionStorage 'xpaceos_intro_a'), se salta con «Saltar intro» o Esc
      y se cierra sola al terminar o si el vídeo no arranca.
-   - No sale con «reducir movimiento» ni con la portada en inglés (el vídeo está en español).
+   - En el idioma de la portada: español o inglés («All in order», 17-oct-2026), con los mismos tiempos.
+   - No sale con «reducir movimiento».
    - ?intro=0 la quita; ?intro=1 la fuerza (para enseñarla).
    - 1080p en pantallas grandes, 720p en el resto.
    Contrato / contract: admira-xp/docs/intro-portada.md */
@@ -13,22 +14,27 @@
 })(typeof window !== 'undefined' ? window : null, function () {
   'use strict';
   const SEEN_KEY = 'xpaceos_intro_a';
-  const SOURCES = {1080: '/assets/video/intro-xpaceos-a-1080.mp4', 720: '/assets/video/intro-xpaceos-a-720.mp4'};
+  const SOURCES = {
+    es: {1080: '/assets/video/intro-xpaceos-a-1080.mp4', 720: '/assets/video/intro-xpaceos-a-720.mp4'},
+    en: {1080: '/assets/video/intro-xpaceos-a-en-1080.mp4', 720: '/assets/video/intro-xpaceos-a-en-720.mp4'}
+  };
+  const has = lang => Object.prototype.hasOwnProperty.call(SOURCES, lang);
   const LABELS = {
     es: {skip: 'Saltar intro', aria: 'Intro de XpaceOS: antes de abrir fallan las pantallas, la música, el aroma y el wifi, y XpaceOS los deja en orden.'},
     en: {skip: 'Skip intro', aria: 'XpaceOS intro: before opening, screens, music, scent and wifi fail, and XpaceOS puts them back in order.'}
   };
 
-  // Decide si se enseña: ?intro=1 manda sobre todo; ?intro=0, ya vista, menos movimiento o inglés la quitan.
+  // Decide si se enseña: ?intro=1 manda sobre todo; ?intro=0, ya vista, menos movimiento o un idioma sin vídeo la quitan.
   function shouldShow(o) {
     const intro = new URLSearchParams(o.search || '').get('intro');
     if (intro === '1') return true;
     if (intro === '0') return false;
-    return o.lang === 'es' && !o.reducedMotion && !o.seen;
+    return has(o.lang) && !o.reducedMotion && !o.seen;
   }
-  // Píxeles reales de ancho: desde 1600 va la de 1080p.
-  function pickSource(width, dpr) {
-    return (Number(width) || 0) * (Number(dpr) || 1) >= 1600 ? SOURCES[1080] : SOURCES[720];
+  // El vídeo del idioma (español si no hay otro); píxeles reales de ancho: desde 1600 va la de 1080p.
+  function pickSource(width, dpr, lang) {
+    const set = has(lang) ? SOURCES[lang] : SOURCES.es;
+    return (Number(width) || 0) * (Number(dpr) || 1) >= 1600 ? set[1080] : set[720];
   }
 
   const CSS = `
@@ -62,7 +68,7 @@
     const video = doc.createElement('video');
     video.muted = true; video.defaultMuted = true; video.playsInline = true; video.autoplay = true;
     video.setAttribute('muted', ''); video.setAttribute('playsinline', ''); video.preload = 'auto';
-    video.src = pickSource(win.innerWidth, win.devicePixelRatio);
+    video.src = pickSource(win.innerWidth, win.devicePixelRatio, lang);
     const skip = doc.createElement('button');
     skip.type = 'button'; skip.className = 'xp-intro-skip'; skip.textContent = t.skip + ' ✕';
     const bar = doc.createElement('div');
