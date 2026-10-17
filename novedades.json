@@ -1,5 +1,8 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.17.10.2026.r4.20:31": [
+    "Portada: la música de la intro va en .mp4 para servirse por rangos y entrar sincronizada con el vídeo al pulsar «Activar sonido» (Cloudflare no sirve .m4a por rangos)."
+  ],
   "v.17.10.2026.r3.20:25": [
     "Portada: la intro solo sale con el look por defecto; con una marca blanca activa (?marca=, proyecto, local Starbucks o marca recordada) no sale, para no meter XpaceOS en la demo de un cliente. ?marca=admira es el modo por defecto. Igual en admira.store."
   ],
