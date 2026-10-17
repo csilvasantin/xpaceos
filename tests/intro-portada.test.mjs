@@ -1,5 +1,5 @@
-// Intro en vídeo de la portada (17-oct-2026): una vez por sesión, se salta, respeta «reducir movimiento»
-// y el idioma, y sirve 1080p o 720p. Contrato: admira-xp/docs/intro-portada.md.
+// Intro en vídeo de la portada (17-oct-2026): una vez por sesión, se salta, respeta «reducir movimiento»,
+// sale en el idioma de la portada (español o inglés) y sirve 1080p o 720p. Contrato: admira-xp/docs/intro-portada.md.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -15,27 +15,36 @@ test('la portada carga la intro con versión y sin bloquear el render', () => {
   assert.ok(html.indexOf('/assets/xpace-lang.js') < html.indexOf('/assets/intro-portada.js'), 'el idioma se resuelve antes');
 });
 
-test('sale la primera vez en español y no se repite en la misma sesión', () => {
-  assert.equal(intro.shouldShow({search: '', lang: 'es', reducedMotion: false, seen: false}), true);
-  assert.equal(intro.shouldShow({search: '', lang: 'es', reducedMotion: false, seen: true}), false);
+test('sale la primera vez, en español y en inglés, y no se repite en la misma sesión', () => {
+  for (const lang of ['es', 'en']) {
+    assert.equal(intro.shouldShow({search: '', lang, reducedMotion: false, seen: false}), true, lang);
+    assert.equal(intro.shouldShow({search: '', lang, reducedMotion: false, seen: true}), false, lang);
+  }
 });
 
-test('no sale con «reducir movimiento» ni en inglés; ?intro=0 la quita y ?intro=1 la fuerza', () => {
+test('no sale con «reducir movimiento» ni en un idioma sin vídeo; ?intro=0 la quita y ?intro=1 la fuerza', () => {
   assert.equal(intro.shouldShow({search: '', lang: 'es', reducedMotion: true, seen: false}), false);
-  assert.equal(intro.shouldShow({search: '', lang: 'en', reducedMotion: false, seen: false}), false);
-  assert.equal(intro.shouldShow({search: '?intro=0', lang: 'es', reducedMotion: false, seen: false}), false);
+  assert.equal(intro.shouldShow({search: '', lang: 'en', reducedMotion: true, seen: false}), false);
+  assert.equal(intro.shouldShow({search: '', lang: 'fr', reducedMotion: false, seen: false}), false);
+  assert.equal(intro.shouldShow({search: '?intro=0', lang: 'en', reducedMotion: false, seen: false}), false);
   assert.equal(intro.shouldShow({search: '?intro=1', lang: 'en', reducedMotion: true, seen: true}), true);
 });
 
-test('1080p en pantallas grandes y 720p en el resto', () => {
-  assert.equal(intro.pickSource(1920, 1), intro.SOURCES[1080]);
-  assert.equal(intro.pickSource(1440, 2), intro.SOURCES[1080]);
-  assert.equal(intro.pickSource(390, 3), intro.SOURCES[720]);
-  assert.equal(intro.pickSource(1280, 1), intro.SOURCES[720]);
+test('el vídeo va en el idioma de la portada: 1080p en pantallas grandes y 720p en el resto', () => {
+  assert.equal(intro.pickSource(1920, 1, 'es'), intro.SOURCES.es[1080]);
+  assert.equal(intro.pickSource(1440, 2, 'es'), intro.SOURCES.es[1080]);
+  assert.equal(intro.pickSource(390, 3, 'es'), intro.SOURCES.es[720]);
+  assert.equal(intro.pickSource(1280, 1, 'es'), intro.SOURCES.es[720]);
+  assert.equal(intro.pickSource(1920, 1, 'en'), '/assets/video/intro-xpaceos-a-en-1080.mp4');
+  assert.equal(intro.pickSource(1280, 1, 'en'), '/assets/video/intro-xpaceos-a-en-720.mp4');
+  assert.equal(intro.pickSource(1920, 1), intro.SOURCES.es[1080], 'sin idioma, el español');
 });
 
-test('los vídeos existen y pesan menos de 10 MB', () => {
-  for (const src of Object.values(intro.SOURCES)) {
+test('los vídeos de los dos idiomas existen, son distintos y pesan menos de 10 MB', () => {
+  const all = Object.values(intro.SOURCES).flatMap(set => Object.values(set));
+  assert.equal(all.length, 4);
+  assert.equal(new Set(all).size, 4);
+  for (const src of all) {
     const size = statSync(new URL('..' + src, import.meta.url)).size;
     assert.ok(size > 100_000 && size < 10_000_000, src + ' pesa ' + size);
   }
@@ -50,4 +59,33 @@ test('se puede saltar con botón o Esc, en los dos idiomas, y no tapa la portada
   assert.match(src, /video\.addEventListener\('error', close\)/);
   assert.match(src, /p\.catch\(close\)/);
   assert.match(src, /setItem\(SEEN_KEY, '1'\)/);
+  assert.match(src, /pickSource\(win\.innerWidth, win\.devicePixelRatio, lang\)/, 'el vídeo sigue al idioma resuelto');
+});
+
+test('la música se alterna en cada intro y se puede fijar o quitar con ?musica=', () => {
+  assert.equal(intro.pickMusic('', ''), 'campanas');
+  assert.equal(intro.pickMusic('', 'campanas'), 'pulso');
+  assert.equal(intro.pickMusic('', 'pulso'), 'campanas');
+  assert.equal(intro.pickMusic('?musica=pulso', 'pulso'), 'pulso');
+  assert.equal(intro.pickMusic('?musica=0', 'campanas'), '');
+  assert.equal(intro.pickMusic('?musica=otra', 'campanas'), 'pulso', 'un valor desconocido no rompe la alternancia');
+});
+
+test('las dos músicas existen, son distintas y pesan menos de 1 MB', () => {
+  const all = Object.values(intro.MUSIC);
+  assert.deepEqual(Object.keys(intro.MUSIC), ['campanas', 'pulso']);
+  assert.equal(new Set(all).size, 2);
+  for (const src of all) {
+    const size = statSync(new URL('..' + src, import.meta.url)).size;
+    assert.ok(size > 50_000 && size < 1_000_000, src + ' pesa ' + size);
+  }
+});
+
+test('el sonido intenta arrancar, queda un botón en los dos idiomas y se para al cerrar', () => {
+  const src = read('assets/intro-portada.js');
+  for (const text of ['Activar sonido', 'Silenciar', 'Turn sound on', 'Mute']) assert.ok(src.includes(text), text);
+  assert.match(src, /setItem\(MUSIC_KEY, track\)/, 'recuerda cuál sonó para alternar');
+  assert.match(src, /audio\.currentTime = video\.currentTime/, 'el audio sigue al vídeo');
+  assert.match(src, /p\.catch\(\(\) => \{ soundOn = false; paintSound\(\); \}\)/, 'si el navegador no deja sonar, se queda en silencio con el botón');
+  assert.match(src, /if \(audio\) \{ try \{ audio\.pause\(\); \} catch \(_\) \{\} \}/, 'al cerrar se para la música');
 });
