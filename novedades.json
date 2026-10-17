@@ -1,5 +1,8 @@
 {
   "_como": "Novedades del sello (2-4 líneas, español). Clave = sello exacto (v.DD.MM.AAAA.rN.HH:MM); .default si el sello aún no tiene entrada. El deploy las escribe en /version.json.novedades[] y el cargador común https://www.admiranext.com/assets/sello-novedades.js las enseña al pasar el ratón por el sello.",
+  "v.17.10.2026.r1.18:01": [
+    "Portada: intro en vídeo «Todo en orden» (15 s, sin sonido) a pantalla completa al entrar; una vez por sesión, se salta con «Saltar intro» o Esc; no sale en inglés ni con «reducir movimiento»; ?intro=1 la fuerza."
+  ],
   "v.16.10.2026.r13.16:17": [],
   "v.16.10.2026.r12.15:53": [
     "Diagonal 634 con su puerta de Google Maps: al elegirlo, su calle en Street View y la fachada lleva a su gemelo"
