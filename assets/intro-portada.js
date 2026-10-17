@@ -6,6 +6,9 @@
    - No sale con «reducir movimiento».
    - ?intro=0 la quita; ?intro=1 la fuerza (para enseñarla).
    - 1080p en pantallas grandes, 720p en el resto.
+   - Música: alterna «Tic-tac y campanas» y «Pulso» en cada intro (localStorage 'xpaceos_intro_musica').
+     Intenta sonar; si el navegador no deja (lo normal sin un clic), queda el botón «Activar sonido».
+     ?musica=campanas|pulso la fija y ?musica=0 la quita. El audio va aparte y se ajusta al vídeo.
    Contrato / contract: admira-xp/docs/intro-portada.md */
 (function (root, factory) {
   const api = factory(root);
@@ -18,10 +21,12 @@
     es: {1080: '/assets/video/intro-xpaceos-a-1080.mp4', 720: '/assets/video/intro-xpaceos-a-720.mp4'},
     en: {1080: '/assets/video/intro-xpaceos-a-en-1080.mp4', 720: '/assets/video/intro-xpaceos-a-en-720.mp4'}
   };
+  const MUSIC_KEY = 'xpaceos_intro_musica';
+  const MUSIC = {campanas: '/assets/video/intro-xpaceos-a-musica-campanas.m4a', pulso: '/assets/video/intro-xpaceos-a-musica-pulso.m4a'};
   const has = lang => Object.prototype.hasOwnProperty.call(SOURCES, lang);
   const LABELS = {
-    es: {skip: 'Saltar intro', aria: 'Intro de XpaceOS: antes de abrir fallan las pantallas, la música, el aroma y el wifi, y XpaceOS los deja en orden.'},
-    en: {skip: 'Skip intro', aria: 'XpaceOS intro: before opening, screens, music, scent and wifi fail, and XpaceOS puts them back in order.'}
+    es: {skip: 'Saltar intro', soundOn: 'Activar sonido', soundOff: 'Silenciar', aria: 'Intro de XpaceOS: antes de abrir fallan las pantallas, la música, el aroma y el wifi, y XpaceOS los deja en orden.'},
+    en: {skip: 'Skip intro', soundOn: 'Turn sound on', soundOff: 'Mute', aria: 'XpaceOS intro: before opening, screens, music, scent and wifi fail, and XpaceOS puts them back in order.'}
   };
 
   // Decide si se enseña: ?intro=1 manda sobre todo; ?intro=0, ya vista, menos movimiento o un idioma sin vídeo la quitan.
@@ -37,13 +42,23 @@
     return (Number(width) || 0) * (Number(dpr) || 1) >= 1600 ? set[1080] : set[720];
   }
 
+  // Alterna las dos bandas sonoras: la que no sonó la última vez. ?musica=campanas|pulso la fija; ?musica=0 la quita.
+  function pickMusic(search, last) {
+    const forced = new URLSearchParams(search || '').get('musica');
+    if (forced === '0') return '';
+    if (forced && Object.prototype.hasOwnProperty.call(MUSIC, forced)) return forced;
+    return last === 'campanas' ? 'pulso' : 'campanas';
+  }
+
   const CSS = `
 .xp-intro{position:fixed;inset:0;z-index:100000;background:#02080d;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity .6s ease}
 .xp-intro.is-closing{opacity:0}
 .xp-intro video{width:100%;height:100%;object-fit:contain;background:#02080d}
-.xp-intro-skip{position:absolute;right:max(20px,env(safe-area-inset-right,0px));bottom:max(24px,env(safe-area-inset-bottom,0px));padding:10px 16px;border:1px solid rgba(120,243,255,.45);border-radius:8px;background:rgba(2,8,13,.6);color:#dff8ff;font:600 13px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
-.xp-intro-skip:hover{border-color:#78f3ff}
-.xp-intro-skip:focus-visible{outline:2px solid #ffd866;outline-offset:3px}
+.xp-intro-actions{position:absolute;right:max(20px,env(safe-area-inset-right,0px));bottom:max(24px,env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px}
+.xp-intro-skip,.xp-intro-sound{padding:10px 16px;border:1px solid rgba(120,243,255,.45);border-radius:8px;background:rgba(2,8,13,.6);color:#dff8ff;font:600 13px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.xp-intro-skip:hover,.xp-intro-sound:hover{border-color:#78f3ff}
+.xp-intro-skip:focus-visible,.xp-intro-sound:focus-visible{outline:2px solid #ffd866;outline-offset:3px}
+.xp-intro-sound[aria-pressed="false"]{border-color:#ffd866;color:#ffd866}
 .xp-intro-bar{position:absolute;left:0;bottom:0;height:3px;width:0;background:#78f3ff}`;
 
   function storage(win, kind) { try { return win[kind]; } catch (_) { return null; } }
@@ -73,7 +88,34 @@
     skip.type = 'button'; skip.className = 'xp-intro-skip'; skip.textContent = t.skip + ' ✕';
     const bar = doc.createElement('div');
     bar.className = 'xp-intro-bar';
-    box.append(video, skip, bar);
+    const actions = doc.createElement('div');
+    actions.className = 'xp-intro-actions';
+
+    // Música aparte del vídeo: alterna en cada intro y se ajusta al tiempo del vídeo.
+    const local = storage(win, 'localStorage');
+    let last = '';
+    try { last = (local && local.getItem(MUSIC_KEY)) || ''; } catch (_) {}
+    const track = pickMusic(win.location.search, last);
+    let audio = null, soundOn = false, triedAuto = false;
+    const sound = doc.createElement('button');
+    sound.type = 'button'; sound.className = 'xp-intro-sound';
+    const paintSound = () => { sound.textContent = soundOn ? '🔇 ' + t.soundOff : '🔊 ' + t.soundOn; sound.setAttribute('aria-pressed', String(soundOn)); };
+    if (track) {
+      try { local && local.setItem(MUSIC_KEY, track); } catch (_) {}
+      audio = new win.Audio(MUSIC[track]);
+      audio.preload = 'auto';
+      const syncPlay = () => { try { audio.currentTime = video.currentTime; } catch (_) {} return audio.play(); };
+      const tryOn = () => { soundOn = true; paintSound(); const p = syncPlay(); if (p && p.catch) p.catch(() => { soundOn = false; paintSound(); }); };
+      // Primero intenta con sonido; si el navegador no deja, se queda en silencio con el botón a la vista.
+      video.addEventListener('playing', () => { if (!triedAuto) { triedAuto = true; tryOn(); } else if (soundOn) syncPlay(); });
+      video.addEventListener('pause', () => audio.pause());
+      video.addEventListener('timeupdate', () => { if (soundOn && !audio.paused && Math.abs(audio.currentTime - video.currentTime) > 0.25) audio.currentTime = video.currentTime; });
+      sound.addEventListener('click', () => { if (soundOn) { soundOn = false; audio.pause(); paintSound(); } else tryOn(); });
+      paintSound();
+      actions.append(sound);
+    }
+    actions.append(skip);
+    box.append(video, actions, bar);
 
     const html = doc.documentElement, overflow = html.style.overflow;
     let closed = false, watchdog = 0;
@@ -81,6 +123,7 @@
       if (closed) return;
       closed = true;
       clearTimeout(watchdog);
+      if (audio) { try { audio.pause(); } catch (_) {} }
       try { session && session.setItem(SEEN_KEY, '1'); } catch (_) {}
       win.removeEventListener('keydown', onKey);
       html.style.overflow = overflow;
@@ -108,5 +151,5 @@
     if (doc.body) mount(); else doc.addEventListener('DOMContentLoaded', mount, {once: true});
   }
 
-  return {SEEN_KEY, SOURCES, shouldShow, pickSource, start};
+  return {SEEN_KEY, SOURCES, MUSIC_KEY, MUSIC, shouldShow, pickSource, pickMusic, start};
 });

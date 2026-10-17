@@ -61,3 +61,31 @@ test('se puede saltar con botón o Esc, en los dos idiomas, y no tapa la portada
   assert.match(src, /setItem\(SEEN_KEY, '1'\)/);
   assert.match(src, /pickSource\(win\.innerWidth, win\.devicePixelRatio, lang\)/, 'el vídeo sigue al idioma resuelto');
 });
+
+test('la música se alterna en cada intro y se puede fijar o quitar con ?musica=', () => {
+  assert.equal(intro.pickMusic('', ''), 'campanas');
+  assert.equal(intro.pickMusic('', 'campanas'), 'pulso');
+  assert.equal(intro.pickMusic('', 'pulso'), 'campanas');
+  assert.equal(intro.pickMusic('?musica=pulso', 'pulso'), 'pulso');
+  assert.equal(intro.pickMusic('?musica=0', 'campanas'), '');
+  assert.equal(intro.pickMusic('?musica=otra', 'campanas'), 'pulso', 'un valor desconocido no rompe la alternancia');
+});
+
+test('las dos músicas existen, son distintas y pesan menos de 1 MB', () => {
+  const all = Object.values(intro.MUSIC);
+  assert.deepEqual(Object.keys(intro.MUSIC), ['campanas', 'pulso']);
+  assert.equal(new Set(all).size, 2);
+  for (const src of all) {
+    const size = statSync(new URL('..' + src, import.meta.url)).size;
+    assert.ok(size > 50_000 && size < 1_000_000, src + ' pesa ' + size);
+  }
+});
+
+test('el sonido intenta arrancar, queda un botón en los dos idiomas y se para al cerrar', () => {
+  const src = read('assets/intro-portada.js');
+  for (const text of ['Activar sonido', 'Silenciar', 'Turn sound on', 'Mute']) assert.ok(src.includes(text), text);
+  assert.match(src, /setItem\(MUSIC_KEY, track\)/, 'recuerda cuál sonó para alternar');
+  assert.match(src, /audio\.currentTime = video\.currentTime/, 'el audio sigue al vídeo');
+  assert.match(src, /p\.catch\(\(\) => \{ soundOn = false; paintSound\(\); \}\)/, 'si el navegador no deja sonar, se queda en silencio con el botón');
+  assert.match(src, /if \(audio\) \{ try \{ audio\.pause\(\); \} catch \(_\) \{\} \}/, 'al cerrar se para la música');
+});
