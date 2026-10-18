@@ -12,6 +12,12 @@
   "stock_quantity_verified": false,
   "rim_height_m": 0.5,
   "rim_diameter_m": 0.6,
+  "footprint_m": [
+    0.64,
+    0.64
+  ],
+  "origin": "footprint_corner",
+  "front": "+Z glTF (Blender -Y)",
   "visual_cup_count": 28,
   "hot_cups": 14,
   "cold_cups": 14,

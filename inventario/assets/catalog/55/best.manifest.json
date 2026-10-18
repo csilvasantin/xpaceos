@@ -12,6 +12,12 @@
   "stock_quantity_verified": false,
   "rim_height_m": 0.84,
   "rim_diameter_m": 0.6,
+  "footprint_m": [
+    0.64,
+    0.64
+  ],
+  "origin": "footprint_corner",
+  "front": "+Z glTF (Blender -Y)",
   "visual_bag_count": 11,
   "product": "Starbucks 1971 Dark Roast 250 g whole bean",
   "mesh_count": 28

@@ -34,6 +34,7 @@ SPECS = {
     55: dict(id='native:starbucksCoffeeBasket', name='Cesta de café Starbucks 1971 Dark Roast', name_en='Starbucks 1971 Dark Roast coffee basket',
              size=TALL, contents='coffee', reference=None),
 }
+FOOTPRINT = .64  # huella cuadrada en metros; el cesto mide .60 de borde a borde / square footprint, .60 rim
 TIERS = {'best': dict(seg=64, rod=12), 'better': dict(seg=32, rod=8), 'good': dict(seg=16, rod=6)}
 
 def linear(c): return c / 12.92 if c <= .04045 else ((c + .055) / 1.055) ** 2.4
@@ -335,14 +336,22 @@ def build(number, tier, poses):
         for o in bags: tag(o, number, spec['id'], 'coffee_bag', o.name.lower().replace(' ', '-'))
         model += bags; counts = {'visual_bag_count': len(bags), 'product': 'Starbucks 1971 Dark Roast 250 g whole bean'}
     out = root / 'inventario/assets/catalog' / str(number); out.mkdir(parents=True, exist_ok=True)
+    # Origen en la esquina de la huella, como el resto de piezas del Starbucks (X=columna, Z=fila en glTF).
+    # Footprint-corner origin like the other placed Starbucks pieces: glTF x = col, z = row.
+    corner = Vector((FOOTPRINT / 2, -FOOTPRINT / 2, 0))
+    for o in model:
+        if o.parent is None: o.location += corner
     bpy.ops.object.select_all(action='DESELECT')
     for o in model: o.select_set(True)
     bpy.ops.wm.save_as_mainfile(filepath=str(out / (tier + '.blend')))
     bpy.ops.export_scene.gltf(filepath=str(out / (tier + '.glb')), export_format='GLB', use_selection=True, export_extras=True, export_apply=True)
+    for o in model:
+        if o.parent is None: o.location -= corner
     manifest = {'number': number, 'id': spec['id'], 'name': spec['name'], 'name_en': spec['name_en'], 'tier': tier,
                 'reference': spec['reference'], 'geometry_basis': 'interpretive_photo', 'source_photos': 'Carlos · Starbucks Paseo de Gràcia · 2026-10-17',
                 'measured': False, 'nominal_units': 'metres_for_proportions_only', 'stock_quantity_verified': False,
-                'rim_height_m': s['rim_z'], 'rim_diameter_m': round(2 * s['rim_r'], 3), **counts,
+                'rim_height_m': s['rim_z'], 'rim_diameter_m': round(2 * s['rim_r'], 3), 'footprint_m': [FOOTPRINT, FOOTPRINT],
+                'origin': 'footprint_corner', 'front': '+Z glTF (Blender -Y)', **counts,
                 'mesh_count': sum(1 for o in model if o.type == 'MESH')}
     (out / (tier + '.manifest.json')).write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
     if tier == 'best':
