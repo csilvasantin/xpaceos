@@ -120,3 +120,20 @@ test('una vez por idioma: al pasar a castellano sale en castellano si aún no se
   assert.match(src, /seen: seenNow\(\)\.includes\(lang\)/, 'vista por idioma');
   assert.match(src, /const at = video\.currentTime;[\s\S]*video\.currentTime = at/, 'con la intro en marcha cambia el vídeo sin perder el segundo');
 });
+
+test('una vez por visitante: lo visto se recuerda 30 días en localStorage y arranca tras el primer pintado', () => {
+  const now = Date.parse('2026-10-21T20:00:00Z');
+  assert.deepEqual(intro.recordada(JSON.stringify({t: now - 86400000, langs: ['es']}), now), ['es'], 'ayer: vista');
+  assert.deepEqual(intro.recordada(JSON.stringify({t: now - 31 * 86400000, langs: ['es', 'en']}), now), [], 'hace 31 días: vuelve a salir');
+  assert.deepEqual(intro.recordada('', now), []);
+  assert.deepEqual(intro.recordada('{basura', now), []);
+  assert.deepEqual(intro.recordada(JSON.stringify({t: now, langs: ['fr', 'en']}), now), ['en'], 'solo idiomas con vídeo');
+  assert.equal(intro.SEEN_DAYS, 30); assert.equal(intro.SEEN_LOCAL, 'xpaceos_intro_vista');
+  const src = read('assets/intro-portada.js');
+  assert.match(src, /local && local\.setItem\(SEEN_LOCAL, JSON\.stringify\(\{t: Date\.now\(\), langs: all\}\)\)/, 'al verla se apunta con fecha');
+  assert.match(src, /for \(const l of recordada\(readLocal\(\), Date\.now\(\)\)\)/, 'lo recordado cuenta como visto');
+  assert.match(src, /afterFirstPaint\(win, \(\) => tryOpen\(/, 'la intro arranca después del primer pintado');
+  let llamadas = 0; const fake = {requestAnimationFrame: fn => { llamadas++; fn(); }};
+  let corrio = false; intro.afterFirstPaint(fake, () => { corrio = true; }); assert.ok(corrio); assert.equal(llamadas, 2);
+  corrio = false; intro.afterFirstPaint({}, () => { corrio = true; }); assert.ok(corrio, 'sin rAF, corre igual');
+});
