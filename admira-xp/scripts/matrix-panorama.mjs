@@ -1,3 +1,4 @@
+import {registerInteractiveScreens} from './ainimation-delivery.mjs?v=ainimation-delivery-1';
 import {WATER_VIEW} from './pos-water.mjs?v=water-finish-3';
 import {createRetailMediaDisplay} from './retail-media-display.mjs?v=xtore-ux-3';
 import {mountPOSExperience,POS_EXPERIENCE_VIEW} from './matrix-pos-experience.mjs?v=neo-prep-1';
@@ -132,7 +133,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
   return new Promise(resolve=>{const tick=now=>{if(disposed)return resolve(false);const k=Math.min(1,(now-t0)/Math.max(1,ms)),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;yaw=y0+dy*e;pitch=p0+(tp-p0)*e;fov=f0+(tf-f0)*e;renderKey='';if(k<1)requestAnimationFrame(tick);else resolve(true);};requestAnimationFrame(tick);});}
  // Pantallas vivas (13-oct-2026): luz del contenido sobre la sala, fundido entre piezas y ficha «En emisión». Sólo lectura.
  // Qué capa tapa la pieza programada en una pantalla: incidencia, cesta del TPV, reacción de una regla o el gestor de colas del iPad.
- function screenOverlay(id){const node=nodes.get(id);if(!node||incidents.off.has(id))return null;const chip=node.querySelector('.matrix-incident-chip');if(chip)return {type:'incident',title:chip.querySelector('strong')?.textContent.trim()||t('Incidencia abierta','Open incident')};if(node.querySelector('.matrix-pos-checkout'))return {type:'app',title:t('Cesta de la compra','Shopping basket')};const reaction=node.querySelector('.retail-reaction-media');if(reaction)return {type:'reaction',title:reaction.alt||reaction.getAttribute('alt')||t('Contenido de la regla','Rule content')};if(node.classList.contains('ipad-cola-on'))return {type:'app',title:t('Gestor de colas','Queue manager')};return null;}
+ function screenOverlay(id){const node=nodes.get(id);if(!node||incidents.off.has(id))return null;const chip=node.querySelector('.matrix-incident-chip');if(chip)return {type:'incident',title:chip.querySelector('strong')?.textContent.trim()||t('Incidencia abierta','Open incident')};const interactive=node.querySelector('iframe[data-ainimation-screen]');if(interactive)return {type:'app',title:interactive.title};if(node.querySelector('.matrix-pos-checkout'))return {type:'app',title:t('Cesta de la compra','Shopping basket')};const reaction=node.querySelector('.retail-reaction-media');if(reaction)return {type:'reaction',title:reaction.alt||reaction.getAttribute('alt')||t('Contenido de la regla','Rule content')};if(node.classList.contains('ipad-cola-on'))return {type:'app',title:t('Gestor de colas','Queue manager')};return null;}
  const screenLight=mountScreenLight({surface,layer,nodes,previews,t,buttons:[...root.querySelectorAll('[data-screen-light]')],busy:()=>!!marking||getScreenNumbersVisible(),
   groups:()=>onAirGroups({buckets:runtime.nowPlaying(DEVICE_IDS),playlist:playlistValue,preview:id=>signagePreviews.get(id)||previewTracks.get(id),number:screenNumber,overlay:screenOverlay,off:DEVICE_IDS.filter(id=>nodes.has(id)&&incidents.off.has(id)),ia:demoMode==='ia'?{ids:[...wallIds].filter(id=>nodes.has(id)),playing:!!iaPlayback?.state().playing,count:iaTracks.length}:null,t}),
   music:()=>{const state=music.state();return state.tracks?{title:state.title,count:state.tracks,state:!state.started?'idle':state.suppressed?'suppressed':state.muted?'muted':'live'}:null;},
@@ -269,7 +270,8 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
  document.querySelector('#telegramDock .tg-actions')?.append(toolbar);
  let stopRemote=()=>{};
  stopLanguage=copy.observe([root,toolbar]);
- const dispose=()=>{if(disposed)return;disposed=true;screenLight.dispose();wallAvatar.dispose();personAnnouncements.dispose();speakerLocutions.dispose();posExperience.dispose();stopLanguage();mappingWindow.dispose();delete window.XpaceStarbucksDemo;delete window.XpaceMatrixOptions;iaPlayback?.dispose();incidents.dispose();deviceEditor.dispose();runtime.dispose();announcement.dispose();announcementAudio.remove();stopRemote();stopWall();stopTPV();controls.abort();clearInterval(musicPoll);unsubscribeMusic();unsubscribeLayout();unsubscribeNumbers();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
+ let releaseInteractive;
+ const dispose=()=>{if(disposed)return;disposed=true;releaseInteractive?.();screenLight.dispose();wallAvatar.dispose();personAnnouncements.dispose();speakerLocutions.dispose();posExperience.dispose();stopLanguage();mappingWindow.dispose();delete window.XpaceStarbucksDemo;delete window.XpaceMatrixOptions;iaPlayback?.dispose();incidents.dispose();deviceEditor.dispose();runtime.dispose();announcement.dispose();announcementAudio.remove();stopRemote();stopWall();stopTPV();controls.abort();clearInterval(musicPoll);unsubscribeMusic();unsubscribeLayout();unsubscribeNumbers();music.mute();cancelAnimationFrame(frame);observer?.disconnect();for(const id of previews.keys())destroyPreview(id);geometry?.dispose();material?.dispose();texture?.dispose();renderer?.dispose();toolbar.remove();root.replaceChildren();};
  let observer,snapshotFn=null;
  signal?.addEventListener('abort',dispose,{once:true});
  try{
@@ -330,6 +332,7 @@ export async function mountMatrixPanorama(root,{onReady=()=>{},signal,lang='es'}
    }
    deviceEditor.refresh();remoteState=state;
   },onStatus:state=>{if(disposed)return;toolbar.querySelector('.matrix-remote-status').textContent=state.error?t('MCP sin conexión · se conserva el último estado','MCP offline · keeping last state'):t('MCP conectado · revisión ','MCP connected · revision ')+state.revision;}});
+  releaseInteractive=registerInteractiveScreens({root:surface,host:id=>nodes.get(id),blocked:id=>incidents?.off.has(id),focus:id=>{const p=model.players.find(p=>p.id===id);if(p?.corners){yaw=p.corners.reduce((n,c)=>n+c.yaw,0)/4;pitch=p.corners.reduce((n,c)=>n+c.pitch,0)/4;fov=30;renderKey='';}}});
   message(t('Panorama 360° · arrastra para mirar · rueda para zoom','360° panorama · drag to look · scroll to zoom'));onReady();
  }catch(error){if(!disposed){message(t('No se pudo cargar el panorama. Reintenta desde Matrix.','Could not load panorama. Retry Matrix.'));onReady(String(error?.message||error));}}
  return dispose;
