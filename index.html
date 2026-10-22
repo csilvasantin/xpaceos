@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="admiranext-version" content="v.22.10.2026.r3.17:27"/>
+  <meta name="admiranext-version" content="v.22.10.2026.r4.17:37"/>
   <!-- Espejo de www.xpaceos.com (6590c55), sincronizado con
        sync-desde-xpaceos.sh. No editar a mano: el siguiente espejado lo pisa. -->
 <!-- Resource hints — abre conexiones a orígenes críticos antes de necesitarlos (Morfeo, Track A SEO/perf) -->
@@ -1920,11 +1920,11 @@ window.addEventListener('pagehide', () => window.clearTimeout(nextShootingStarTi
         lastId=id;
         if(poster){ poster.hidden=false; poster.onerror=function(){ poster.hidden=true; };
           poster.src='https://stock.admira.store/stock/'+encodeURIComponent(id)+'/poster.jpg'; poster.alt=it.title||''; }
-        if(now){ now.textContent=it.title||''; now.hidden=!it.title; }
+        if(pieza){ pieza.textContent=it.title||''; pieza.hidden=!it.title; }
       }
     });
   }
-  var lastId='', poster=document.getElementById('livePoster'), now=document.getElementById('liveNow'),
+  var lastId='', poster=document.getElementById('livePoster'), pieza=document.getElementById('liveNow'),
       play=document.getElementById('livePlay'), stage=document.getElementById('liveStage');
   if(play&&stage){
     play.addEventListener('click', function(){
