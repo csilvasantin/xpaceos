@@ -46,7 +46,9 @@ test('el apex manda al login del canónico', async () => {
 
 test('el gemelo y los assets salen sin sesión', async () => {
   assert.equal((await perimetro(ctx('https://www.xpaceos.com/admira-xp/'), noFetch)).status, 200);
-  assert.equal((await perimetro(ctx('https://www.xpaceos.com/assets/logo.png'), noFetch)).status, 200);
+  // El asset sale con su tipo real: un .png que llegara como HTML sería la portada en fallback (404 desde el 22-oct-2026).
+  const png = {request:new Request('https://www.xpaceos.com/assets/logo.png'), env, next:async () => new Response('x', {headers:{'content-type':'image/png'}})};
+  assert.equal((await perimetro(png, noFetch)).status, 200);
 });
 
 test('una cookie falsificada no abre nada', async () => {
@@ -240,4 +242,47 @@ test('una sesión de Google con el correo de agente, sin huella, no entra', asyn
   const todos = async () => Response.json({ok:true, allowed:true, superuser:true});
   const r = await perimetro(pide('https://www.xpaceos.com/', {headers:{Cookie:await sesion('agentes@silicio.admiranext.com')}}), todos);
   assert.equal(r.status, 302);
+});
+
+// ── Fuga del login (FLT-102614, 22-oct-2026): un asset inexistente no devuelve la portada ──
+import {readFileSync} from 'node:fs';
+import {join, dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const raizRepo = join(dirname(fileURLToPath(import.meta.url)), '..');
+const fallbackPortada = (url, headers = {}) => ({
+  request:new Request(url, {headers}), env,
+  next:async () => new Response('<html>portada</html>', {status:200, headers:{'content-type':'text/html; charset=utf-8'}})
+});
+const assetReal = (url, type) => ({
+  request:new Request(url), env,
+  next:async () => new Response('x', {status:200, headers:{'content-type':type}})
+});
+
+test('un asset que no existe y vuelve como HTML (fallback a index.html) es 404, no la portada', async () => {
+  for (const path of ['/zzz.txt', '/qqq.json', '/ayuda/zzz.css']) {
+    const r = await perimetro(fallbackPortada('https://www.xpaceos.com' + path), noFetch);
+    assert.equal(r.status, 404, path);
+    assert.doesNotMatch(await r.text(), /portada/, path);
+  }
+});
+
+test('los assets reales y las páginas públicas siguen saliendo', async () => {
+  assert.equal((await perimetro(assetReal('https://www.xpaceos.com/version.json', 'application/json'), noFetch)).status, 200);
+  assert.equal((await perimetro(assetReal('https://www.xpaceos.com/robots.txt', 'text/plain'), noFetch)).status, 200);
+  assert.equal((await perimetro(assetReal('https://www.xpaceos.com/llms.txt', 'text/plain; charset=utf-8'), noFetch)).status, 200);
+  assert.equal((await perimetro(fallbackPortada('https://www.xpaceos.com/admira-xp/'), noFetch)).status, 200);
+  assert.equal((await perimetro(fallbackPortada('https://www.xpaceos.com/mcp/'), noFetch)).status, 200);
+  assert.equal((await perimetro(fallbackPortada('https://www.xpaceos.com/'), noFetch)).status, 302);
+});
+
+test('404.html mínimo y llms.txt de texto en la raíz (sin ellos Pages sirve la portada a lo inexistente)', () => {
+  const notFound = readFileSync(join(raizRepo, '404.html'), 'utf8');
+  assert.match(notFound, /href="\/auth\/login"/);
+  assert.ok(notFound.length < 4000, '404.html debe ser mínimo, sin contenido privado');
+  assert.doesNotMatch(notFound, /admiranext-version|catálogo|clientes/i);
+  const llms = readFileSync(join(raizRepo, 'llms.txt'), 'utf8');
+  assert.match(llms, /https:\/\/mcp\.admira\.store\/llms\.txt/);
+  assert.match(llms, /\/mcp\//);
+  assert.match(llms, /sitemap\.xml/);
+  assert.doesNotMatch(llms, /<html|<!doctype/i);
 });

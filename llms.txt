@@ -1,0 +1,23 @@
+# XpaceOS
+
+> XpaceOS (www.xpaceos.com) es el sistema operativo del comercio físico, de Admira. Tres capas: PixerIA crea el contenido, Admira XP lo distribuye sobre el gemelo digital de cada tienda (Xpacio) y OmniPublicity lo monetiza como marketplace RTB de pantallas.
+
+## Para agentes
+
+- Servidor MCP y su llms.txt canónico: https://mcp.admira.store/llms.txt
+- Página del MCP (humanos y bots): https://www.xpaceos.com/mcp/
+- Gemelo digital (incrustable, público): https://www.xpaceos.com/admira-xp/
+- Xpacios (las tiendas gemelas): https://www.xpaceos.com/xpacios/
+- Ayuda: https://www.xpaceos.com/ayuda/ · https://www.xpaceos.com/help/
+- Mapa del sitio: https://www.xpaceos.com/sitemap.xml
+- Versión desplegada: https://www.xpaceos.com/version.json
+
+## Hermanos
+
+- admira.store (escaparate del comercio físico, espejo privado de esta web): https://www.admira.store/llms.txt
+- admira.tv (distribución) · admira.studio (creación) · clearchannel.tv (venta)
+
+## Acceso
+
+- La portada es pública. Las zonas privadas piden login de Google gestionado en AdmiraNeXT: https://www.xpaceos.com/auth/login
+- Lo que no existe responde 404.
