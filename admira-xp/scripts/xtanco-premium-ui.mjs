@@ -1,7 +1,7 @@
-import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=ainimation-delivery-1';
+import {openMatrixView,closeMatrixView,subscribeMatrixView} from './matrix-preview-ui.mjs?v=sneakers-matrix-1';
 import {openLifeView,closeLifeView,subscribeLifeView} from './life-ui.mjs?v=hiperreal-r23-20261008-1';
 import {openBestView,closeBestView,subscribeBestView} from './best-preview-ui.mjs?v=hiperreal-vivo-1';
-import {createVisualTiers,requestedTier} from './xtanco-visual-tiers.mjs?v=xtore-ux-3';
+import {createVisualTiers,requestedTier,matrixVenue,MATRIX_VENUES} from './xtanco-visual-tiers.mjs?v=sneakers-matrix-1';
 import {createTierControls,updateTierControls} from './visual-tier-controls.mjs?v=options-language-1';
 
 const qualityOptions=document.querySelector('#visualQualityOptions');
@@ -57,6 +57,7 @@ window.__xtancoMudanza={toggle:()=>setMudanza(!mudanzaActive),set:setMudanza,get
 const tiers=createVisualTiers({openBetter:openLifeView,closeBetter:closeLifeView,subscribeBetter:subscribeLifeView,
   openBest:openBestView,closeBest:closeBestView,subscribeBest:subscribeBestView,
   openMatrix:openMatrixView,closeMatrix:closeMatrixView,subscribeMatrix:subscribeMatrixView,storage,
+  matrixNotice(){const v=MATRIX_VENUES[matrixVenue(location.search)];return !v||v.project==='starbucks'?'Matrix · Starbucks Alsea · captura 360° y mapeo local de players.':`Matrix · ${v.es} · captura 360° y players virtuales.`;},
   onChange(state){
     syncVisualSurface();document.body.dataset.xtancoTier=state.mode;updateTierControls(state);
     status.textContent=state.error||(state.busy?'Fusionando vista…':'');status.hidden=!status.textContent;
