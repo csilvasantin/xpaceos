@@ -1,4 +1,7 @@
 {
+  "v.23.10.2026.r5.08:54": [
+    "Portada: las dos hojas del sistema de diseño viajan dentro del paquete publicado (se copian en cada despliegue), así la primera pintura no espera a otro servidor."
+  ],
   "v.23.10.2026.r4.08:27": [
     "Portada: las hojas de estilo del sistema de diseño se piden a su dirección final, sin la redirección que retrasaba la primera pintura."
   ],

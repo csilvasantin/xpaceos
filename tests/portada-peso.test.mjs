@@ -56,3 +56,16 @@ test('las hojas del sistema de diseño se piden al destino final, sin pasar por 
   assert.match(html, /<link rel="preconnect" href="https:\/\/www\.carlossilva\.info" crossorigin>/);
   assert.doesNotMatch(html, /csilvasantin\.github\.io\/admira-design/);
 });
+
+test('al publicar, las hojas del sistema de diseño se copian al paquete y los href pasan a locales (los dos flujos)', () => {
+  const guion = readFileSync(new URL('../scripts/hojas-diseno-al-paquete.sh', import.meta.url), 'utf8');
+  assert.match(guion, /for f in tokens\.css nav\.css; do/);
+  assert.match(guion, /curl -fsSL --retry 3 --max-time 20 "\$ORIGEN\/\$f" -o "\$DEST\/\$f"/);
+  assert.match(guion, /\/assets\/admira-design\/\$f\?v=\$v/, 'href local con huella del contenido');
+  assert.match(guion, /la portada sale con la hoja remota/, 'si el origen no responde, no se rompe la portada');
+  for (const flujo of ['pages.yml', 'cloudflare-pages.yml']) {
+    const y = readFileSync(new URL('../.github/workflows/' + flujo, import.meta.url), 'utf8');
+    assert.match(y, /bash scripts\/hojas-diseno-al-paquete\.sh _site/, flujo);
+    assert.ok(y.indexOf('git archive HEAD | tar -x -C _site') < y.indexOf('hojas-diseno-al-paquete.sh'), flujo + ': después de construir el paquete');
+  }
+});

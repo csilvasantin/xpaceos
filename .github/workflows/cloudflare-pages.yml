@@ -39,6 +39,8 @@ jobs:
           mkdir -p _site
           git archive HEAD | tar -x -C _site
           rm -rf _site/.github _site/tests
+          # Hojas del sistema de diseño dentro del paquete (23-oct-2026): ver scripts/hojas-diseno-al-paquete.sh
+          bash scripts/hojas-diseno-al-paquete.sh _site
           # Cloudflare Pages solo admite archivos de hasta 25 MiB (08-10-2026: el .blend y el HD de la
           # pieza 47 Hiperreal dejaron xpaceos.pages.dev parado en r11). Igual que en admira-store: se
           # quitan del paquete y _redirects los manda con un 302 a la copia fija de este mismo commit en GitHub.
