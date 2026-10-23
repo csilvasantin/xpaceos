@@ -1,4 +1,7 @@
 {
+  "v.23.10.2026.r2.08:00": [
+    "Portada: el póster de la intro se pide desde la cabecera cuando la intro va a salir, para que aparezca antes (el elemento más grande de la primera pantalla); si no va a salir, no se pide nada."
+  ],
   "v.23.10.2026.r1.07:53": [
     "Portada más ligera, segunda vuelta: la intro arranca con un póster y el vídeo (5 a 8 MB) solo se descarga si el visitante pulsa «Ver la intro». Al pulsar, la música suena desde el primer segundo.",
     "Google Analytics se carga con el primer gesto del visitante o 4 s después de cargar la página, no antes del primer pintado.",
