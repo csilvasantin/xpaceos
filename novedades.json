@@ -787,5 +787,10 @@
     "Experto abre al mínimo y se redimensiona con el tirador compartido.",
     "/bugito flota en la página; full o avanzado abre el laboratorio.",
     "Las URLs antiguas de Experto cargan el motor común, sin duplicar comandos."
+  ],
+  "v.27.10.2026.r1.21:40": [
+    "Assets · generador 2D de pixel art trasladado desde Studio a admira.store/assets.",
+    "Subida de PNG, transparencia, edición y publicación en el mismo Stock; sesión de Store para IA.",
+    "Studio queda centrado en importar, crear y adaptar contenidos multimedia."
   ]
 }
