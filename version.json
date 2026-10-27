@@ -1,14 +1,15 @@
 {
-  "version": "v.09.10.2026.r4.22:52",
-  "deployer": "GrokBot",
-  "machine": "MacMini",
-  "signature": "GrokBot · MacMini",
+  "version": "v.27.10.2026.r1.21:40",
+  "deployer": "DeepAgent Codex",
+  "machine": "MacStudio",
+  "signature": "DeepAgent Codex · MacStudio",
   "deployedAt": "2026-10-08T18:25:34Z",
   "git": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "gitShort": "39f5131",
   "gitFull": "39f51315d9ee77db543f3dfddfdc0840e7e0e831",
   "dirty": false,
   "novedades": [
+    "Assets · generador 2D trasladado a admira.store/assets; Admira Studio centrado en importar, crear y adaptar multimedia.",
     "/demo pantallas y /demo screens llegan al antes | después también en xpaceos.com, donde el Experto común de AdmiraNeXT reclamaba los /demo desconocidos.",
     "Pantallas virtuales por 4 esquinas: Foto real en SneakerStore, /calibrar · /calibrate y antes | después."
   ]
