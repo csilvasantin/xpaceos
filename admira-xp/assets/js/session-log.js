@@ -17,8 +17,11 @@
 (function(){
   if(typeof window==='undefined') return;
   try {
+    // Opt-out permanente (ver session-ping.js): ?nolog=1|true o localStorage xpace_nolog=1.
     const url=new URL(window.location.href);
-    if(url.searchParams.get('nolog')==='1') return;
+    const q=(url.searchParams.get('nolog')||'').toLowerCase();
+    if(q==='1'||q==='true'){ try{ localStorage.setItem('xpace_nolog','1'); }catch(_){} return; }
+    if(localStorage.getItem('xpace_nolog')==='1') return;
   } catch(_){}
   const host=window.location.hostname;
   if(host==='localhost' || host==='127.0.0.1' || host.endsWith('.local')) return;
@@ -125,6 +128,9 @@
 
   function flush(reason){
     if(log.sentEnd) return; log.sentEnd=true;
+    // Solo avisar de cierres relevantes: ≥120s o con comandos reales (28-oct-2026).
+    try { if(localStorage.getItem('xpace_nolog')==='1') return; } catch(_){}
+    if((Date.now()-log.startedAt)<120000 && log.commands.length===0) return;
     const text=buildSummary();
     const payload=JSON.stringify({text});
     // sendBeacon es lo unico fiable en beforeunload: el navegador NO

@@ -17,8 +17,12 @@
     // 1. Sessionstorage flag — solo 1 ping por sesión
     if(sessionStorage.getItem('xtanco_session_pinged')==='1') return;
     // 2. Opt-out
+    // ?nolog=1|true activa opt-out PERMANENTE en este navegador (localStorage xpace_nolog=1,
+    // Carlos 28-oct-2026 «hasta nueva orden»). Rollback: localStorage.removeItem('xpace_nolog').
     const url=new URL(window.location.href);
-    if(url.searchParams.get('nolog')==='1') return;
+    const q=(url.searchParams.get('nolog')||'').toLowerCase();
+    if(q==='1'||q==='true'){ try{ localStorage.setItem('xpace_nolog','1'); }catch(_){} return; }
+    try { if(localStorage.getItem('xpace_nolog')==='1') return; } catch(_){}
     // 3. Skip localhost / dev
     const host=window.location.hostname;
     if(host==='localhost' || host==='127.0.0.1' || host.endsWith('.local')) return;
