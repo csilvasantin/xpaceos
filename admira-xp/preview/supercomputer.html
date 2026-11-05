@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>SuperComputer twin preview</title>
+<style>html,body{margin:0;height:100%;background:#1b2230}canvas{width:100%;height:100%;display:block}#l{position:fixed;left:12px;top:10px;color:#cfe;font:13px sans-serif}</style>
+<canvas id="c"></canvas><div id="l">native:supercomputer · METAHUMAN (preview)</div>
+<script type="module">
+import * as T from '../scripts/premium-three.mjs';import {createLifeScene} from '../scripts/life-scene.mjs';
+const q=new URLSearchParams(location.search),variant=q.get('variant')||'metahuman';
+const model=createLifeScene({cols:3,rows:3,wallHeight:2.4,layout:[{id:'supercomputer-'+variant,type:'supercomputer',variant,col:1,row:1}],actors:[]});
+const canvas=document.getElementById('c'),r=new T.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});r.outputColorSpace=T.SRGBColorSpace;r.setSize(innerWidth,innerHeight,false);r.setClearColor('#1b2230');
+// Pinta cada cara TL LCD (400×400) con su slot para verificar el mapeo.
+model.scene.traverse(o=>{const s=o.userData?.fanSlot;if(!s)return;const cv=document.createElement('canvas');cv.width=cv.height=400;const c=cv.getContext('2d');
+ const g=c.createRadialGradient(200,200,20,200,200,200);g.addColorStop(0,'#3df');g.addColorStop(1,'#a2f');c.fillStyle=g;c.fillRect(0,0,400,400);c.fillStyle='#fff';c.font='bold 110px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(s,200,200);
+ const t=new T.CanvasTexture(cv);t.colorSpace=T.SRGBColorSpace;o.material=new T.MeshBasicMaterial({map:t,side:T.DoubleSide});});
+model.scene.add(new T.AmbientLight('#fff',1.4));const sun=new T.DirectionalLight('#fff',2);sun.position.set(3,5,6);model.scene.add(sun);
+const cam=new T.PerspectiveCamera(35,innerWidth/innerHeight,.05,50);cam.position.set(1.5-.25,1.3,1.5+2.6);cam.lookAt(1.5,.58,1.5);
+r.render(model.scene,cam);window.__ready=true;
+</script>

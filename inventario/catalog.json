@@ -347,6 +347,86 @@
       ],
       "ph": 0.84,
       "geometry_basis": "interpretive_photo_not_measured"
+    },
+    {
+      "id": "native:supercomputer",
+      "name": "SuperComputer",
+      "type": "supercomputer",
+      "category": "IoT",
+      "mount": "floor",
+      "fp": [
+        1,
+        1
+      ],
+      "fans": {
+        "bottom": [
+          "fan1",
+          "fan2",
+          "fan3"
+        ],
+        "back": [
+          "fan4",
+          "fan5",
+          "fan6"
+        ],
+        "temp": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "native:supercomputer-metahuman",
+      "name": "SuperComputer_Metahuman",
+      "variant": "metahuman",
+      "type": "supercomputer",
+      "category": "IoT",
+      "mount": "floor",
+      "fp": [
+        1,
+        1
+      ],
+      "fans": {
+        "bottom": [
+          "fan1",
+          "fan2",
+          "fan3"
+        ],
+        "back": [
+          "fan4",
+          "fan5",
+          "fan6"
+        ],
+        "temp": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "id": "native:supercomputer-pc-cocina",
+      "name": "SuperComputer_PC-Cocina",
+      "variant": "pc-cocina",
+      "type": "supercomputer",
+      "category": "IoT",
+      "mount": "floor",
+      "fp": [
+        1,
+        1
+      ],
+      "fans": {
+        "bottom": [
+          "fan1",
+          "fan2",
+          "fan3"
+        ],
+        "back": [
+          "fan4",
+          "fan5",
+          "fan6"
+        ],
+        "temp": {
+          "enabled": false
+        }
+      }
     }
   ],
   "layouts": {

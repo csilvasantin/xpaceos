@@ -356,6 +356,29 @@ export function createLifeScene(rawSnapshot,{canvasFactory=()=>document.createEl
         box(leaf,(w-.16)/2,1.18,0,w-.16,2.25,.045,palette.glass);box(leaf,w-.28,1.06,.047,.035,.3,.035,palette.brass);
         break;
       }
+      case 'supercomputer':{
+        // SuperComputer (Lian Li, cristal lateral). Contrato físico METAHUMAN: FONDO=placa Z790 PG Riptide+2×DDR5 RGB+3 TL LCD verticales (fan4-6, arriba→abajo);
+        // ABAJO=bloque 3 TL LCD horizontales (fan1-3, izq→der, caras arriba). Cristal en z=d (cara visible); fondo en z≈0. 7º ventilador: enabled:false.
+        const W=Math.min(w,.95),H=1.15,D=Math.min(d,.95),x0=(w-W)/2,z0=(d-D)/2,variant=item.variant||(String(item.id).includes('cocina')?'pc-cocina':'metahuman');
+        root.userData.variant=variant;root.userData.fanSlots={bottom:['fan1','fan2','fan3'],back:['fan4','fan5','fan6'],temp:{enabled:false}};
+        const c=group(root,x0,0,z0);c.name='supercomputer:case';
+        box(c,W/2,.025,D/2,W,.05,D,palette.black);box(c,W/2,H-.025,D/2,W,.05,D,palette.black);box(c,W/2,H/2,.02,W,H,.04,palette.black);
+        box(c,.02,H/2,D/2,.04,H,D,palette.black);box(c,W-.02,H/2,D/2,.04,H,D,palette.black);
+        const glass=box(c,W/2,H/2,D-.01,W-.04,H-.04,.012,palette.glass);glass.castShadow=false;
+        const fan=(name,x,y,z,horizontal,slot)=>{const g=group(c,x,y,z);g.name=name;if(horizontal)g.rotation.x=-Math.PI/2;
+          box(g,0,0,-.012,.25,.25,.025,palette.black);const face=surface(g,null,0,0,.002,.22,.22,0,mediaMaterial);
+          face.userData={liveMedia:true,dynamic:true,surfaceId:`supercomputer:${item.id}:${slot}`,screenTarget:item.id,fanSlot:slot,mediaSize:[400,400]};return g;};
+        // FONDO: placa (ATX 30.5×24.4 → escala ×1.8) + RAM RGB + columna 3 ventiladores verticales
+        const mb=group(c,.04,.30,.05);mb.name='supercomputer:motherboard';box(mb,.275,.22,0,.55,.44,.02,palette.darkWood);
+        box(mb,.20,.28,.02,.12,.12,.03,palette.steel);box(mb,.06,.22,.02,.05,.36,.04,palette.steel);box(mb,.28,.08,.02,.42,.03,.025,palette.black);
+        const rgb=['#ff3df2','#3dd8ff'];
+        for(let i=0;i<2;i++){const r=group(mb,.33+i*.04,.28,.025);r.name=`ram:${i+1}`;box(r,0,0,0,.022,.2,.03,palette.black);
+          const strip=box(r,0,.105,0,.024,.02,.034,material(rgb[i],{emissive:rgb[i],emissiveIntensity:2.2}));strip.userData.dynamic=true;strip.userData.rgb=true;}
+        for(let i=0;i<3;i++)fan(`fan:back:${i+1}`,W-.2,H-.2-i*.27,.07,false,`fan${4+i}`);
+        // ABAJO: bloque separado de 3 ventiladores horizontales
+        for(let i=0;i<3;i++)fan(`fan:bottom:${i+1}`,.17+i*(W-.34)/2,.07,D*.55,true,`fan${1+i}`);
+        label(c,variant==='pc-cocina'?'PC COCINA':'METAHUMAN',W/2,H-.07,D+.002,W*.5,.06,{bg:'#111',fg:'#9ef',font:40});break;
+      }
       case 'custom':{
         const h=item.source==='PixerIA'?1:Math.min(2,Math.max(.3,item.ph));
         box(root,w/2,h/2,d/2,w,h,d,palette.cream);
