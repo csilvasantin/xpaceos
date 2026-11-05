@@ -13,6 +13,10 @@
 
 (function(){
   if(typeof window==='undefined') return;
+  // Carlos 5-nov-2026: sin avisos Telegram al abrir/cerrar admira.store / AdmiraXP
+  // («cada vez que se abre suena un audio en Telegram, quitalo»). Hasta nueva orden.
+  // Rollback: quitar este return y restaurar el envío a bridge.admira.store/telegram/send.
+  return;
   try {
     // 1. Sessionstorage flag — solo 1 ping por sesión
     if(sessionStorage.getItem('xtanco_session_pinged')==='1') return;
