@@ -7,7 +7,7 @@ export function normalizeProjection(raw){
   if(p.width<=0||p.height<=0||p.tileW<=0||p.tileH<=0||p.tileH>=p.tileW)return null;
   return p;
 }
-export const FOOTPRINTS=Object.freeze({counter:[1,2],shelves:[1,2],wineRack:[2,1],lottery:[2,1],vending:[1,1],magazines:[2,1],manager:[2,1],plant:[1,1],floorLamp:[1,1],rug:[2,2],djBooth:[2,1],tablet:[1,1],turnKiosk:[1,1],aroma:[1,1],metahuman:[1,1]});
+export const FOOTPRINTS=Object.freeze({counter:[1,2],shelves:[1,2],wineRack:[2,1],lottery:[2,1],vending:[1,1],magazines:[2,1],manager:[2,1],plant:[1,1],floorLamp:[1,1],rug:[2,2],djBooth:[2,1],tablet:[1,1],turnKiosk:[1,1],aroma:[1,1],metahuman:[1,1],supercomputer:[1,1]});
 export function normalizeSnapshot(raw={}){
   const cols=clamp(finite(raw.cols,14),4,40),rows=clamp(finite(raw.rows,8),4,40);
   return {
